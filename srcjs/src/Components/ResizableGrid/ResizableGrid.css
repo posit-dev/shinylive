@@ -1,0 +1,73 @@
+.ResizableGrid {
+  --pad: 2px;
+  --panel-gap: 3px;
+  --sizer-margin-offset: calc(-1 * var(--panel-gap));
+  /* How much does the handle expand to make it easier to grab? */
+  --expansion-scale: 3;
+  height: 100%;
+  width: 100%;
+  min-height: 80px;
+  min-width: 400px;
+  display: grid;
+  padding: 0;
+  gap: var(--panel-gap);
+  position: relative;
+}
+
+.ResizableGrid > * {
+  /* By putting explicit min values on sizes of the items we stop them from
+  blowing out the grid by staying too big. See
+  https://css-tricks.com/preventing-a-grid-blowout/ for more details */
+  min-width: 0;
+  min-height: 0;
+}
+
+div.ResizableGrid--col-sizer,
+div.ResizableGrid--row-sizer {
+  opacity: 0;
+  position: relative;
+  /*
+   Transformation back to default size is nice and slow to make it less
+   confusing when the mouse slips slighlty off the grab handle and then when
+   returning to the same place it is nowhere to be found.
+  */
+  transition: transform 1s 0.5s;
+}
+
+.ResizableGrid--col-sizer {
+  grid-row: 1/-1;
+  width: var(--panel-gap);
+  margin-left: var(--sizer-margin-offset);
+  height: 100%;
+  cursor: ew-resize;
+}
+
+.ResizableGrid--row-sizer {
+  grid-column: 1/-1;
+  height: var(--panel-gap);
+  margin-top: var(--sizer-margin-offset);
+  width: 100%;
+  cursor: ns-resize;
+}
+
+.ResizableGrid--col-sizer:hover,
+.ResizableGrid--row-sizer:hover {
+  z-index: 9999;
+  /* Make the transition to larger instant */
+  transition: transform 0s;
+}
+.ResizableGrid--col-sizer:hover {
+  transform: scaleX(var(--expansion-scale));
+}
+.ResizableGrid--row-sizer:hover {
+  transform: scaleY(var(--expansion-scale));
+}
+
+div#size-detection-cell {
+  width: 100%;
+  height: 100%;
+
+  /* One of these will get over-ridden by inline css */
+  grid-row: 1/-1;
+  grid-column: 1/-1;
+}

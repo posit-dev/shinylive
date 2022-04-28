@@ -1,0 +1,83 @@
+.ExampleSelector {
+  padding: 3px 3px 3px 8px;
+  font-family: var(--font-face);
+  /* Each level of hierarchy will indent by a set amount (via padding) */
+  --indent: 8px;
+  --divider-color: #f1f1f1;
+}
+
+.ExampleSelector > .categories {
+  height: 100%;
+  overflow-y: auto;
+  padding: var(--indent);
+}
+
+.ExampleSelector > .categories .category-title {
+  color: var(--colors-blue, blue);
+  margin-top: calc(var(--indent) * 2);
+}
+
+.ExampleSelector .example {
+  --v-pad: calc(var(--indent));
+  --h-pad: calc(var(--indent) * 2);
+  /* margin: 0.5rem 0; */
+  padding-left: var(--h-pad);
+  padding-top: var(--v-pad);
+  padding-bottom: var(--v-pad);
+  cursor: default;
+  position: relative;
+  --sidebar-color: var(--colors-grey);
+  --sidebar-indent: calc(var(--indent) / 1.3);
+  --sidebar-w: 1px;
+}
+
+/* Undo the default link styles */
+.ExampleSelector .example > a {
+  text-decoration: unset;
+  color: unset;
+  cursor: unset;
+}
+
+.ExampleSelector .example:hover:not(.selected) {
+  cursor: pointer;
+}
+
+/* Selection is indicated by a thicker sidebar. Bar grows when hovered to indicate that clicking will select */
+.ExampleSelector .example.selected,
+.ExampleSelector .example:hover {
+  --sidebar-w: 4px;
+}
+
+/* The selected example's sidebar is blue */
+.ExampleSelector .example.selected {
+  --sidebar-color: var(--colors-blue, blue);
+}
+
+/* The sidebar is defined by a before psuedoelement */
+.ExampleSelector .example:before {
+  content: "";
+  position: absolute;
+  height: 70%;
+  top: 15%;
+  width: var(--sidebar-w);
+  border-radius: var(--button-roundness, 5px);
+  left: calc(var(--sidebar-indent) - var(--sidebar-w) - 1px);
+  background-color: var(--sidebar-color);
+}
+
+.ExampleSelector .example .title {
+  font-weight: 500;
+}
+
+.ExampleSelector .example .about {
+  color: var(--colors-grey, grey);
+  font-size: small;
+  font-style: italic;
+  font-weight: 400;
+}
+
+.ExampleSelector > .categories > section > .divider {
+  width: 100%;
+  height: 1px;
+  background-color: var(--divider-color);
+}

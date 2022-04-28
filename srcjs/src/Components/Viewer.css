@@ -1,0 +1,15 @@
+.Viewer {
+  height: 100%;
+  width: 100%;
+  position: relative;
+}
+
+.Viewer--contents {
+  height: 100%;
+  width: 100%;
+}
+
+.app-frame {
+  border-radius: var(--panel-roundness);
+  border: 0;
+}

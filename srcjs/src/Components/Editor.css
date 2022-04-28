@@ -1,0 +1,186 @@
+.Editor {
+  --border-color: #aaa;
+  --pad: 5px;
+  display: grid;
+  /* By using auto as the height for the first row it will shrink to zero if
+  nothing is provided */
+  grid-template-rows: auto 1fr;
+  grid-template-areas:
+    "header"
+    "editor";
+  position: relative;
+}
+
+/* Enforce a max height for the editor-viewer mode unless the user has dragged
+the size bigger.  */
+.ResizableGrid.editor-viewer:not(.been-dragged) > .Editor {
+  max-height: 800px;
+}
+
+.Editor--header {
+  grid-area: header;
+}
+.Editor--container {
+  grid-area: editor;
+}
+
+.Editor > div {
+  min-width: 0;
+  min-height: 0;
+}
+
+.Editor--header {
+  display: flex;
+  padding-top: var(--pad);
+  padding-left: var(--pad);
+  padding-right: var(--pad);
+  justify-content: space-between;
+  align-items: flex-end;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.Editor--header--files > button {
+  font-size: 14px;
+  font-family: var(--font-face);
+  height: 26px;
+  background-color: var(--colors-bg);
+  color: #444;
+  border: 1px solid var(--border-color);
+  border-top-left-radius: 3px;
+  border-top-right-radius: 3px;
+  border-bottom: none;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  padding: 0 2px;
+}
+
+.Editor--header--files--filename {
+  padding: 0 4px;
+}
+
+.Editor--header--files > button.selected {
+  color: black;
+  position: relative;
+  cursor: text;
+}
+
+.Editor--header--files > button.selected::after {
+  content: "";
+  width: 100%;
+  height: 4px;
+  background-color: var(--colors-bg);
+  position: absolute;
+  bottom: -3px;
+  left: 0;
+  border-bottom-color: var(--colors-bg);
+}
+
+.Editor--header--files > button.selected > input {
+  width: 100%;
+  font-size: 14px;
+  font-family: var(--font-face);
+  height: 26px;
+  position: absolute;
+  left: 4px;
+  bottom: -0.5px;
+  outline: none;
+  border: none;
+  color: var(--colors-blue);
+  background-color: transparent;
+}
+
+.Editor--header--files > button.selected > input.invalid-filename {
+  color: var(--colors-red);
+}
+
+.Editor--header--files
+  > button.selected
+  > .Editor--header--files--closebutton
+  + input {
+  /* If there's a close button, make the input a bit smaller so it doesn't
+  overlap the close button. */
+  width: calc(100% - 21px);
+}
+
+.Editor--header--files > .Editor--header--files--addtab {
+  /* Make the border invisible, but keep the inherited thickness. This is to
+  keep things aligned properly. */
+  border-color: rgba(0, 0, 0, 0);
+  font-weight: bold;
+}
+
+.Editor--header--files > button > .Editor--header--files--closebutton,
+.Editor--header--files > button > .Editor--header--files--addbutton {
+  width: 1.2rem;
+  display: inline-block;
+}
+
+.Editor--header--files > button > .Editor--header--files--closebutton:hover,
+.Editor--header--files > button > .Editor--header--files--addbutton:hover {
+  background-color: #e8e8e8;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.Editor--container {
+  padding: var(--pad);
+  position: relative;
+}
+
+.Editor--container .cm-editor {
+  height: 100%;
+}
+
+.Editor--container .cm-editor.cm-focused {
+  /* Don't show outline on focused editor. (Override CodeMirror default) */
+  outline: none;
+}
+
+.Editor--container .cm-editor .cm-scroller {
+  font-family: var(--font-mono-face);
+  font-size: var(--font-mono-size);
+}
+
+.Editor--container .cm-gutters {
+  color: #aaa;
+  background-color: inherit;
+  border-right: 1px solid #eee;
+  /* border-right: none; */
+  padding-right: 4px;
+}
+
+.Editor--container .cm-activeLineGutter {
+  background-color: inherit;
+}
+
+/* Code run button styles */
+.Editor button.code-run-button {
+  background-color: transparent;
+}
+
+.Editor .code-run-button:hover {
+  color: var(--colors-blue-dark);
+}
+
+/* When in the header of the app next to file tabs */
+.Editor--header .code-run-button {
+  align-self: center;
+  color: #999;
+}
+
+.Editor .floating-buttons .code-run-button {
+  position: absolute;
+  top: 0;
+  right: 0;
+  border: 0;
+  margin-top: 5px;
+  margin-right: 5px;
+}
+
+.Editor:hover .floating-buttons .code-run-button {
+  color: #999;
+}
+
+.Editor .floating-buttons .code-run-button:hover {
+  color: var(--colors-blue-dark);
+}

@@ -1,0 +1,95 @@
+:root {
+  --colors-grey: grey;
+  --colors-blue: rgb(58, 147, 219);
+  --colors-blue-dark: hsl(207, 69%, 35%);
+  --colors-red: rgb(245, 62, 78);
+  --colors-white: white;
+  --colors-bg: white;
+  --colors-fg: #333;
+
+  --font-face: "Source Sans Pro", Arial, Helvetica, sans-serif;
+  --font-size: 14px;
+  --font-mono-face: Menlo, Monaco, "Courier New", monospace;
+  --font-mono-size: 12px;
+
+  --panel-roundness: 5px;
+  --button-roundness: 5px;
+  --container-roundness: calc(var(--panel-roundness) * 1.4);
+
+  --shadow-color: 0deg 0% 56%;
+  --shadow-elevation-low: 0.3px 0.4px 0.6px hsl(var(--shadow-color) / 0.34),
+    0.5px 0.7px 1px -1.2px hsl(var(--shadow-color) / 0.34),
+    1.2px 1.7px 2.3px -2.5px hsl(var(--shadow-color) / 0.34);
+  --shadow-elevation-medium: 0.3px 0.4px 0.6px hsl(var(--shadow-color) / 0.36),
+    1px 1.4px 1.9px -0.8px hsl(var(--shadow-color) / 0.36),
+    2.6px 3.4px 4.8px -1.7px hsl(var(--shadow-color) / 0.36),
+    6.2px 8.3px 11.7px -2.5px hsl(var(--shadow-color) / 0.36);
+}
+
+.App--container {
+  --pad: 2px;
+  height: 100%;
+  width: 100%;
+  min-height: 100px;
+  min-width: 400px;
+  padding: var(--pad);
+  border-radius: var(--container-roundness);
+  background-color: #e6e6e6;
+}
+
+.App--container.viewer {
+  --pad: 0;
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: 1fr;
+  grid-template-areas: "viewer";
+}
+
+.App--container .initializing-animation {
+  background-color: inherit;
+  box-shadow: inherit;
+  grid-area: viewer;
+  place-self: center;
+  padding: 1rem;
+}
+
+.App--container > div {
+  border-radius: var(--panel-roundness);
+  background-color: var(--colors-bg);
+  /* outline: 1px solid var(--colors-grey); */
+}
+.App--container.viewer > div {
+  border-radius: unset;
+  background-color: unset;
+  box-shadow: unset;
+}
+
+.ExampleSelector {
+  grid-area: exampleselector;
+}
+.Editor {
+  grid-area: editor;
+}
+.Terminal {
+  grid-area: terminal;
+}
+.Viewer {
+  grid-area: viewer;
+}
+
+button {
+  background-color: var(--colors-blue);
+  color: var(--colors-white);
+  font-family: var(--font-face);
+  font-size: var(--font-size);
+  border-style: solid;
+  border-color: var(--colors-white);
+  border-radius: var(--button-roundness);
+  cursor: pointer;
+  padding: 0.2rem 0.5rem;
+}
+
+button:disabled {
+  cursor: default;
+  background-color: #c8c8c8;
+}

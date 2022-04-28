@@ -1,0 +1,2 @@
+App with plot
+A basic application with a plot

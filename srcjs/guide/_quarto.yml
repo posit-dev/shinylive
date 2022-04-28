@@ -1,0 +1,19 @@
+project:
+  type: website
+  output-dir: docs
+  render:
+    - /index.qmd
+  post-render:
+    - scripts/post-render.py
+
+website:
+  title: "Shiny for Python wasm"
+  navbar:
+    search: true
+    right:
+      - icon: github
+        href: https://github.com/rstudio/py-shiny/
+
+format:
+  html:
+    toc: true
