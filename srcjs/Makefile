@@ -1,8 +1,15 @@
-.PHONY: all clean test test-watch
+.PHONY: all packages clean test test-watch
 
 PYODIDE_VERSION = 0.20.0
 PYODIDE_DIST_FILENAME = pyodide-build-$(PYODIDE_VERSION).tar.bz2
 OUTDIR = ./shinylive/
+
+# Read htmltools and shiny versions from the package code
+HTMLTOOLS_VERSION = $(shell cd packages/py-htmltools/ && python3 -c "import htmltools; print(htmltools.__version__)")
+SHINY_VERSION = $(shell cd packages/py-shiny/ && python3 -c "import shiny; print(shiny.__version__)")
+
+HTMLTOOLS_WHEEL = packages/py-htmltools-$(HTMLTOOLS_VERSION)-py3-none-any.whl
+SHINY_WHEEL = packages/py-shiny-$(SHINY_VERSION)-py3-none-any.whl
 
 all: node_modules \
 	serviceworker.js \
@@ -56,9 +63,24 @@ $(OUTDIR)/Components/App.js:
 	node bundle-and-serve.mjs
 
 
+# Build packages. This target must be run manually after updating the package
+# submodules; it will not run automatically with `make all` because I'm not sure
+# how to set up the dependencies reliably.
+packages: $(HTMLTOOLS_WHEEL) $(SHINY_WHEEL)
+
+$(HTMLTOOLS_WHEEL):
+	pip install -r packages/py-htmltools/requirements-dev.txt
+	pip install -e packages/py-htmltools
+	cd packages/py-htmltools && make dist && mv dist/*.whl ../
+
+$(SHINY_WHEEL):
+	 pip install -r packages/py-shiny/requirements-dev.txt
+	pip install -e packages/py-shiny
+	cd packages/py-shiny && make dist && mv dist/*.whl ../
+
 
 clean:
-	rm -rf shinylive
+	rm -rf shinylive packages/*.whl
 
 test:
 	jest
