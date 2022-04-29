@@ -1,5 +1,5 @@
 import * as fs from "fs";
-const examplesDir = "./src/examples";
+const examplesDir = "./examples";
 const orderingFile = `${examplesDir}/index.json`;
 const outputFile = `./shinylive/examples.json`;
 
