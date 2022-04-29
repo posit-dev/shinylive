@@ -34,7 +34,7 @@ $(OUTDIR)/loading.html: src/loading.html
 	cp src/loading.html $(OUTDIR)
 
 $(OUTDIR)/pyodide:
-	cd shinylive && \
+	cd $(OUTDIR) && \
 	curl -L https://github.com/pyodide/pyodide/releases/download/$(PYODIDE_VERSION)/$(PYODIDE_DIST_FILENAME) \
 	    | tar --exclude "*test*.tar" -xvz
 
@@ -50,8 +50,9 @@ $(OUTDIR)/inject-socket.js: src/inject-socket.ts
 $(OUTDIR)/run-python-blocks.js: src/run-python-blocks.ts
 	esbuild src/run-python-blocks.ts --target=es2020 --outdir=$(OUTDIR)
 
-
 $(OUTDIR)/Components/App.js:
+# Create symlink from site/shinylive to shinylive, if needed.
+	cd site && if [ ! -h shinylive ]; then ln -s ../shinylive; fi
 	node bundle-and-serve.mjs
 
 

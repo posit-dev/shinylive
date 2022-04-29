@@ -3,6 +3,7 @@ import esbuild from "esbuild";
 import { createServer, request } from "http";
 import { spawn } from "child_process";
 import buildExamples from "./src/examples/build_examples_json.mjs";
+import process from "process";
 
 const clients = [];
 
@@ -10,7 +11,7 @@ esbuild
   .build({
     bundle: true,
     entryPoints: ["src/Components/App.tsx"],
-    outdir: "shinylive/Components/",
+    outdir: "./shinylive/Components/",
     format: "esm",
     banner: {
       js: ` (() => {
@@ -43,7 +44,7 @@ esbuild
   })
   .catch(() => process.exit(1));
 
-esbuild.serve({ servedir: ".", port: 3001 }, {}).then(() => {
+esbuild.serve({ servedir: "site/", port: 3001 }, {}).then(() => {
   createServer((req, res) => {
     const { url, method, headers } = req;
     if (req.url === "/esbuild")
