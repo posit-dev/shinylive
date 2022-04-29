@@ -39,11 +39,7 @@
   },
   "scripts": {
     "watch": "yarn run build --watch",
-    "build": "esbuild src/serviceworker.ts --target=es2020 --bundle --outdir=./  &&  esbuild src/pyodide-worker.ts src/inject-socket.ts --target=es2020 --bundle --outdir=./shinylive/  &&  esbuild src/run-python-blocks.ts --target=es2020 --outdir=./shinylive/",
-    "build-react": "node bundle-and-serve.mjs",
-    "copyjs": "cp -Rv node_modules/jquery.terminal node_modules/jquery/dist/jquery.min.js shinylive/ && cp src/style-resets.css shinylive/",
-    "test": "jest --watch",
-    "test-once": "jest"
+    "build-react": "node bundle-and-serve.mjs"
   },
   "dependencies": {
     "@codemirror/autocomplete": "^0.19.13",
