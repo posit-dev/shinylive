@@ -1,4 +1,4 @@
-.PHONY: all packages download_pypi_packages clean test test-watch
+.PHONY: all packages submodule_update download_pypi_packages clean test test-watch
 
 PYODIDE_VERSION = 0.20.0
 PYODIDE_DIST_FILENAME = pyodide-build-$(PYODIDE_VERSION).tar.bz2
@@ -13,6 +13,7 @@ HTMLTOOLS_WHEEL = htmltools-$(HTMLTOOLS_VERSION)-py3-none-any.whl
 SHINY_WHEEL = shiny-$(SHINY_VERSION)-py3-none-any.whl
 
 all: node_modules \
+	submodule_update \
 	serviceworker.js \
 	$(OUT_DIR)/jquery.terminal \
 	$(OUT_DIR)/jquery.min.js \
@@ -98,6 +99,9 @@ $(PACKAGE_DIR)/$(SHINY_WHEEL): $(PACKAGE_DIR)/py-shiny
 py_package_versions.ts: $(PACKAGE_DIR)/py-htmltools $(PACKAGE_DIR)/py-shiny
 	./py_package_versions.py write_package_version_file
 
+submodule_update:
+	git submodule init
+	git submodule update --depth=20
 
 # Download some packages from PyPI.
 # TODO: Figure out how to make this _not_ run every time, or at least not need
