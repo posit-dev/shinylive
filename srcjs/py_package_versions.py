@@ -150,18 +150,25 @@ def insert_into_pyodide_packages(pyodide_dir: str = DEFAULT_PYODIDE_DIR):
 
     # Packages that we're going to add to pyodide's package.json.
     all_packages_info = _get_all_packages_info()
-    new_pyodide_packages = all_packages_info.keys()
-    # Filter it to keep only packages that are in new_pyodide_packages, like shiny
-    # and uc-micro-py. For packages with hyphens (uc-micro-py), the corresponding files
-    # have underscores (uc-micro_py).
-    new_pyodide_packages_filenames = [
-        os.path.join(pyodide_dir, x)
-        for x in os.listdir(pyodide_dir)
-        # Trim off version numbers (and everything after) and replace "-" with "_".
-        if re.sub("-.*", "", x).replace("_", "-") in new_pyodide_packages
-    ]
+    all_pyodide_package_files = os.listdir(pyodide_dir)
 
-    print(new_pyodide_packages_filenames)
+    # Build list of filenames like shinylive/pyodide/shiny-0.2.0.9002-py3-none-any.whl
+    new_pyodide_packages_filenames: list[str] = []
+    for pkg_name in all_packages_info.keys():
+        # Convert package name like "uc-micro-py" to "uc_micro_py"; the latter is used
+        # for the package filename.
+        pkg_file_prefix = pkg_name.replace("-", "_")
+        r = re.compile(f"^{pkg_file_prefix}-.*\\.whl$")
+        pkg_file = [
+            filename for filename in all_pyodide_package_files if r.match(filename)
+        ]
+
+        if len(pkg_file) != 1:
+            raise RuntimeError(
+                f"""Expected to find exactly one package file in {pyodide_dir} for package {pkg_name}, found {pkg_file}
+                You need to copy over the package file first."""
+            )
+        new_pyodide_packages_filenames.append(os.path.join(pyodide_dir, pkg_file[0]))
 
     new_pyodide_package_info_list: list[PyodidePackageInfo] = [
         _get_pyodide_package_info(x, all_packages_info)
@@ -170,7 +177,6 @@ def insert_into_pyodide_packages(pyodide_dir: str = DEFAULT_PYODIDE_DIR):
     new_pyodide_package_info_dict: dict[str, PyodidePackageInfo] = {
         x["name"]: x for x in new_pyodide_package_info_list
     }
-    print(json.dumps(new_pyodide_package_info_dict, indent=2))
 
     pyodide_packages["packages"].update(new_pyodide_package_info_dict)
 
