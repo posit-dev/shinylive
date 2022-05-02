@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import shutil
 import os
 
@@ -13,7 +15,7 @@ open("docs/.nojekyll", "a").close()
 # _quarto.yml, but it doesn't seem to allow choosing the destination directory,
 # so the files would end up on docs/prism-experiments/shinylive/ instead of
 # docs/shinylive/.
-shutil.copyfile("../serviceworker.js", "docs/serviceworker.js")
-shutil.copytree("../shinylive", "docs/shinylive")
-shutil.copytree("../examples", "docs/examples")
-shutil.copytree("../app", "docs/app")
+shutil.copyfile("../site/serviceworker.js", "docs/serviceworker.js")
+shutil.copytree("../site/examples", "docs/examples")
+shutil.copytree("../site/app", "docs/app")
+os.symlink("../shinylive", "docs/shinylive")
