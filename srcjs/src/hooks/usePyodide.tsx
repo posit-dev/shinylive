@@ -1,7 +1,6 @@
 import React, { useEffect } from "react";
 import { loadPyodideProxy, ProxyType, PyodideProxy } from "../pyodide-proxy";
 import * as utils from "../utils";
-import { versions } from "../../py_package_versions";
 
 export type PyodideProxyHandle =
   | { ready: false; shiny_ready: false }
@@ -166,15 +165,6 @@ class MemoryBIO:
     pass
 """)
 
-print("Installing shiny...")
-
-import micropip
-await micropip.install("${base_url}/packages/sniffio-${versions.sniffio.version}-py3-none-any.whl")
-await micropip.install("${base_url}/packages/idna-${versions.idna.version}-py3-none-any.whl")
-await micropip.install("${base_url}/packages/anyio-${versions.anyio.version}-py3-none-any.whl")
-await micropip.install("${base_url}/packages/starlette-${versions.starlette.version}-py3-none-any.whl")
-await micropip.install("${base_url}/packages/htmltools-${versions.htmltools.version}-py3-none-any.whl")
-await micropip.install("${base_url}/packages/shiny-${versions.shiny.version}-py3-none-any.whl")
 None
 `;
 };
@@ -184,8 +174,6 @@ print("Loading modules...")
 import js
 import shutil
 import asyncio
-import typing_extensions
-import htmltools
 import shiny
 import pyodide
 import sys
