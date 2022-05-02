@@ -24,6 +24,10 @@ import sys
 from typing import Any, Literal, TypedDict
 from typing_extensions import NotRequired
 
+top_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+package_source_dir = os.path.join(top_dir, "packages")
+
+
 # The package information structure we use.
 class PackageInfo(TypedDict):
     name: str
@@ -114,9 +118,6 @@ pypi_packages_info: dict[str, PackageInfo] = {
         "imports": ["multipart"],
     },
 }
-
-this_dir = os.path.dirname(os.path.abspath(__file__))
-package_source_dir = os.path.join(this_dir, "packages")
 
 
 def download_pypi_packages(package_output_dir: str = DEFAULT_PYODIDE_DIR):

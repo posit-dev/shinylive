@@ -75,7 +75,7 @@ $(OUT_DIR)/run-python-blocks.js: src/run-python-blocks.ts
 $(OUT_DIR)/Components/App.js:
 # Create symlink from site/shinylive to shinylive, if needed.
 	cd site && if [ ! -h shinylive ]; then ln -s ../shinylive; fi
-	node bundle-and-serve.mjs
+	node scripts/bundle-and-serve.mjs
 
 
 # Build htmltools and shiny. This target must be run manually after updating the
@@ -101,14 +101,14 @@ submodule_update:
 # Download some packages from PyPI.
 # TODO: Figure out how to make this _not_ run every time, or at least not need
 # network access.
-download_pypi_packages: ./py_package_versions.py
+download_pypi_packages: scripts/py_package_versions.py
 	mkdir -p $(OUT_DIR)/pyodide
-	./py_package_versions.py download_pypi_packages $(OUT_DIR)/pyodide
+	scripts/py_package_versions.py download_pypi_packages $(OUT_DIR)/pyodide
 
 # Update pyodide's package.json to include htmltools, shiny, and their
 # dependencies which aren't included in Pyodide.
-$(OUT_DIR)/pyodide/packages.json: ./py_package_versions.py $(OUT_DIR)/pyodide/$(HTMLTOOLS_WHEEL) $(OUT_DIR)/pyodide/$(SHINY_WHEEL)
-	./py_package_versions.py insert_into_pyodide_packages $(OUT_DIR)/pyodide
+$(OUT_DIR)/pyodide/packages.json: scripts/py_package_versions.py $(OUT_DIR)/pyodide/$(HTMLTOOLS_WHEEL) $(OUT_DIR)/pyodide/$(SHINY_WHEEL)
+	scripts/py_package_versions.py insert_into_pyodide_packages $(OUT_DIR)/pyodide
 
 clean:
 	rm -rf  $(PACKAGE_DIR)/*.whl shinylive

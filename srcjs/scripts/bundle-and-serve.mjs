@@ -2,7 +2,7 @@
 import esbuild from "esbuild";
 import { createServer, request } from "http";
 import { spawn } from "child_process";
-import buildExamples from "./examples/build_examples_json.mjs";
+import buildExamples from "../examples/build_examples_json.mjs";
 import process from "process";
 
 const clients = [];

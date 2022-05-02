@@ -39,7 +39,7 @@
   },
   "scripts": {
     "watch": "yarn run build --watch",
-    "build-react": "node bundle-and-serve.mjs"
+    "build-react": "node scripts/bundle-and-serve.mjs"
   },
   "dependencies": {
     "@codemirror/autocomplete": "^0.19.13",
