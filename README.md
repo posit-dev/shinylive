@@ -24,6 +24,15 @@ cd srcjs
 make
 ```
 
+To serve the test web site with examples, run:
+
+```bash
+make serve
+```
+
+This will also watch the source TS files for changes and auto-reload the web page when they are modified and rebuilt.
+
+
 ## Pulling changes
 
 After pulling changes to the parent repo, you may need to tell it to update submodules. (Note that running `make` in the `srcjs/` subdirectory will do this for you automatically.)

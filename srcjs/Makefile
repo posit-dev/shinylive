@@ -1,4 +1,6 @@
-.PHONY: all packages submodule_update download_pypi_packages clean test test-watch
+.PHONY: all packages submodule_update download_pypi_packages \
+		build watch serve \
+		clean test test-watch
 
 PYODIDE_VERSION = 0.20.0
 PYODIDE_DIST_FILENAME = pyodide-build-$(PYODIDE_VERSION).tar.bz2
@@ -14,7 +16,6 @@ SHINY_WHEEL = shiny-$(SHINY_VERSION)-py3-none-any.whl
 
 all: node_modules \
 	submodule_update \
-	serviceworker.js \
 	$(OUT_DIR)/jquery.terminal \
 	$(OUT_DIR)/jquery.min.js \
 	$(OUT_DIR)/style-resets.css \
@@ -22,12 +23,9 @@ all: node_modules \
 	$(OUT_DIR)/pyodide \
 	$(OUT_DIR)/pyodide/$(HTMLTOOLS_WHEEL) \
 	$(OUT_DIR)/pyodide/$(SHINY_WHEEL) \
-	$(OUT_DIR)/inject-socket.js \
-	$(OUT_DIR)/pyodide-worker.js \
-	$(OUT_DIR)/run-python-blocks.js \
 	download_pypi_packages \
 	$(OUT_DIR)/pyodide/packages.json \
-	$(OUT_DIR)/Components/App.js
+	build
 
 
 node_modules: package.json
@@ -60,22 +58,17 @@ $(OUT_DIR)/pyodide/$(SHINY_WHEEL): $(PACKAGE_DIR)/$(SHINY_WHEEL)
 	cp $(PACKAGE_DIR)/$(SHINY_WHEEL) $(OUT_DIR)/pyodide/$(SHINY_WHEEL)
 
 
-serviceworker.js: src/serviceworker.ts
-	esbuild src/serviceworker.ts --target=es2020 --bundle --outdir=./
+# Build JS resources
+build:
+	node scripts/build.mjs
 
-$(OUT_DIR)/pyodide-worker.js: src/pyodide-worker.ts
-	esbuild src/pyodide-worker.ts --target=es2020 --bundle --outdir=$(OUT_DIR)
+# Build JS resources and watch for changes
+watch:
+	node scripts/build.mjs --watch
 
-$(OUT_DIR)/inject-socket.js: src/inject-socket.ts
-	esbuild src/inject-socket.ts --target=es2020 --bundle --outdir=$(OUT_DIR)
-
-$(OUT_DIR)/run-python-blocks.js: src/run-python-blocks.ts
-	esbuild src/run-python-blocks.ts --target=es2020 --outdir=$(OUT_DIR)
-
-$(OUT_DIR)/Components/App.js:
-# Create symlink from site/shinylive to shinylive, if needed.
-	cd site && if [ ! -h shinylive ]; then ln -s ../shinylive; fi
-	node scripts/bundle-and-serve.mjs
+# Build JS resources, watch for changes, and serve site
+serve:
+	node scripts/build.mjs --serve
 
 
 # Build htmltools and shiny. This target must be run manually after updating the
