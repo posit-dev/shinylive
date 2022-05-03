@@ -28,14 +28,14 @@
          there a way to conditionally load it? -->
     <script src="../shinylive/pyodide/pyodide.js"></script>
     <script type="module">
-      import { runApp } from "../shinylive/Components/App.js";
+      import { runApp } from "../shinylive/shinylive.js";
       const appRoot = document.getElementById("root");
       if (appRoot) {
         runApp(appRoot, "viewer", "auto");
       }
     </script>
     <link rel="stylesheet" href="../shinylive/style-resets.css" />
-    <link rel="stylesheet" href="../shinylive/Components/App.css" />
+    <link rel="stylesheet" href="../shinylive/shinylive.css" />
   </head>
   <body>
     <div style="height: 100vh; width: 100vw" id="root"></div>

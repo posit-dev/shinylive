@@ -32,7 +32,7 @@ export async function initPyodide({
   const pyodideProxy = await loadPyodideProxy(
     {
       type: proxyType,
-      indexURL: utils.dirname(utils.currentScriptDir()) + "/pyodide/",
+      indexURL: utils.currentScriptDir() + "/pyodide/",
     },
     stdout,
     stderr

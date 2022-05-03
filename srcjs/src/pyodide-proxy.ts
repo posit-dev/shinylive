@@ -272,9 +272,7 @@ class WebWorkerPyodideProxy implements PyodideProxy {
     private stdoutCallback: (text: string) => void,
     private stderrCallback: (text: string) => void
   ) {
-    this.pyWorker = new Worker(
-      utils.dirname(utils.currentScriptDir()) + "/pyodide-worker.js"
-    );
+    this.pyWorker = new Worker(utils.currentScriptDir() + "/pyodide-worker.js");
 
     this.pyWorker.onmessage = (e) => {
       const msg = e.data as PyodideWorker.NonReplyMessage;

@@ -121,8 +121,7 @@ export default function Viewer({
         if (!viewerFrameRef.current)
           throw new Error("Viewer iframe is not yet initialized");
 
-        viewerFrameRef.current.src =
-          utils.dirname(utils.currentScriptDir()) + "/loading.html";
+        viewerFrameRef.current.src = utils.currentScriptDir() + "/loading.html";
 
         if (typeof appCode === "string") {
           appCode = [

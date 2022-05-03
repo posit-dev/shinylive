@@ -38,7 +38,7 @@ esbuild
   .build({
     bundle: true,
     entryPoints: ["src/Components/App.tsx"],
-    outdir: `${OUT_DIR}/Components/`,
+    outfile: `${OUT_DIR}/shinylive.js`,
     format: "esm",
     target: "es2020",
     ...watchProp,
@@ -103,9 +103,9 @@ if (serve) {
           http.request(
             { hostname: "0.0.0.0", port: 3001, path: url, method, headers },
             (proxyRes) => {
-              if (url === "/shinylive/Components/App.js") {
-                // JS code for does auto-reloading. We'll inject it into App.js
-                // as it's sent.
+              if (url === "/shinylive/shinylive.js") {
+                // JS code for does auto-reloading. We'll inject it into
+                // shinylive.js as it's sent.
                 const jsReloadCode = `(() => {
                   if (window.location.host.includes("localhost")) {
                     console.log('%c~~~~~ Live Reload Enabled ~~~~~~', 'font-weight:bold;font-size:20px;color:white;display:block;background-color:green;padding:4px;border-radius:5px;');

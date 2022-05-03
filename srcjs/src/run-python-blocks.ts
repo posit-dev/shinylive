@@ -1,4 +1,4 @@
-import { AppMode, runApp } from "./Components/App.js";
+import { AppMode, runApp } from "./Components/App";
 
 type classToAppTypeMapping = {
   class: string;
