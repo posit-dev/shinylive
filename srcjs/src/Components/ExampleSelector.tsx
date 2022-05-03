@@ -41,7 +41,6 @@ function ExampleSelector({
       if (!position) {
         position = { categoryIndex: 0, index: 0 };
       }
-      console.log("position", position);
       setCurrentSelection(position);
     })();
   }, [linkedExample, exampleCategories]);
@@ -71,7 +70,6 @@ function ExampleSelector({
   // Keep app up-to-date with current selection
   React.useEffect(() => {
     if (!currentSelection) return;
-    console.log("currentSelection", currentSelection);
     setFilesForApp(currentSelection);
   }, [currentSelection, setFilesForApp]);
 
