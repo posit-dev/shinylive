@@ -138,14 +138,6 @@ export function usePyodide({
 // Python code for setting up session
 // =============================================================================
 const load_pyshiny_code = () => {
-  const base_url =
-    window.location.protocol +
-    "//" +
-    window.location.hostname +
-    ":" +
-    window.location.port +
-    utils.dirname(utils.currentScriptDir());
-
   return `
 # Patch ssl.py so that it is actually loadable under Pyodide.
 # I've stubbed in just enough to allow the packages we need to be importable
