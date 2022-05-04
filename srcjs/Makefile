@@ -1,5 +1,6 @@
 .PHONY: all packages submodule_update download_pypi_packages \
 		build watch serve \
+		quarto quartoserve \
 		clean test test-watch
 
 PYODIDE_VERSION = 0.20.0
@@ -103,8 +104,16 @@ download_pypi_packages: scripts/py_package_versions.py
 $(OUT_DIR)/pyodide/packages.json: scripts/py_package_versions.py $(OUT_DIR)/pyodide/$(HTMLTOOLS_WHEEL) $(OUT_DIR)/pyodide/$(SHINY_WHEEL)
 	scripts/py_package_versions.py insert_into_pyodide_packages $(OUT_DIR)/pyodide
 
+
+quarto:
+	cd quarto && quarto render
+
+quartoserve:
+	cd quarto && quarto preview --port 8080
+
+
 clean:
-	rm -rf  $(PACKAGE_DIR)/*.whl shinylive
+	rm -rf  $(PACKAGE_DIR)/*.whl shinylive/ quarto/docs/
 
 test:
 	jest
