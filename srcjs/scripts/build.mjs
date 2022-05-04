@@ -85,7 +85,7 @@ esbuild
     bundle: true,
     entryPoints: ["src/serviceworker.ts"],
     outdir: "./",
-    format: "iife",
+    format: "esm",
     target: "es2020",
     ...watchProp,
   })
