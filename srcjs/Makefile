@@ -47,7 +47,7 @@ $(OUT_DIR)/loading.html: src/loading.html
 $(OUT_DIR)/pyodide:
 	cd $(OUT_DIR) && \
 	curl -L https://github.com/pyodide/pyodide/releases/download/$(PYODIDE_VERSION)/$(PYODIDE_DIST_FILENAME) \
-	    | tar --exclude "*test*.tar" -xvz
+	    | tar --exclude "*test*.tar" -xvj
 
 $(OUT_DIR)/pyodide/$(HTMLTOOLS_WHEEL): $(PACKAGE_DIR)/$(HTMLTOOLS_WHEEL)
 	mkdir -p $(OUT_DIR)/pyodide
