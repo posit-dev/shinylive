@@ -215,7 +215,6 @@ export default function Editor({
   const runAllAuto = React.useRef((): void => {});
   React.useEffect(() => {
     runAllAuto.current = () => {
-      console.log("runAllAuto");
       if (isShinyApp) {
         runAllApp();
       } else {
