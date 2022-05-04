@@ -61,11 +61,18 @@ esbuild
 esbuild
   .build({
     bundle: true,
-    entryPoints: [
-      "src/pyodide-worker.ts",
-      "src/inject-socket.ts",
-      "src/run-python-blocks.ts",
-    ],
+    entryPoints: ["src/pyodide-worker.ts", "src/inject-socket.ts"],
+    outdir: `${OUT_DIR}`,
+    format: "esm",
+    target: "es2020",
+    ...watchProp,
+  })
+  .catch(() => process.exit(1));
+
+esbuild
+  .build({
+    bundle: false,
+    entryPoints: ["src/run-python-blocks.ts"],
     outdir: `${OUT_DIR}`,
     format: "esm",
     target: "es2020",

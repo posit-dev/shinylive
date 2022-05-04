@@ -1,4 +1,7 @@
-import { AppMode, runApp } from "./Components/App";
+// TODO: Figure out how to get TypeScript to get the types from Components/App,
+// but have the compiled JS import from shinylive.js (because that's what
+// App.tsx gets compiled to).
+import { AppMode, runApp } from "./shinylive.js";
 
 type classToAppTypeMapping = {
   class: string;
