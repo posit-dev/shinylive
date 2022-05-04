@@ -117,6 +117,10 @@ pypi_packages_info: dict[str, PackageInfo] = {
         "version": "0.0.4",
         "imports": ["multipart"],
     },
+    "siuba": {
+        "name": "siuba",
+        "version": "0.2.3",
+    },
 }
 
 
