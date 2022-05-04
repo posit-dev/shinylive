@@ -7,6 +7,13 @@ This directory contains source files needed to build shinylive. To build, run:
 make
 ```
 
+You may occasionally need to clean out the built artifacts and rebuild:
+
+```sh
+make clean
+make
+```
+
 ## File overview
 
 This an overview of some of the important files and directories in this project.
