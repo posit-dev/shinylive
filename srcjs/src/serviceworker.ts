@@ -143,9 +143,26 @@ self.addEventListener("fetch", function (event): void {
   }
 });
 
+// When we start up a service worker, alert all clients. This is important
+// because service workers may stop at any time and then restart when needed.
+// When this serviceworker stops, it loses the state of `app`, the mapping from
+// URL paths to MessagePorts. When it starts again, it needs to tell all the
+// clients, "I restarted!", so that they know to re-register themselves with the
+// service worker. Otherwise the apps for clients will no longer be proxied, and
+// will get a 404 when they try to access the app.
+(async () => {
+  const allClients = await self.clients.matchAll();
+
+  for (const client of allClients) {
+    client.postMessage({
+      type: "serviceworkerStart",
+    });
+  }
+})();
+
 self.addEventListener("message", (event) => {
   const msg = event.data;
-  if (msg.type === "impendingNavigate") {
+  if (msg.type === "configureProxyPath") {
     const path = msg.path;
     const port = event.ports[0];
     apps[path] = port;
