@@ -1,4 +1,3 @@
-packages/*.whl
-serviceworker.js
-site/serviceworker.js
-shinylive/
+/packages/*.whl
+/serviceworker.js
+/shinylive/
