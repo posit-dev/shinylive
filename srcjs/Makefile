@@ -63,7 +63,6 @@ $(PYBIN): $(VENV)
 
 ## Build everything
 all: node_modules \
-	submodule_update \
 	$(OUT_DIR)/jquery.terminal \
 	$(OUT_DIR)/jquery.min.js \
 	$(OUT_DIR)/style-resets.css \
