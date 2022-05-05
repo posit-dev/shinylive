@@ -1,7 +1,8 @@
 .PHONY: all packages submodule_update download_pypi_packages \
 		build watch serve \
 		quarto quartoserve \
-		clean test test-watch
+		clean distclean \
+		test test-watch
 
 .DEFAULT_GOAL := help
 
@@ -20,6 +21,9 @@ SHINY_VERSION = $(shell grep '^__version__ = ' $(PACKAGE_DIR)/py-shiny/shiny/__i
 
 HTMLTOOLS_WHEEL = htmltools-$(HTMLTOOLS_VERSION)-py3-none-any.whl
 SHINY_WHEEL = shiny-$(SHINY_VERSION)-py3-none-any.whl
+
+VENV = venv
+PYBIN = $(VENV)/bin
 
 
 define PRINT_HELP_PYSCRIPT
@@ -47,6 +51,14 @@ export PRINT_HELP_PYSCRIPT
 
 help:
 	@python3 -c "$$PRINT_HELP_PYSCRIPT" < $(MAKEFILE_LIST)
+
+# Any targets that depend on $(VENV) or $(PYBIN) will cause the venv to be
+# created. To use the ven, python scripts should run with the prefix $(PYBIN),
+# as in `$(PYBIN)/pip`.
+$(VENV):
+	python3 -m venv $(VENV)
+
+$(PYBIN): $(VENV)
 
 
 ## Build everything
@@ -114,15 +126,15 @@ serve:
 ## Build htmltools and shiny wheels
 packages: $(PACKAGE_DIR)/$(HTMLTOOLS_WHEEL) $(PACKAGE_DIR)/$(SHINY_WHEEL)
 
-$(PACKAGE_DIR)/$(HTMLTOOLS_WHEEL): $(PACKAGE_DIR)/py-htmltools
-	pip install -r $(PACKAGE_DIR)/py-htmltools/requirements-dev.txt
-	pip install -e $(PACKAGE_DIR)/py-htmltools
-	cd $(PACKAGE_DIR)/py-htmltools && make dist && mv dist/*.whl ../
+$(PACKAGE_DIR)/$(HTMLTOOLS_WHEEL): $(PYBIN) $(PACKAGE_DIR)/py-htmltools
+	$(PYBIN)/pip install -r $(PACKAGE_DIR)/py-htmltools/requirements-dev.txt
+	$(PYBIN)/pip install -e $(PACKAGE_DIR)/py-htmltools
+	. $(PYBIN)/activate && cd $(PACKAGE_DIR)/py-htmltools && make dist && mv dist/*.whl ../
 
-$(PACKAGE_DIR)/$(SHINY_WHEEL): $(PACKAGE_DIR)/py-shiny
-	pip install -r $(PACKAGE_DIR)/py-shiny/requirements-dev.txt
-	pip install -e $(PACKAGE_DIR)/py-shiny
-	cd $(PACKAGE_DIR)/py-shiny && make dist && mv dist/*.whl ../
+$(PACKAGE_DIR)/$(SHINY_WHEEL): $(PYBIN) $(PACKAGE_DIR)/py-shiny
+	$(PYBIN)/pip install -r $(PACKAGE_DIR)/py-shiny/requirements-dev.txt
+	$(PYBIN)/pip install -e $(PACKAGE_DIR)/py-shiny
+	. $(PYBIN)/activate && cd $(PACKAGE_DIR)/py-shiny && make dist && mv dist/*.whl ../
 
 ## Update git submodules
 submodule_update:
@@ -132,13 +144,14 @@ submodule_update:
 # TODO: Figure out how to make this _not_ run every time, or at least not need
 # network access.
 ## Download dependency packages from PyPI
-download_pypi_packages: scripts/py_package_versions.py
+download_pypi_packages: $(PYBIN) scripts/py_package_versions.py
 	mkdir -p $(OUT_DIR)/pyodide
-	scripts/py_package_versions.py download_pypi_packages $(OUT_DIR)/pyodide
+	. $(PYBIN)/activate && scripts/py_package_versions.py download_pypi_packages $(OUT_DIR)/pyodide
 
 # Update pyodide's package.json to include htmltools, shiny, and their deps which aren't included in Pyodide.
-$(OUT_DIR)/pyodide/packages.json: scripts/py_package_versions.py $(OUT_DIR)/pyodide/$(HTMLTOOLS_WHEEL) $(OUT_DIR)/pyodide/$(SHINY_WHEEL)
-	scripts/py_package_versions.py insert_into_pyodide_packages $(OUT_DIR)/pyodide
+$(OUT_DIR)/pyodide/packages.json: $(PYBIN) scripts/py_package_versions.py $(OUT_DIR)/pyodide/$(HTMLTOOLS_WHEEL) $(OUT_DIR)/pyodide/$(SHINY_WHEEL)
+	$(PYBIN)/pip install -r requirements-dev.txt
+	. $(PYBIN)/activate && scripts/py_package_versions.py insert_into_pyodide_packages $(OUT_DIR)/pyodide
 
 ## Build Quarto example site in quarto/
 quarto:
@@ -152,6 +165,10 @@ quartoserve:
 ## Remove all build files
 clean:
 	rm -rf  $(PACKAGE_DIR)/*.whl shinylive/ quarto/docs/
+
+## Remove all build files and venv/
+distclean: clean
+	rm -rf $(VENV)
 
 ## Run tests
 test:
