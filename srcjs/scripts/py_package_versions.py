@@ -96,10 +96,6 @@ pypi_packages_info: dict[str, PackageInfo] = {
         "name": "mdurl",
         "version": "0.1.1",
     },
-    "fastapi": {
-        "name": "fastapi",
-        "version": "0.75.2",
-    },
     "uvicorn": {
         "name": "uvicorn",
         "version": "0.17.6",
