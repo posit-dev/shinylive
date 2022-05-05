@@ -229,11 +229,19 @@ def _get_pyodide_package_info(
 # It's a little dumb in that it ignores python_version, but it's sufficient for our use.
 def _filter_requires(requires: list[str]) -> list[str]:
     # Packages that don't need to be listed in "depends".
-    IMPLICIT_PACKAGES = ["typing", "python"]
+    AVOID_PACKAGES = [
+        "typing",
+        "python",
+        # The next two are dependencies for Shiny, but they cause problems.
+        # contextvars causes "NameError: name 'asyncio' is not defined". Not sure why.
+        "contextvars",
+        # websockets isn't used by Shiny when running in the browser.
+        "websockets",
+    ]
 
     res = [x for x in requires if ";" not in x]
     res = [re.sub("([a-zA-Z0-9_-]+).*", "\\1", x) for x in res]
-    res = [x for x in res if x not in IMPLICIT_PACKAGES]
+    res = [x for x in res if x not in AVOID_PACKAGES]
     return list(res)
 
 
