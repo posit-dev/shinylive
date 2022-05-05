@@ -3,6 +3,9 @@
 		quarto quartoserve \
 		clean test test-watch
 
+.DEFAULT_GOAL := help
+
+
 PYODIDE_VERSION = 0.20.0
 PYODIDE_DIST_FILENAME = pyodide-build-$(PYODIDE_VERSION).tar.bz2
 OUT_DIR = ./shinylive
@@ -15,6 +18,35 @@ SHINY_VERSION = $(shell cd packages/py-shiny/ && python3 -c "import shiny; print
 HTMLTOOLS_WHEEL = htmltools-$(HTMLTOOLS_VERSION)-py3-none-any.whl
 SHINY_WHEEL = shiny-$(SHINY_VERSION)-py3-none-any.whl
 
+
+define PRINT_HELP_PYSCRIPT
+import re, sys
+
+prev_line_help = None
+for line in sys.stdin:
+	if prev_line_help is None:
+		match = re.match(r"^## (.*)", line)
+		if match:
+			prev_line_help = match.groups()[0]
+		else:
+			prev_line_help = None
+	else:
+		match = re.match(r'^([a-zA-Z_-]+)', line)
+		if match:
+			target = match.groups()[0]
+			print("%-22s %s" % (target, prev_line_help))
+
+		target = None
+		prev_line_help = None
+
+endef
+export PRINT_HELP_PYSCRIPT
+
+help:
+	@python3 -c "$$PRINT_HELP_PYSCRIPT" < $(MAKEFILE_LIST)
+
+
+## Build everything
 all: node_modules \
 	submodule_update \
 	$(OUT_DIR)/jquery.terminal \
@@ -29,6 +61,7 @@ all: node_modules \
 	build
 
 
+## Install node modules using yarn
 node_modules: package.json
 	yarn
 
@@ -59,15 +92,15 @@ $(OUT_DIR)/pyodide/$(SHINY_WHEEL): $(PACKAGE_DIR)/$(SHINY_WHEEL)
 	cp $(PACKAGE_DIR)/$(SHINY_WHEEL) $(OUT_DIR)/pyodide/$(SHINY_WHEEL)
 
 
-# Build JS resources
+## Build JS resources from src/ dir
 build:
 	node scripts/build.mjs
 
-# Build JS resources and watch for changes
+## Build JS resources and watch for changes
 watch:
 	node scripts/build.mjs --watch
 
-# Build JS resources, watch for changes, and serve site
+## Build JS resources, watch for changes, and serve site
 serve:
 	node scripts/build.mjs --serve
 
@@ -75,6 +108,7 @@ serve:
 # Build htmltools and shiny. This target must be run manually after updating the
 # package submodules; it will not run automatically with `make all` because I'm
 # not sure how to set up the dependencies reliably.
+## Build htmltools and shiny wheels
 packages: $(PACKAGE_DIR)/$(HTMLTOOLS_WHEEL) $(PACKAGE_DIR)/$(SHINY_WHEEL)
 
 $(PACKAGE_DIR)/$(HTMLTOOLS_WHEEL): $(PACKAGE_DIR)/py-htmltools
@@ -87,36 +121,39 @@ $(PACKAGE_DIR)/$(SHINY_WHEEL): $(PACKAGE_DIR)/py-shiny
 	pip install -e $(PACKAGE_DIR)/py-shiny
 	cd $(PACKAGE_DIR)/py-shiny && make dist && mv dist/*.whl ../
 
-
+## Update git submodules
 submodule_update:
 	git submodule init
 	git submodule update --depth=20
 
-# Download some packages from PyPI.
 # TODO: Figure out how to make this _not_ run every time, or at least not need
 # network access.
+## Download dependency packages from PyPI
 download_pypi_packages: scripts/py_package_versions.py
 	mkdir -p $(OUT_DIR)/pyodide
 	scripts/py_package_versions.py download_pypi_packages $(OUT_DIR)/pyodide
 
-# Update pyodide's package.json to include htmltools, shiny, and their
-# dependencies which aren't included in Pyodide.
+# Update pyodide's package.json to include htmltools, shiny, and their deps which aren't included in Pyodide.
 $(OUT_DIR)/pyodide/packages.json: scripts/py_package_versions.py $(OUT_DIR)/pyodide/$(HTMLTOOLS_WHEEL) $(OUT_DIR)/pyodide/$(SHINY_WHEEL)
 	scripts/py_package_versions.py insert_into_pyodide_packages $(OUT_DIR)/pyodide
 
-
+## Build Quarto example site in quarto/
 quarto:
 	cd quarto && quarto render
 
+## Build Quarto example site and serve
 quartoserve:
 	cd quarto && quarto preview --port 8080
 
 
+## Remove all build files
 clean:
 	rm -rf  $(PACKAGE_DIR)/*.whl shinylive/ quarto/docs/
 
+## Run tests
 test:
 	jest
 
+## Run tests and watch
 test-watch:
 	jest --watch
