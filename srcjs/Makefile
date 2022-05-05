@@ -11,9 +11,12 @@ PYODIDE_DIST_FILENAME = pyodide-build-$(PYODIDE_VERSION).tar.bz2
 OUT_DIR = ./shinylive
 PACKAGE_DIR = ./packages
 
-# Read htmltools and shiny versions from the package code
-HTMLTOOLS_VERSION = $(shell cd packages/py-htmltools/ && python3 -c "import htmltools; print(htmltools.__version__)")
-SHINY_VERSION = $(shell cd packages/py-shiny/ && python3 -c "import shiny; print(shiny.__version__)")
+# Read htmltools and shiny versions from the package code. It's done with grep
+# because if we try to load the package and read shiny.__version__, it requires
+# the packages to be loadable first, which isn't possible without their
+# dependencies being installed first.
+HTMLTOOLS_VERSION = $(shell grep '^__version__ = ' $(PACKAGE_DIR)/py-htmltools/htmltools/__init__.py | sed -E -e 's/^__version__ = "(.*)"/\1/')
+SHINY_VERSION = $(shell grep '^__version__ = ' $(PACKAGE_DIR)/py-shiny/shiny/__init__.py | sed -E -e 's/^__version__ = "(.*)"/\1/')
 
 HTMLTOOLS_WHEEL = htmltools-$(HTMLTOOLS_VERSION)-py3-none-any.whl
 SHINY_WHEEL = shiny-$(SHINY_VERSION)-py3-none-any.whl
