@@ -96,7 +96,7 @@ $(OUT_DIR)/pyodide:
 	mkdir -p $(OUT_DIR)/pyodide
 	cd $(OUT_DIR) && \
 	curl -L https://github.com/pyodide/pyodide/releases/download/$(PYODIDE_VERSION)/$(PYODIDE_DIST_FILENAME) \
-	    | tar --exclude "*test*.tar" --exclude "node_modules/" -xvj
+	    | tar --exclude "*test*.tar" --exclude "node_modules" -xvj
 
 $(OUT_DIR)/pyodide/$(HTMLTOOLS_WHEEL): $(PACKAGE_DIR)/$(HTMLTOOLS_WHEEL)
 	mkdir -p $(OUT_DIR)/pyodide
