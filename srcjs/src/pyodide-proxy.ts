@@ -1,5 +1,5 @@
-import { loadPackagesFromImports } from "../shinylive/pyodide/api";
 import {
+  loadPackagesFromImports,
   PyProxyWithGet,
   PyProxyWithSet,
   PyProxyIterable,

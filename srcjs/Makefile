@@ -7,7 +7,7 @@
 .DEFAULT_GOAL := help
 
 
-PYODIDE_VERSION = 0.20.0
+PYODIDE_VERSION = 0.20.1a1
 PYODIDE_DIST_FILENAME = pyodide-build-$(PYODIDE_VERSION).tar.bz2
 OUT_DIR = ./shinylive
 PACKAGE_DIR = ./packages
@@ -93,9 +93,10 @@ $(OUT_DIR)/loading.html: src/loading.html
 	cp src/loading.html $(OUT_DIR)
 
 $(OUT_DIR)/pyodide:
+	mkdir -p $(OUT_DIR)/pyodide
 	cd $(OUT_DIR) && \
 	curl -L https://github.com/pyodide/pyodide/releases/download/$(PYODIDE_VERSION)/$(PYODIDE_DIST_FILENAME) \
-	    | tar --exclude "*test*.tar" -xvj
+	    | tar --exclude "*test*.tar" --exclude "node_modules/" -xvj
 
 $(OUT_DIR)/pyodide/$(HTMLTOOLS_WHEEL): $(PACKAGE_DIR)/$(HTMLTOOLS_WHEEL)
 	mkdir -p $(OUT_DIR)/pyodide
