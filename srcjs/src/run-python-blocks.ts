@@ -1,6 +1,7 @@
 // TODO: Figure out how to get TypeScript to get the types from Components/App,
 // but have the compiled JS import from shinylive.js (because that's what
 // App.tsx gets compiled to).
+// import { AppMode, runApp } from "./Components/App";
 import { AppMode, runApp } from "./shinylive.js";
 
 type classToAppTypeMapping = {
@@ -22,25 +23,46 @@ const classToAppTypeMappings: classToAppTypeMapping[] = [
   { class: "pycell", appMode: "editor-cell", filename: "code.py" },
 ];
 
-classToAppTypeMappings.forEach((mapping) => {
-  const blocks: NodeListOf<HTMLPreElement> = document.querySelectorAll(
-    "pre." + mapping.class
-  );
+// Get a string that selects all the cells, like
+// ".pyshiny, .pyshinyapp, .pyterminal, .pycell"
+const allClassesSelector = classToAppTypeMappings
+  .map((x) => "." + x.class)
+  .join(", ");
 
-  blocks.forEach((block) => {
-    const container = document.createElement("div");
-    container.className = "pyshiny-container";
+// Select all of the DOM elements that match the combined selector. It's
+// important that they're selected in the order they appear in the page, so that
+// we execute them in the correct order.
+const blocks: NodeListOf<HTMLPreElement> =
+  document.querySelectorAll(allClassesSelector);
 
-    // Copy over explicitly-set style properties.
-    container.style.cssText = block.style.cssText;
+blocks.forEach((block) => {
+  // Look for first of our mapping classes that matches (like pyshiny,
+  // pyshinyapp, etc.)
+  let mapping: classToAppTypeMapping | null = null;
+  for (const m of classToAppTypeMappings) {
+    if (block.className.split(" ").includes(m.class)) {
+      mapping = m;
+      break;
+    }
+  }
 
-    block.parentNode!.replaceChild(container, block);
+  if (!mapping) {
+    console.log("No mapping found for block ", block);
+    return;
+  }
 
-    const { lines, args } = processQuartoArgs(block.innerText.split("\n"));
+  const container = document.createElement("div");
+  container.className = "pyshiny-container";
 
-    const files = [{ name: mapping.filename, content: lines.join("\n") }];
-    runApp(container, mapping.appMode, files, args);
-  });
+  // Copy over explicitly-set style properties.
+  container.style.cssText = block.style.cssText;
+
+  block.parentNode!.replaceChild(container, block);
+
+  const { lines, args } = processQuartoArgs(block.innerText.split("\n"));
+
+  const files = [{ name: mapping.filename, content: lines.join("\n") }];
+  runApp(container, mapping.appMode, files, args);
 });
 
 // Loop through all the lines of the file and extract the lines that start
