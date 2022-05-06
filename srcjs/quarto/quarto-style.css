@@ -162,6 +162,9 @@ div.pyshiny-container {
 }
 
 .App--container.editor-cell .OutputCell {
+  border-top-right-radius: 0;
+  border-top-left-radius: 0;
+  background-color: #eeeff2;
   padding: 4px 12px 3px 12px;
   color: #666;
 }

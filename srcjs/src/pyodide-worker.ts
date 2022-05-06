@@ -2,7 +2,11 @@
 // file.
 importScripts("./pyodide/pyodide.js");
 
-import type { LoadPyodideConfig, ResultType } from "./pyodide-proxy";
+import type {
+  LoadPyodideConfig,
+  ResultType,
+  ToHtmlResult,
+} from "./pyodide-proxy";
 import {
   PyProxyIterable,
   PyProxyWithGet,
@@ -144,6 +148,10 @@ let repr: (x: any) => string = function (x: any) {
 // Placeholder Python pyodide.console.Console().complete() function
 let tabComplete: (x: string) => PyProxyIterable;
 
+let toHtml: (x: any) => ToHtmlResult = function (x: any) {
+  return { type: "text", content: "" };
+};
+
 self.onmessage = async function (e: MessageEvent): Promise<void> {
   const msg = e.data as InMessage;
 
@@ -170,28 +178,35 @@ self.onmessage = async function (e: MessageEvent): Promise<void> {
           stderr: self.stderr_callback,
         });
 
-        repr = (pyodide.globals as PyProxyWithGet).get("repr") as unknown as (
-          x: any
-        ) => string;
+        repr = pyodide.globals.get("repr") as (x: any) => string;
 
         // Make the JS pyodide object available in Python.
-        (pyodide.globals as PyProxyWithSet).set("js_pyodide", pyodide);
+        pyodide.globals.set("js_pyodide", pyodide);
 
-        const pyconsole = await (pyodide.runPythonAsync(`
+        const pyconsole = await pyodide.runPythonAsync(`
           import pyodide.console
           import __main__
           pyodide.console.PyodideConsole(__main__.__dict__)
-        `) as unknown as Promise<any>);
+        `);
 
-        tabComplete = pyconsole.complete.copy() as unknown as (
+        tabComplete = pyconsole.complete.copy() as (
           x: string
         ) => PyProxyIterable;
+
+        toHtml = await (pyodide.runPythonAsync(`
+          def _to_html(x):
+            if hasattr(x, 'to_html'):
+              return { "type": "html", "content": x.to_html() }
+            else:
+              return { "type": "text", "content": repr(x) }
+          _to_html
+        `) as Promise<(x: any) => ToHtmlResult>);
 
         self.stdout_callback(pyconsole.BANNER);
         pyconsole.destroy();
 
         // Inject the callJS function into the global namespace.
-        (pyodide.globals as PyProxyWithSet).set("callJS", callJS);
+        pyodide.globals.set("callJS", callJS);
 
         pyodideStatus = "loaded";
       }
@@ -206,7 +221,7 @@ self.onmessage = async function (e: MessageEvent): Promise<void> {
       // pyodide is incorrect.
       const result = await (pyodide.runPythonAsync(
         msg.code
-      ) as unknown as Promise<Py2JsResult>);
+      ) as Promise<Py2JsResult>);
 
       if (msg.printResult && result !== undefined) {
         self.stdout_callback(repr(result));
@@ -228,8 +243,19 @@ self.onmessage = async function (e: MessageEvent): Promise<void> {
           });
         } else {
           // Shouldn't get here, but log it just in case.
-          console.error("Don't know how to ");
+          console.error("Don't know how to handle result: ", result);
           messagePort.postMessage({ type: "reply", subtype: "done" });
+        }
+      } else if (msg.returnResult === "to_html") {
+        messagePort.postMessage({
+          type: "reply",
+          subtype: "done",
+          value: (toHtml(result) as Py2JsResult).toJs({
+            dict_converter: Object.fromEntries,
+          }),
+        });
+        if (pyodide.isPyProxy(result)) {
+          result.destroy();
         }
       } else if (msg.returnResult === "printed_value") {
         messagePort.postMessage({
@@ -251,7 +277,7 @@ self.onmessage = async function (e: MessageEvent): Promise<void> {
       const { fn_name, args, kwargs } = msg;
       // fn_name is something like ["os", "path", "join"]. Get the first
       // element with pyodide.globals.get(), then descend into it with [].
-      let fn = (pyodide.globals as PyProxyWithGet).get(fn_name[0]) as any;
+      let fn = pyodide.globals.get(fn_name[0]) as any;
       for (const el of fn_name.slice(1)) {
         fn = fn[el];
       }

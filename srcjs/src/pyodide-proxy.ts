@@ -17,7 +17,12 @@ type Pyodide = Awaited<ReturnType<typeof loadPyodide>>;
 
 export type ProxyType = "webworker" | "normal";
 
-export type ResultType = "value" | "printed_value" | "none";
+export type ResultType = "value" | "printed_value" | "to_html" | "none";
+
+export type ToHtmlResult = {
+  type: "html" | "text";
+  content: string;
+};
 
 // =============================================================================
 // PyodideProxy interface
@@ -102,6 +107,8 @@ class NormalPyodideProxy implements PyodideProxy {
   };
   declare tabComplete_: (x: string) => PyProxyIterable;
 
+  declare toHtml: (x: any) => ToHtmlResult;
+
   constructor(
     private stdoutCallback: (text: string) => void,
     private stderrCallback: (text: string) => void
@@ -128,6 +135,16 @@ class NormalPyodideProxy implements PyodideProxy {
     this.tabComplete_ = pyconsole.complete.copy() as unknown as (
       x: string
     ) => PyProxyIterable;
+
+    this.toHtml = await (this.pyodide.runPythonAsync(`
+      def _to_html(x):
+        if hasattr(x, 'to_html'):
+          return { "type": "html", "content": x.to_html() }
+        else:
+          return { "type": "text", "content": repr(x) }
+      _to_html
+    `) as Promise<(x: any) => ToHtmlResult>);
+
     this.stdoutCallback(pyconsole.BANNER);
     pyconsole.destroy();
 
@@ -178,6 +195,10 @@ class NormalPyodideProxy implements PyodideProxy {
           // If `result` is just a simple value, return it unchanged.
           return result;
         }
+      } else if (returnResult === "to_html") {
+        return (this.toHtml(result) as Py2JsResult).toJs({
+          dict_converter: Object.fromEntries,
+        });
       } else if (returnResult === "printed_value") {
         return this.repr(result);
       }
