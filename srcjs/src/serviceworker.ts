@@ -11,7 +11,7 @@ export type {};
 declare const self: ServiceWorkerGlobalScope;
 
 const cacheName = "::prismExperimentsServiceworker";
-const version = "v5";
+const version = "v6";
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
