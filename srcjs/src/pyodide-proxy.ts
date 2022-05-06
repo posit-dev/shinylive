@@ -140,8 +140,21 @@ class NormalPyodideProxy implements PyodideProxy {
       def _to_html(x):
         if hasattr(x, 'to_html'):
           return { "type": "html", "content": x.to_html() }
-        else:
-          return { "type": "text", "content": repr(x) }
+
+        if "matplotlib" in sys.modules:
+          import matplotlib.figure
+          if isinstance(x, matplotlib.figure.Figure):
+            import io
+            import base64
+            img = io.BytesIO()
+            x.savefig(img, format='png', bbox_inches='tight')
+            img.seek(0)
+            img_encoded = base64.b64encode(img.getvalue())
+            img_html = '<img src="data:image/png;base64, {}">'.format(img_encoded.decode('utf-8'))
+            return { "type": "html", "content": img_html }
+
+        return { "type": "text", "content": repr(x) }
+
       _to_html
     `) as Promise<(x: any) => ToHtmlResult>);
 
