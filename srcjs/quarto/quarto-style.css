@@ -162,10 +162,20 @@ div.pyshiny-container {
 }
 
 .App--container.editor-cell .OutputCell {
+  border-top: 2px solid #eeeff2;
+  border-top-right-radius: 0;
+  border-top-left-radius: 0;
+}
+
+.App--container.editor-cell .OutputCell .rendered_html {
+  padding: 2px 12px 3px 12px;
+}
+
+.App--container.editor-cell .OutputCell pre.sourceCode {
   border-top-right-radius: 0;
   border-top-left-radius: 0;
   background-color: #eeeff2;
-  padding: 4px 12px 3px 12px;
+  padding: 2px 12px 3px 12px;
   color: #666;
 }
 

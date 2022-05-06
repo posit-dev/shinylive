@@ -6,10 +6,12 @@ div.rendered_html table {
   font-size: 90%;
   table-layout: fixed;
 }
+
 div.rendered_html thead {
   border-bottom: 1px solid black;
   vertical-align: bottom;
 }
+
 div.rendered_html tr,
 div.rendered_html th,
 div.rendered_html td {
@@ -21,12 +23,15 @@ div.rendered_html td {
   max-width: none;
   border: none;
 }
+
 div.rendered_html th {
   font-weight: bold;
 }
+
 div.rendered_html tbody tr:nth-child(odd) {
   background: #f5f5f5;
 }
+
 div.rendered_html tbody tr:hover {
   background: rgba(66, 165, 245, 0.2);
 }
