@@ -54,14 +54,6 @@ self.addEventListener("fetch", function (event): void {
   // closed properly.
   if (url.pathname == "/esbuild") return;
 
-  // The client pages will periodically ping the service worker to keep it
-  // alive. Otherwise, the browser will shut down the service worker after a
-  // period of inactivity.
-  if (url.pathname == "/__ping__sw__") {
-    event.respondWith(new Response("OK", { status: 200 }));
-    return;
-  }
-
   // Fetches that are prepended with /app_<id>/ need to be proxied to pyodide.
   // We use fetchASGI.
   const appPathRegex = /.*\/(app_[^/]+\/)/;
