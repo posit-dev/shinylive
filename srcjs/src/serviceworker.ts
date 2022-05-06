@@ -81,7 +81,7 @@ self.addEventListener("fetch", function (event): void {
         }
 
         console.log("App URL not registered. Waiting 50ms.");
-        sleep(50);
+        await sleep(50);
         pollCount--;
       }
       // Strip off the app root; the Python app doesn't know anything about it.
