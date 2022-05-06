@@ -1,5 +1,6 @@
 /// <reference lib="WebWorker" />
 
+import { dirname, sleep } from "./utils";
 import { fetchASGI } from "./messageporthttp";
 
 // When doing development, it's best to disable caching so that you don't have
@@ -53,20 +54,28 @@ self.addEventListener("fetch", function (event): void {
   // closed properly.
   if (url.pathname == "/esbuild") return;
 
-  // The client pages will periodically ping the service worker to keep it
-  // alive. Otherwise, the browser will shut down the service worker after a
-  // period of inactivity.
-  if (url.pathname == "/__ping__sw__") {
-    event.respondWith(new Response("OK", { status: 200 }));
-    return;
-  }
-
   // Fetches that are prepended with /app_<id>/ need to be proxied to pyodide.
   // We use fetchASGI.
   const appPathRegex = /.*\/(app_[^/]+\/)/;
   const m_appPath = appPathRegex.exec(url.pathname);
   if (m_appPath) {
-    if (apps[m_appPath[1]]) {
+    (async () => {
+      // If the app URL isn't found, wait up to 250ms for it to be registered.
+      let pollCount = 5;
+      while (!apps[m_appPath[1]]) {
+        if (pollCount == 0) {
+          event.respondWith(
+            new Response(`Couldn't find parent page for ${url}`, {
+              status: 404,
+            })
+          );
+          return;
+        }
+
+        console.log("App URL not registered. Waiting 50ms.");
+        await sleep(50);
+        pollCount--;
+      }
       // Strip off the app root; the Python app doesn't know anything about it.
       url.pathname = url.pathname.replace(appPathRegex, "/");
 
@@ -75,32 +84,28 @@ self.addEventListener("fetch", function (event): void {
       const isAppRoot = url.pathname === "/";
       const filter = isAppRoot ? injectSocketFilter : identityFilter;
 
+      const blob = await request.blob();
+
       event.respondWith(
-        (async () => {
-          const blob = await request.blob();
-          return fetchASGI(
-            apps[m_appPath[1]],
-            new Request(url.toString(), {
-              method: request.method,
-              headers: request.headers,
-              body:
-                request.method === "GET" || request.method === "HEAD"
-                  ? undefined
-                  : blob,
-              credentials: request.credentials,
-              cache: request.cache,
-              redirect: request.redirect,
-              referrer: request.referrer,
-            }),
-            undefined,
-            filter
-          );
-        })()
+        fetchASGI(
+          apps[m_appPath[1]],
+          new Request(url.toString(), {
+            method: request.method,
+            headers: request.headers,
+            body:
+              request.method === "GET" || request.method === "HEAD"
+                ? undefined
+                : blob,
+            credentials: request.credentials,
+            cache: request.cache,
+            redirect: request.redirect,
+            referrer: request.referrer,
+          }),
+          undefined,
+          filter
+        )
       );
-      return;
-    } else {
-      console.warn(`Couldn't find parent page for ${url}`);
-    }
+    })();
   }
 
   // Always fetch non-GET requests from the network
@@ -143,26 +148,37 @@ self.addEventListener("fetch", function (event): void {
   }
 });
 
+// =============================================================================
+// Utilities for proxying requests to pyodide
+// =============================================================================
+
+const apps = {} as Record<string, MessagePort>;
+
+// When we start up a service worker, alert all clients. This is important
+// because service workers may stop at any time and then restart when needed.
+// When this serviceworker stops, it loses the state of `app`, the mapping from
+// URL paths to MessagePorts. When it starts again, it needs to tell all the
+// clients, "I restarted!", so that they know to re-register themselves with the
+// service worker. Otherwise the apps for clients will no longer be proxied, and
+// will get a 404 when they try to access the app.
+(async () => {
+  const allClients = await self.clients.matchAll();
+
+  for (const client of allClients) {
+    client.postMessage({
+      type: "serviceworkerStart",
+    });
+  }
+})();
+
 self.addEventListener("message", (event) => {
   const msg = event.data;
-  if (msg.type === "impendingNavigate") {
+  if (msg.type === "configureProxyPath") {
     const path = msg.path;
     const port = event.ports[0];
     apps[path] = port;
   }
 });
-
-function dirname(path: string) {
-  if (path === "/" || path === "") {
-    throw new Error("Cannot get dirname() of root directory.");
-  }
-  return path.replace(/[/]?[^/]+[/]?$/, "");
-}
-
-// =============================================================================
-// Utilities for proxying requests to pyodide
-// =============================================================================
-const apps = {} as Record<string, MessagePort>;
 
 function identityFilter(bodyChunk: Uint8Array, response: Response) {
   return bodyChunk;

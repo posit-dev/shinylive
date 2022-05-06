@@ -18,10 +18,6 @@ export type ViewerMethods =
 // Misc stuff
 // =============================================================================
 
-// Ping the service worker periodically in order to keep it alive. Otherwise, if
-// the browser will shut it down after a period of inactivity.
-setInterval(() => fetch("/__ping__sw__"), 10000);
-
 // Register a unique app path with the service worker. When fetches in our
 // origin match against the app path, navigation should be proxied through
 // the current window (eventually making its way to pyodide).
@@ -36,6 +32,35 @@ function setupAppProxyPath(pyodide: PyodideProxy): {
     throw new Error("ServiceWorker controller was not found!");
   }
 
+  // There are two times that we need to register the app path with the service
+  // worker. One time is when this Viewer component starts up. Another time is
+  // when the service worker restarts: service workers can shut down at any time
+  // and will restart as needed. When the service worker shuts down, it will
+  // lose the state that tells it how to proxy requests for `urlPath`, so when
+  // it restarts, we need to re-register with the service worker.
+  createHttpRequestChannel(pyodide, appName, urlPath);
+
+  // Listen for the service worker's restart messages and re-register.
+  navigator.serviceWorker.addEventListener("message", (event) => {
+    if (event.data.type === "serviceworkerStart") {
+      createHttpRequestChannel(pyodide, appName, urlPath);
+    }
+  });
+
+  return { appName, urlPath };
+}
+
+// Register the app path with the service worker
+function createHttpRequestChannel(
+  pyodide: PyodideProxy,
+  appName: string,
+  urlPath: string
+): MessageChannel {
+  if (!navigator.serviceWorker.controller) {
+    throw new Error("ServiceWorker controller was not found!");
+  }
+
+  // Will this get GC'd on subsequent calls?
   const httpRequestChannel = new MessageChannel();
 
   httpRequestChannel.port1.addEventListener("message", (event) => {
@@ -48,14 +73,13 @@ function setupAppProxyPath(pyodide: PyodideProxy): {
 
   navigator.serviceWorker.controller.postMessage(
     {
-      // TODO: send id?
-      type: "impendingNavigate",
+      type: "configureProxyPath",
       path: urlPath,
     },
     [httpRequestChannel.port2]
   );
 
-  return { appName, urlPath };
+  return httpRequestChannel;
 }
 
 async function resetAppFrame(

@@ -200,14 +200,8 @@ function ensureOpenChannelListener(pyodideProxy: PyodideProxy): void {
 
   window.addEventListener("message", (event) => {
     const msg = event.data;
-    if (msg.type === "callPy") {
-      console.error("usePyodide: callPy. I don't think we get here?");
-      // pyodideproxy.callPy(msg.fn_name, msg.args, msg.kwargs);
-    } else if (msg.type === "openChannel") {
+    if (msg.type === "openChannel") {
       pyodideProxy.openChannel(msg.path, msg.appName, event.ports[0]);
-    } else if (msg.type === "makeRequest") {
-      console.error("usePyodide: makeRequest. I don't think we ever get here?");
-      // pyodideproxy.makeRequest(msg.scope, event.ports[0]);
     }
   });
 
