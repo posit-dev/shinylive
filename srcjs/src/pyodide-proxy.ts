@@ -117,12 +117,10 @@ class NormalPyodideProxy implements PyodideProxy {
   async init(config: LoadPyodideConfig) {
     this.pyodide = await loadPyodide(config);
 
-    this.repr = (this.pyodide.globals as PyProxyWithGet).get(
-      "repr"
-    ) as unknown as (x: any) => string;
+    this.repr = this.pyodide.globals.get("repr") as (x: any) => string;
 
     // Make the JS pyodide object available in Python.
-    (this.pyodide.globals as PyProxyWithSet).set("js_pyodide", this.pyodide);
+    this.pyodide.globals.set("js_pyodide", this.pyodide);
 
     // Need these `as` casts because the type declaration of runPythonAsync in
     // pyodide is incorrect.
@@ -130,9 +128,9 @@ class NormalPyodideProxy implements PyodideProxy {
       import pyodide.console
       import __main__
       pyodide.console.PyodideConsole(__main__.__dict__)
-    `) as unknown as Promise<any>);
+    `) as Promise<any>);
 
-    this.tabComplete_ = pyconsole.complete.copy() as unknown as (
+    this.tabComplete_ = pyconsole.complete.copy() as (
       x: string
     ) => PyProxyIterable;
 
@@ -162,7 +160,7 @@ class NormalPyodideProxy implements PyodideProxy {
     pyconsole.destroy();
 
     // Inject the callJS function into the global namespace.
-    (this.pyodide.globals as PyProxyWithSet).set("callJS", this.callJS);
+    this.pyodide.globals.set("callJS", this.callJS);
   }
 
   loadPackagesFromImports(code: string) {
@@ -183,11 +181,9 @@ class NormalPyodideProxy implements PyodideProxy {
     await this.pyodide.loadPackagesFromImports(code);
     let result;
     try {
-      // Need these `as` casts because the type declaration of runPythonAsync in
-      // pyodide is incorrect.
       result = await (this.pyodide.runPythonAsync(
         code
-      ) as unknown as Promise<Py2JsResult>);
+      ) as Promise<Py2JsResult>);
     } catch (err) {
       this.stderrCallback((err as Error).message);
       return;
@@ -231,7 +227,7 @@ class NormalPyodideProxy implements PyodideProxy {
   ): Promise<void> {
     // fn_name is something like ["os", "path", "join"]. Get the first
     // element, then descend into it.
-    let fn = (this.pyodide.globals as PyProxyWithGet).get(fn_name[0]) as any;
+    let fn = this.pyodide.globals.get(fn_name[0]);
     for (const el of fn_name.slice(1)) {
       fn = fn[el];
     }
@@ -318,7 +314,7 @@ class WebWorkerPyodideProxy implements PyodideProxy {
         for (const el of msg.fn_name) {
           fn = fn[el];
         }
-        fn = fn as unknown as (...args: any[]) => any;
+        fn = fn as (...args: any[]) => any;
         fn(...msg.args);
       }
     };
