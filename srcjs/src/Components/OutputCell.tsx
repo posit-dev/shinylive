@@ -23,13 +23,16 @@ export default function OutputCell({
     const runCodeInTerminal = async (command: string): Promise<void> => {
       if (!pyodideProxyHandle.ready) return;
 
-      const result = await pyodideProxyHandle.pyodide.runPyAsync(command, {
-        returnResult: "to_html",
-        printResult: false,
-      });
-      console.log("result", result);
+      try {
+        const result = await pyodideProxyHandle.pyodide.runPyAsync(command, {
+          returnResult: "to_html",
+          printResult: false,
+        });
 
-      setContent(result);
+        setContent(result);
+      } catch (e) {
+        setContent({ type: "text", value: (e as Error).message });
+      }
     };
 
     setTerminalMethods({
