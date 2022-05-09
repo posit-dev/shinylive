@@ -91,14 +91,16 @@ function ensurePyodideProxyHandlePromise({
         pyodideProxyHandle = await initShiny({ pyodideProxyHandle });
       }
 
-      terminalInterface.clear();
+      if (!pyodideProxyHandle.initError) {
+        terminalInterface.clear();
 
-      if (showStartBanner) {
-        // When we get here, .ready will always be true.
-        if (pyodideProxyHandle.ready) {
-          await pyodideProxyHandle.pyodide.runPyAsync(
-            `print(pyodide.console.BANNER); print(" ")`
-          );
+        if (showStartBanner) {
+          // When we get here, .ready will always be true.
+          if (pyodideProxyHandle.ready) {
+            await pyodideProxyHandle.pyodide.runPyAsync(
+              `print(pyodide.console.BANNER); print(" ")`
+            );
+          }
         }
       }
 

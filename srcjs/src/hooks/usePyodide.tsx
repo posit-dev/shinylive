@@ -3,11 +3,16 @@ import { loadPyodideProxy, ProxyType, PyodideProxy } from "../pyodide-proxy";
 import * as utils from "../utils";
 
 export type PyodideProxyHandle =
-  | { ready: false; shiny_ready: false }
+  | {
+      ready: false;
+      shinyReady: false;
+      initError: false;
+    }
   | {
       ready: true;
       pyodide: PyodideProxy;
-      shiny_ready: boolean;
+      shinyReady: boolean;
+      initError: boolean;
       // Run code directly with Pyodide. (Output will print in the terminal.)
       runCode: (command: string) => Promise<void>;
       tabComplete: (command: string) => Promise<string[]>;
@@ -59,7 +64,8 @@ export async function initPyodide({
   return {
     ready: true,
     pyodide: pyodideProxy,
-    shiny_ready: false,
+    shinyReady: false,
+    initError: false,
     runCode,
     tabComplete,
   };
@@ -85,29 +91,31 @@ export async function initShiny({
 
   try {
     // One-time initialization of Python session
-    await pyodideProxy.runPyAsync(load_pyshiny_code());
-  } catch (e) {
-    if (e instanceof Error) {
-      console.error(e);
-      // outputCallbacks.stderr(e.message);
-    } else {
-      console.error(e);
+    await pyodideProxy.runPyAsync(load_python_pre);
+
+    if (pyodideProxy.proxyType() === "webworker") {
+      // With a WebWorker, matplotlib needs to use the AGG backend instead of
+      // the default Canvas one.
+      await pyodideProxy.runPyAsync(`
+        print("Initializing AGG backend for plotting...")
+        import os
+        os.environ['MPLBACKEND'] = 'AGG'
+    `);
     }
+
+    await pyodideProxy.runPyAsync(load_python_modules);
+  } catch (e) {
+    console.error(e);
+    return {
+      ...pyodideProxyHandle,
+      initError: true,
+    };
   }
 
-  if (pyodideProxy.proxyType() === "webworker") {
-    // With a WebWorker, matplotlib needs to use the AGG backend instead of the
-    // default Canvas one.
-    await pyodideProxy.runPyAsync(`
-      print("Initializing AGG backend for plotting...")
-      import os
-      os.environ['MPLBACKEND'] = 'AGG'
-  `);
-  }
-
-  await pyodideProxy.runPyAsync(load_python_modules);
-
-  return { ...pyodideProxyHandle, shiny_ready: true };
+  return {
+    ...pyodideProxyHandle,
+    shinyReady: true,
+  };
 }
 
 // =============================================================================
@@ -121,7 +129,8 @@ export function usePyodide({
   const [pyodideProxyHandle, setPyodideProxyHandle] =
     React.useState<PyodideProxyHandle>({
       ready: false,
-      shiny_ready: false,
+      shinyReady: false,
+      initError: false,
     });
 
   useEffect(() => {
@@ -137,8 +146,7 @@ export function usePyodide({
 // =============================================================================
 // Python code for setting up session
 // =============================================================================
-const load_pyshiny_code = () => {
-  return `
+const load_python_pre = `
 # Patch ssl.py so that it is actually loadable under Pyodide.
 # I've stubbed in just enough to allow the packages we need to be importable
 # (mostly anyio, via starlette), it's possible we will need to stub in more
@@ -159,7 +167,6 @@ class MemoryBIO:
 
 None
 `;
-};
 
 const load_python_modules = `
 print("Loading modules...")

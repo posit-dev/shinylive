@@ -134,7 +134,7 @@ export default function Viewer({
   const viewerFrameRef = React.useRef<HTMLIFrameElement>(null);
 
   React.useEffect(() => {
-    if (!pyodideProxyHandle.shiny_ready) return;
+    if (!pyodideProxyHandle.shinyReady) return;
 
     const pyodideproxy = pyodideProxyHandle.pyodide;
     // const shiny = pyodideProxyHandle.shiny;
@@ -222,9 +222,9 @@ export default function Viewer({
       runApp,
       stopApp,
     });
-  }, [pyodideProxyHandle.shiny_ready]);
+  }, [pyodideProxyHandle.shinyReady]);
 
-  if (!pyodideProxyHandle.shiny_ready) {
+  if (!pyodideProxyHandle.shinyReady) {
     return (
       <div className="initializing-animation">
         <LoadingAnimation />

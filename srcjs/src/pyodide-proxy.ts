@@ -1,7 +1,5 @@
 import {
   loadPackagesFromImports,
-  PyProxyWithGet,
-  PyProxyWithSet,
   PyProxyIterable,
   Py2JsResult,
 } from "../shinylive/pyodide/pyodide";
@@ -48,19 +46,31 @@ export interface PyodideProxy {
   proxyType(): ProxyType;
 
   // - returnResult: Should the function return the result from the Python code?
-  //     If so, it will be translated to a JS object. This translation works for
-  //     simple objects like numbers, strings, and lists and dicts consisting of
-  //     numbers and strings, but it will fail for most objects which are
-  //     instances of classes and don't have an straightforward translation to
-  //     JS. This limitation exists because, when pyodide is run in a Web
-  //     Worker, the PyProxy object which is returned by
-  //     pyodide.runPythonAsync() cannot be sent back to the main thread. (Note
-  //     that despite the similar names, PyProxy != PyodideProxy, and
-  //     pyodide.runPythonAsync != PyodideProxy.runPythonAsync; the former in
-  //     each of those pairs comes from Pyodide itself, and the latter in each
-  //     pair comes from this class.)
+  //     Possible values are "none", "value", "printed_value", and "to_html".
+  //     - If "none" (the default), then the function will not return anything.
+  //     - If "value", then the function will return the value from the Python
+  //       code, translated to a JS object. This translation works for simple
+  //       objects like numbers, strings, and lists and dicts consisting of
+  //       numbers and strings, but it will fail for most objects which are
+  //       instances of classes and don't have an straightforward translation to
+  //       JS. This limitation exists because, when pyodide is run in a Web
+  //       Worker, the PyProxy object which is returned by pyodide.runPyAsync()
+  //       cannot be sent back to the main thread.
+  //     - If "printed_value", then the function will call `repr()` on the
+  //       value, and return the resulting string.
+  //     - If "to_html", then the function will call try to convert the value
+  //       to HTML, by calling `x._repr_html_()` on it, and then it will return
+  //       a ToHtmlResult object. If it succeeded in convertint to HTML, then
+  //       the ToHtmlResult object's `.type` property will be "html"; otherwise
+  //       it will be "text".
   // - printResult: Should the result be printed using the stdout method which
   //     was passed to loadPyodide()?
+  //
+  // If an error occurs in the Python code, then this function will throw a JS
+  // error.
+  //
+  // The complicated typing here is because the return type depends on the value
+  // of `returnResult`. For more info:
   // https://stackoverflow.com/questions/72166620/typescript-conditional-return-type-using-an-object-parameter-and-default-values
   runPyAsync<K extends keyof ReturnMapping = "none">(
     code: string,
@@ -199,17 +209,19 @@ class NormalPyodideProxy implements PyodideProxy {
     } catch (err) {
       error = err as Error;
       this.stderrCallback(error.message);
-      // TODO: return error
-      // return;
+      throw error;
     }
 
-    if (printResult) {
+    if (printResult && result !== undefined) {
       this.stdoutCallback(this.repr(result));
     }
 
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     const self = this;
 
+    // This construction is a bit weird, but it seems to be the least bad way to get
+    // typing to work well. See this for an explanation:
+    // https://stackoverflow.com/questions/72166620/typescript-conditional-return-type-using-an-object-parameter-and-default-values
     const possibleReturnValues = {
       get value() {
         if (self.pyodide.isPyProxy(result)) {
@@ -408,7 +420,7 @@ class WebWorkerPyodideProxy implements PyodideProxy {
 
     if (response.error) {
       this.stderrCallback(response.error.message);
-      // TODO: Error handling
+      throw response.error;
     }
 
     return response.value;
