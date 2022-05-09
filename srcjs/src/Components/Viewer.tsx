@@ -92,7 +92,7 @@ async function resetAppFrame(
   appFrame.src = "";
 
   // TODO: myapp{n}
-  const stoppedPreviousApp = (await pyodide.runPythonAsync(
+  const stoppedPreviousApp = (await pyodide.runPyAsync(
     `
     _res = False
     if "${appName}" in locals():
@@ -173,7 +173,7 @@ export default function Viewer({
         // import below. Without it, when starting multiple apps concurrently,
         // the `import myapp.app` below can fail with a "ModuleNotFoundError".
         // The error seems to happen randomly.
-        await pyodideproxy.runPythonAsync("asyncio.sleep(0)");
+        await pyodideproxy.runPyAsync("asyncio.sleep(0)");
 
         // Add this app's directory to the sys.path so that it can import other
         // files in the dir with "import foo". We'll remove it from the path as
@@ -184,7 +184,7 @@ export default function Viewer({
         // happen, it's possible for one app to load the other's utils.py.)
         // This could cause problems if an app has an import that occurs after
         // startup (like in a function).
-        await pyodideproxy.runPythonAsync(
+        await pyodideproxy.runPyAsync(
           `
           import sys
           sys.path.insert(0, "/home/pyodide/${appName}")

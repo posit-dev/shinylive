@@ -96,7 +96,7 @@ function ensurePyodideProxyHandlePromise({
       if (showStartBanner) {
         // When we get here, .ready will always be true.
         if (pyodideProxyHandle.ready) {
-          pyodideProxyHandle.pyodide.runPythonAsync(
+          await pyodideProxyHandle.pyodide.runPyAsync(
             `print(pyodide.console.BANNER); print(" ")`
           );
         }

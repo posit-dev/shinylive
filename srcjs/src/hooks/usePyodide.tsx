@@ -41,7 +41,7 @@ export async function initPyodide({
   // Public functions
   async function runCode(command: string) {
     try {
-      await pyodideProxy.runPythonAsync(command);
+      await pyodideProxy.runPyAsync(command);
     } catch (e) {
       if (e instanceof Error) {
         // outputCallbacks.stderr(e.message);
@@ -85,7 +85,7 @@ export async function initShiny({
 
   try {
     // One-time initialization of Python session
-    await pyodideProxy.runPythonAsync(load_pyshiny_code());
+    await pyodideProxy.runPyAsync(load_pyshiny_code());
   } catch (e) {
     if (e instanceof Error) {
       console.error(e);
@@ -98,14 +98,14 @@ export async function initShiny({
   if (pyodideProxy.proxyType() === "webworker") {
     // With a WebWorker, matplotlib needs to use the AGG backend instead of the
     // default Canvas one.
-    await pyodideProxy.runPythonAsync(`
+    await pyodideProxy.runPyAsync(`
       print("Initializing AGG backend for plotting...")
       import os
       os.environ['MPLBACKEND'] = 'AGG'
   `);
   }
 
-  await pyodideProxy.runPythonAsync(load_python_modules);
+  await pyodideProxy.runPyAsync(load_python_modules);
 
   return { ...pyodideProxyHandle, shiny_ready: true };
 }

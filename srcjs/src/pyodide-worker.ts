@@ -149,7 +149,7 @@ let repr: (x: any) => string = function (x: any) {
 let tabComplete: (x: string) => PyProxyIterable;
 
 let toHtml: (x: any) => ToHtmlResult = function (x: any) {
-  return { type: "text", content: "" };
+  return { type: "text", value: "" };
 };
 
 self.onmessage = async function (e: MessageEvent): Promise<void> {
@@ -196,7 +196,7 @@ self.onmessage = async function (e: MessageEvent): Promise<void> {
         toHtml = await (pyodide.runPythonAsync(`
           def _to_html(x):
             if hasattr(x, 'to_html'):
-              return { "type": "html", "content": x.to_html() }
+              return { "type": "html", "value": x.to_html() }
 
             if "matplotlib" in sys.modules:
               import matplotlib.figure
@@ -208,9 +208,9 @@ self.onmessage = async function (e: MessageEvent): Promise<void> {
                 img.seek(0)
                 img_encoded = base64.b64encode(img.getvalue())
                 img_html = '<img src="data:image/png;base64, {}">'.format(img_encoded.decode('utf-8'))
-                return { "type": "html", "content": img_html }
+                return { "type": "html", "value": img_html }
 
-            return { "type": "text", "content": repr(x) }
+            return { "type": "text", "value": repr(x) }
 
           _to_html
         `) as Promise<(x: any) => ToHtmlResult>);
@@ -230,8 +230,6 @@ self.onmessage = async function (e: MessageEvent): Promise<void> {
     } else if (msg.type === "runPythonAsync") {
       await pyodide.loadPackagesFromImports(msg.code);
 
-      // Need these `as` casts because the type declaration of runPythonAsync in
-      // pyodide is incorrect.
       const result = await (pyodide.runPythonAsync(
         msg.code
       ) as Promise<Py2JsResult>);
@@ -247,7 +245,6 @@ self.onmessage = async function (e: MessageEvent): Promise<void> {
             subtype: "done",
             value: result.toJs(),
           });
-          result.destroy();
         } else if (Py2JsResultBasicTypenames.includes(typeof result)) {
           messagePort.postMessage({
             type: "reply",
@@ -267,9 +264,6 @@ self.onmessage = async function (e: MessageEvent): Promise<void> {
             dict_converter: Object.fromEntries,
           }),
         });
-        if (pyodide.isPyProxy(result)) {
-          result.destroy();
-        }
       } else if (msg.returnResult === "printed_value") {
         messagePort.postMessage({
           type: "reply",
@@ -278,6 +272,10 @@ self.onmessage = async function (e: MessageEvent): Promise<void> {
         });
       } else {
         messagePort.postMessage({ type: "reply", subtype: "done" });
+      }
+
+      if (pyodide.isPyProxy(result)) {
+        result.destroy();
       }
     } else if (msg.type === "tabComplete") {
       const completions: string[] = tabComplete(msg.code).toJs()[0];

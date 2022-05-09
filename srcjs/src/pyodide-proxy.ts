@@ -21,8 +21,15 @@ export type ResultType = "value" | "printed_value" | "to_html" | "none";
 
 export type ToHtmlResult = {
   type: "html" | "text";
-  content: string;
+  value: string;
 };
+
+interface ReturnMapping {
+  value: any;
+  printed_value: string;
+  to_html: ToHtmlResult;
+  none: void;
+}
 
 // =============================================================================
 // PyodideProxy interface
@@ -38,7 +45,7 @@ export interface PyodideProxy {
   // isPyProxy: typeof isPyProxy;
   // runPython: typeof runPython;
 
-  proxyType: () => ProxyType;
+  proxyType(): ProxyType;
 
   // - returnResult: Should the function return the result from the Python code?
   //     If so, it will be translated to a JS object. This translation works for
@@ -54,14 +61,13 @@ export interface PyodideProxy {
   //     pair comes from this class.)
   // - printResult: Should the result be printed using the stdout method which
   //     was passed to loadPyodide()?
-  runPythonAsync: (
+  // https://stackoverflow.com/questions/72166620/typescript-conditional-return-type-using-an-object-parameter-and-default-values
+  runPyAsync<K extends keyof ReturnMapping = "none">(
     code: string,
-    {
-      returnResult,
-      printResult,
-    }?: { returnResult?: ResultType; printResult?: boolean }
-  ) => Promise<any>;
-  tabComplete: (code: string) => Promise<string[]>;
+    { returnResult, printResult }?: { returnResult?: K; printResult?: boolean }
+  ): Promise<ReturnMapping[K]>;
+
+  tabComplete(code: string): Promise<string[]>;
   // registerJsModule: typeof registerJsModule;
   // unregisterJsModule: typeof unregisterJsModule;
   // setInterruptBuffer: typeof setInterruptBuffer;
@@ -69,22 +75,22 @@ export interface PyodideProxy {
   // registerComlink: typeof registerComlink;
   // PythonError: typeof PythonError;
   // PyBuffer: typeof PyBuffer;
-  callPy: (
+  callPy(
     fn_name: string[],
     args: any[],
     kwargs: { [x: string]: any }
-  ) => Promise<void>;
+  ): Promise<void>;
 
-  openChannel: (
+  openChannel(
     path: string,
     appName: string,
     clientPort: MessagePort
-  ) => Promise<void>;
-  makeRequest: (
+  ): Promise<void>;
+  makeRequest(
     scope: ASGIHTTPRequestScope,
     appName: string,
     clientPort: MessagePort
-  ) => Promise<void>;
+  ): Promise<void>;
 }
 
 export interface LoadPyodideConfig {
@@ -137,7 +143,7 @@ class NormalPyodideProxy implements PyodideProxy {
     this.toHtml = await (this.pyodide.runPythonAsync(`
       def _to_html(x):
         if hasattr(x, 'to_html'):
-          return { "type": "html", "content": x.to_html() }
+          return { "type": "html", "value": x.to_html() }
 
         if "matplotlib" in sys.modules:
           import matplotlib.figure
@@ -149,9 +155,10 @@ class NormalPyodideProxy implements PyodideProxy {
             img.seek(0)
             img_encoded = base64.b64encode(img.getvalue())
             img_html = '<img src="data:image/png;base64, {}">'.format(img_encoded.decode('utf-8'))
-            return { "type": "html", "content": img_html }
+            return { "type": "html", "value": img_html }
 
-        return { "type": "text", "content": repr(x) }
+        return { "type": "text", "value": repr(x) }
+
 
       _to_html
     `) as Promise<(x: any) => ToHtmlResult>);
@@ -171,45 +178,67 @@ class NormalPyodideProxy implements PyodideProxy {
     return "normal";
   }
 
-  async runPythonAsync(
+  // https://stackoverflow.com/questions/72166620/typescript-conditional-return-type-using-an-object-parameter-and-default-values
+  async runPyAsync<K extends keyof ReturnMapping = "none">(
     code: string,
     {
-      returnResult = "none",
+      returnResult = "none" as K,
       printResult = true,
-    }: { returnResult?: ResultType; printResult?: boolean } = {}
-  ): Promise<any> {
+    }: { returnResult?: K; printResult?: boolean } = {
+      returnResult: "none" as K,
+      printResult: true,
+    }
+  ): Promise<ReturnMapping[K]> {
     await this.pyodide.loadPackagesFromImports(code);
-    let result;
+    let result: Py2JsResult;
+    let error: Error | null = null;
     try {
       result = await (this.pyodide.runPythonAsync(
         code
       ) as Promise<Py2JsResult>);
     } catch (err) {
-      this.stderrCallback((err as Error).message);
-      return;
+      error = err as Error;
+      this.stderrCallback(error.message);
+      // TODO: return error
+      // return;
     }
 
-    if (result !== undefined) {
-      if (printResult) {
-        this.stdoutCallback(this.repr(result));
-      }
+    if (printResult) {
+      this.stdoutCallback(this.repr(result));
+    }
 
-      if (returnResult === "value") {
-        if (this.pyodide.isPyProxy(result)) {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
+    const self = this;
+
+    const possibleReturnValues = {
+      get value() {
+        if (self.pyodide.isPyProxy(result)) {
           // If `result` is a PyProxy, we need to explicitly convert to JS.
-          const value = result.toJs();
-          result.destroy();
-          return value;
+          return result.toJs();
         } else {
           // If `result` is just a simple value, return it unchanged.
           return result;
         }
-      } else if (returnResult === "to_html") {
-        return (this.toHtml(result) as Py2JsResult).toJs({
+      },
+      get printed_value() {
+        return self.repr(result);
+      },
+      get to_html() {
+        const value = (self.toHtml(result) as Py2JsResult).toJs({
           dict_converter: Object.fromEntries,
         });
-      } else if (returnResult === "printed_value") {
-        return this.repr(result);
+        return value;
+      },
+      get none() {
+        return undefined;
+      },
+    };
+
+    try {
+      return possibleReturnValues[returnResult];
+    } finally {
+      if (self.pyodide.isPyProxy(result)) {
+        result.destroy();
       }
     }
   }
@@ -360,13 +389,16 @@ class WebWorkerPyodideProxy implements PyodideProxy {
   // Asynchronously run Python code and return the value returned from Python.
   // If an error occurs, pass the error message to this.stderrCallback() and
   // return undefined.
-  async runPythonAsync(
+  async runPyAsync<K extends keyof ReturnMapping = "none">(
     code: string,
     {
-      returnResult = "none",
+      returnResult = "none" as K,
       printResult = true,
-    }: { returnResult?: ResultType; printResult?: boolean } = {}
-  ): Promise<any> {
+    }: { returnResult?: K; printResult?: boolean } = {
+      returnResult: "none" as K,
+      printResult: true,
+    }
+  ): Promise<ReturnMapping[K]> {
     const response = (await this.postMessageAsync({
       type: "runPythonAsync",
       code,
@@ -376,7 +408,7 @@ class WebWorkerPyodideProxy implements PyodideProxy {
 
     if (response.error) {
       this.stderrCallback(response.error.message);
-      return;
+      // TODO: Error handling
     }
 
     return response.value;

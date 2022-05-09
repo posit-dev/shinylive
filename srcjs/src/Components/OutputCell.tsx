@@ -16,17 +16,18 @@ export default function OutputCell({
 }) {
   const [content, setContent] = React.useState<ToHtmlResult>({
     type: "text",
-    content: "",
+    value: "",
   });
 
   React.useEffect(() => {
     const runCodeInTerminal = async (command: string): Promise<void> => {
       if (!pyodideProxyHandle.ready) return;
 
-      const result = (await pyodideProxyHandle.pyodide.runPythonAsync(command, {
+      const result = await pyodideProxyHandle.pyodide.runPyAsync(command, {
         returnResult: "to_html",
         printResult: false,
-      })) as ToHtmlResult;
+      });
+      console.log("result", result);
 
       setContent(result);
     };
@@ -42,11 +43,11 @@ export default function OutputCell({
       {content.type === "html" ? (
         <div
           className="rendered_html"
-          dangerouslySetInnerHTML={{ __html: content.content }}
+          dangerouslySetInnerHTML={{ __html: content.value }}
         ></div>
       ) : (
         <pre className="sourceCode">
-          <code className="sourceCode">{content.content}</code>
+          <code className="sourceCode">{content.value}</code>
         </pre>
       )}
     </div>
