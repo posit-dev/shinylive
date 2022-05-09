@@ -150,7 +150,7 @@ export default function Editor({
       // issue that's causing problems.
       // runAppCurrentFiles.current();
     })();
-  }, [currentFilesFromApp, viewerMethods, setFilesHaveChanged]);
+  }, [runOnLoad, currentFilesFromApp, viewerMethods, setFilesHaveChanged]);
 
   React.useEffect(() => {
     if (!runOnLoad) return;
@@ -160,10 +160,10 @@ export default function Editor({
       const isShinyCode = currentFilesFromApp.some((f) => f.name === "app.py");
       if (!isShinyCode) {
         // TODO: use activeFile instead of currentFilesFromApp?
-        await runCodeInTerminal(currentFilesFromApp[0].content!);
+        runCodeInTerminal(currentFilesFromApp[0].content!);
       }
     })();
-  }, [currentFilesFromApp, terminalMethods]);
+  }, [runOnLoad, currentFilesFromApp, terminalMethods, runCodeInTerminal]);
 
   // ===========================================================================
   // CodeMirror setup

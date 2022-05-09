@@ -138,7 +138,7 @@ export function usePyodide({
       const pyodideProxyHandle = await pyodideProxyHandlePromise;
       setPyodideProxyHandle(pyodideProxyHandle);
     })();
-  }, []);
+  }, [pyodideProxyHandlePromise]);
 
   return pyodideProxyHandle;
 }
