@@ -21,7 +21,7 @@ import json
 import os
 import re
 import sys
-from typing import Any, Literal, TypedDict
+from typing import Any, Dict, List, Literal, TypedDict
 from typing_extensions import NotRequired
 
 top_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -34,7 +34,7 @@ class PackageInfo(TypedDict):
     version: str
     # For some packages, the name of the package (like "foo-bar") differs from the imported
     # module name (like "foo_bar"). Also, some can have multiple imported modules.
-    imports: NotRequired[list[str]]
+    imports: NotRequired[List[str]]
 
     # source: Literal["pypi", "local"]
 
@@ -45,8 +45,8 @@ class PyodidePackageInfo(TypedDict):
     version: str
     file_name: str
     install_dir: Literal["lib", "site"]
-    depends: list[str]
-    imports: list[str]
+    depends: List[str]
+    imports: List[str]
     unvendored_tests: NotRequired[bool]
 
 
@@ -56,7 +56,7 @@ class PyodidePackageInfo(TypedDict):
 #   Currently they are obtained by loading the base pyodide installation, then running
 #   micropip.install("htmltools") and micropip.install("shiny"), and inspecting the
 #   browser's network traffic to see what packages are downloaded from PyPI.
-pypi_packages_info: dict[str, PackageInfo] = {
+pypi_packages_info: Dict[str, PackageInfo] = {
     "anyio": {
         "name": "anyio",
         "version": "3.4.0",
@@ -154,7 +154,7 @@ def insert_into_pyodide_packages(pyodide_dir: str = DEFAULT_PYODIDE_DIR):
     all_pyodide_package_files = os.listdir(pyodide_dir)
 
     # Build list of filenames like shinylive/pyodide/shiny-0.2.0.9002-py3-none-any.whl
-    new_pyodide_packages_filenames: list[str] = []
+    new_pyodide_packages_filenames: List[str] = []
     for pkg_name in all_packages_info.keys():
         # Convert package name like "uc-micro-py" to "uc_micro_py"; the latter is used
         # for the package filename.
@@ -171,11 +171,11 @@ def insert_into_pyodide_packages(pyodide_dir: str = DEFAULT_PYODIDE_DIR):
             )
         new_pyodide_packages_filenames.append(os.path.join(pyodide_dir, pkg_file[0]))
 
-    new_pyodide_package_info_list: list[PyodidePackageInfo] = [
+    new_pyodide_package_info_list: List[PyodidePackageInfo] = [
         _get_pyodide_package_info(x, all_packages_info)
         for x in new_pyodide_packages_filenames
     ]
-    new_pyodide_package_info_dict: dict[str, PyodidePackageInfo] = {
+    new_pyodide_package_info_dict: Dict[str, PyodidePackageInfo] = {
         x["name"]: x for x in new_pyodide_package_info_list
     }
 
@@ -186,7 +186,7 @@ def insert_into_pyodide_packages(pyodide_dir: str = DEFAULT_PYODIDE_DIR):
 
 
 def _get_pyodide_package_info(
-    wheel_file: str, all_packages_info: dict[str, PackageInfo]
+    wheel_file: str, all_packages_info: Dict[str, PackageInfo]
 ) -> PyodidePackageInfo:
     import pkginfo
 
@@ -223,7 +223,7 @@ def _get_pyodide_package_info(
 # ["mdurl", "h11", "foo"]
 #
 # It's a little dumb in that it ignores python_version, but it's sufficient for our use.
-def _filter_requires(requires: list[str]) -> list[str]:
+def _filter_requires(requires: List[str]) -> List[str]:
     # Packages that don't need to be listed in "depends".
     AVOID_PACKAGES = [
         "typing",
@@ -243,7 +243,7 @@ def _filter_requires(requires: list[str]) -> list[str]:
 
 # Reads htmltools and shiny package versions from their subdirs, and then merges them
 # with the pypi_package_versions
-def _get_all_packages_info() -> dict[str, PackageInfo]:
+def _get_all_packages_info() -> Dict[str, PackageInfo]:
     sys.path.insert(0, os.path.join(package_source_dir, "./py-htmltools"))
     sys.path.insert(0, os.path.join(package_source_dir, "./py-shiny"))
 
