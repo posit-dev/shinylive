@@ -1,6 +1,7 @@
 .PHONY: all packages download_pypi_packages \
 	submodules submodules-pull
 	build watch serve \
+	api-docs \
 	quarto quartoserve \
 	clean distclean \
 	test test-watch
@@ -158,6 +159,10 @@ download_pypi_packages: $(PYBIN) scripts/py_package_versions.py
 $(OUT_DIR)/pyodide/packages.json: $(PYBIN) scripts/py_package_versions.py $(OUT_DIR)/pyodide/$(HTMLTOOLS_WHEEL) $(OUT_DIR)/pyodide/$(SHINY_WHEEL)
 	$(PYBIN)/pip install -r requirements-dev.txt
 	. $(PYBIN)/activate && scripts/py_package_versions.py insert_into_pyodide_packages $(OUT_DIR)/pyodide
+
+## Build Shiny API docs
+api-docs: $(PYBIN)
+	. $(PYBIN)/activate && cd packages/py-shiny/docs && make html
 
 ## Build Quarto example site in quarto/
 quarto:
