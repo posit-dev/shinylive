@@ -137,7 +137,6 @@ export default function Viewer({
     if (!pyodideProxyHandle.shinyReady) return;
 
     const pyodideproxy = pyodideProxyHandle.pyodide;
-    // const shiny = pyodideProxyHandle.shiny;
     const appInfo = setupAppProxyPath(pyodideproxy);
 
     async function runApp(appCode: string | FileContent[]): Promise<void> {
@@ -145,7 +144,7 @@ export default function Viewer({
         if (!viewerFrameRef.current)
           throw new Error("Viewer iframe is not yet initialized");
 
-        viewerFrameRef.current.src = utils.currentScriptDir() + "/loading.html";
+        // viewerFrameRef.current.src = utils.currentScriptDir() + "/loading.html";
 
         if (typeof appCode === "string") {
           appCode = [
@@ -155,10 +154,6 @@ export default function Viewer({
             },
           ];
         }
-
-        // TODO: Unregister on close
-        // TODO: Close by ID
-        // appRegistry.push(appInfo);
 
         const appName = appInfo.appName;
 
