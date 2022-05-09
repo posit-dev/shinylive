@@ -13,21 +13,21 @@ There are two parts that need to be built:
 To build the JS/wasm resources, you must initialize the git submodules. This only needs to be done once:
 
 ```bash
-git submodule init
-git submodule update --depth=20
+make submodules
 ```
 
 Then after that, you can simply run `make` in the `srcjs/` directory:
 
 ```bash
 cd srcjs
-make
+make all
 ```
 
-To serve the test web site with examples, run:
+To build serve the test web site with examples, run:
 
 ```bash
-make serve
+make quarto
+make quartoserve
 ```
 
 This will also watch the source TS files for changes and auto-reload the web page when they are modified and rebuilt.
@@ -39,5 +39,5 @@ After pulling changes to the parent repo, you may need to tell it to update subm
 
 ```bash
 git pull
-git submodule update
+make submodules-pull
 ```

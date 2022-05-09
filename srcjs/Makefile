@@ -1,8 +1,9 @@
-.PHONY: all packages submodule_update download_pypi_packages \
-		build watch serve \
-		quarto quartoserve \
-		clean distclean \
-		test test-watch
+.PHONY: all packages download_pypi_packages \
+	submodules submodules-pull
+	build watch serve \
+	quarto quartoserve \
+	clean distclean \
+	test test-watch
 
 .DEFAULT_GOAL := help
 
@@ -25,6 +26,14 @@ SHINY_WHEEL = shiny-$(SHINY_VERSION)-py3-none-any.whl
 VENV = venv
 PYBIN = $(VENV)/bin
 
+
+# Any targets that depend on $(VENV) or $(PYBIN) will cause the venv to be
+# created. To use the ven, python scripts should run with the prefix $(PYBIN),
+# as in `$(PYBIN)/pip`.
+$(VENV):
+	python3 -m venv $(VENV)
+
+$(PYBIN): $(VENV)
 
 define PRINT_HELP_PYSCRIPT
 import re, sys
@@ -52,13 +61,15 @@ export PRINT_HELP_PYSCRIPT
 help:
 	@python3 -c "$$PRINT_HELP_PYSCRIPT" < $(MAKEFILE_LIST)
 
-# Any targets that depend on $(VENV) or $(PYBIN) will cause the venv to be
-# created. To use the ven, python scripts should run with the prefix $(PYBIN),
-# as in `$(PYBIN)/pip`.
-$(VENV):
-	python3 -m venv $(VENV)
 
-$(PYBIN): $(VENV)
+## Update git submodules to commits referenced in this repository
+submodules:
+	git submodule init
+	git submodule update --depth=20
+
+## Pull latest changes in git submodules
+submodules-pull:
+	git submodule update --recursive --remote
 
 
 ## Build everything
@@ -135,11 +146,6 @@ $(PACKAGE_DIR)/$(SHINY_WHEEL): $(PYBIN) $(PACKAGE_DIR)/py-shiny
 	$(PYBIN)/pip install -r $(PACKAGE_DIR)/py-shiny/requirements-dev.txt
 	$(PYBIN)/pip install -e $(PACKAGE_DIR)/py-shiny
 	. $(PYBIN)/activate && cd $(PACKAGE_DIR)/py-shiny && make dist && mv dist/*.whl ../
-
-## Update git submodules
-submodule_update:
-	git submodule init
-	git submodule update --depth=20
 
 # TODO: Figure out how to make this _not_ run every time, or at least not need
 # network access.
