@@ -10,6 +10,7 @@ import { FileTabs } from "./codeMirror/FileTabs";
 import useTabbedCodeMirror from "./codeMirror/useTabbedCodeMirror";
 import * as cmUtils from "./codeMirror/utils";
 import "./Editor.css";
+import ShareModal from "./ShareModal";
 import { TerminalMethods } from "./Terminal";
 import { FileContent } from "./types";
 import { ViewerMethods } from "./Viewer";
@@ -30,6 +31,7 @@ export default function Editor({
   runOnLoad = true,
   lineNumbers = true,
   showHeaderBar = true,
+  showShareButton = true,
   floatingButtons = false,
 }: {
   currentFilesFromApp: FileContent[];
@@ -40,6 +42,7 @@ export default function Editor({
   runOnLoad?: boolean;
   lineNumbers?: boolean;
   showHeaderBar?: boolean;
+  showShareButton?: boolean;
   floatingButtons?: boolean;
 }) {
   const [keyBindings] = React.useState<KeyBinding[]>([
@@ -227,6 +230,31 @@ export default function Editor({
   // React component
   // ===========================================================================
 
+  const [showShareModal, setShowShareModal] = React.useState(false);
+
+  const shareButton = (
+    <button
+      className="code-run-button"
+      title={`Share ${isShinyApp ? "app" : "code"}`}
+      onClick={() => setShowShareModal(true)}
+    >
+      Share
+    </button>
+  );
+
+  let shareModal: JSX.Element | null = null;
+  if (showShareModal) {
+    // If the user clicks the share button, we need to sync the files before
+    // showing the
+    syncFileState();
+    shareModal = (
+      <ShareModal
+        fileContents={editorFilesToFileContents(files)}
+        setShowShareModal={setShowShareModal}
+      ></ShareModal>
+    );
+  }
+
   // Run button either gets placed in the header or floating over the editor but
   // it's the same button either way
   const runButton = (
@@ -243,10 +271,14 @@ export default function Editor({
 
   return (
     <div className="Editor">
+      {shareModal}
       {showHeaderBar ? (
         <div className="Editor--header">
           {showFileTabs ? <FileTabs {...tabbedFiles} /> : null}
-          <div className="Editor--header--actions">{runButton}</div>
+          <div className="Editor--header--actions">
+            {showShareButton ? shareButton : null}
+            {runButton}
+          </div>
         </div>
       ) : null}
       <div className="Editor--container" ref={cmDivRef}></div>

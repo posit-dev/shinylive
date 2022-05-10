@@ -1,0 +1,32 @@
+.ShareModal {
+  position: absolute;
+  top: 50px;
+  left: 50px;
+  width: 500px;
+  font-family: var(--font-face);
+  background: white;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  padding: 8px 14px;
+  transition: 0.4s ease-out;
+  box-shadow: 0.5rem 0.5rem 2rem rgb(0 0 0 / 30%);
+  z-index: 1;
+}
+
+.ShareModal .ShareModal--row {
+  display: flex;
+  padding-bottom: 10px;
+}
+
+.ShareModal .ShareModal--row .ShareModal--url {
+  display: inline-flex;
+  position: relative;
+  vertical-align: top;
+  width: 100%;
+}
+.ShareModal .ShareModal--row .ShareModal--url .ShareModal--urlinput {
+  font-family: var(--font-mono-face);
+  font-size: var(--font-mono-size);
+  width: 100%;
+  margin-right: 12px;
+}
