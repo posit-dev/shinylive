@@ -23,10 +23,13 @@ export default function ShareModal({
 
   const appPrefix =
     window.location.origin +
-    // "foo/examples/x.html" => "foo/app/"
+    // "foo/examples/index.html" => "foo/app/"
     // "foo/examples/" => "foo/app/"
     // "/examples/" => "/app/"
-    window.location.pathname.replace(new RegExp("([^/]+/[^/]*)"), "app/") +
+    window.location.pathname.replace(
+      new RegExp("([^/]+)/(index.html)?$"),
+      "app/"
+    ) +
     "#code=";
 
   const encodedCode = LZString.compressToEncodedURIComponent(
