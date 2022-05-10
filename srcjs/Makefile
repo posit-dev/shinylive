@@ -175,7 +175,8 @@ quartoserve:
 
 ## Remove all build files
 clean:
-	rm -rf  $(PACKAGE_DIR)/*.whl shinylive/ quarto/docs/
+	rm -rf $(PACKAGE_DIR)/*.whl shinylive/ quarto/docs/
+	cd $(PACKAGE_DIR)/py-shiny/docs && make clean
 
 ## Remove all build files and venv/
 distclean: clean
