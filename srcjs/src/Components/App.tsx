@@ -341,7 +341,7 @@ export function runApp(
 
     const { layout, viewerHeight, ...unusedArgs } = args ?? {};
 
-    if (unusedArgs) {
+    if (Object.keys(unusedArgs).length > 0) {
       console.warn(
         "The following arguments were detected but not used in running app",
         unusedArgs
