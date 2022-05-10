@@ -13,14 +13,16 @@ import { FileContent } from "./types";
 function ExampleSelector({
   setCurrentFiles,
   filesHaveChanged,
+  autoSelectExample = true,
 }: {
   setCurrentFiles: React.Dispatch<React.SetStateAction<FileContent[]>>;
   filesHaveChanged: boolean;
+  autoSelectExample: boolean;
 }) {
-  const { linkedExample, setLinkedExample } = useExampleLinks();
+  const { exampleUrlHash, setExampleUrlHash } = useExampleUrlHash();
 
   const [currentSelection, setCurrentSelection] =
-    React.useState<ExamplePosition>({ categoryIndex: 0, index: 0 });
+    React.useState<ExamplePosition | null>(null);
 
   // This starts null; will be set by a useEffect which calls an async function.
   const [exampleCategories, setExampleCategories] = React.useState<
@@ -36,14 +38,15 @@ function ExampleSelector({
   React.useEffect(() => {
     (async () => {
       if (!exampleCategories) return;
+      if (!autoSelectExample) return;
 
-      let position = findExampleByTitle(linkedExample, exampleCategories);
+      let position = findExampleByTitle(exampleUrlHash, exampleCategories);
       if (!position) {
         position = { categoryIndex: 0, index: 0 };
       }
       setCurrentSelection(position);
     })();
-  }, [linkedExample, exampleCategories]);
+  }, [autoSelectExample, exampleUrlHash, exampleCategories]);
 
   const setFilesForApp = React.useCallback(
     ({ categoryIndex, index }: ExamplePosition) => {
@@ -62,9 +65,14 @@ function ExampleSelector({
       const example = exampleCategories[categoryIndex].apps[index];
 
       setCurrentSelection({ categoryIndex, index });
-      setLinkedExample(example.title);
+      setExampleUrlHash(example.title);
     },
-    [filesHaveChanged, exampleCategories, setCurrentSelection, setLinkedExample]
+    [
+      filesHaveChanged,
+      exampleCategories,
+      setCurrentSelection,
+      setExampleUrlHash,
+    ]
   );
 
   // Keep app up-to-date with current selection
@@ -82,11 +90,14 @@ function ExampleSelector({
     index: number;
     categoryIndex: number;
   }) {
-    if (!currentSelection) return null;
-
-    const isSelected =
-      currentSelection.categoryIndex === categoryIndex &&
-      currentSelection.index === index;
+    let isSelected: boolean;
+    if (!currentSelection) {
+      isSelected = false;
+    } else {
+      isSelected =
+        currentSelection.categoryIndex === categoryIndex &&
+        currentSelection.index === index;
+    }
 
     // Use the React. Fragment component instead of <></> so we can use the key prop
     return (
@@ -140,16 +151,16 @@ function ExampleSelector({
 export default ExampleSelector;
 
 // Uses url hash to find and load a given example from a link
-function useExampleLinks() {
-  const hashParams = window.location.hash.replace(/^#/, "");
+function useExampleUrlHash() {
+  const exampleUrlHash = window.location.hash.replace(/^#/, "");
 
-  const setLinkedExample = React.useCallback((title: string) => {
+  const setExampleUrlHash = React.useCallback((title: string) => {
     window.location.hash = "#" + sanitizeTitleForUrl(title);
   }, []);
 
   return {
-    linkedExample: hashParams,
-    setLinkedExample,
+    exampleUrlHash,
+    setExampleUrlHash,
   };
 }
 

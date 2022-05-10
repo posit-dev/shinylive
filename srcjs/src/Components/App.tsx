@@ -1,5 +1,6 @@
 import * as React from "react";
 import ReactDOM from "react-dom";
+import LZString from "lz-string";
 import {
   initPyodide,
   initShiny,
@@ -119,6 +120,8 @@ export default function App({
   startFiles: FileContent[];
   editorViewerOptions?: EditorViewerOptions;
 }) {
+  let autoSelectExample = false;
+
   if (startFiles.length === 0) {
     startFiles = [
       {
@@ -126,6 +129,8 @@ export default function App({
         content: "",
       },
     ];
+
+    autoSelectExample = true;
   }
 
   // For most but not all appMode, set up pyodide for shiny.
@@ -179,6 +184,7 @@ export default function App({
           <ExampleSelector
             setCurrentFiles={setCurrentFiles}
             filesHaveChanged={filesHaveChanged}
+            autoSelectExample={autoSelectExample}
           />
           <Editor
             currentFilesFromApp={currentFiles}
@@ -329,13 +335,33 @@ export function runApp(
       // Use the hash to determine which example to load. If no match is found,
       // it defaults to the first example.
       const hashContent = window.location.hash.replace(/^#/, "");
-      const exampleCategories = await getExampleCategories();
-      const pos = findExampleByTitle(hashContent, exampleCategories);
-      if (pos) {
-        startFiles = exampleCategories[pos.categoryIndex].apps[pos.index]
-          .files as FileContent[]; // A little help for type checker.
+
+      if (hashContent.startsWith("code=")) {
+        try {
+          const codeEncoded = hashContent.replace("code=", "");
+          // Returns null if decoding fails
+          const code = LZString.decompressFromEncodedURIComponent(codeEncoded);
+          if (code) {
+            // Throws if parsing fails
+            startFiles = JSON.parse(code) as FileContent[];
+          }
+        } catch (e) {
+          // Do nothing
+        }
+
+        if (startFiles === "auto") {
+          console.log("Could not parse JSON from URL hash.");
+          startFiles = [];
+        }
       } else {
-        startFiles = [];
+        const exampleCategories = await getExampleCategories();
+        const pos = findExampleByTitle(hashContent, exampleCategories);
+        if (pos) {
+          startFiles = exampleCategories[pos.categoryIndex].apps[pos.index]
+            .files as FileContent[]; // A little help for type checker.
+        } else {
+          startFiles = [];
+        }
       }
     }
 
