@@ -1,5 +1,5 @@
 .PHONY: all packages download_pypi_packages \
-	submodules submodules-pull
+	submodules submodules-pull \
 	build watch serve \
 	api-docs \
 	quarto quartoserve \
