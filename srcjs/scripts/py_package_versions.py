@@ -117,6 +117,10 @@ pypi_packages_info: Dict[str, PackageInfo] = {
         "name": "siuba",
         "version": "0.2.3",
     },
+    "pyllusion": {
+        "name": "pyllusion",
+        "version": "0.0.12",
+    },
 }
 
 
