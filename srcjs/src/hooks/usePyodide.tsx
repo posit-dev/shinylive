@@ -211,7 +211,14 @@ async def _load_packages(packages: list[str]) -> None:
     for package in packages:
         if package not in loaded_packages:
             print(f"Loading {package}...")
-            await js_pyodide.loadPackage(package)
+            # Some packages, like 'utils' can just be imported without calling
+            # loadPackage() first, and calling loadPackage("utils") will
+            # actually throw an error. However, it's hard to know which
+            # packages are like this, so we'll just try and ignore errors.
+            try:
+                await js_pyodide.loadPackage(package)
+            except Exception as e:
+                pass
 `;
 
 // =============================================================================
