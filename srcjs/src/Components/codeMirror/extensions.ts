@@ -10,7 +10,7 @@ import { css } from "@codemirror/lang-css";
 import { html } from "@codemirror/lang-html";
 import { javascript } from "@codemirror/lang-javascript";
 import { python } from "@codemirror/lang-python";
-import { indentOnInput } from "@codemirror/language";
+import { indentOnInput, indentUnit } from "@codemirror/language";
 import { indentWithTab } from "@codemirror/commands";
 import { r } from "@codemirror/legacy-modes/mode/r";
 import { lintKeymap } from "@codemirror/lint";
@@ -40,6 +40,7 @@ export function getExtensions(
     dropCursor(),
     EditorState.allowMultipleSelections.of(true),
     indentOnInput(),
+    indentUnit.of("    "),
     defaultHighlightStyle.fallback,
     bracketMatching(),
     closeBrackets(),
