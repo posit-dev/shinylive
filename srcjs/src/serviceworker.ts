@@ -59,35 +59,32 @@ self.addEventListener("fetch", function (event): void {
   const appPathRegex = /.*\/(app_[^/]+\/)/;
   const m_appPath = appPathRegex.exec(url.pathname);
   if (m_appPath) {
-    (async () => {
-      // If the app URL isn't found, wait up to 250ms for it to be registered.
-      let pollCount = 5;
-      while (!apps[m_appPath[1]]) {
-        if (pollCount == 0) {
-          event.respondWith(
-            new Response(`Couldn't find parent page for ${url}`, {
+    event.respondWith(
+      (async () => {
+        // If the app URL isn't found, wait up to 250ms for it to be registered.
+        let pollCount = 5;
+        while (!apps[m_appPath[1]]) {
+          if (pollCount == 0) {
+            return new Response(`Couldn't find parent page for ${url}`, {
               status: 404,
-            })
-          );
-          return;
+            });
+          }
+
+          console.log("App URL not registered. Waiting 50ms.");
+          await sleep(50);
+          pollCount--;
         }
 
-        console.log("App URL not registered. Waiting 50ms.");
-        await sleep(50);
-        pollCount--;
-      }
-      // Strip off the app root; the Python app doesn't know anything about it.
-      url.pathname = url.pathname.replace(appPathRegex, "/");
+        // Strip off the app root; the Python app doesn't know anything about it.
+        url.pathname = url.pathname.replace(appPathRegex, "/");
 
-      // If this is the app homepage, we need to mangle the returned HTML to
-      // include <script src="../inject-socket.js"> in the <head>.
-      const isAppRoot = url.pathname === "/";
-      const filter = isAppRoot ? injectSocketFilter : identityFilter;
+        // If this is the app homepage, we need to mangle the returned HTML to
+        // include <script src="../inject-socket.js"> in the <head>.
+        const isAppRoot = url.pathname === "/";
+        const filter = isAppRoot ? injectSocketFilter : identityFilter;
 
-      const blob = await request.blob();
-
-      event.respondWith(
-        fetchASGI(
+        const blob = await request.blob();
+        return fetchASGI(
           apps[m_appPath[1]],
           new Request(url.toString(), {
             method: request.method,
@@ -103,9 +100,10 @@ self.addEventListener("fetch", function (event): void {
           }),
           undefined,
           filter
-        )
-      );
-    })();
+        );
+      })()
+    );
+    return;
   }
 
   // Always fetch non-GET requests from the network
