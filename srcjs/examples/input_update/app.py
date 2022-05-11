@@ -1,7 +1,7 @@
 from datetime import date
-from shiny import *
-from htmltools import *
 
+from shiny import *
+from shiny.ui import tags, h2
 
 app_ui = ui.page_fluid(
     ui.panel_title("Changing the values of inputs from the server"),
@@ -78,7 +78,7 @@ app_ui = ui.page_fluid(
                     multiple=True,
                 ),
             ),
-            ui.navs_tab(
+            ui.navset_tab(
                 ui.nav("panel1", h2("This is the first panel.")),
                 ui.nav("panel2", h2("This is the second panel.")),
                 id="inTabset",
