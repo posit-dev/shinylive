@@ -159,7 +159,7 @@ export default function Viewer({
 
         // Save the code in /home/pyodide/{appName} so we can load it as a module
         await pyodideproxy.callPy(
-          ["save_files"],
+          ["_save_files"],
           [appCode, "/home/pyodide/" + appName],
           {}
         );
@@ -183,6 +183,8 @@ export default function Viewer({
           `
           import sys
           sys.path.insert(0, "/home/pyodide/${appName}")
+
+          await _load_packages(_find_all_imports("/home/pyodide/${appName}"))
 
           import ${appName}.app
           __${appName}_lifespan__ = ${appName}.app.app._lifespan(${appName}.app.app.starlette_app)

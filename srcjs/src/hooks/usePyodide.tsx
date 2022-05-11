@@ -181,7 +181,7 @@ import sys
 sys.path.insert(0, "")
 
 # Function for saving Shiny app files so we can load the app as a module.
-def save_files(files: list[dict[str, str]], destdir: str) -> None:
+def _save_files(files: list[dict[str, str]], destdir: str) -> None:
     # If called from JS and passed an Object, we need to convert it to a
     # dict.
     if (isinstance(files, pyodide.JsProxy)):
@@ -194,6 +194,24 @@ def save_files(files: list[dict[str, str]], destdir: str) -> None:
     for file in files:
         with open(destdir + "/" + file['name'], 'wt') as f:
             f.write(file['content'])
+
+def _find_all_imports(dir: str) -> list[str]:
+    import os
+    import pyodide
+    files = os.listdir(dir)
+    imports: list[str] = []
+    for file in files:
+        with open(os.path.join(dir, file)) as f:
+            imports.extend(pyodide.find_imports(f.read()))
+    return imports
+
+async def _load_packages(packages: list[str]) -> None:
+    # loaded_packages: list[str] = tuple(js_pyodide.loadedPackages.to_py())
+    loaded_packages = list(sys.modules)
+    for package in packages:
+        if package not in loaded_packages:
+            print(f"Loading {package}...")
+            await js_pyodide.loadPackage(package)
 `;
 
 // =============================================================================
