@@ -22,25 +22,42 @@ To build the JS/wasm resources, you must initialize the git submodules. This onl
 make submodules
 ```
 
-Then after that, you can simply run `make` in the `srcjs/` directory:
+After that, you can simply run `make all` in the `srcjs/` directory:
 
 ```bash
 make all
 ```
 
-To build serve the test web site with examples, run (still in `srcjs/`):
+To build and serve the live Examples page:
+
+```bash
+make serve
+```
+
+This will also watch the source files in `srcjs/` for changes, and will rebuild and auto-reload the web page when the files change.
+
+There is also a Quarto web site which demonstrates the shinylive components in different configurations. To build and serve the test Quarto web site with Quarto components, run (still in `srcjs/`):
 
 ```bash
 make quarto
 make quartoserve
 ```
 
-This will also watch the source TS files for changes and auto-reload the web page when they are modified and rebuilt.
+This will auto-rebuild and reload the Quarto site when a .qmd file in `quarto/` changes, but it will not auto-rebuild when the source TS files change.
+
+
+You may occasionally need to clean out the built artifacts and rebuild:
+
+```sh
+make clean
+make submodules
+make all
+```
 
 
 ## Pulling changes
 
-After pulling changes to the parent repo, you may need to tell it to update submodules. (Note that running `make` in the `srcjs/` subdirectory will do this for you automatically.)
+After pulling changes to the parent repo, you may need to tell it to update submodules.
 
 ```bash
 git pull

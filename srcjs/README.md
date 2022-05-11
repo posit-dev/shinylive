@@ -4,14 +4,15 @@ Shiny live JS/CSS/wasm components
 This directory contains source files needed to build shinylive. To build, run:
 
 ```sh
-make
+make submodules
+make all
 ```
 
 You may occasionally need to clean out the built artifacts and rebuild:
 
 ```sh
 make clean
-make
+make all
 ```
 
 ## File overview
