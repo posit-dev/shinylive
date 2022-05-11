@@ -10,6 +10,12 @@ There are two parts that need to be built:
 * The `shinylive` Python package
 * The JS/wasm resources used by `shinylive`.
 
+The Makefile lives in the `srcjs/` directory.
+
+```bash
+cd srcjs
+```
+
 To build the JS/wasm resources, you must initialize the git submodules. This only needs to be done once:
 
 ```bash
@@ -19,11 +25,10 @@ make submodules
 Then after that, you can simply run `make` in the `srcjs/` directory:
 
 ```bash
-cd srcjs
 make all
 ```
 
-To build serve the test web site with examples, run:
+To build serve the test web site with examples, run (still in `srcjs/`):
 
 ```bash
 make quarto
