@@ -1,2 +1,2 @@
 Read local CSV
-App demonstrating use of external files for loading data
+Load a CSV file and display as an HTML table
