@@ -31,6 +31,11 @@ export function useDragToResizeGrid({
         return;
       }
 
+      // If we're already dragging, don't try to start another drag.
+      if (dragStateRef.current) {
+        return;
+      }
+
       // This prevents the mouse down from triggering un-desired things like text-selection etc.
       e.preventDefault();
 
