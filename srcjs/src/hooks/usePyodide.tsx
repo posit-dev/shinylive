@@ -201,8 +201,9 @@ def _find_all_imports(dir: str) -> list[str]:
     files = os.listdir(dir)
     imports: list[str] = []
     for file in files:
-        with open(os.path.join(dir, file)) as f:
-            imports.extend(pyodide.find_imports(f.read()))
+        if file.endswith(".py"):
+            with open(os.path.join(dir, file)) as f:
+                imports.extend(pyodide.find_imports(f.read()))
     return imports
 
 async def _load_packages(packages: list[str]) -> None:
