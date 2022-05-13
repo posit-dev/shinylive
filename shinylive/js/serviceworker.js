@@ -1,0 +1,1 @@
+../../srcjs/serviceworker.js
