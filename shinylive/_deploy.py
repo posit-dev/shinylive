@@ -34,6 +34,12 @@ def deploy(app_dir: str, dest_dir: str) -> None:
         dirs[:] = set(dirs) - exclude_names
         rel_dir = os.path.relpath(root, app_dir)
         files = [f for f in files if not f.startswith(".")]
+        files.sort()
+
+        # Move app.py to first in list.
+        if "app.py" in files:
+            app_py_idx = files.index("app.py")
+            files.insert(0, files.pop(app_py_idx))
 
         for filename in files:
             if rel_dir == ".":
