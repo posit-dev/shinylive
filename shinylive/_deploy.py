@@ -33,6 +33,8 @@ def deploy(app_dir: str, dest_dir: str) -> None:
     for root, dirs, files in os.walk(app_dir, topdown=True):
         dirs[:] = set(dirs) - exclude_names
         rel_dir = os.path.relpath(root, app_dir)
+        files = [f for f in files if not f.startswith(".")]
+
         for filename in files:
             if rel_dir == ".":
                 output_filename = filename
