@@ -21,6 +21,7 @@ def deploy(
     destdir: str,
     *,
     overwrite: bool = False,
+    subdir: Optional[str] = None,
     verbose: bool = False,
 ) -> None:
     """
@@ -31,10 +32,14 @@ def deploy(
         if verbose:
             print(*args)
 
-    os.makedirs(destdir, exist_ok=True)
+    if subdir is None:
+        subdir = ""
+    if os.path.isabs(subdir):
+        raise ValueError("subdir must be a relative path")
 
     shinylive_source_dir = os.path.join(os.path.dirname(__file__), "js")
     verbose_print(f"Copying {shinylive_source_dir} to {destdir}")
+    os.makedirs(destdir, exist_ok=True)
     shutil.copytree(
         shinylive_source_dir,
         destdir,
@@ -75,7 +80,31 @@ def deploy(
                 }
             )
 
-    app_json_output_file = os.path.join(destdir, "app.json")
+    # Write the index.html, editor/index.html, and app.json in the destdir.
+    html_source_dir = os.path.join(os.path.dirname(__file__), "html")
+    app_destdir = os.path.join(destdir, subdir)
+
+    # For a subdir like a/b/c, this will be ../../../
+    subdir_inverse = "/".join([".."] * _path_length(subdir)) + "/"
+
+    os.makedirs(app_destdir, exist_ok=True)
+    _copy_file_and_substitute(
+        src=os.path.join(html_source_dir, "index.html"),
+        dest=os.path.join(app_destdir, "index.html"),
+        search_str="{{REL_PATH}}",
+        replace_str=subdir_inverse,
+    )
+
+    os.makedirs(os.path.join(app_destdir, "editor"), exist_ok=True)
+    _copy_file_and_substitute(
+        src=os.path.join(html_source_dir, "editor", "index.html"),
+        dest=os.path.join(app_destdir, "editor", "index.html"),
+        search_str="{{REL_PATH}}",
+        replace_str=subdir_inverse,
+    )
+
+    app_json_output_file = os.path.join(app_destdir, "app.json")
+
     verbose_print("Writing to " + app_json_output_file)
     json.dump(app_files, open(app_json_output_file, "w"))
 
@@ -101,3 +130,33 @@ def _copy_fn(
         shutil.copy2(src, dst, **kwargs)
 
     return mycopy
+
+
+def _path_length(path: str) -> int:
+    """Returns the number of elements in a path.
+
+    For example 'a' has length 1, 'a/b' has length 2, etc.
+    """
+
+    if os.path.isabs(path):
+        raise ValueError("path must be a relative path")
+
+    path = os.path.normpath(path)
+    if path == ".":
+        return 0
+
+    # On Windows, replace backslashes with forward slashes.
+    if os.name == "nt":
+        path.replace("\\", "/")
+
+    return len(path.split("/"))
+
+
+def _copy_file_and_substitute(
+    src: str, dest: str, search_str: str, replace_str: str
+) -> None:
+    with open(src, "r") as fin:
+        in_content = fin.read()
+        in_content = in_content.replace(search_str, replace_str)
+        with open(dest, "w") as fout:
+            fout.write(in_content)
