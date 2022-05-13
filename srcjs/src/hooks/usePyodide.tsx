@@ -194,16 +194,20 @@ sys.path.insert(0, "")
 def _save_files(files: list[dict[str, str]], destdir: str) -> None:
     # If called from JS and passed an Object, we need to convert it to a
     # dict.
-    if (isinstance(files, pyodide.JsProxy)):
+    if isinstance(files, pyodide.JsProxy):
         files = files.to_py()
 
     import os
     if os.path.exists(destdir):
-      shutil.rmtree(destdir)
+        shutil.rmtree(destdir)
     os.makedirs(destdir)
+
     for file in files:
-        with open(destdir + "/" + file['name'], 'wt') as f:
-            f.write(file['content'])
+        subdir = os.path.dirname(file["name"])
+        if subdir:
+            os.makedirs(os.path.join(destdir, subdir), exist_ok=True)
+        with open(destdir + "/" + file["name"], "w") as f:
+            f.write(file["content"])
 
 def _find_all_imports(dir: str) -> list[str]:
     import os
