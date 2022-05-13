@@ -55,29 +55,3 @@ def deploy(app_dir: str, dest_dir: str) -> None:
     app_json_output_file = os.path.join(dest_dir, "app.json")
     print("Writing to " + app_json_output_file)
     json.dump(app_files, open(app_json_output_file, "w"))
-
-    print(
-        f"""
-Run:
-    python3 -m http.server --directory {dest_dir} 8000
-    """
-    )
-
-
-if __name__ == "__main__":
-    import argparse
-
-    parser = argparse.ArgumentParser(description="Statically deploy a Shiny app.")
-    parser.add_argument(
-        "app_path",
-        type=str,
-        help="The path to the app directory containing the app.json file.",
-    )
-    parser.add_argument(
-        "dest_dir",
-        type=str,
-        help="The path to the directory to which the app should be deployed.",
-    )
-    args = parser.parse_args()
-
-    deploy(args.app_path, args.dest_dir)
