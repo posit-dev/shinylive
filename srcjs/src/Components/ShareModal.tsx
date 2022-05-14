@@ -2,7 +2,7 @@ import LZString from "lz-string";
 import * as React from "react";
 
 import { FileContent } from "./types";
-import { useOnClickOutside } from "../hooks/useOnClickOutside";
+import { useOnEscOrClickOutside } from "../hooks/useOnEscOrClickOutside";
 import "./ShareModal.css";
 
 // =============================================================================
@@ -42,7 +42,7 @@ export default function ShareModal({
   const editorUrlInputRef = React.useRef<HTMLInputElement>(null);
   const appUrlInputRef = React.useRef<HTMLInputElement>(null);
 
-  useOnClickOutside(showModalRef, () => setShowShareModal(false));
+  useOnEscOrClickOutside(showModalRef, () => setShowShareModal(false));
 
   return (
     <div className="ShareModal" ref={showModalRef}>
