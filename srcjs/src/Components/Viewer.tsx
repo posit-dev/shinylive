@@ -109,17 +109,14 @@ async function resetAppFrame(
         # Unload app module and submodules
         for name, module in list(sys.modules.items()):
             if name == "${appName}" or name.startswith("${appName}."):
-                print("Unloading module", name)
                 sys.modules.pop(name)
             elif (
                 hasattr(module, "__file__")
-                and len(module.__file__) > 0
+                and module.__file__ is not None
                 and module.__file__.startswith("/home/pyodide")
             ):
                 # This will find submodules of the app if they are from files
                 # loaded with 'import foo', as opposed to 'from . import foo'.
-                print("Found submodule: ", name, " : ", module.__file__)
-                print("Unloading module", name)
                 sys.modules.pop(name)
 
     _res
