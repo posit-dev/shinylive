@@ -73,9 +73,9 @@ export function FileTabs({
                   onKeyPress={(e) => {
                     if (e.key === "Enter" && validFileName) {
                       renameFile(activeFile.name, editingFilename);
-                    } else if (!/^[a-zA-Z0-9_.-]$/.test(e.key)) {
-                      // Only allow letters, numbers, underscore, period, and
-                      // hyphen to go through.
+                    } else if (!/^[a-zA-Z0-9/_.-]$/.test(e.key)) {
+                      // Only allow letters, numbers, slash, underscore, period,
+                      // and hyphen to go through.
                       e.preventDefault();
                     }
                   }}
