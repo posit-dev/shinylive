@@ -85,7 +85,9 @@ def deploy(
     app_destdir = os.path.join(destdir, subdir)
 
     # For a subdir like a/b/c, this will be ../../../
-    subdir_inverse = "/".join([".."] * _path_length(subdir)) + "/"
+    subdir_inverse = "/".join([".."] * _path_length(subdir))
+    if subdir_inverse != "":
+        subdir_inverse += "/"
 
     os.makedirs(app_destdir, exist_ok=True)
     _copy_file_and_substitute(
