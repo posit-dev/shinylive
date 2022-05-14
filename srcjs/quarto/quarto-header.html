@@ -1,6 +1,9 @@
 <script type="module">
   const localhostNames = ["localhost", "127.0.0.1", "[::1]"];
-  if (!localhostNames.includes(window.location.hostname)) {
+  if (
+    window.location.protocol !== "https:" &&
+    !localhostNames.includes(window.location.hostname)
+  ) {
     const errorMessage =
       "Shinylive uses a Service Worker, which requires either a connection to localhost, or a connection via https.";
     document.body.innerText = errorMessage;
