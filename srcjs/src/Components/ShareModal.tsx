@@ -18,19 +18,22 @@ export default function ShareModal({
 }) {
   const showModalRef = React.useRef<HTMLDivElement>(null);
 
-  const editorPrefix =
-    window.location.origin + window.location.pathname + "#code=";
+  // const editorPrefix =
+  //   window.location.origin + window.location.pathname + "#code=";
 
-  const appPrefix =
-    window.location.origin +
-    // "foo/examples/index.html" => "foo/app/"
-    // "foo/examples/" => "foo/app/"
-    // "/examples/" => "/app/"
-    window.location.pathname.replace(
-      new RegExp("([^/]+)/(index.html)?$"),
-      "app/"
-    ) +
-    "#code=";
+  // const appPrefix =
+  //   window.location.origin +
+  //   // "foo/examples/index.html" => "foo/app/"
+  //   // "foo/examples/" => "foo/app/"
+  //   // "/examples/" => "/app/"
+  //   window.location.pathname.replace(
+  //     new RegExp("([^/]+)/(index.html)?$"),
+  //     "app/"
+  //   ) +
+  //   "#code=";
+
+  const editorPrefix = "https://rstudio.github.io/pyshiny-site/examples/#code=";
+  const appPrefix = "https://rstudio.github.io/pyshiny-site/app/#code=";
 
   const encodedCode = LZString.compressToEncodedURIComponent(
     JSON.stringify(fileContents)
