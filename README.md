@@ -1,28 +1,100 @@
-Shiny live JS/CSS/wasm components
-=================================
+Shiny live
+==========
 
-This directory contains source files needed to build shinylive. To build, run:
+A Python package for deploying Shiny applications that will run completely in the browser, using Pyodide (Python compiled to WebAssembly).
 
-```sh
+## Build instructions
+
+There are two parts that need to be built:
+
+* The `shinylive` Python package
+* The JS/wasm resources used by `shinylive`.
+
+The Makefile lives in the `srcjs/` directory.
+
+```bash
+cd srcjs
+```
+
+You must first initialize the git submodules. This only needs to be done once:
+
+```bash
 make submodules
+```
+
+After that, you can simply run `make all` in the `srcjs/` directory:
+
+```bash
 make all
 ```
+
+To build and serve the live Examples page:
+
+```bash
+make serve
+```
+
+This will also watch the source files in `srcjs/` for changes, and will rebuild and auto-reload the web page when the files change.
+
+To build the shinylive.tar.gz distribution file:
+
+```bash
+make dist
+```
+
+
+There is also a Quarto web site which demonstrates the shinylive components in different configurations. To build and serve the test Quarto web site with Quarto components, run (still in `srcjs/`):
+
+```bash
+make quarto
+make quartoserve
+```
+
+This will auto-rebuild and reload the Quarto site when a .qmd file in `quarto/` changes, but it will not auto-rebuild when the source TS files change.
+
 
 You may occasionally need to clean out the built artifacts and rebuild:
 
 ```sh
 make clean
+make submodules
 make all
 ```
 
-To create the shinylive.tar.gz distribution file, run this after `make all`:
 
-```sh
-make dist
+You can see many of the `make` targets by just running `make`:
+
+```
+$ make
+submodules             Update git submodules to commits referenced in this repository
+submodules-pull        Pull latest changes in git submodules
+all                    Build everything _except_ the shinylive.tar.gz distribution file
+dist                   Build shinylive distribution .tar.gz file
+node_modules           Install node modules using yarn
+buildjs                Build JS resources from src/ dir
+watch                  Build JS resources and watch for changes
+serve                  Build JS resources, watch for changes, and serve site
+packages               Build htmltools and shiny wheels
+download_pypi_packages Download dependency packages from PyPI
+api-docs               Build Shiny API docs
+quarto                 Build Quarto example site in quarto/
+quartoserve            Build Quarto example site and serve
+clean                  Remove all build files
+distclean              Remove all build files and venv/
+test                   Run tests
+test-watch             Run tests and watch
 ```
 
 
-## Development instructions
+## Pulling changes
+
+After pulling changes to the parent repo, you may need to tell it to update submodules.
+
+```bash
+git pull
+make submodules-pull
+```
+
 
 ## File overview
 
