@@ -1,1 +1,1 @@
-../serviceworker.js
+../dist/serviceworker.js

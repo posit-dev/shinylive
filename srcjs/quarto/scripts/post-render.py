@@ -3,6 +3,12 @@
 import shutil
 import os
 
+# Directory with built shinylive assets
+BUILD_DIR = "build"
+# Directory with static HTML site assets (like examples/index.html)
+SITE_DIR = "site"
+
+
 # Continue past this part only if building entire site.
 if not os.getenv("QUARTO_PROJECT_RENDER_ALL"):
     exit()
@@ -15,7 +21,7 @@ open("docs/.nojekyll", "a").close()
 # _quarto.yml, but it doesn't seem to allow choosing the destination directory,
 # so the files would end up on docs/prism-experiments/shinylive/ instead of
 # docs/shinylive/.
-shutil.copyfile("../site/serviceworker.js", "docs/serviceworker.js")
-shutil.copytree("../site/examples", "docs/examples")
-shutil.copytree("../site/app", "docs/app")
-os.symlink("../../shinylive", "docs/shinylive")
+shutil.copyfile(f"../{BUILD_DIR}/serviceworker.js", "docs/serviceworker.js")
+os.symlink(f"../../{BUILD_DIR}/shinylive", "docs/shinylive")
+shutil.copytree(f"../{SITE_DIR}/examples", "docs/examples")
+shutil.copytree(f"../{SITE_DIR}/app", "docs/app")

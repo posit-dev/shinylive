@@ -11,7 +11,7 @@
 
 PYODIDE_VERSION = 0.20.1a1
 PYODIDE_DIST_FILENAME = pyodide-build-$(PYODIDE_VERSION).tar.bz2
-OUT_DIR = ./shinylive
+BUILD_DIR = ./build
 PACKAGE_DIR = ./packages
 
 # Read htmltools and shiny versions from the package code. It's done with grep
@@ -75,52 +75,52 @@ submodules-pull:
 
 ## Build everything
 all: node_modules \
-	$(OUT_DIR)/jquery.terminal \
-	$(OUT_DIR)/jquery.min.js \
-	$(OUT_DIR)/style-resets.css \
-	$(OUT_DIR)/loading.html \
-	$(OUT_DIR)/pyodide \
-	$(OUT_DIR)/pyodide/$(HTMLTOOLS_WHEEL) \
-	$(OUT_DIR)/pyodide/$(SHINY_WHEEL) \
+	$(BUILD_DIR)/shinylive/jquery.terminal \
+	$(BUILD_DIR)/shinylive/jquery.min.js \
+	$(BUILD_DIR)/shinylive/style-resets.css \
+	$(BUILD_DIR)/shinylive/loading.html \
+	$(BUILD_DIR)/shinylive/pyodide \
+	$(BUILD_DIR)/shinylive/pyodide/$(HTMLTOOLS_WHEEL) \
+	$(BUILD_DIR)/shinylive/pyodide/$(SHINY_WHEEL) \
 	download_pypi_packages \
-	$(OUT_DIR)/pyodide/packages.json \
-	build
+	$(BUILD_DIR)/shinylive/pyodide/packages.json \
+	buildjs
 
 
 ## Install node modules using yarn
 node_modules: package.json
 	yarn
 
-$(OUT_DIR)/jquery.terminal: node_modules/jquery.terminal
-	mkdir -p $(OUT_DIR)
-	cp -Rv node_modules/jquery.terminal $(OUT_DIR)
+$(BUILD_DIR)/shinylive/jquery.terminal: node_modules/jquery.terminal
+	mkdir -p $(BUILD_DIR)/shinylive/shinylive
+	cp -Rv node_modules/jquery.terminal $(BUILD_DIR)/shinylive
 
-$(OUT_DIR)/jquery.min.js: node_modules/jquery/dist/jquery.min.js
-	cp -Rv node_modules/jquery/dist/jquery.min.js $(OUT_DIR)
+$(BUILD_DIR)/shinylive/jquery.min.js: node_modules/jquery/dist/jquery.min.js
+	cp -Rv node_modules/jquery/dist/jquery.min.js $(BUILD_DIR)/shinylive
 
-$(OUT_DIR)/style-resets.css: src/style-resets.css
-	cp src/style-resets.css $(OUT_DIR)
+$(BUILD_DIR)/shinylive/style-resets.css: src/style-resets.css
+	cp src/style-resets.css $(BUILD_DIR)/shinylive
 
-$(OUT_DIR)/loading.html: src/loading.html
-	cp src/loading.html $(OUT_DIR)
+$(BUILD_DIR)/shinylive/loading.html: src/loading.html
+	cp src/loading.html $(BUILD_DIR)/shinylive
 
-$(OUT_DIR)/pyodide:
-	mkdir -p $(OUT_DIR)/pyodide
-	cd $(OUT_DIR) && \
+$(BUILD_DIR)/shinylive/pyodide:
+	mkdir -p $(BUILD_DIR)/shinylive/pyodide
+	cd $(BUILD_DIR)/shinylive && \
 	curl -L https://github.com/pyodide/pyodide/releases/download/$(PYODIDE_VERSION)/$(PYODIDE_DIST_FILENAME) \
 	    | tar --exclude "*test*.tar" --exclude "node_modules" -xvj
 
-$(OUT_DIR)/pyodide/$(HTMLTOOLS_WHEEL): $(PACKAGE_DIR)/$(HTMLTOOLS_WHEEL)
-	mkdir -p $(OUT_DIR)/pyodide
-	cp $(PACKAGE_DIR)/$(HTMLTOOLS_WHEEL) $(OUT_DIR)/pyodide/$(HTMLTOOLS_WHEEL)
+$(BUILD_DIR)/shinylive/pyodide/$(HTMLTOOLS_WHEEL): $(PACKAGE_DIR)/$(HTMLTOOLS_WHEEL)
+	mkdir -p $(BUILD_DIR)/shinylive/pyodide
+	cp $(PACKAGE_DIR)/$(HTMLTOOLS_WHEEL) $(BUILD_DIR)/shinylive/pyodide/$(HTMLTOOLS_WHEEL)
 
-$(OUT_DIR)/pyodide/$(SHINY_WHEEL): $(PACKAGE_DIR)/$(SHINY_WHEEL)
-	mkdir -p $(OUT_DIR)/pyodide
-	cp $(PACKAGE_DIR)/$(SHINY_WHEEL) $(OUT_DIR)/pyodide/$(SHINY_WHEEL)
+$(BUILD_DIR)/shinylive/pyodide/$(SHINY_WHEEL): $(PACKAGE_DIR)/$(SHINY_WHEEL)
+	mkdir -p $(BUILD_DIR)/shinylive/pyodide
+	cp $(PACKAGE_DIR)/$(SHINY_WHEEL) $(BUILD_DIR)/shinylive/pyodide/$(SHINY_WHEEL)
 
 
 ## Build JS resources from src/ dir
-build:
+buildjs:
 	node scripts/build.mjs
 
 ## Build JS resources and watch for changes
@@ -152,13 +152,13 @@ $(PACKAGE_DIR)/$(SHINY_WHEEL): $(PYBIN) $(PACKAGE_DIR)/py-shiny
 # network access.
 ## Download dependency packages from PyPI
 download_pypi_packages: $(PYBIN) scripts/py_package_versions.py
-	mkdir -p $(OUT_DIR)/pyodide
-	. $(PYBIN)/activate && scripts/py_package_versions.py download_pypi_packages $(OUT_DIR)/pyodide
+	mkdir -p $(BUILD_DIR)/shinylive/pyodide
+	. $(PYBIN)/activate && scripts/py_package_versions.py download_pypi_packages $(BUILD_DIR)/shinylive/pyodide
 
 # Update pyodide's package.json to include htmltools, shiny, and their deps which aren't included in Pyodide.
-$(OUT_DIR)/pyodide/packages.json: $(PYBIN) scripts/py_package_versions.py $(OUT_DIR)/pyodide/$(HTMLTOOLS_WHEEL) $(OUT_DIR)/pyodide/$(SHINY_WHEEL)
+$(BUILD_DIR)/shinylive/pyodide/packages.json: $(PYBIN) scripts/py_package_versions.py $(BUILD_DIR)/shinylive/pyodide/$(HTMLTOOLS_WHEEL) $(BUILD_DIR)/shinylive/pyodide/$(SHINY_WHEEL)
 	$(PYBIN)/pip install -r requirements-dev.txt
-	. $(PYBIN)/activate && scripts/py_package_versions.py insert_into_pyodide_packages $(OUT_DIR)/pyodide
+	. $(PYBIN)/activate && scripts/py_package_versions.py insert_into_pyodide_packages $(BUILD_DIR)/shinylive/pyodide
 
 ## Build Shiny API docs
 api-docs: $(PYBIN)
@@ -175,7 +175,7 @@ quartoserve:
 
 ## Remove all build files
 clean:
-	rm -rf $(PACKAGE_DIR)/*.whl shinylive/ quarto/docs/
+	rm -rf $(PACKAGE_DIR)/*.whl $(BUILD_DIR) quarto/docs/
 	cd $(PACKAGE_DIR)/py-shiny/docs && make clean
 
 ## Remove all build files and venv/

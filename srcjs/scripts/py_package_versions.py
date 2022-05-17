@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
-DEFAULT_PYODIDE_DIR = "shinylive/pyodide"
+BUILD_DIR = "build"
+DEFAULT_PYODIDE_DIR = BUILD_DIR + "/shinylive/pyodide"
 
 usage_info = f"""
 Find the versions of htmltools, shiny, and their dependencies that are needed to add to

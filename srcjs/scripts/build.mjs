@@ -5,7 +5,7 @@ import { spawn } from "child_process";
 import buildExamples from "../examples/build_examples_json.mjs";
 import process from "process";
 
-const OUT_DIR = "./shinylive";
+const BUILD_DIR = "./build";
 
 const clients = [];
 
@@ -38,7 +38,7 @@ esbuild
   .build({
     bundle: true,
     entryPoints: ["src/Components/App.tsx"],
-    outfile: `${OUT_DIR}/shinylive.js`,
+    outfile: `${BUILD_DIR}/shinylive/shinylive.js`,
     format: "esm",
     target: "es2020",
     ...watchProp,
@@ -62,7 +62,7 @@ esbuild
   .build({
     bundle: true,
     entryPoints: ["src/pyodide-worker.ts", "src/inject-socket.ts"],
-    outdir: `${OUT_DIR}`,
+    outdir: `${BUILD_DIR}/shinylive`,
     format: "esm",
     target: "es2020",
     ...watchProp,
@@ -73,7 +73,7 @@ esbuild
   .build({
     bundle: false,
     entryPoints: ["src/run-python-blocks.ts"],
-    outdir: `${OUT_DIR}`,
+    outdir: `${BUILD_DIR}/shinylive`,
     format: "esm",
     target: "es2020",
     ...watchProp,
@@ -84,7 +84,7 @@ esbuild
   .build({
     bundle: true,
     entryPoints: ["src/serviceworker.ts"],
-    outdir: "./",
+    outdir: `${BUILD_DIR}`,
     format: "esm",
     target: "es2020",
     ...watchProp,

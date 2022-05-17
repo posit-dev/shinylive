@@ -1,7 +1,10 @@
 import * as fs from "fs";
+
+const BUILD_DIR = "./build";
+
 const examplesDir = "./examples";
 const orderingFile = `${examplesDir}/index.json`;
-const outputFile = `./shinylive/examples.json`;
+const outputFile = `${BUILD_DIR}/shinylive/examples.json`;
 
 export default function buildExamples() {
   const latest_example_edit = latestMtime(examplesDir);
