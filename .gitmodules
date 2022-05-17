@@ -1,6 +1,6 @@
 [submodule "srcjs/packages/py-shiny"]
-	path = srcjs/packages/py-shiny
+	path = packages/py-shiny
 	url = https://github.com/rstudio/py-shiny.git
 [submodule "srcjs/packages/py-htmltools"]
-	path = srcjs/packages/py-htmltools
+	path = packages/py-htmltools
 	url = https://github.com/rstudio/py-htmltools.git
