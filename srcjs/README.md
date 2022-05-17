@@ -15,6 +15,15 @@ make clean
 make all
 ```
 
+To create the shinylive.tar.gz distribution file, run this after `make all`:
+
+```sh
+make dist
+```
+
+
+## Development instructions
+
 ## File overview
 
 This an overview of some of the important files and directories in this project.
@@ -29,10 +38,8 @@ This an overview of some of the important files and directories in this project.
 │   └── py-shiny
 ├── py_package_versions.py # Script for downloading PyPI packages and inserting
 │                          #   package metadata into pyodide's package.json.
-
+│
 ├── src                    # TypeScript source files.
 ├── site                   # Example web site with shinylive, served by `yarn build-and-reload`.
-├── serviceworker.js       # Generated from src/serviceworker.ts. This file must
-│                          #   live in the parent of shinylive/.
-└── shinylive              # Generated JS/CSS/wasm components for shinylive.
+└── dist                   # Generated JS/CSS/wasm components for shinylive.
 ```

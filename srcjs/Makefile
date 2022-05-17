@@ -1,6 +1,7 @@
-.PHONY: all packages download_pypi_packages \
+.PHONY: all dist \
+	packages download_pypi_packages \
 	submodules submodules-pull \
-	build watch serve \
+	buildjs watch serve \
 	packages \
 	api-docs \
 	quarto quartoserve \
@@ -14,6 +15,7 @@ PYODIDE_VERSION = 0.20.1a1
 PYODIDE_DIST_FILENAME = pyodide-build-$(PYODIDE_VERSION).tar.bz2
 BUILD_DIR = ./build
 PACKAGE_DIR = ./packages
+DIST_DIR = ./dist
 
 # Read htmltools and shiny versions from the package code. It's done with grep
 # because if we try to load the package and read shiny.__version__, it requires
@@ -74,7 +76,7 @@ submodules-pull:
 	git submodule update --recursive --remote
 
 
-## Build everything
+## Build everything _except_ the shinylive.tar.gz distribution file
 all: node_modules \
 	$(BUILD_DIR)/shinylive/jquery.terminal \
 	$(BUILD_DIR)/shinylive/jquery.min.js \
@@ -87,6 +89,10 @@ all: node_modules \
 	$(BUILD_DIR)/shinylive/pyodide/packages.json \
 	buildjs
 
+## Build shinylive distribution .tar.gz file
+dist:
+	mkdir -p $(DIST_DIR)
+	tar -czf $(DIST_DIR)/shinylive.tar.gz $(BUILD_DIR)
 
 ## Install node modules using yarn
 node_modules: package.json
