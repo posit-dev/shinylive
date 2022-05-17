@@ -2,9 +2,10 @@
 import esbuild from "esbuild";
 import http from "http";
 import { spawn } from "child_process";
-import buildExamples from "../examples/build_examples_json.mjs";
+import buildExamples from "./build_examples_json.mjs";
 import process from "process";
 
+const EXAMPLES_SOURCE_DIR = "./examples";
 const BUILD_DIR = "./build";
 
 const clients = [];
@@ -50,7 +51,7 @@ esbuild
             // On every rebuild make sure the examples are up to date.
             // One issue is this won't force esbuild to watch for the changes
             // of the example files themselves so live-reloading won't work
-            buildExamples();
+            buildExamples(EXAMPLES_SOURCE_DIR, BUILD_DIR);
           });
         },
       },
