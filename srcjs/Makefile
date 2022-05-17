@@ -1,6 +1,7 @@
 .PHONY: all packages download_pypi_packages \
 	submodules submodules-pull \
 	build watch serve \
+	packages \
 	api-docs \
 	quarto quartoserve \
 	clean distclean \
