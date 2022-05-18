@@ -88,6 +88,8 @@ all: node_modules \
 	$(BUILD_DIR)/shinylive/pyodide/$(SHINY_WHEEL) \
 	download_pypi_packages \
 	$(BUILD_DIR)/shinylive/pyodide/packages.json \
+	$(BUILD_DIR)/shinylive/shiny_static/index.html \
+	$(BUILD_DIR)/shinylive/shiny_static/edit/index.html \
 	buildjs
 
 ## Build shinylive distribution .tar.gz file
@@ -127,6 +129,14 @@ $(BUILD_DIR)/shinylive/pyodide/$(HTMLTOOLS_WHEEL): $(PACKAGE_DIR)/$(HTMLTOOLS_WH
 $(BUILD_DIR)/shinylive/pyodide/$(SHINY_WHEEL): $(PACKAGE_DIR)/$(SHINY_WHEEL)
 	mkdir -p $(BUILD_DIR)/shinylive/pyodide
 	cp $(PACKAGE_DIR)/$(SHINY_WHEEL) $(BUILD_DIR)/shinylive/pyodide/$(SHINY_WHEEL)
+
+$(BUILD_DIR)/shinylive/shiny_static/index.html: shiny_static/index.html
+	mkdir -p $(BUILD_DIR)/shinylive/shiny_static
+	cp shiny_static/index.html $(BUILD_DIR)/shinylive/shiny_static/index.html
+
+$(BUILD_DIR)/shinylive/shiny_static/edit/index.html: shiny_static/edit/index.html
+	mkdir -p $(BUILD_DIR)/shinylive/shiny_static/edit
+	cp shiny_static/edit/index.html $(BUILD_DIR)/shinylive/shiny_static/edit/index.html
 
 
 ## Build JS resources from src/ dir
