@@ -102,7 +102,7 @@ node_modules: package.json
 	yarn
 
 $(BUILD_DIR)/shinylive/jquery.terminal: node_modules/jquery.terminal
-	mkdir -p $(BUILD_DIR)/shinylive/shinylive
+	mkdir -p $(BUILD_DIR)/shinylive
 	cp -Rv node_modules/jquery.terminal $(BUILD_DIR)/shinylive
 
 $(BUILD_DIR)/shinylive/jquery.min.js: node_modules/jquery/dist/jquery.min.js
