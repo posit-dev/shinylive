@@ -10,6 +10,7 @@
 
 .DEFAULT_GOAL := help
 
+SHINYLIVE_VERSION = 0.0.1
 
 PYODIDE_VERSION = 0.20.1a1
 PYODIDE_DIST_FILENAME = pyodide-build-$(PYODIDE_VERSION).tar.bz2
@@ -92,7 +93,9 @@ all: node_modules \
 ## Build shinylive distribution .tar.gz file
 dist:
 	mkdir -p $(DIST_DIR)
-	tar -czf $(DIST_DIR)/shinylive.tar.gz $(BUILD_DIR)
+	ln -s $(BUILD_DIR) shinylive-$(SHINYLIVE_VERSION)
+	tar -chzvf $(DIST_DIR)/shinylive-$(SHINYLIVE_VERSION).tar.gz shinylive-$(SHINYLIVE_VERSION)
+	rm shinylive-$(SHINYLIVE_VERSION)
 
 ## Install node modules using yarn
 node_modules: package.json
@@ -182,7 +185,7 @@ quartoserve:
 
 ## Remove all build files
 clean:
-	rm -rf $(PACKAGE_DIR)/*.whl $(BUILD_DIR) quarto/docs/
+	rm -rf $(PACKAGE_DIR)/*.whl $(BUILD_DIR) $(DIST_DIR) quarto/docs/
 	cd $(PACKAGE_DIR)/py-shiny/docs && make clean
 
 ## Remove all build files and venv/
