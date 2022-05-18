@@ -84,6 +84,10 @@ pypi_packages_info: Dict[str, PackageInfo] = {
         "version": "1.0.1",
         "imports": ["uc_micro"],
     },
+    "appdirs": {
+        "name": "appdirs",
+        "version": "1.4.4",
+    },
     "click": {
         "name": "click",
         "version": "8.1.3",
