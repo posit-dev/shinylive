@@ -12,11 +12,12 @@ import * as cmUtils from "./codeMirror/utils";
 import "./Editor.css";
 import ShareModal from "./ShareModal";
 import { TerminalMethods } from "./Terminal";
-import { FileContent } from "./types";
+import { FileContent } from "./filecontent";
 import { ViewerMethods } from "./Viewer";
 
 export type EditorFile = {
   name: string;
+  type: "text" | "binary";
   ref: {
     editorState: EditorState;
   };
@@ -296,6 +297,7 @@ function editorFilesToFileContents(files: EditorFile[]): FileContent[] {
   return files.map((file) => {
     return {
       name: file.name,
+      type: file.type,
       content: file.ref.editorState.doc.toString(),
     };
   });

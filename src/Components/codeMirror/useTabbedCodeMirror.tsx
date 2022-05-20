@@ -3,7 +3,7 @@ import * as React from "react";
 import { inferFiletype } from "../../utils";
 import { getExtensionForFiletype } from "./extensions";
 import type { EditorFile } from "../Editor";
-import type { FileContent } from "../types";
+import type { FileContent } from "../filecontent";
 
 export default function useTabbedCodeMirror({
   currentFilesFromApp,
@@ -57,6 +57,7 @@ export default function useTabbedCodeMirror({
   function addFile() {
     const newFile: EditorFile = {
       name: `file${newFileCounter}.py`,
+      type: "text",
       ref: {
         editorState: EditorState.create({
           extensions: editorExtensions,
@@ -124,6 +125,7 @@ function fileContentsToEditorFiles(
   return files.map((file) => {
     return {
       name: file.name,
+      type: file.type,
       ref: {
         editorState: EditorState.create({
           extensions: [

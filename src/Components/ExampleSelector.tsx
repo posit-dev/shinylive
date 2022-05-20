@@ -8,7 +8,7 @@ import {
   ExampleItem,
 } from "../examples";
 import "./ExampleSelector.css";
-import { FileContent } from "./types";
+import { FileContent } from "./filecontent";
 
 function ExampleSelector({
   setCurrentFiles,

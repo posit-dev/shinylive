@@ -2,7 +2,7 @@ import * as React from "react";
 import { PyodideProxyHandle } from "../hooks/usePyodide";
 import { PyodideProxy } from "../pyodide-proxy";
 import * as utils from "../utils";
-import { FileContent } from "./types";
+import { FileContent } from "./filecontent";
 import LoadingAnimation from "./LoadingAnimation";
 import "./Viewer.css";
 
@@ -160,6 +160,7 @@ export default function Viewer({
             {
               name: "app.py",
               content: appCode,
+              type: "text",
             },
           ];
         }

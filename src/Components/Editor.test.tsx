@@ -8,7 +8,7 @@ import userEvent from "@testing-library/user-event";
 import Editor from "./Editor";
 import clearThenType from "../../testing-helpers/clearThenType";
 
-import { FileContent } from "./types";
+import { FileContent } from "./filecontent";
 
 const initialFiles: FileContent[] = [
   {

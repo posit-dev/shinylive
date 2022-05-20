@@ -1,4 +1,4 @@
-import { FileContent } from "./Components/types";
+import { FileContent } from "./Components/filecontent";
 
 export type ExampleItem = {
   title: string;

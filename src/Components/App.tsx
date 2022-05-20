@@ -12,7 +12,11 @@ import "./App.css";
 import Editor from "./Editor";
 import { getExampleCategories, findExampleByTitle } from "../examples";
 import ExampleSelector from "./ExampleSelector";
-import { FileContent } from "./types";
+import {
+  completeFileContents,
+  FileContent,
+  FileContentInput,
+} from "./filecontent";
 import OutputCell from "./OutputCell";
 import ResizableGrid from "./ResizableGrid/ResizableGrid";
 import Terminal, { TerminalInterface, TerminalMethods } from "./Terminal";
@@ -127,6 +131,7 @@ export default function App({
       {
         name: "blank.py",
         content: "",
+        type: "text",
       },
     ];
 
@@ -332,7 +337,7 @@ export default function App({
 export function runApp(
   domTarget: HTMLElement,
   appMode: AppMode,
-  startFiles: FileContent[] | "auto" = "auto",
+  startFiles: FileContentInput[] | "auto" = "auto",
   args?: EditorViewerOptions
 ) {
   (async () => {
@@ -348,7 +353,7 @@ export function runApp(
           const code = LZString.decompressFromEncodedURIComponent(codeEncoded);
           if (code) {
             // Throws if parsing fails
-            startFiles = JSON.parse(code) as FileContent[];
+            startFiles = JSON.parse(code) as FileContentInput[];
           }
         } catch (e) {
           // Do nothing
@@ -363,7 +368,7 @@ export function runApp(
         const pos = findExampleByTitle(hashContent, exampleCategories);
         if (pos) {
           startFiles = exampleCategories[pos.categoryIndex].apps[pos.index]
-            .files as FileContent[]; // A little help for type checker.
+            .files as FileContentInput[]; // A little help for type checker.
         } else {
           startFiles = [];
         }
@@ -383,7 +388,7 @@ export function runApp(
       <React.StrictMode>
         <App
           appMode={appMode}
-          startFiles={startFiles}
+          startFiles={completeFileContents(startFiles)}
           editorViewerOptions={{ layout, viewerHeight }}
         />
       </React.StrictMode>,
