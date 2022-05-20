@@ -32,8 +32,8 @@ export default function ShareModal({
   //   ) +
   //   "#code=";
 
-  const editorPrefix = "https://rstudio.github.io/pyshiny-site/examples/#code=";
-  const appPrefix = "https://rstudio.github.io/pyshiny-site/app/#code=";
+  const editorPrefix = "https://pyshiny.netlify.app/examples/#code=";
+  const appPrefix = "https://pyshiny.netlify.app/app/#code=";
 
   const encodedCode = LZString.compressToEncodedURIComponent(
     JSON.stringify(fileContents)
