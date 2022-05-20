@@ -16,13 +16,24 @@ import { TerminalMethods } from "./Terminal";
 import { FileContent } from "./filecontent";
 import { ViewerMethods } from "./Viewer";
 
-export type EditorFile = {
-  name: string;
-  type: "text" | "binary";
-  ref: {
-    editorState: EditorState;
-  };
-};
+export type EditorFile =
+  | {
+      name: string;
+      type: "text";
+      ref: {
+        editorState: EditorState;
+      };
+    }
+  | {
+      name: string;
+      type: "binary";
+      // Binary files need to keep the actual content separate from what the
+      // editor knows about (which is just a short string describing the file).
+      content: string;
+      ref: {
+        editorState: EditorState;
+      };
+    };
 
 export default function Editor({
   currentFilesFromApp,
@@ -311,23 +322,31 @@ export function fileContentToEditorFile(
   file: FileContent,
   inferEditorExtensions: (f: FileContent) => Extension
 ): EditorFile {
-  let content: string;
   if (file.type === "binary") {
-    content = `<< ${atob(file.content).length} bytes of binary data >>`;
+    const content = atob(file.content);
+    return {
+      name: file.name,
+      type: file.type,
+      content: content,
+      ref: {
+        editorState: EditorState.create({
+          extensions: inferEditorExtensions(file),
+          doc: `<< ${content.length} bytes of binary data >>`,
+        }),
+      },
+    };
   } else {
-    content = file.content;
+    return {
+      name: file.name,
+      type: file.type,
+      ref: {
+        editorState: EditorState.create({
+          extensions: inferEditorExtensions(file),
+          doc: file.content,
+        }),
+      },
+    };
   }
-
-  return {
-    name: file.name,
-    type: file.type,
-    ref: {
-      editorState: EditorState.create({
-        extensions: inferEditorExtensions(file),
-        doc: content,
-      }),
-    },
-  };
 }
 
 export function editorFilesToFileContents(files: EditorFile[]): FileContent[] {
@@ -335,9 +354,16 @@ export function editorFilesToFileContents(files: EditorFile[]): FileContent[] {
 }
 
 export function editorFileToFileContent(file: EditorFile): FileContent {
+  let content: string;
+  if (file.type === "binary") {
+    content = btoa(file.content);
+  } else {
+    content = file.ref.editorState.doc.toString();
+  }
+
   return {
     name: file.name,
     type: file.type,
-    content: file.ref.editorState.doc.toString(),
+    content: content,
   };
 }
