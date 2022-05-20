@@ -124,10 +124,14 @@ $(BUILD_DIR)/shinylive/pyodide:
 
 $(BUILD_DIR)/shinylive/pyodide/$(HTMLTOOLS_WHEEL): $(PACKAGE_DIR)/$(HTMLTOOLS_WHEEL)
 	mkdir -p $(BUILD_DIR)/shinylive/pyodide
+	# Remove any old copies of htmltools
+	rm -f $(BUILD_DIR)/shinylive/pyodide/htmltools*.whl
 	cp $(PACKAGE_DIR)/$(HTMLTOOLS_WHEEL) $(BUILD_DIR)/shinylive/pyodide/$(HTMLTOOLS_WHEEL)
 
 $(BUILD_DIR)/shinylive/pyodide/$(SHINY_WHEEL): $(PACKAGE_DIR)/$(SHINY_WHEEL)
 	mkdir -p $(BUILD_DIR)/shinylive/pyodide
+	# Remove any old copies of shiny
+	rm -f $(BUILD_DIR)/shinylive/pyodide/shiny*.whl
 	cp $(PACKAGE_DIR)/$(SHINY_WHEEL) $(BUILD_DIR)/shinylive/pyodide/$(SHINY_WHEEL)
 
 $(BUILD_DIR)/shinylive/shiny_static/index.html: shiny_static/index.html
