@@ -1,16 +1,19 @@
-import { EditorState, Extension } from "@codemirror/state";
+import { Extension } from "@codemirror/state";
 import * as React from "react";
-import { inferFiletype } from "../../utils";
-import { getExtensionForFiletype } from "./extensions";
-import type { EditorFile } from "../Editor";
+import {
+  EditorFile,
+  editorFileToFileContent,
+  fileContentsToEditorFiles,
+  fileContentToEditorFile,
+} from "../Editor";
 import type { FileContent } from "../filecontent";
 
 export default function useTabbedCodeMirror({
   currentFilesFromApp,
-  editorExtensions,
+  inferEditorExtensions,
 }: {
   currentFilesFromApp: FileContent[];
-  editorExtensions: Extension[];
+  inferEditorExtensions: (f: FileContent) => Extension;
 }) {
   const [files, setFiles] = React.useState<EditorFile[]>([]);
 
@@ -31,11 +34,13 @@ export default function useTabbedCodeMirror({
   // App.
   // ===========================================================================
   React.useEffect(() => {
-    setFiles(fileContentsToEditorFiles(currentFilesFromApp, editorExtensions));
+    setFiles(
+      fileContentsToEditorFiles(currentFilesFromApp, inferEditorExtensions)
+    );
     setActiveFileIdx(0);
 
     setNewFileCounter(1);
-  }, [currentFilesFromApp, editorExtensions]);
+  }, [currentFilesFromApp, inferEditorExtensions]);
 
   // ===========================================================================
   // File adding/removing/renaming
@@ -55,16 +60,14 @@ export default function useTabbedCodeMirror({
   }
 
   function addFile() {
-    const newFile: EditorFile = {
-      name: `file${newFileCounter}.py`,
-      type: "text",
-      ref: {
-        editorState: EditorState.create({
-          extensions: editorExtensions,
-          doc: `def add(x, y):\n  return x + y\n`,
-        }),
+    const newFile: EditorFile = fileContentToEditorFile(
+      {
+        name: `file${newFileCounter}.py`,
+        type: "text",
+        content: `def add(x, y):\n  return x + y\n`,
       },
-    };
+      inferEditorExtensions
+    );
 
     setEditingFilename(newFile.name);
     setNewFileCounter(newFileCounter + 1);
@@ -77,6 +80,15 @@ export default function useTabbedCodeMirror({
     const fileIndex = updatedFiles.findIndex((f) => f.name === oldFileName);
 
     updatedFiles[fileIndex].name = newFileName;
+
+    // This is a little inefficient, but it does the job: convert to FileContent
+    // so that we can infer the new editor extensions (which can depend on file
+    // type), and then convert back to EditorFile, and save it back in the
+    // original slot.
+    updatedFiles[fileIndex] = fileContentToEditorFile(
+      editorFileToFileContent(updatedFiles[fileIndex]),
+      inferEditorExtensions
+    );
     setFiles(updatedFiles);
 
     setEditingFilename(null);
@@ -116,25 +128,4 @@ export default function useTabbedCodeMirror({
     selectFile,
     enterNameEditMode,
   };
-}
-
-function fileContentsToEditorFiles(
-  files: FileContent[],
-  extensions: Extension[]
-): EditorFile[] {
-  return files.map((file) => {
-    return {
-      name: file.name,
-      type: file.type,
-      ref: {
-        editorState: EditorState.create({
-          extensions: [
-            ...extensions,
-            getExtensionForFiletype(inferFiletype(file.name)),
-          ],
-          doc: file.content,
-        }),
-      },
-    };
-  });
 }

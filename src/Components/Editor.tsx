@@ -1,10 +1,11 @@
-import { EditorState, Prec } from "@codemirror/state";
+import { EditorState, Prec, Extension } from "@codemirror/state";
 import { EditorView, KeyBinding, keymap, ViewUpdate } from "@codemirror/view";
 import * as React from "react";
-import { modKeySymbol } from "../utils";
+import { inferFiletype, modKeySymbol } from "../utils";
 import {
   getExtensionForFiletype,
   getExtensions,
+  getBinaryFileExtensions,
 } from "./codeMirror/extensions";
 import { FileTabs } from "./codeMirror/FileTabs";
 import useTabbedCodeMirror from "./codeMirror/useTabbedCodeMirror";
@@ -63,25 +64,31 @@ export default function Editor({
     },
   ]);
 
-  // Declare extensions within a memoized function to maintain referentially stablity
-  const editorExtensions = React.useMemo(
-    () => [
-      getExtensions({ lineNumbers }),
-      // This may need to not be there for the file update one
-      getExtensionForFiletype("python"),
-      EditorView.updateListener.of((u: ViewUpdate) => {
-        if (u.docChanged) {
-          setFilesHaveChanged(true);
-        }
-      }),
-      Prec.high(keymap.of(keyBindings)),
-    ],
+  // Given a FileContent object, figure out which editor extensions to use.
+  // Use a memoized function to maintain referentially stablity.
+  const inferEditorExtensions = React.useCallback(
+    (file: FileContent) => {
+      if (file.type === "binary") {
+        return getBinaryFileExtensions();
+      }
+
+      return [
+        getExtensions({ lineNumbers }),
+        getExtensionForFiletype(inferFiletype(file.name)),
+        EditorView.updateListener.of((u: ViewUpdate) => {
+          if (u.docChanged) {
+            setFilesHaveChanged(true);
+          }
+        }),
+        Prec.high(keymap.of(keyBindings)),
+      ];
+    },
     [keyBindings, lineNumbers, setFilesHaveChanged]
   );
 
   const tabbedFiles = useTabbedCodeMirror({
     currentFilesFromApp,
-    editorExtensions,
+    inferEditorExtensions,
   });
   const { files, activeFile } = tabbedFiles;
 
@@ -290,15 +297,47 @@ export default function Editor({
   );
 }
 
-/**
- * Convert files to proper format for code mirrors editor state
- */
-function editorFilesToFileContents(files: EditorFile[]): FileContent[] {
-  return files.map((file) => {
-    return {
-      name: file.name,
-      type: file.type,
-      content: file.ref.editorState.doc.toString(),
-    };
-  });
+// =============================================================================
+// Conversion between FileContent and EditorFile
+// =============================================================================
+export function fileContentsToEditorFiles(
+  files: FileContent[],
+  inferEditorExtensions: (f: FileContent) => Extension
+): EditorFile[] {
+  return files.map((f) => fileContentToEditorFile(f, inferEditorExtensions));
+}
+
+export function fileContentToEditorFile(
+  file: FileContent,
+  inferEditorExtensions: (f: FileContent) => Extension
+): EditorFile {
+  let content: string;
+  if (file.type === "binary") {
+    content = `<< ${atob(file.content).length} bytes of binary data >>`;
+  } else {
+    content = file.content;
+  }
+
+  return {
+    name: file.name,
+    type: file.type,
+    ref: {
+      editorState: EditorState.create({
+        extensions: inferEditorExtensions(file),
+        doc: content,
+      }),
+    },
+  };
+}
+
+export function editorFilesToFileContents(files: EditorFile[]): FileContent[] {
+  return files.map(editorFileToFileContent);
+}
+
+export function editorFileToFileContent(file: EditorFile): FileContent {
+  return {
+    name: file.name,
+    type: file.type,
+    content: file.ref.editorState.doc.toString(),
+  };
 }

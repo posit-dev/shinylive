@@ -18,6 +18,7 @@ import { bracketMatching } from "@codemirror/matchbrackets";
 import { rectangularSelection } from "@codemirror/rectangular-selection";
 import { highlightSelectionMatches, searchKeymap } from "@codemirror/search";
 import { EditorState, Extension } from "@codemirror/state";
+import { EditorView } from "@codemirror/view";
 import { StreamLanguage } from "@codemirror/stream-parser";
 import {
   drawSelection,
@@ -66,6 +67,10 @@ export function getExtensions(
   }
 
   return extensions;
+}
+
+export function getBinaryFileExtensions(): Extension {
+  return [EditorView.editable.of(false)];
 }
 
 const LANG_EXTENSIONS: Record<string, () => Extension> = {
