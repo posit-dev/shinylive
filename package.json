@@ -29,6 +29,8 @@
     "eslint": "^8.9.0",
     "eslint-plugin-react": "^7.28.0",
     "eslint-plugin-react-hooks": "^4.3.0",
+    "glob": "^8.0.3",
+    "istextorbinary": "^6.0.0",
     "jest": "^27.4.5",
     "jquery.terminal": "^2.31.1",
     "just-clone": "5.0.1",

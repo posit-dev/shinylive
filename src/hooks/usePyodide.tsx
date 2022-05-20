@@ -186,6 +186,7 @@ import asyncio
 import shiny
 import pyodide
 import sys
+import base64
 
 # Add current directory to Python path.
 sys.path.insert(0, "")
@@ -206,8 +207,13 @@ def _save_files(files: list[dict[str, str]], destdir: str) -> None:
         subdir = os.path.dirname(file["name"])
         if subdir:
             os.makedirs(os.path.join(destdir, subdir), exist_ok=True)
-        with open(destdir + "/" + file["name"], "w") as f:
-            f.write(file["content"])
+
+        if "type" in file and file["type"] == "binary":
+            with open(destdir + "/" + file["name"], "wb") as f:
+                f.write(base64.b64decode(file["content"]))
+        else:
+            with open(destdir + "/" + file["name"], "w") as f:
+                f.write(file["content"])
 
 def _find_all_imports(dir: str) -> list[str]:
     import os

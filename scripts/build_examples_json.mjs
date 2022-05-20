@@ -1,4 +1,7 @@
 import * as fs from "fs";
+import * as path from "path";
+import glob from "glob";
+import { isBinary } from "istextorbinary";
 
 export default function buildExamples(examplesDir, buildDir) {
   const orderingFile = `${examplesDir}/index.json`;
@@ -20,38 +23,53 @@ export default function buildExamples(examplesDir, buildDir) {
   const ordering = JSON.parse(fs.readFileSync(orderingFile));
 
   function parseApp(exampleDir) {
-    const path = `${examplesDir}/${exampleDir}`;
+    const appPath = `${examplesDir}/${exampleDir}`;
 
-    if (!fs.existsSync(path)) {
+    if (!fs.existsSync(appPath)) {
       throw new Error(
-        `The requested example directory: ${path} does not exist. Check spelling.`
+        `The requested example directory: ${appPath} does not exist. Check spelling.`
       );
     }
 
     const [title, ...aboutLines] = fs
-      .readFileSync(`${path}/about.txt`)
+      .readFileSync(`${appPath}/about.txt`)
       .toString()
       .split("\n");
 
-    const files = fs.readdirSync(path, { withFileTypes: true });
+    const files = glob
+      .sync(`${appPath}/**`, { nodir: true })
+      .map((f) => f.replace(`${appPath}/`, "")); // Strip off leading path
+
     return {
       title,
       about: aboutLines.filter((l) => l !== "").join("/n"),
       files: files
-        .filter((f) => f.name !== "about.txt")
+        .filter((f) => f !== "about.txt")
+        .filter((f) => !f.includes("__pycache__"))
         .filter((f) => {
-          if (!(f.isFile() || f.isSymbolicLink())) {
-            console.log(
-              `${path}/${f.name} is not a file or symlink. Skipping.`
-            );
+          const fstat = fs.statSync(path.join(appPath, f));
+          if (!(fstat.isFile() || fstat.isSymbolicLink())) {
+            console.log(`${appPath}/${f} is not a file or symlink. Skipping.`);
             return false;
           }
           return true;
         })
-        .map((f) => ({
-          name: f.name,
-          content: fs.readFileSync(`${path}/${f.name}`).toString(),
-        })),
+        .map((f) => {
+          const type = isBinary(f) ? "binary" : "text";
+          let content = fs.readFileSync(`${appPath}/${f}`);
+
+          if (type === "binary") {
+            content = content.toString("base64");
+          } else {
+            content = content.toString();
+          }
+
+          return {
+            name: f,
+            content: content,
+            type: type,
+          };
+        }),
     };
   }
 
