@@ -58,6 +58,7 @@ class PyodidePackageInfo(TypedDict):
 #   micropip.install("htmltools") and micropip.install("shiny"), and inspecting the
 #   browser's network traffic to see what packages are downloaded from PyPI.
 pypi_packages_info: Dict[str, PackageInfo] = {
+    # Packages below are for Shiny
     "anyio": {
         "name": "anyio",
         "version": "3.4.0",
@@ -118,10 +119,29 @@ pypi_packages_info: Dict[str, PackageInfo] = {
         "version": "0.0.4",
         "imports": ["multipart"],
     },
+    # Packages below are for siuba
     "siuba": {
         "name": "siuba",
         "version": "0.2.3",
     },
+    # Packages below are for plotnine
+    "plotnine": {
+        "name": "plotnine",
+        "version": "0.8.0",
+    },
+    "descartes": {
+        "name": "descartes",
+        "version": "1.1.0",
+    },
+    "mizani": {
+        "name": "mizani",
+        "version": "0.7.4",
+    },
+    "palettable": {
+        "name": "palettable",
+        "version": "3.3.0",
+    },
+    # Packages below are for pyllusion
     "pyllusion": {
         "name": "pyllusion",
         "version": "0.0.12",
