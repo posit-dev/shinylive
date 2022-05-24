@@ -1,3 +1,9 @@
+// Needed because TypeScript's support for window.showOpenFilePicker and
+// .showDirectoryPicker is currently broken. There is a fix, but it's not yet
+// released; when it's released, we can remove this.
+// https://github.com/microsoft/vscode/issues/141908
+/// <reference types="wicg-file-system-access" />
+
 import { EditorState, Prec, Extension } from "@codemirror/state";
 import { EditorView, KeyBinding, keymap, ViewUpdate } from "@codemirror/view";
 import * as React from "react";
@@ -15,6 +21,7 @@ import ShareModal from "./ShareModal";
 import { TerminalMethods } from "./Terminal";
 import { FileContent } from "./filecontent";
 import { ViewerMethods } from "./Viewer";
+import * as fileio from "../fileio";
 
 export type EditorFile =
   | {
@@ -37,6 +44,7 @@ export type EditorFile =
 
 export default function Editor({
   currentFilesFromApp,
+  setCurrentFiles,
   setFilesHaveChanged,
   terminalMethods,
   viewerMethods = null,
@@ -44,10 +52,12 @@ export default function Editor({
   runOnLoad = true,
   lineNumbers = true,
   showHeaderBar = true,
+  showLoadButton = true,
   showShareButton = true,
   floatingButtons = false,
 }: {
   currentFilesFromApp: FileContent[];
+  setCurrentFiles: React.Dispatch<React.SetStateAction<FileContent[]>>;
   setFilesHaveChanged: React.Dispatch<React.SetStateAction<boolean>>;
   terminalMethods: TerminalMethods;
   viewerMethods?: ViewerMethods | null;
@@ -55,6 +65,7 @@ export default function Editor({
   runOnLoad?: boolean;
   lineNumbers?: boolean;
   showHeaderBar?: boolean;
+  showLoadButton?: boolean;
   showShareButton?: boolean;
   floatingButtons?: boolean;
 }) {
@@ -251,6 +262,27 @@ export default function Editor({
 
   const [showShareModal, setShowShareModal] = React.useState(false);
 
+  const [localDirHandle, setLocalDirHandle] =
+    React.useState<FileSystemDirectoryHandle | null>(null);
+
+  const loadLocalFiles = React.useCallback(async () => {
+    const dirHandle = await window.showDirectoryPicker();
+    setLocalDirHandle(dirHandle);
+
+    const localFiles = await fileio.loadDirectoryRecursive(dirHandle);
+    setCurrentFiles(localFiles);
+  }, [setCurrentFiles]);
+
+  const loadButton = (
+    <button
+      className="code-run-button"
+      title="Load app from disk"
+      onClick={() => loadLocalFiles()}
+    >
+      Load
+    </button>
+  );
+
   const shareButton = (
     <button
       className="code-run-button"
@@ -295,6 +327,7 @@ export default function Editor({
         <div className="Editor--header">
           {showFileTabs ? <FileTabs {...tabbedFiles} /> : null}
           <div className="Editor--header--actions">
+            {showLoadButton ? loadButton : null}
             {showShareButton ? shareButton : null}
             {runButton}
           </div>
@@ -356,7 +389,7 @@ export function editorFilesToFileContents(files: EditorFile[]): FileContent[] {
 export function editorFileToFileContent(file: EditorFile): FileContent {
   let content: string;
   if (file.type === "binary") {
-    content = btoa(file.content);
+    content = window.btoa(file.content);
   } else {
     content = file.ref.editorState.doc.toString();
   }

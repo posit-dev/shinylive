@@ -193,11 +193,13 @@ export default function App({
           />
           <Editor
             currentFilesFromApp={currentFiles}
+            setCurrentFiles={setCurrentFiles}
             setFilesHaveChanged={setFilesHaveChanged}
             terminalMethods={terminalMethods}
             viewerMethods={viewerMethods}
             runOnLoad={currentFiles.some((file) => file.name === "app.py")}
             showShareButton={true}
+            showLoadButton={true}
           />
           <Terminal
             pyodideProxyHandle={pyodideProxyHandle}
@@ -224,11 +226,13 @@ export default function App({
         >
           <Editor
             currentFilesFromApp={currentFiles}
+            setCurrentFiles={setCurrentFiles}
             setFilesHaveChanged={setFilesHaveChanged}
             terminalMethods={terminalMethods}
             viewerMethods={viewerMethods}
             runOnLoad={currentFiles.some((file) => file.name === "app.py")}
             showShareButton={true}
+            showLoadButton={true}
           />
           <Terminal
             pyodideProxyHandle={pyodideProxyHandle}
@@ -252,10 +256,12 @@ export default function App({
         >
           <Editor
             currentFilesFromApp={currentFiles}
+            setCurrentFiles={setCurrentFiles}
             setFilesHaveChanged={setFilesHaveChanged}
             terminalMethods={terminalMethods}
             runOnLoad={false}
             showShareButton={false}
+            showLoadButton={false}
           />
           <Terminal
             pyodideProxyHandle={pyodideProxyHandle}
@@ -270,6 +276,7 @@ export default function App({
         <div className="App--container editor-cell">
           <Editor
             currentFilesFromApp={currentFiles}
+            setCurrentFiles={setCurrentFiles}
             setFilesHaveChanged={setFilesHaveChanged}
             terminalMethods={terminalMethods}
             showFileTabs={false}
@@ -277,6 +284,7 @@ export default function App({
             showHeaderBar={false}
             floatingButtons={true}
             showShareButton={false}
+            showLoadButton={false}
           />
           <OutputCell
             pyodideProxyHandle={pyodideProxyHandle}
@@ -306,10 +314,12 @@ export default function App({
         <ResizableGrid className="App--container editor-viewer" {...gridDef}>
           <Editor
             currentFilesFromApp={currentFiles}
+            setCurrentFiles={setCurrentFiles}
             setFilesHaveChanged={setFilesHaveChanged}
             terminalMethods={terminalMethods}
             viewerMethods={viewerMethods}
             showShareButton={false}
+            showLoadButton={false}
           />
           <Viewer
             pyodideProxyHandle={pyodideProxyHandle}
