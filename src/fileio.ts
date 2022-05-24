@@ -57,3 +57,60 @@ export async function loadDirectoryRecursive(
 
   return files;
 }
+
+export async function saveFileContentsToDirectory(
+  files: FileContent[],
+  dirHandle: FileSystemDirectoryHandle
+): Promise<void> {
+  for (const file of files) {
+    const filePathParts = file.name.split("/");
+    const dir = await ensureDirPathExists(
+      filePathParts.slice(0, -1),
+      dirHandle
+    );
+    await saveFileContentToFile(
+      filePathParts.slice(-1)[0],
+      file.content,
+      file.type,
+      dir
+    );
+  }
+}
+
+// If dirname is ["x"], then make sure there exists subdir of dirHandle named
+// "x", creating it if necessary.This can recurse: if dirname is ["x", "y",
+// "z"], then create the subdirs "x", "x/y", and "x/y/z". This returns the
+// resulting dirHandle. If dirname is [], then just return dirHandle.
+async function ensureDirPathExists(
+  dirParts: string[],
+  dirHandle: FileSystemDirectoryHandle
+): Promise<FileSystemDirectoryHandle> {
+  if (dirParts.length === 0) {
+    return dirHandle;
+  }
+
+  const subdir = await dirHandle.getDirectoryHandle(dirParts[0], {
+    create: true,
+  });
+
+  return ensureDirPathExists(dirParts.slice(1), subdir);
+}
+
+async function saveFileContentToFile(
+  filename: string,
+  content: string,
+  type: "text" | "binary",
+  dirHandle: FileSystemDirectoryHandle
+): Promise<void> {
+  const fileHandle = await dirHandle.getFileHandle(filename, {
+    create: true,
+  });
+  const fileStream = await fileHandle.createWritable();
+  if (type === "binary") {
+    const binContent = Uint8Array.from(atob(content), (c) => c.charCodeAt(0));
+    await fileStream.write(binContent);
+  } else {
+    await fileStream.write(content);
+  }
+  await fileStream.close();
+}

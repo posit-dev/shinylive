@@ -199,7 +199,7 @@ export default function App({
             viewerMethods={viewerMethods}
             runOnLoad={currentFiles.some((file) => file.name === "app.py")}
             showShareButton={true}
-            showLoadButton={true}
+            showLoadSaveButtons={true}
           />
           <Terminal
             pyodideProxyHandle={pyodideProxyHandle}
@@ -232,7 +232,7 @@ export default function App({
             viewerMethods={viewerMethods}
             runOnLoad={currentFiles.some((file) => file.name === "app.py")}
             showShareButton={true}
-            showLoadButton={true}
+            showLoadSaveButtons={true}
           />
           <Terminal
             pyodideProxyHandle={pyodideProxyHandle}
@@ -261,7 +261,7 @@ export default function App({
             terminalMethods={terminalMethods}
             runOnLoad={false}
             showShareButton={false}
-            showLoadButton={false}
+            showLoadSaveButtons={false}
           />
           <Terminal
             pyodideProxyHandle={pyodideProxyHandle}
@@ -284,7 +284,7 @@ export default function App({
             showHeaderBar={false}
             floatingButtons={true}
             showShareButton={false}
-            showLoadButton={false}
+            showLoadSaveButtons={false}
           />
           <OutputCell
             pyodideProxyHandle={pyodideProxyHandle}
@@ -319,7 +319,7 @@ export default function App({
             terminalMethods={terminalMethods}
             viewerMethods={viewerMethods}
             showShareButton={false}
-            showLoadButton={false}
+            showLoadSaveButtons={false}
           />
           <Viewer
             pyodideProxyHandle={pyodideProxyHandle}

@@ -52,7 +52,7 @@ export default function Editor({
   runOnLoad = true,
   lineNumbers = true,
   showHeaderBar = true,
-  showLoadButton = true,
+  showLoadSaveButtons = true,
   showShareButton = true,
   floatingButtons = false,
 }: {
@@ -65,7 +65,7 @@ export default function Editor({
   runOnLoad?: boolean;
   lineNumbers?: boolean;
   showHeaderBar?: boolean;
-  showLoadButton?: boolean;
+  showLoadSaveButtons?: boolean;
   showShareButton?: boolean;
   floatingButtons?: boolean;
 }) {
@@ -283,6 +283,30 @@ export default function Editor({
     </button>
   );
 
+  const saveLocalFiles = React.useCallback(async () => {
+    let dirHandle: FileSystemDirectoryHandle;
+    if (localDirHandle) {
+      dirHandle = localDirHandle;
+    } else {
+      dirHandle = await window.showDirectoryPicker();
+      setLocalDirHandle(dirHandle);
+    }
+
+    syncFileState();
+    const fileContents = editorFilesToFileContents(files);
+
+    await fileio.saveFileContentsToDirectory(fileContents, dirHandle);
+  }, [files, syncFileState, localDirHandle]);
+  const saveButton = (
+    <button
+      className="code-run-button"
+      title="Save app to disk"
+      onClick={() => saveLocalFiles()}
+    >
+      Save
+    </button>
+  );
+
   const shareButton = (
     <button
       className="code-run-button"
@@ -327,7 +351,8 @@ export default function Editor({
         <div className="Editor--header">
           {showFileTabs ? <FileTabs {...tabbedFiles} /> : null}
           <div className="Editor--header--actions">
-            {showLoadButton ? loadButton : null}
+            {showLoadSaveButtons ? loadButton : null}
+            {showLoadSaveButtons ? saveButton : null}
             {showShareButton ? shareButton : null}
             {runButton}
           </div>
