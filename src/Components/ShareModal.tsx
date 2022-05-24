@@ -45,6 +45,9 @@ export default function ShareModal({
   const editorUrlInputRef = React.useRef<HTMLInputElement>(null);
   const appUrlInputRef = React.useRef<HTMLInputElement>(null);
 
+  const [editorButtonText, setEditorButtonText] = React.useState("Copy URL");
+  const [appButtonText, setAppButtonText] = React.useState("Copy URL");
+
   useOnEscOrClickOutside(showModalRef, () => setShowShareModal(false));
 
   return (
@@ -62,13 +65,17 @@ export default function ShareModal({
             ></input>
           </span>
           <button
+            style={{ whiteSpace: "nowrap", width: "8em" }}
             onClick={() => {
               if (!editorUrlInputRef.current) return;
               editorUrlInputRef.current.select();
               navigator.clipboard.writeText(editorUrlInputRef.current.value);
+
+              setEditorButtonText("\u2713");
+              setTimeout(() => setEditorButtonText("Copy URL"), 800);
             }}
           >
-            Copy&nbsp;URL
+            {editorButtonText}
           </button>
         </div>
       </div>
@@ -85,13 +92,17 @@ export default function ShareModal({
             ></input>
           </span>
           <button
+            style={{ whiteSpace: "nowrap", width: "8em" }}
             onClick={() => {
               if (!appUrlInputRef.current) return;
               appUrlInputRef.current.select();
               navigator.clipboard.writeText(appUrlInputRef.current.value);
+
+              setAppButtonText("\u2713");
+              setTimeout(() => setAppButtonText("Copy URL"), 800);
             }}
           >
-            Copy&nbsp;URL
+            {appButtonText}
           </button>
         </div>
       </div>
