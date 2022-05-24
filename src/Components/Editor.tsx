@@ -21,6 +21,7 @@ import ShareModal from "./ShareModal";
 import { TerminalMethods } from "./Terminal";
 import { FileContent } from "./filecontent";
 import { ViewerMethods } from "./Viewer";
+import { Icon } from "./Icons";
 import * as fileio from "../fileio";
 
 export type EditorFile =
@@ -279,7 +280,7 @@ export default function Editor({
       title="Load app from disk"
       onClick={() => loadLocalFiles()}
     >
-      Load
+      <Icon icon="upload"></Icon>
     </button>
   );
 
@@ -303,7 +304,7 @@ export default function Editor({
       title="Save app to disk"
       onClick={() => saveLocalFiles()}
     >
-      Save
+      <Icon icon="download"></Icon>
     </button>
   );
 
@@ -313,7 +314,7 @@ export default function Editor({
       title={`Share ${isShinyApp ? "app" : "code"}`}
       onClick={() => setShowShareModal(true)}
     >
-      Share
+      <Icon icon="share-nodes"></Icon> &nbsp;Share
     </button>
   );
 
@@ -340,7 +341,7 @@ export default function Editor({
       } (${modKeySymbol()})-Shift-Enter`}
       onClick={() => runAllAuto.current()}
     >
-      &#8629;
+      <Icon icon="arrow-rotate-right"></Icon>
     </button>
   );
 

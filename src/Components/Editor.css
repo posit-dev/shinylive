@@ -1,4 +1,5 @@
 .Editor {
+  --button-gray-color: #aaa;
   --border-color: #aaa;
   --pad: 5px;
   display: grid;
@@ -156,16 +157,19 @@ the size bigger.  */
 /* Code run button styles */
 .Editor button.code-run-button {
   background-color: transparent;
+  white-space: nowrap;
 }
 
 .Editor .code-run-button:hover {
   color: var(--colors-blue-dark);
+  fill: var(--colors-blue-dark);
 }
 
 /* When in the header of the app next to file tabs */
 .Editor--header .code-run-button {
   align-self: center;
-  color: #999;
+  color: var(--button-gray-color);
+  fill: var(--button-gray-color);
 }
 
 .Editor .floating-buttons .code-run-button {
@@ -175,12 +179,16 @@ the size bigger.  */
   border: 0;
   margin-top: 5px;
   margin-right: 5px;
+  opacity: 0;
 }
 
 .Editor:hover .floating-buttons .code-run-button {
-  color: #999;
+  color: var(--button-gray-color);
+  fill: var(--button-gray-color);
+  opacity: 1;
 }
 
 .Editor .floating-buttons .code-run-button:hover {
   color: var(--colors-blue-dark);
+  fill: var(--colors-blue-dark);
 }
