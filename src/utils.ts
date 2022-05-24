@@ -103,3 +103,21 @@ export function isBinary(buf: ArrayBuffer): boolean {
   }
   return false;
 }
+
+export function arrayBufferToBinaryString(buf: ArrayBuffer): string {
+  const byteArray = new Uint8Array(buf);
+  let result = "";
+  for (let i = 0; i < byteArray.length; i++) {
+    result += String.fromCharCode(byteArray[i]);
+  }
+  return result;
+}
+
+export function binaryStringtoUint8Array(s: string): Uint8Array {
+  const len = s.length;
+  const bytes = new Uint8Array(len);
+  for (let i = 0; i < len; i++) {
+    bytes[i] = s.charCodeAt(i);
+  }
+  return bytes;
+}

@@ -1,4 +1,8 @@
-import { isBinary } from "./utils";
+import {
+  arrayBufferToBinaryString,
+  binaryStringtoUint8Array,
+  isBinary,
+} from "./utils";
 import { FileContent } from "./Components/filecontent";
 
 // Maximum size of all files together in the app.
@@ -38,15 +42,20 @@ export async function loadDirectoryRecursive(
         );
       }
 
-      const content = await fileData.arrayBuffer();
-      const type: "text" | "binary" = isBinary(content) ? "binary" : "text";
+      const contentBuffer = await fileData.arrayBuffer();
+      let type: "text" | "binary";
+      let contentString: string;
+      if (isBinary(contentBuffer)) {
+        type = "binary";
+        contentString = window.btoa(arrayBufferToBinaryString(contentBuffer));
+      } else {
+        type = "text";
+        contentString = new TextDecoder().decode(contentBuffer);
+      }
 
       files.push({
         name: filePath,
-        content:
-          type === "text"
-            ? new TextDecoder().decode(content)
-            : window.btoa(String.fromCharCode(...new Uint8Array(content))),
+        content: contentString,
         type: type,
       });
     } else if (fileHandle.kind === "directory") {
@@ -107,7 +116,7 @@ async function saveFileContentToFile(
   });
   const fileStream = await fileHandle.createWritable();
   if (type === "binary") {
-    const binContent = Uint8Array.from(atob(content), (c) => c.charCodeAt(0));
+    const binContent = binaryStringtoUint8Array(atob(content));
     await fileStream.write(binContent);
   } else {
     await fileStream.write(content);
