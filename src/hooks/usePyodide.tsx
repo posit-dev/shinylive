@@ -215,7 +215,7 @@ def _save_files(files: list[dict[str, str]], destdir: str) -> None:
             with open(destdir + "/" + file["name"], "w") as f:
                 f.write(file["content"])
 
-def _find_all_imports(dir: str) -> list[str]:
+async def _load_packages_from_dir(dir: str) -> None:
     import os
     import pyodide
     files = os.listdir(dir)
@@ -223,23 +223,8 @@ def _find_all_imports(dir: str) -> list[str]:
     for file in files:
         if file.endswith(".py"):
             with open(os.path.join(dir, file)) as f:
-                imports.extend(pyodide.find_imports(f.read()))
-    return imports
+                await js_pyodide.loadPackagesFromImports(f.read())
 
-async def _load_packages(packages: list[str]) -> None:
-    # loaded_packages: list[str] = tuple(js_pyodide.loadedPackages.to_py())
-    loaded_packages = list(sys.modules)
-    for package in packages:
-        if package not in loaded_packages:
-            print(f"Loading {package}...")
-            # Some packages, like 'utils' can just be imported without calling
-            # loadPackage() first, and calling loadPackage("utils") will
-            # actually throw an error. However, it's hard to know which
-            # packages are like this, so we'll just try and ignore errors.
-            try:
-                await js_pyodide.loadPackage(package)
-            except Exception as e:
-                pass
 `;
 
 // =============================================================================

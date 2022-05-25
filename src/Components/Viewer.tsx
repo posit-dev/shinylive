@@ -194,7 +194,7 @@ export default function Viewer({
           import sys
           sys.path.insert(0, "/home/pyodide/${appName}")
 
-          await _load_packages(_find_all_imports("/home/pyodide/${appName}"))
+          await _load_packages_from_dir("/home/pyodide/${appName}")
 
           import ${appName}.app
           __${appName}_lifespan__ = ${appName}.app.app._lifespan(${appName}.app.app.starlette_app)
