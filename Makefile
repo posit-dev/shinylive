@@ -82,7 +82,6 @@ all: node_modules \
 	$(BUILD_DIR)/shinylive/jquery.terminal \
 	$(BUILD_DIR)/shinylive/jquery.min.js \
 	$(BUILD_DIR)/shinylive/style-resets.css \
-	$(BUILD_DIR)/shinylive/loading.html \
 	$(BUILD_DIR)/shinylive/pyodide \
 	$(BUILD_DIR)/shinylive/pyodide/$(HTMLTOOLS_WHEEL) \
 	$(BUILD_DIR)/shinylive/pyodide/$(SHINY_WHEEL) \
@@ -112,9 +111,6 @@ $(BUILD_DIR)/shinylive/jquery.min.js: node_modules/jquery/dist/jquery.min.js
 
 $(BUILD_DIR)/shinylive/style-resets.css: src/style-resets.css
 	cp src/style-resets.css $(BUILD_DIR)/shinylive
-
-$(BUILD_DIR)/shinylive/loading.html: src/loading.html
-	cp src/loading.html $(BUILD_DIR)/shinylive
 
 $(BUILD_DIR)/shinylive/pyodide:
 	mkdir -p $(BUILD_DIR)/shinylive/pyodide

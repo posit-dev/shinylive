@@ -13,3 +13,22 @@
   border-radius: var(--panel-roundness);
   border: 0;
 }
+
+.Viewer iframe {
+  background-color: white;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.Viewer .loading-wrapper {
+  background-color: white;
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  top: 0px;
+  left: 0px;
+  display: grid;
+  place-content: center;
+  padding: 1rem;
+}

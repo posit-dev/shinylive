@@ -37,31 +37,10 @@
   background-color: #e6e6e6;
 }
 
-.App--container.viewer {
-  --pad: 0;
-  display: grid;
-  grid-template-columns: 1fr;
-  grid-template-rows: 1fr;
-  grid-template-areas: "viewer";
-}
-
-.App--container .initializing-animation {
-  background-color: inherit;
-  box-shadow: inherit;
-  grid-area: viewer;
-  place-self: center;
-  padding: 1rem;
-}
-
 .App--container > div {
   border-radius: var(--panel-roundness);
   background-color: var(--colors-bg);
   /* outline: 1px solid var(--colors-grey); */
-}
-.App--container.viewer > div {
-  border-radius: unset;
-  background-color: unset;
-  box-shadow: unset;
 }
 
 .ExampleSelector {
