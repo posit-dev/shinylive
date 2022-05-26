@@ -146,6 +146,46 @@ pypi_packages_info: Dict[str, PackageInfo] = {
         "name": "pyllusion",
         "version": "0.0.12",
     },
+    # Packages below are for ipywidgets (which is needed by ipyshiny)
+    "ipywidgets": {
+        "name": "ipywidgets",
+        "version": "7.7.0",
+    },
+    "widgetsnbextension": {
+        "name": "widgetsnbextension",
+        "version": "3.6.0",
+    },
+    "notebook": {
+        "name": "notebook",
+        "version": "6.4.11",
+    },
+    "ipython-genutils": {
+        "name": "ipython-genutils",
+        "version": "0.2.0",
+        "imports": ["ipython_genutils"],
+    },
+    "nbformat": {
+        "name": "nbformat",
+        "version": "5.4.0",
+    },
+    "jsonschema": {
+        "name": "jsonschema",
+        "version": "4.5.1",
+    },
+    "fastjsonschema": {
+        "name": "fastjsonschema",
+        "version": "2.15.3",
+    },
+    # Packages below are for ipyshiny
+    "jupyter-core": {
+        "name": "jupyter-core",
+        "version": "4.10.0",
+        "imports": ["jupyter_core"],
+    },
+    "traitlets": {
+        "name": "traitlets",
+        "version": "5.2.1",
+    },
 }
 
 
@@ -278,12 +318,16 @@ def _get_all_packages_info() -> Dict[str, PackageInfo]:
 
     import htmltools
     import shiny
+    import ipykernel
+    import ipyshiny
 
     all_package_versions = pypi_packages_info.copy()
     all_package_versions.update(
         {
             "htmltools": {"name": "htmltools", "version": htmltools.__version__},
             "shiny": {"name": "shiny", "version": shiny.__version__},
+            "ipykernel": {"name": "ipykernel", "version": ipykernel.__version__},
+            "ipyshiny": {"name": "ipyshiny", "version": ipyshiny.__version__},
         }
     )
 

@@ -24,9 +24,13 @@ DIST_DIR = ./dist
 # dependencies being installed first.
 HTMLTOOLS_VERSION = $(shell grep '^__version__ = ' $(PACKAGE_DIR)/py-htmltools/htmltools/__init__.py | sed -E -e 's/^__version__ = "(.*)"/\1/')
 SHINY_VERSION = $(shell grep '^__version__ = ' $(PACKAGE_DIR)/py-shiny/shiny/__init__.py | sed -E -e 's/^__version__ = "(.*)"/\1/')
+IPYKERNEL_VERSION = $(shell grep '^__version__ = ' $(PACKAGE_DIR)/ipykernel/ipykernel/__init__.py | sed -E -e 's/^__version__ = "(.*)"/\1/')
+IPYSHINY_VERSION = $(shell grep '^__version__ = ' $(PACKAGE_DIR)/ipyshiny/ipyshiny/__init__.py | sed -E -e 's/^__version__ = "(.*)"/\1/')
 
 HTMLTOOLS_WHEEL = htmltools-$(HTMLTOOLS_VERSION)-py3-none-any.whl
 SHINY_WHEEL = shiny-$(SHINY_VERSION)-py3-none-any.whl
+IPYKERNEL_WHEEL = ipykernel-$(IPYKERNEL_VERSION)-py3-none-any.whl
+IPYSHINY_WHEEL = ipyshiny-$(IPYSHINY_VERSION)-py3-none-any.whl
 
 VENV = venv
 PYBIN = $(VENV)/bin
@@ -85,6 +89,8 @@ all: node_modules \
 	$(BUILD_DIR)/shinylive/pyodide \
 	$(BUILD_DIR)/shinylive/pyodide/$(HTMLTOOLS_WHEEL) \
 	$(BUILD_DIR)/shinylive/pyodide/$(SHINY_WHEEL) \
+	$(BUILD_DIR)/shinylive/pyodide/$(IPYKERNEL_WHEEL) \
+	$(BUILD_DIR)/shinylive/pyodide/$(IPYSHINY_WHEEL) \
 	download_pypi_packages \
 	$(BUILD_DIR)/shinylive/pyodide/packages.json \
 	$(BUILD_DIR)/shinylive/shiny_static/index.html \
@@ -130,6 +136,18 @@ $(BUILD_DIR)/shinylive/pyodide/$(SHINY_WHEEL): $(PACKAGE_DIR)/$(SHINY_WHEEL)
 	rm -f $(BUILD_DIR)/shinylive/pyodide/shiny*.whl
 	cp $(PACKAGE_DIR)/$(SHINY_WHEEL) $(BUILD_DIR)/shinylive/pyodide/$(SHINY_WHEEL)
 
+$(BUILD_DIR)/shinylive/pyodide/$(IPYKERNEL_WHEEL): $(PACKAGE_DIR)/$(IPYKERNEL_WHEEL)
+	mkdir -p $(BUILD_DIR)/shinylive/pyodide
+	# Remove any old copies of ipykernel
+	rm -f $(BUILD_DIR)/shinylive/pyodide/ipykernel*.whl
+	cp $(PACKAGE_DIR)/$(IPYKERNEL_WHEEL) $(BUILD_DIR)/shinylive/pyodide/$(IPYKERNEL_WHEEL)
+
+$(BUILD_DIR)/shinylive/pyodide/$(IPYSHINY_WHEEL): $(PACKAGE_DIR)/$(IPYSHINY_WHEEL)
+	mkdir -p $(BUILD_DIR)/shinylive/pyodide
+	# Remove any old copies of ipyshiny
+	rm -f $(BUILD_DIR)/shinylive/pyodide/ipyshiny*.whl
+	cp $(PACKAGE_DIR)/$(IPYSHINY_WHEEL) $(BUILD_DIR)/shinylive/pyodide/$(IPYSHINY_WHEEL)
+
 $(BUILD_DIR)/shinylive/shiny_static/index.html: shiny_static/index.html
 	mkdir -p $(BUILD_DIR)/shinylive/shiny_static
 	cp shiny_static/index.html $(BUILD_DIR)/shinylive/shiny_static/index.html
@@ -156,7 +174,11 @@ serve:
 # package submodules; it will not run automatically with `make all` because I'm
 # not sure how to set up the dependencies reliably.
 ## Build htmltools and shiny wheels
-packages: $(PACKAGE_DIR)/$(HTMLTOOLS_WHEEL) $(PACKAGE_DIR)/$(SHINY_WHEEL)
+packages: $(PACKAGE_DIR)/$(HTMLTOOLS_WHEEL) \
+	$(PACKAGE_DIR)/$(SHINY_WHEEL) \
+	$(PACKAGE_DIR)/$(IPYKERNEL_WHEEL) \
+	$(PACKAGE_DIR)/$(IPYSHINY_WHEEL)
+	rm $(PACKAGE_DIR)/*.whl
 
 $(PACKAGE_DIR)/$(HTMLTOOLS_WHEEL): $(PYBIN) $(PACKAGE_DIR)/py-htmltools
 	$(PYBIN)/pip install -r $(PACKAGE_DIR)/py-htmltools/requirements-dev.txt
@@ -167,6 +189,15 @@ $(PACKAGE_DIR)/$(SHINY_WHEEL): $(PYBIN) $(PACKAGE_DIR)/py-shiny
 	$(PYBIN)/pip install -r $(PACKAGE_DIR)/py-shiny/requirements-dev.txt
 	$(PYBIN)/pip install -e $(PACKAGE_DIR)/py-shiny
 	. $(PYBIN)/activate && cd $(PACKAGE_DIR)/py-shiny && make dist && mv dist/*.whl ../
+
+$(PACKAGE_DIR)/$(IPYKERNEL_WHEEL): $(PYBIN) $(PACKAGE_DIR)/ipykernel
+	$(PYBIN)/pip install -e $(PACKAGE_DIR)/ipykernel
+	. $(PYBIN)/activate && cd $(PACKAGE_DIR)/ipykernel && make dist && mv dist/*.whl ../
+
+$(PACKAGE_DIR)/$(IPYSHINY_WHEEL): $(PYBIN) $(PACKAGE_DIR)/ipyshiny
+	$(PYBIN)/pip install -r $(PACKAGE_DIR)/ipyshiny/requirements-dev.txt
+	$(PYBIN)/pip install -e $(PACKAGE_DIR)/ipyshiny
+	. $(PYBIN)/activate && cd $(PACKAGE_DIR)/ipyshiny && make dist && mv dist/*.whl ../
 
 # TODO: Figure out how to make this _not_ run every time, or at least not need
 # network access.
