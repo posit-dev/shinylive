@@ -7,3 +7,6 @@
 [submodule "packages/ipyshiny"]
 	path = packages/ipyshiny
 	url = https://github.com/rstudio/ipyshiny.git
+[submodule "packages/py-fontawesome"]
+	path = packages/py-fontawesome
+	url = https://github.com/rstudio/py-fontawesome.git
