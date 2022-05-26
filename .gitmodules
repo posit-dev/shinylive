@@ -4,3 +4,6 @@
 [submodule "srcjs/packages/py-htmltools"]
 	path = packages/py-htmltools
 	url = https://github.com/rstudio/py-htmltools.git
+[submodule "packages/ipyshiny"]
+	path = packages/ipyshiny
+	url = https://github.com/rstudio/ipyshiny
