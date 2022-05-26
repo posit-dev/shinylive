@@ -1,2 +1,1 @@
 Basic App
-Skeleton app demonstrating use of reactive variables and inputs
