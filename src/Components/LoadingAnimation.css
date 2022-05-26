@@ -1,11 +1,9 @@
 .loading-animation {
-  --start-color: #fafafa;
-  --end-color: #cccccc;
+  --animation-start-color: #fafafa;
+  --animation-end-color: #cccccc;
+  --hex-width: 16px;
   background-color: inherit;
   box-shadow: inherit;
-  grid-area: viewer;
-  place-self: center;
-  padding: 1rem;
   text-align: center;
   font-size: 0;
   -webkit-animation: loading-animation-fade-in 1s;
@@ -15,13 +13,13 @@
 .loading-animation .hex {
   display: inline-block;
   position: relative;
-  width: 12px;
-  height: 6.856034375px;
-  margin: 2.6px 1px;
-  background-color: var(--start-color);
-  font: 40px/43.87862px sans-serif;
+  width: var(--hex-width);
+  /* sqrt(3)/2 * width */
+  height: calc(0.57735 * var(--hex-width));
+  /* Margin between hexes is 1/12 width of the hexes */
+  margin: calc(0.216 * var(--hex-width)) calc(var(--hex-width) / 12);
+  background-color: var(--animation-start-color);
   vertical-align: middle;
-  text-transform: uppercase;
   -webkit-animation: loading-animation-pulse 3.75s infinite;
   animation: loading-animation-pulse 3.75s infinite;
 }
@@ -30,19 +28,18 @@
   content: "";
   display: block;
   position: absolute;
-  /* z-index: -1; */
-  width: 8.375px;
-  height: 8.375px;
+  width: calc(0.7071 * var(--hex-width));
+  height: calc(0.7071 * var(--hex-width));
   background-color: inherit;
   transform-origin: 0 0;
   transform: scaleY(0.57735) rotate(-45deg);
   animation: inherit;
 }
-.hex::before {
+.loading-animation .hex::before {
   top: 0;
 }
 .loading-animation .hex::after {
-  top: 6.856034375px;
+  top: calc(0.57735 * var(--hex-width));
 }
 
 .loading-animation .hex:nth-of-type(2n) {
@@ -124,18 +121,18 @@
 
 .loading-animation .spacer {
   display: inline-block;
-  width: 14px;
+  width: calc(var(--hex-width) * 14 / 12);
 }
 
 @keyframes loading-animation-pulse {
   0% {
-    background-color: var(--start-color);
+    background-color: var(--animation-start-color);
   }
   50% {
-    background-color: var(--end-color);
+    background-color: var(--animation-end-color);
   }
   100% {
-    background-color: var(--start-color);
+    background-color: var(--animation-start-color);
   }
 }
 
