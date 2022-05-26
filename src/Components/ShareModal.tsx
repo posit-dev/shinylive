@@ -23,16 +23,16 @@ export default function ShareModal({
 
   // const appPrefix =
   //   window.location.origin +
-  //   // "foo/examples/index.html" => "foo/app/"
-  //   // "foo/examples/" => "foo/app/"
-  //   // "/examples/" => "/app/"
+  //   // "foo/editor/index.html" => "foo/app/"
+  //   // "foo/editor/" => "foo/app/"
+  //   // "/editor/" => "/app/"
   //   window.location.pathname.replace(
   //     new RegExp("([^/]+)/(index.html)?$"),
   //     "app/"
   //   ) +
   //   "#code=";
 
-  const editorPrefix = "https://pyshiny.netlify.app/examples/#code=";
+  const editorPrefix = "https://pyshiny.netlify.app/editor/#code=";
   const appPrefix = "https://pyshiny.netlify.app/app/#code=";
 
   const encodedCode = LZString.compressToEncodedURIComponent(
