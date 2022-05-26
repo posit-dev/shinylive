@@ -164,13 +164,14 @@ export default function Editor({
   // After (1) a set of files has been received from the app, and (2) pyodide is
   // ready, run the app.
   React.useEffect(() => {
-    if (!runOnLoad) return;
     if (!viewerMethods || !viewerMethods.ready) return;
 
     setFilesHaveChanged(false);
 
     (async () => {
       await viewerMethods.stopApp();
+
+      if (!runOnLoad) return;
       // Note that we use this `isShinyCode` instead of the state var
       // `isShinyApp` because we need it to decide on the first pass whether to
       // run as an app, or as code. This has to happen on the first pass, before

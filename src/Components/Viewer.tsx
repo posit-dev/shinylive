@@ -141,7 +141,9 @@ export default function Viewer({
   setViewerMethods: React.Dispatch<React.SetStateAction<ViewerMethods>>;
 }) {
   const viewerFrameRef = React.useRef<HTMLIFrameElement>(null);
-  const [appIsReady, setAppIsReady] = React.useState(false);
+  const [appRunningState, setAppRunningState] = React.useState<
+    "loading" | "running" | "empty"
+  >("loading");
 
   React.useEffect(() => {
     if (!pyodideProxyHandle.shinyReady) return;
@@ -154,7 +156,7 @@ export default function Viewer({
         if (!viewerFrameRef.current)
           throw new Error("Viewer iframe is not yet initialized");
 
-        setAppIsReady(false);
+        setAppRunningState("loading");
 
         if (typeof appCode === "string") {
           appCode = [
@@ -206,7 +208,7 @@ export default function Viewer({
         );
 
         viewerFrameRef.current.src = appInfo.urlPath;
-        setAppIsReady(true);
+        setAppRunningState("running");
       } catch (e) {
         if (e instanceof Error) {
           console.error(e.message);
@@ -224,6 +226,7 @@ export default function Viewer({
         appInfo.appName,
         viewerFrameRef.current
       );
+      setAppRunningState("empty");
     }
 
     setViewerMethods({
@@ -236,11 +239,11 @@ export default function Viewer({
   return (
     <div className="Viewer">
       <iframe ref={viewerFrameRef} className="app-frame" />
-      {appIsReady ? null : (
+      {appRunningState === "loading" ? (
         <div className="loading-wrapper">
           <LoadingAnimation />
         </div>
-      )}
+      ) : null}
     </div>
   );
 }
