@@ -1,4 +1,6 @@
 .loading-animation {
+  --start-color: #fafafa;
+  --end-color: #cccccc;
   background-color: inherit;
   box-shadow: inherit;
   grid-area: viewer;
@@ -16,8 +18,7 @@
   width: 12px;
   height: 6.856034375px;
   margin: 2.6px 1px;
-  color: rgba(255, 255, 255, 0.75);
-  background-color: #0089db;
+  background-color: var(--start-color);
   font: 40px/43.87862px sans-serif;
   vertical-align: middle;
   text-transform: uppercase;
@@ -128,13 +129,13 @@
 
 @keyframes loading-animation-pulse {
   0% {
-    background-color: #0089db;
+    background-color: var(--start-color);
   }
   50% {
-    background-color: #bfe2f4;
+    background-color: var(--end-color);
   }
   100% {
-    background-color: #0089db;
+    background-color: var(--start-color);
   }
 }
 
