@@ -214,6 +214,11 @@ export default function Editor({
     cmViewRef.current = new EditorView({
       parent: cmDivRef.current,
     });
+
+    return function cleanup() {
+      if (!cmViewRef.current) return;
+      cmViewRef.current.destroy();
+    };
   }, []);
 
   // This is run when switching tabs, and when receiving new files from the app.

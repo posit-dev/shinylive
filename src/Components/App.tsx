@@ -1,5 +1,5 @@
 import * as React from "react";
-import ReactDOM from "react-dom";
+import { createRoot } from "react-dom/client";
 import LZString from "lz-string";
 import {
   initPyodide,
@@ -394,15 +394,15 @@ export function runApp(
       );
     }
 
-    ReactDOM.render(
+    const root = createRoot(domTarget);
+    root.render(
       <React.StrictMode>
         <App
           appMode={appMode}
           startFiles={completeFileContents(startFiles)}
           editorViewerOptions={{ layout, viewerHeight }}
         />
-      </React.StrictMode>,
-      domTarget
+      </React.StrictMode>
     );
   })();
 }

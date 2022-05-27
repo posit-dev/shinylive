@@ -5,6 +5,7 @@ import { useDragToResizeGrid } from "./useDragToResizeGrid";
 
 const ResizableGrid: React.FC<{
   className?: string;
+  children?: React.ReactNode;
   areas: string[][];
   rowSizes: string[];
   colSizes: string[];
