@@ -1,25 +1,34 @@
-import { autocompletion, completionKeymap } from "@codemirror/autocomplete";
-import { closeBrackets, closeBracketsKeymap } from "@codemirror/closebrackets";
-import { defaultKeymap } from "@codemirror/commands";
-import { commentKeymap } from "@codemirror/comment";
-import { foldKeymap } from "@codemirror/fold";
-import { highlightActiveLineGutter, lineNumbers } from "@codemirror/gutter";
-import { defaultHighlightStyle } from "@codemirror/highlight";
-import { history, historyKeymap } from "@codemirror/history";
+import {
+  autocompletion,
+  completionKeymap,
+  closeBrackets,
+  closeBracketsKeymap,
+} from "@codemirror/autocomplete";
+import { defaultKeymap, history, historyKeymap } from "@codemirror/commands";
 import { css } from "@codemirror/lang-css";
 import { html } from "@codemirror/lang-html";
 import { javascript } from "@codemirror/lang-javascript";
 import { python } from "@codemirror/lang-python";
-import { indentOnInput, indentUnit } from "@codemirror/language";
+import {
+  StreamLanguage,
+  indentOnInput,
+  indentUnit,
+  foldKeymap,
+  bracketMatching,
+  defaultHighlightStyle,
+  syntaxHighlighting,
+} from "@codemirror/language";
 import { indentWithTab } from "@codemirror/commands";
 import { r } from "@codemirror/legacy-modes/mode/r";
 import { lintKeymap } from "@codemirror/lint";
-import { bracketMatching } from "@codemirror/matchbrackets";
-import { rectangularSelection } from "@codemirror/rectangular-selection";
 import { highlightSelectionMatches, searchKeymap } from "@codemirror/search";
 import { EditorState, Extension } from "@codemirror/state";
-import { EditorView } from "@codemirror/view";
-import { StreamLanguage } from "@codemirror/stream-parser";
+import {
+  EditorView,
+  highlightActiveLineGutter,
+  lineNumbers,
+  rectangularSelection,
+} from "@codemirror/view";
 import {
   drawSelection,
   // highlightActiveLine,
@@ -42,7 +51,7 @@ export function getExtensions(
     EditorState.allowMultipleSelections.of(true),
     indentOnInput(),
     indentUnit.of("    "),
-    defaultHighlightStyle.fallback,
+    syntaxHighlighting(defaultHighlightStyle, { fallback: true }),
     bracketMatching(),
     closeBrackets(),
     autocompletion(),
@@ -56,7 +65,6 @@ export function getExtensions(
       ...searchKeymap,
       ...historyKeymap,
       ...foldKeymap,
-      ...commentKeymap,
       ...completionKeymap,
       ...lintKeymap,
     ]),
