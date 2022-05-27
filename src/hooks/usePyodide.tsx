@@ -173,6 +173,37 @@ class SSLObject:
     pass
 class MemoryBIO:
     pass
+
+def mock_ipython():
+    import sys
+    import types
+    def get_ipython():
+        import ipykernel
+        return ipykernel.kernel
+
+    _IPython = types.ModuleType("IPython")
+    sys.modules["IPython"] = _IPython
+    _IPython.get_ipython = get_ipython
+
+    _IPython.core = types.ModuleType("IPython.core")
+    sys.modules["IPython.core"] = _IPython.core
+
+    _IPython.core.getipython = types.ModuleType("IPython.core.getipython")
+    sys.modules["IPython.core.getipython"] = _IPython.core.getipython
+    _IPython.core.getipython.get_ipython = get_ipython
+
+    _IPython.core.interactiveshell = types.ModuleType("IPython.core.interactiveshell")
+    sys.modules["IPython.core.interactiveshell"] = _IPython.core.interactiveshell
+    _IPython.core.interactiveshell.InteractiveShell = "Mock"
+
+    _IPython.display = types.ModuleType("IPython.display")
+    sys.modules["IPython.display"] = _IPython.display
+    _IPython.display.display = "Mock"
+    _IPython.display.clear_output = "Mock"
+
+    import IPython
+
+mock_ipython()
 """)
 
 None
@@ -180,19 +211,17 @@ None
 
 const load_python_modules = `
 print("Loading modules...")
-import js
-import shutil
 import asyncio
-import shiny
-import pyodide
 import sys
-import base64
 
 # Add current directory to Python path.
 sys.path.insert(0, "")
 
 # Function for saving Shiny app files so we can load the app as a module.
 def _save_files(files: list[dict[str, str]], destdir: str) -> None:
+    import shutil
+    import base64
+    import pyodide
     # If called from JS and passed an Object, we need to convert it to a
     # dict.
     if isinstance(files, pyodide.JsProxy):

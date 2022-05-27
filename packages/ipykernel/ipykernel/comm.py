@@ -1,6 +1,10 @@
+from typing import Any
+
+
 class Comm:
     pass
 
 
 class CommManager:
-    pass
+    def register_target(self, *args: Any):
+        pass

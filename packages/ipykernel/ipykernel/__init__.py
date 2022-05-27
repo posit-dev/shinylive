@@ -2,9 +2,11 @@
 
 __version__ = "6.99.0"
 __all__ = (
+    "__version__",
     "Comm",
     "CommManager",
-    "__version__",
+    "kernel",
 )
 
 from .comm import Comm, CommManager
+from .kernel import kernel

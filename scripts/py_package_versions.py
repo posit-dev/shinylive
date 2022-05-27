@@ -151,10 +151,12 @@ pypi_packages_info: Dict[str, PackageInfo] = {
         "name": "ipywidgets",
         "version": "7.7.0",
     },
-    "widgetsnbextension": {
-        "name": "widgetsnbextension",
-        "version": "3.6.0",
-    },
+    # This causes IPython and a lot of other packages to load, many of which have
+    # compiled code and can't be installed in pyodide.
+    # "widgetsnbextension": {
+    #     "name": "widgetsnbextension",
+    #     "version": "3.6.0",
+    # },
     "notebook": {
         "name": "notebook",
         "version": "6.4.11",
@@ -184,7 +186,16 @@ pypi_packages_info: Dict[str, PackageInfo] = {
     },
     "traitlets": {
         "name": "traitlets",
-        "version": "5.2.1",
+        "version": "5.2.1.post0",
+    },
+    # For plotly
+    "plotly": {
+        "name": "plotly",
+        "version": "4.8.0",
+    },
+    "tenacity": {
+        "name": "tenacity",
+        "version": "8.0.1",
     },
 }
 
@@ -302,6 +313,8 @@ def _filter_requires(requires: List[str]) -> List[str]:
         "contextvars",
         # websockets isn't used by Shiny when running in the browser.
         "websockets",
+        # This brings in IPython and a lot of unneeded dependencies with compiled code.
+        "widgetsnbextension",
     ]
 
     res = [x for x in requires if ";" not in x]

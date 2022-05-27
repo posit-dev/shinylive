@@ -207,7 +207,11 @@ download_pypi_packages: $(PYBIN) scripts/py_package_versions.py
 	. $(PYBIN)/activate && scripts/py_package_versions.py download_pypi_packages $(BUILD_DIR)/shinylive/pyodide
 
 # Update pyodide's package.json to include htmltools, shiny, and their deps which aren't included in Pyodide.
-$(BUILD_DIR)/shinylive/pyodide/packages.json: $(PYBIN) scripts/py_package_versions.py $(BUILD_DIR)/shinylive/pyodide/$(HTMLTOOLS_WHEEL) $(BUILD_DIR)/shinylive/pyodide/$(SHINY_WHEEL)
+$(BUILD_DIR)/shinylive/pyodide/packages.json: $(PYBIN) scripts/py_package_versions.py \
+		$(BUILD_DIR)/shinylive/pyodide/$(HTMLTOOLS_WHEEL) \
+		$(BUILD_DIR)/shinylive/pyodide/$(SHINY_WHEEL) \
+		$(BUILD_DIR)/shinylive/pyodide/$(IPYKERNEL_WHEEL) \
+		$(BUILD_DIR)/shinylive/pyodide/$(IPYSHINY_WHEEL)
 	$(PYBIN)/pip install -r requirements-dev.txt
 	. $(PYBIN)/activate && scripts/py_package_versions.py insert_into_pyodide_packages $(BUILD_DIR)/shinylive/pyodide
 

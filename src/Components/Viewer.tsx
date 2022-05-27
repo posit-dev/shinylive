@@ -97,6 +97,7 @@ async function resetAppFrame(
     _res = False
     if "${appName}" in locals():
         print("Stopping previous app ${appName}...")
+        import shiny
         if "app" in dir(${appName}) and isinstance(${appName}.app.app, shiny.App):
             await ${appName}.app.app.stop()
             _res = True
