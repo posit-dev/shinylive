@@ -221,7 +221,6 @@ export default function Editor({
     if (!cmViewRef.current || files.length === 0) return;
 
     cmViewRef.current.setState(activeFile.ref.editorState);
-    cmViewRef.current.focus();
 
     return function cleanup() {
       syncFileState();
