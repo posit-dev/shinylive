@@ -3,13 +3,19 @@ import { getHasRelativeUnits } from "./DragToResizeHelpers";
 import "./ResizableGrid.css";
 import { useDragToResizeGrid } from "./useDragToResizeGrid";
 
-const ResizableGrid: React.FC<{
+export function ResizableGrid({
+  className,
+  children,
+  areas,
+  rowSizes,
+  colSizes,
+}: {
   className?: string;
   children?: React.ReactNode;
   areas: string[][];
   rowSizes: string[];
   colSizes: string[];
-}> = ({ className, children, areas, rowSizes, colSizes }) => {
+}) {
   const containerRef = React.useRef<HTMLDivElement>(null);
   const styles = {
     gridTemplateAreas: areas.map((x) => `"${x.join(" ")}"`).join(" \n "),
@@ -62,9 +68,7 @@ const ResizableGrid: React.FC<{
       {children}
     </div>
   );
-};
-
-export default ResizableGrid;
+}
 
 function buildRange(from: number, to: number): number[] {
   const numEls = Math.abs(to - from) + 1;

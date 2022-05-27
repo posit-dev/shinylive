@@ -9,18 +9,18 @@ import {
 } from "../hooks/usePyodide";
 import { ProxyType } from "../pyodide-proxy";
 import "./App.css";
-import Editor from "./Editor";
+import { Editor } from "./Editor";
 import { getExampleCategories, findExampleByTitle } from "../examples";
-import ExampleSelector from "./ExampleSelector";
+import { ExampleSelector } from "./ExampleSelector";
 import {
   completeFileContents,
   FileContent,
   FileContentInput,
 } from "./filecontent";
-import OutputCell from "./OutputCell";
-import ResizableGrid from "./ResizableGrid/ResizableGrid";
-import Terminal, { TerminalInterface, TerminalMethods } from "./Terminal";
-import Viewer, { ViewerMethods } from "./Viewer";
+import { OutputCell } from "./OutputCell";
+import { ResizableGrid } from "./ResizableGrid/ResizableGrid";
+import { TerminalInterface, TerminalMethods, Terminal } from "./Terminal";
+import { ViewerMethods, Viewer } from "./Viewer";
 
 const terminalInterface: TerminalInterface = (() => {
   let _exec = async (x: string) => console.log("preload exec:" + x);
@@ -115,7 +115,7 @@ function ensurePyodideProxyHandlePromise({
   return pyodideProxyHandlePromise;
 }
 
-export default function App({
+export function App({
   appMode = "examples-editor-terminal-viewer",
   startFiles = [],
   editorViewerOptions = {},

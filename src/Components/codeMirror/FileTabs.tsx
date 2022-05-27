@@ -1,5 +1,5 @@
 import * as React from "react";
-import useTabbedCodeMirror from "./useTabbedCodeMirror";
+import { useTabbedCodeMirror } from "./useTabbedCodeMirror";
 
 // =============================================================================
 // Utility functions

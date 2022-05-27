@@ -10,7 +10,7 @@ import {
 import "./ExampleSelector.css";
 import { FileContent } from "./filecontent";
 
-function ExampleSelector({
+export function ExampleSelector({
   setCurrentFiles,
   filesHaveChanged,
   autoSelectExample = true,
@@ -147,8 +147,6 @@ function ExampleSelector({
     </div>
   );
 }
-
-export default ExampleSelector;
 
 // Uses url hash to find and load a given example from a link
 function useExampleUrlHash() {

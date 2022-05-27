@@ -36,7 +36,7 @@ export type TerminalMethods =
 // =============================================================================
 // Terminal component
 // =============================================================================
-export default function Terminal({
+export function Terminal({
   pyodideProxyHandle,
   setTerminalMethods,
   terminalInterface,

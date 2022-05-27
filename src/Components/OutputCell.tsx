@@ -7,7 +7,7 @@ import "./OutputCell.css";
 // =============================================================================
 // OutputCell component
 // =============================================================================
-export default function OutputCell({
+export function OutputCell({
   pyodideProxyHandle,
   setTerminalMethods,
 }: {

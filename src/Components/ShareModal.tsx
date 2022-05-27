@@ -9,7 +9,7 @@ import "./ShareModal.css";
 // ShareModal component
 // =============================================================================
 
-export default function ShareModal({
+export function ShareModal({
   fileContents = [],
   setShowShareModal,
 }: {

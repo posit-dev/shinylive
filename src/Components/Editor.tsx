@@ -14,10 +14,10 @@ import {
   getBinaryFileExtensions,
 } from "./codeMirror/extensions";
 import { FileTabs } from "./codeMirror/FileTabs";
-import useTabbedCodeMirror from "./codeMirror/useTabbedCodeMirror";
+import { useTabbedCodeMirror } from "./codeMirror/useTabbedCodeMirror";
 import * as cmUtils from "./codeMirror/utils";
 import "./Editor.css";
-import ShareModal from "./ShareModal";
+import { ShareModal } from "./ShareModal";
 import { TerminalMethods } from "./Terminal";
 import { FileContent } from "./filecontent";
 import { ViewerMethods } from "./Viewer";
@@ -43,7 +43,7 @@ export type EditorFile =
       };
     };
 
-export default function Editor({
+export function Editor({
   currentFilesFromApp,
   setCurrentFiles,
   setFilesHaveChanged,

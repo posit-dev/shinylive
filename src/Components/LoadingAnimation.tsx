@@ -1,7 +1,7 @@
 import * as React from "react";
 import "./LoadingAnimation.css";
 
-export default function LoadingAnimation() {
+export function LoadingAnimation() {
   return (
     <div className="loading-animation">
       <div className="hex"></div>

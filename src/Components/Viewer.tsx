@@ -3,7 +3,7 @@ import { PyodideProxyHandle } from "../hooks/usePyodide";
 import { PyodideProxy } from "../pyodide-proxy";
 import * as utils from "../utils";
 import { FileContent } from "./filecontent";
-import LoadingAnimation from "./LoadingAnimation";
+import { LoadingAnimation } from "./LoadingAnimation";
 import "./Viewer.css";
 
 export type ViewerMethods =
@@ -133,7 +133,7 @@ async function resetAppFrame(
 // =============================================================================
 // Viewer component
 // =============================================================================
-export default function Viewer({
+export function Viewer({
   pyodideProxyHandle,
   setViewerMethods,
 }: {

@@ -5,7 +5,7 @@ import { render, screen, waitFor, within } from "@testing-library/react";
 // Used for simulating user events easily
 import userEvent from "@testing-library/user-event";
 
-import Editor from "./Editor";
+import { Editor } from "./Editor";
 import clearThenType from "../../testing-helpers/clearThenType";
 
 import { FileContent } from "./filecontent";

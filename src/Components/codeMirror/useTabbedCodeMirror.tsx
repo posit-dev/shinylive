@@ -8,7 +8,7 @@ import {
 } from "../Editor";
 import type { FileContent } from "../filecontent";
 
-export default function useTabbedCodeMirror({
+export function useTabbedCodeMirror({
   currentFilesFromApp,
   inferEditorExtensions,
 }: {
