@@ -181,8 +181,12 @@ def _mock_ipykernel():
     mods = sys.modules
 
     class MockKernel:
+        class Events:
+            def register(self, *args):
+                pass
         def __init__(self):
             self.comm_manager = CommManager()
+            self.events = MockKernel.Events()
     class Comm:
         pass
     class CommManager:
@@ -226,6 +230,11 @@ def _mock_ipython():
     m.display = "Mock"
     m.clear_output = "Mock"
     mods["IPython.display"] = m
+
+    # Needed for matplotlib - if IPython is present, it'll look for this.
+    m = types.ModuleType("IPython.core.pylabtools")
+    m.backend2gui = {}
+    mods["IPython.core.pylabtools"] = m
 
 _mock_ssl()
 _mock_ipykernel()
