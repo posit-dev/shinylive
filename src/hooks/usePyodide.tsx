@@ -291,10 +291,11 @@ async def _load_packages_from_dir(dir: str) -> None:
   // cause problems if an app has an import that occurs after startup (like in a
   // function).
   `
-async def _start_app(app_name, scope = None):
+
+_shiny_app_registry = {}
+
+async def _start_app(app_name, scope = _shiny_app_registry):
     import sys
-    if scope is None:
-        scope = globals()
 
     app_path = f"/home/pyodide/{app_name}"
     sys.path.insert(0, app_path)
@@ -311,11 +312,10 @@ async def _start_app(app_name, scope = None):
     sys.path.remove(app_path)
 
 
-async def _stop_app(app_name, scope = None):
+async def _stop_app(app_name, scope = _shiny_app_registry):
     import sys
     _res = False
-    if scope is None:
-        scope = globals()
+
     if app_name in list(scope):
         app_obj = scope[app_name]
         import shiny
@@ -323,7 +323,6 @@ async def _stop_app(app_name, scope = None):
         if "app" in dir(app_obj) and isinstance(app_obj.app.app, shiny.App):
             await app_obj.app.app.stop()
             _res = True
-            print(f"Stopped app {app_name}")
 
         if f"__{app_name}_lifespan__" in scope:
             lifespan = scope[f"__{app_name}_lifespan__"]
