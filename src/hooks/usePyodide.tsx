@@ -163,50 +163,83 @@ const load_python_pre = `
 # later.
 import os
 import sys
+
 __PYTHON_VERSION = f"{sys.version_info[0]}.{sys.version_info[1]}"
 
 os.remove(f"/lib/python{__PYTHON_VERSION}/ssl.py")
 with open(f"/lib/python{__PYTHON_VERSION}/ssl.py", "w") as f:
-    f.write("""class SSLContext:
+    f.write(
+        """class SSLContext:
     pass
 class SSLObject:
     pass
 class MemoryBIO:
     pass
+"""
+    )
+
+
+def mock_ipykernel():
+    import sys
+    import types
+
+    mods = sys.modules
+
+    class MockKernel:
+        def __init__(self):
+            self.comm_manager = CommManager()
+
+    class Comm:
+        pass
+
+    class CommManager:
+        def register_target(self, *args):
+            pass
+
+    m = types.ModuleType("ipykernel")
+    m.kernel = MockKernel()
+    mods["ipykernel"] = m
+
+    m = types.ModuleType("ipykernel.comm")
+    m.Comm = Comm
+    m.CommManager = CommManager
+    mods["ipykernel.comm"] = m
+
 
 def mock_ipython():
     import sys
     import types
+
+    mods = sys.modules
+
     def get_ipython():
         import ipykernel
+
         return ipykernel.kernel
 
-    _IPython = types.ModuleType("IPython")
-    sys.modules["IPython"] = _IPython
-    _IPython.get_ipython = get_ipython
+    m = types.ModuleType("IPython")
+    m.get_ipython = get_ipython
+    mods["IPython"] = m
 
-    _IPython.core = types.ModuleType("IPython.core")
-    sys.modules["IPython.core"] = _IPython.core
+    mods["IPython.core"] = types.ModuleType("IPython.core")
 
-    _IPython.core.getipython = types.ModuleType("IPython.core.getipython")
-    sys.modules["IPython.core.getipython"] = _IPython.core.getipython
-    _IPython.core.getipython.get_ipython = get_ipython
+    m = types.ModuleType("IPython.core.getipython")
+    m.get_ipython = get_ipython
+    mods["IPython.core.getipython"] = m
 
-    _IPython.core.interactiveshell = types.ModuleType("IPython.core.interactiveshell")
-    sys.modules["IPython.core.interactiveshell"] = _IPython.core.interactiveshell
-    _IPython.core.interactiveshell.InteractiveShell = "Mock"
+    m = types.ModuleType("IPython.core.interactiveshell")
+    m.InteractiveShell = "Mock"
+    mods["IPython.core.interactiveshell"] = m
 
-    _IPython.display = types.ModuleType("IPython.display")
-    sys.modules["IPython.display"] = _IPython.display
-    _IPython.display.display = "Mock"
-    _IPython.display.clear_output = "Mock"
+    m = types.ModuleType("IPython.display")
+    m.display = "Mock"
+    m.clear_output = "Mock"
+    mods["IPython.display"] = m
 
     import IPython
 
+mock_ipykernel()
 mock_ipython()
-""")
-
-None
 `;
 
 const load_python_modules = `

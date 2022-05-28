@@ -157,10 +157,10 @@ pypi_packages_info: Dict[str, PackageInfo] = {
     #     "name": "widgetsnbextension",
     #     "version": "3.6.0",
     # },
-    "notebook": {
-        "name": "notebook",
-        "version": "6.4.11",
-    },
+    # "notebook": {
+    #     "name": "notebook",
+    #     "version": "6.4.11",
+    # },
     "ipython-genutils": {
         "name": "ipython-genutils",
         "version": "0.2.0",
@@ -313,6 +313,8 @@ def _filter_requires(requires: List[str]) -> List[str]:
         "contextvars",
         # websockets isn't used by Shiny when running in the browser.
         "websockets",
+        # ipykernel is needed by ipywidgets. We've created a mock for it.
+        "ipykernel",
         # This brings in IPython and a lot of unneeded dependencies with compiled code.
         "widgetsnbextension",
     ]
@@ -331,7 +333,6 @@ def _get_all_packages_info() -> Dict[str, PackageInfo]:
 
     import htmltools
     import shiny
-    import ipykernel
     import ipyshiny
 
     all_package_versions = pypi_packages_info.copy()
@@ -339,7 +340,6 @@ def _get_all_packages_info() -> Dict[str, PackageInfo]:
         {
             "htmltools": {"name": "htmltools", "version": htmltools.__version__},
             "shiny": {"name": "shiny", "version": shiny.__version__},
-            "ipykernel": {"name": "ipykernel", "version": ipykernel.__version__},
             "ipyshiny": {"name": "ipyshiny", "version": ipyshiny.__version__},
         }
     )
