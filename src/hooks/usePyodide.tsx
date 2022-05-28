@@ -157,26 +157,24 @@ export function usePyodide({
 // Python code for setting up session
 // =============================================================================
 const load_python_pre = `
-# Patch ssl.py so that it is actually loadable under Pyodide.
-# I've stubbed in just enough to allow the packages we need to be importable
-# (mostly anyio, via starlette), it's possible we will need to stub in more
-# later.
-import os
-import sys
+def mock_ssl():
+    import sys
+    import types
 
-__PYTHON_VERSION = f"{sys.version_info[0]}.{sys.version_info[1]}"
+    class SSLContext:
+        pass
+    class SSLObject:
+        pass
+    class MemoryBIO:
+        pass
 
-os.remove(f"/lib/python{__PYTHON_VERSION}/ssl.py")
-with open(f"/lib/python{__PYTHON_VERSION}/ssl.py", "w") as f:
-    f.write(
-        """class SSLContext:
-    pass
-class SSLObject:
-    pass
-class MemoryBIO:
-    pass
-"""
-    )
+    m = types.ModuleType("ssl")
+    m.SSLContext = SSLContext
+    m.SSLObject = SSLObject
+    m.MemoryBIO = MemoryBIO
+    sys.modules["ssl"] = m
+
+mock_ssl()
 
 
 def mock_ipykernel():
