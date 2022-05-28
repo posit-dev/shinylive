@@ -157,7 +157,7 @@ export function usePyodide({
 // Python code for setting up session
 // =============================================================================
 const load_python_pre = `
-def mock_ssl():
+def _mock_ssl():
     import sys
     import types
 
@@ -174,22 +174,17 @@ def mock_ssl():
     m.MemoryBIO = MemoryBIO
     sys.modules["ssl"] = m
 
-mock_ssl()
 
-
-def mock_ipykernel():
+def _mock_ipykernel():
     import sys
     import types
-
     mods = sys.modules
 
     class MockKernel:
         def __init__(self):
             self.comm_manager = CommManager()
-
     class Comm:
         pass
-
     class CommManager:
         def register_target(self, *args):
             pass
@@ -204,15 +199,13 @@ def mock_ipykernel():
     mods["ipykernel.comm"] = m
 
 
-def mock_ipython():
+def _mock_ipython():
     import sys
     import types
-
     mods = sys.modules
 
     def get_ipython():
         import ipykernel
-
         return ipykernel.kernel
 
     m = types.ModuleType("IPython")
@@ -234,10 +227,9 @@ def mock_ipython():
     m.clear_output = "Mock"
     mods["IPython.display"] = m
 
-    import IPython
-
-mock_ipykernel()
-mock_ipython()
+_mock_ssl()
+_mock_ipykernel()
+_mock_ipython()
 `;
 
 const load_python_modules = `
