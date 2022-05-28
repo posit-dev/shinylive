@@ -91,37 +91,8 @@ async function resetAppFrame(
   // see the flash of gray indicating a closed session.
   appFrame.src = "";
 
-  // TODO: myapp{n}
   const stoppedPreviousApp = (await pyodide.runPyAsync(
-    `
-    _res = False
-    if "${appName}" in locals():
-        print("Stopping previous app ${appName}...")
-        import shiny
-        if "app" in dir(${appName}) and isinstance(${appName}.app.app, shiny.App):
-            await ${appName}.app.app.stop()
-            _res = True
-
-        if "__${appName}_lifespan__" in locals():
-            await __${appName}_lifespan__.__aexit__(None, None, None)
-            del __${appName}_lifespan__
-
-        del ${appName}
-        # Unload app module and submodules
-        for name, module in list(sys.modules.items()):
-            if name == "${appName}" or name.startswith("${appName}."):
-                sys.modules.pop(name)
-            elif (
-                hasattr(module, "__file__")
-                and module.__file__ is not None
-                and module.__file__.startswith("/home/pyodide")
-            ):
-                # This will find submodules of the app if they are from files
-                # loaded with 'import foo', as opposed to 'from . import foo'.
-                sys.modules.pop(name)
-
-    _res
-    `,
+    `_stop_app('${appName}')`,
     { returnResult: "value", printResult: false }
   )) as boolean;
 
@@ -171,42 +142,21 @@ export function Viewer({
 
         const appName = appInfo.appName;
 
-        // Save the code in /home/pyodide/{appName} so we can load it as a module
+        // Save the code in /home/pyodide/{appName} so we can load it as a
+        // module.
         await pyodideproxy.callPy(
           ["_save_files"],
           [appCode, "/home/pyodide/" + appName],
           {}
         );
 
-        // The save_files() seems to need this `await` to occur before the
-        // import below. Without it, when starting multiple apps concurrently,
-        // the `import myapp.app` below can fail with a "ModuleNotFoundError".
-        // The error seems to happen randomly.
+        // The _save_files() seems to need this `await` to occur before the
+        // imports below (in _start_app()). Without it, when starting multiple
+        // apps concurrently, the `import myapp.app` below can fail with a
+        // "ModuleNotFoundError". The error seems to happen randomly.
         await pyodideproxy.runPyAsync("asyncio.sleep(0)");
 
-        // Add this app's directory to the sys.path so that it can import other
-        // files in the dir with "import foo". We'll remove it from the path as
-        // soon as the app has started, to reduce the risk of interfering with
-        // other apps that are running using the same pyodide instance. (For
-        // example, if two apps both have "import utils", but their respective
-        // utils.py files are different, then depending on the order that things
-        // happen, it's possible for one app to load the other's utils.py.)
-        // This could cause problems if an app has an import that occurs after
-        // startup (like in a function).
-        await pyodideproxy.runPyAsync(
-          `
-          import sys
-          sys.path.insert(0, "/home/pyodide/${appName}")
-
-          await _load_packages_from_dir("/home/pyodide/${appName}")
-
-          import ${appName}.app
-          __${appName}_lifespan__ = ${appName}.app.app._lifespan(${appName}.app.app.starlette_app)
-          await __${appName}_lifespan__.__aenter__()
-
-          sys.path.remove("/home/pyodide/${appName}")
-          `
-        );
+        await pyodideproxy.runPyAsync(`_start_app('${appName}')`);
 
         viewerFrameRef.current.src = appInfo.urlPath;
         setAppRunningState("running");

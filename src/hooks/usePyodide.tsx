@@ -102,18 +102,6 @@ export async function initShiny({
   try {
     // One-time initialization of Python session
     await pyodideProxy.runPyAsync(load_python_pre);
-
-    if (pyodideProxy.proxyType() === "webworker") {
-      // With a WebWorker, matplotlib needs to use the AGG backend instead of
-      // the default Canvas one.
-      await pyodideProxy.runPyAsync(`
-        print("Initializing AGG backend for plotting...")
-        import os
-        os.environ['MPLBACKEND'] = 'AGG'
-    `);
-    }
-
-    await pyodideProxy.runPyAsync(load_python_modules);
   } catch (e) {
     console.error(e);
     return {
@@ -156,7 +144,8 @@ export function usePyodide({
 // =============================================================================
 // Python code for setting up session
 // =============================================================================
-const load_python_pre = `
+const load_python_pre =
+  `
 def _mock_ssl():
     import sys
     import types
@@ -239,17 +228,23 @@ def _mock_ipython():
 _mock_ssl()
 _mock_ipykernel()
 _mock_ipython()
-`;
 
-const load_python_modules = `
-print("Loading modules...")
 import asyncio
-import sys
 
-# Add current directory to Python path.
-sys.path.insert(0, "")
+def _pyodide_env_init():
+    import os
+    import sys
 
-# Function for saving Shiny app files so we can load the app as a module.
+    # With a WebWorker, matplotlib needs to use the AGG backend instead of
+    # the default Canvas one.
+    os.environ["MPLBACKEND"] = "AGG"
+
+    # Add current directory to Python path.
+    sys.path.insert(0, "")
+
+_pyodide_env_init()
+
+# Function for saving a set of files so we can load them as a module.
 def _save_files(files: list[dict[str, str]], destdir: str) -> None:
     import shutil
     import base64
@@ -285,8 +280,71 @@ async def _load_packages_from_dir(dir: str) -> None:
         if file.endswith(".py"):
             with open(os.path.join(dir, file)) as f:
                 await js_pyodide.loadPackagesFromImports(f.read())
+` +
+  // When we start the app, add the app's directory to the sys.path so that it
+  // can import other files in the dir with "import foo". We'll remove it from
+  // the path as soon as the app has started, to reduce the risk of interfering
+  // with other apps that are running using the same pyodide instance. (For
+  // example, if two apps both have "import utils", but their respective
+  // utils.py files are different, then depending on the order that things
+  // happen, it's possible for one app to load the other's utils.py.) This could
+  // cause problems if an app has an import that occurs after startup (like in a
+  // function).
+  `
+async def _start_app(app_name, scope = None):
+    import sys
+    if scope is None:
+        scope = globals()
 
-`;
+    app_path = f"/home/pyodide/{app_name}"
+    sys.path.insert(0, app_path)
+
+    await _load_packages_from_dir(app_path)
+
+    app_obj = __import__(f"{app_name}.app")
+    scope[app_name] = app_obj
+
+    lifespan = app_obj.app.app._lifespan(app_obj.app.app.starlette_app)
+    scope[f"__{app_name}_lifespan__"] = lifespan
+    await lifespan.__aenter__()
+
+    sys.path.remove(app_path)
+
+
+async def _stop_app(app_name, scope = None):
+    import sys
+    _res = False
+    if scope is None:
+        scope = globals()
+    if app_name in list(scope):
+        app_obj = scope[app_name]
+        import shiny
+
+        if "app" in dir(app_obj) and isinstance(app_obj.app.app, shiny.App):
+            await app_obj.app.app.stop()
+            _res = True
+            print(f"Stopped app {app_name}")
+
+        if f"__{app_name}_lifespan__" in scope:
+            lifespan = scope[f"__{app_name}_lifespan__"]
+            await lifespan.__aexit__(None, None, None)
+            del scope[f"__{app_name}_lifespan__"]
+
+        del scope[app_name]
+        # Unload app module and submodules
+        for name, module in list(sys.modules.items()):
+            if name == app_name or name.startswith(app_name):
+                sys.modules.pop(name)
+            elif (
+                hasattr(module, "__file__")
+                and module.__file__ is not None
+                and module.__file__.startswith("/home/pyodide")
+            ):
+                # This will find submodules of the app if they are from files
+                # loaded with 'import foo', as opposed to 'from . import foo'.
+                sys.modules.pop(name)
+    return _res
+  `;
 
 // =============================================================================
 // Misc stuff
