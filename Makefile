@@ -86,6 +86,9 @@ all: node_modules \
 	$(BUILD_DIR)/shinylive/jquery.min.js \
 	$(BUILD_DIR)/shinylive/style-resets.css \
 	$(BUILD_DIR)/shinylive/pyodide \
+	$(BUILD_DIR)/shinylive/pyodide/$(HTMLTOOLS_WHEEL) \
+	$(BUILD_DIR)/shinylive/pyodide/$(SHINY_WHEEL) \
+	$(BUILD_DIR)/shinylive/pyodide/$(IPYSHINY_WHEEL) \
 	retrieve_packages \
 	update_pyodide_packages_json \
 	$(BUILD_DIR)/shinylive/shiny_static/index.html \
@@ -118,6 +121,25 @@ $(BUILD_DIR)/shinylive/pyodide:
 	cd $(BUILD_DIR)/shinylive && \
 	curl -L https://github.com/pyodide/pyodide/releases/download/$(PYODIDE_VERSION)/$(PYODIDE_DIST_FILENAME) \
 	    | tar --exclude "*test*.tar" --exclude "node_modules" -xvj
+
+$(BUILD_DIR)/shinylive/pyodide/$(HTMLTOOLS_WHEEL): $(PACKAGE_DIR)/$(HTMLTOOLS_WHEEL)
+	mkdir -p $(BUILD_DIR)/shinylive/pyodide
+	# Remove any old copies of htmltools
+	rm -f $(BUILD_DIR)/shinylive/pyodide/htmltools*.whl
+	cp $(PACKAGE_DIR)/$(HTMLTOOLS_WHEEL) $(BUILD_DIR)/shinylive/pyodide/$(HTMLTOOLS_WHEEL)
+
+$(BUILD_DIR)/shinylive/pyodide/$(SHINY_WHEEL): $(PACKAGE_DIR)/$(SHINY_WHEEL)
+	mkdir -p $(BUILD_DIR)/shinylive/pyodide
+	# Remove any old copies of shiny
+	rm -f $(BUILD_DIR)/shinylive/pyodide/shiny*.whl
+	cp $(PACKAGE_DIR)/$(SHINY_WHEEL) $(BUILD_DIR)/shinylive/pyodide/$(SHINY_WHEEL)
+
+$(BUILD_DIR)/shinylive/pyodide/$(IPYSHINY_WHEEL): $(PACKAGE_DIR)/$(IPYSHINY_WHEEL)
+	mkdir -p $(BUILD_DIR)/shinylive/pyodide
+	# Remove any old copies of ipyshiny
+	rm -f $(BUILD_DIR)/shinylive/pyodide/ipyshiny*.whl
+	cp $(PACKAGE_DIR)/$(IPYSHINY_WHEEL) $(BUILD_DIR)/shinylive/pyodide/$(IPYSHINY_WHEEL)
+
 
 $(BUILD_DIR)/shinylive/shiny_static/index.html: shiny_static/index.html
 	mkdir -p $(BUILD_DIR)/shinylive/shiny_static
@@ -171,7 +193,11 @@ update_packages_lock: $(PYBIN) $(BUILD_DIR)/shinylive/pyodide
 	. $(PYBIN)/activate && scripts/py_package_versions.py generate_lockfile
 
 ## Download packages in shinylive_lock.json from PyPI
-retrieve_packages: $(PYBIN)
+retrieve_packages: $(PYBIN) $(BUILD_DIR)/shinylive/pyodide \
+		$(BUILD_DIR)/shinylive/pyodide/$(HTMLTOOLS_WHEEL) \
+		$(BUILD_DIR)/shinylive/pyodide/$(SHINY_WHEEL) \
+		$(BUILD_DIR)/shinylive/pyodide/$(IPYSHINY_WHEEL)
+	$(PYBIN)/pip install -r requirements-dev.txt
 	mkdir -p $(BUILD_DIR)/shinylive/pyodide
 	. $(PYBIN)/activate && scripts/py_package_versions.py retrieve_packages
 
