@@ -11,8 +11,8 @@ Usage:
   py_package_versions.py generate_lockfile
     Create shinylive_packages.lock file.
 
-  py_package_versions.py download_pypi_packages [destdir]
-    Downloads needed packages from PyPI.
+  py_package_versions.py retrieve_packages [destdir]
+    Gets packages listed in lockfile, from local sources and from PyPI.
     [destdir] defaults to {DEFAULT_PYODIDE_DIR}.
 
   py_package_versions.py insert_into_pyodide_packages [pyodide_dir]
@@ -21,20 +21,24 @@ Usage:
 """
 
 
+import hashlib
 import json
 import os
 import re
+import shutil
 import sys
-from typing import Any, Literal, TypedDict, Union, Optional, cast
-from typing_extensions import NotRequired
-import urllib.request
 import urllib.error
+import urllib.request
+from typing import Any, Literal, Optional, TypedDict, Union, cast
+
 import pkginfo
 from packaging.version import Version
+from typing_extensions import NotRequired
 
 top_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 package_source_dir = os.path.join(top_dir, "packages")
-
+requirements_file = os.path.join(top_dir, "requirements.json")
+package_lock_file = os.path.join(top_dir, "added_packages_lock.json")
 
 # The package information structure we use.
 class PackageInfo(TypedDict):
@@ -136,56 +140,13 @@ class PypiPackageMetadata(TypedDict):
     vulnerabilities: list[object]
 
 
-# Maybe this should be a requirements file, which only allows `==` and no version
-# specification? Unfortunately, the .whl reference would have to be changed every time a
-# shiny version changes.
-#
-# ../local_wheels/ABC-0.0.2-py3-none-any.whl
-# Flask==1.1.2
-# flask-restplus==0.13.0
-target_packages: dict[str, TargetPackage] = {
-    "htmltools": {
-        "name": "htmltools",
-        "source": "local",
-        "version": "latest",
-    },
-    "shiny": {
-        "name": "shiny",
-        "source": "local",
-        "version": "latest",
-    },
-    "ipyshiny": {
-        "name": "ipyshiny",
-        "source": "local",
-        "version": "latest",
-    },
-    "plotnine": {
-        "name": "plotnine",
-        "source": "pypi",
-        "version": "latest",  # Or maybe "latest"?
-    },
-    "plotly": {
-        "name": "plotly",
-        "source": "pypi",
-        "version": "latest",
-    },
-    "pyllusion": {
-        "name": "pyllusion",
-        "source": "pypi",
-        "version": "latest",
-    },
-    "siuba": {
-        "name": "siuba",
-        "source": "pypi",
-        "version": "latest",
-    },
-}
-
-
 def generate_lockfile() -> None:
+    with open(requirements_file) as f:
+        target_packages: dict[str, TargetPackage] = json.load(f)
+
     target_package_info = find_package_info_lockfile(target_packages)
     recurse_dependencies_lockfile(target_package_info)
-    with open(os.path.join(top_dir, "added_packages_lock.json"), "w") as f:
+    with open(package_lock_file, "w") as f:
         json.dump(target_package_info, f, indent=2)
 
 
@@ -244,7 +205,6 @@ def find_package_info_lockfile_one(pkg_info: TargetPackage) -> PackageInfoLockfi
 
     elif pkg_info["source"] == "pypi":
         x = _get_pypi_package_info(pkg_info["name"], pkg_info["version"])
-        # print(json.dumps(x, indent=2))
         return x
 
     else:
@@ -254,10 +214,21 @@ def find_package_info_lockfile_one(pkg_info: TargetPackage) -> PackageInfoLockfi
 def _get_pypi_package_info(
     name: str, version: Union[Literal["latest"], str]
 ) -> PackageInfoLockfile:
-    """Get the package info for a package from PyPI."""
+    """
+    Get the package info for a package from PyPI, and return it in our lockfile
+    format.
+    """
 
     (pkg_meta, wheel_url_info) = _find_pypi_meta_with_wheel(name, version)
-    # print(json.dumps(pkg_meta["info"], indent=2))
+
+    # Some packages have a different package name from the import (module) name.
+    # "linkify-it-py" -> "linkify_it"
+    # "python-multipart" -> "multipart"
+    # There's no to know the import name for sure from the package name, so it's
+    # possible that in the future we'll need to special-case some packages.
+    # https://stackoverflow.com/questions/11453866/given-the-name-of-a-python-package-what-is-the-name-of-the-module-to-import
+    import_name = name.removeprefix("python-").removesuffix("-py").replace("-", "_")
+
     return {
         "name": name,
         "version": version,
@@ -265,10 +236,7 @@ def _get_pypi_package_info(
         "sha256": wheel_url_info["digests"]["sha256"],
         "url": wheel_url_info["url"],
         "depends": _filter_requires(pkg_meta["info"]["requires_dist"]),
-        "imports": [
-            name
-            # Might need customization here. Can we automate?
-        ],
+        "imports": [import_name],
     }
 
 
@@ -358,174 +326,42 @@ def base_pyodide_packages_info(
     return pyodide_packages_info["packages"]
 
 
-# From target_packages, run a script which:
-# * Finds the dependency tree (merged with packages.json).
-#   * Should error if a requested package is already in packages.json.
-# * Generate a lock file, with name, source, and version.
-#   * ???
-#
-# From the lock file, download the packages and modify pyodide/packages.json
+def retrieve_packages(package_output_dir: str = DEFAULT_PYODIDE_DIR):
+    """
+    Download packages listed in the lockfile, either from PyPI, or from local wheels, as
+    specified in the lockfile.
+    """
+    with open(package_lock_file, "r") as f:
+        packages: dict[str, PackageInfoLockfile] = json.load(f)
+
+    print(f"Copying packages to {package_output_dir}")
+
+    for pkg_info in packages.values():
+        destfile = os.path.join(package_output_dir, pkg_info["file_name"])
+
+        if pkg_info["url"] is None:
+            srcfile = os.path.join(package_source_dir, pkg_info["file_name"])
+            print("  " + os.path.relpath(srcfile))
+            shutil.copyfile(srcfile, destfile)
+        else:
+            print("  " + pkg_info["url"])
+            req = urllib.request.urlopen(pkg_info["url"])
+            with open(destfile, "b+w") as f:
+                f.write(req.read())
+
+        if pkg_info["sha256"] is not None:
+            sha256 = _sha256_file(destfile)
+            if sha256 != pkg_info["sha256"]:
+                raise Exception(
+                    f"SHA256 mismatch for {pkg_info['url']}.\n"
+                    + f"  Expected {pkg_info['sha256']}\n"
+                    + f"  Actual   {sha256}"
+                )
 
 
-# TODO:
-# * This data should probably live in a separate file.
-# * There should also be a way to automatically get these package names and versions.
-#   Currently they are obtained by loading the base pyodide installation, then running
-#   micropip.install("htmltools") and micropip.install("shiny"), and inspecting the
-#   browser's network traffic to see what packages are downloaded from PyPI.
-pypi_packages_info: dict[str, PackageInfo] = {
-    # Packages below are for Shiny
-    "anyio": {
-        "name": "anyio",
-        "version": "3.4.0",
-    },
-    "idna": {
-        "name": "idna",
-        "version": "3.3",
-    },
-    "sniffio": {
-        "name": "sniffio",
-        "version": "1.2.0",
-    },
-    "starlette": {
-        "name": "starlette",
-        "version": "0.17.1",
-    },
-    "linkify-it-py": {
-        "name": "linkify-it-py",
-        "version": "1.0.3",
-        "imports": ["linkify_it"],
-    },
-    "uc-micro-py": {
-        "name": "uc-micro-py",
-        "version": "1.0.1",
-        "imports": ["uc_micro"],
-    },
-    "appdirs": {
-        "name": "appdirs",
-        "version": "1.4.4",
-    },
-    "click": {
-        "name": "click",
-        "version": "8.1.3",
-    },
-    "markdown-it-py": {
-        "name": "markdown-it-py",
-        "version": "2.1.0",
-        "imports": ["markdown_it"],
-    },
-    "mdurl": {
-        "name": "mdurl",
-        "version": "0.1.1",
-    },
-    "uvicorn": {
-        "name": "uvicorn",
-        "version": "0.17.6",
-    },
-    "asgiref": {
-        "name": "asgiref",
-        "version": "3.5.0",
-    },
-    "h11": {
-        "name": "h11",
-        "version": "0.13.0",
-    },
-    "python-multipart": {
-        "name": "python-multipart",
-        "version": "0.0.4",
-        "imports": ["multipart"],
-    },
-    # Packages below are for siuba
-    "siuba": {
-        "name": "siuba",
-        "version": "0.2.3",
-    },
-    # Packages below are for plotnine
-    "plotnine": {
-        "name": "plotnine",
-        "version": "0.8.0",
-    },
-    "descartes": {
-        "name": "descartes",
-        "version": "1.1.0",
-    },
-    "mizani": {
-        "name": "mizani",
-        "version": "0.7.4",
-    },
-    "palettable": {
-        "name": "palettable",
-        "version": "3.3.0",
-    },
-    # Packages below are for pyllusion
-    "pyllusion": {
-        "name": "pyllusion",
-        "version": "0.0.12",
-    },
-    # Packages below are for ipywidgets (which is needed by ipyshiny)
-    "ipywidgets": {
-        "name": "ipywidgets",
-        "version": "7.7.0",
-    },
-    # This causes IPython and a lot of other packages to load, many of which have
-    # compiled code and can't be installed in pyodide.
-    # "widgetsnbextension": {
-    #     "name": "widgetsnbextension",
-    #     "version": "3.6.0",
-    # },
-    # "notebook": {
-    #     "name": "notebook",
-    #     "version": "6.4.11",
-    # },
-    "ipython-genutils": {
-        "name": "ipython-genutils",
-        "version": "0.2.0",
-        "imports": ["ipython_genutils"],
-    },
-    "nbformat": {
-        "name": "nbformat",
-        "version": "5.4.0",
-    },
-    "jsonschema": {
-        "name": "jsonschema",
-        "version": "4.5.1",
-    },
-    "fastjsonschema": {
-        "name": "fastjsonschema",
-        "version": "2.15.3",
-    },
-    # Packages below are for ipyshiny
-    "jupyter-core": {
-        "name": "jupyter-core",
-        "version": "4.10.0",
-        "imports": ["jupyter_core"],
-    },
-    "traitlets": {
-        "name": "traitlets",
-        "version": "5.2.1.post0",
-    },
-    # For plotly
-    "plotly": {
-        "name": "plotly",
-        "version": "4.8.0",
-    },
-    "tenacity": {
-        "name": "tenacity",
-        "version": "8.0.1",
-    },
-}
-
-
-def download_pypi_packages(package_output_dir: str = DEFAULT_PYODIDE_DIR):
-    packages: str = " ".join(
-        [
-            f'{pypi_packages_info[k]["name"]}=={pypi_packages_info[k]["version"]}'
-            for k in pypi_packages_info
-        ]
-    )
-    command = f"pip download --no-deps --dest {package_output_dir} {packages}"
-    print(command)
-    os.system(command)
+def _sha256_file(filename: str) -> str:
+    with open(filename, "rb") as f:
+        return hashlib.sha256(f.read()).hexdigest()
 
 
 def insert_into_pyodide_packages(pyodide_dir: str = DEFAULT_PYODIDE_DIR):
@@ -651,8 +487,8 @@ def _get_all_packages_info() -> dict[str, PackageInfo]:
     sys.path.insert(0, os.path.join(package_source_dir, "./py-shiny"))
 
     import htmltools
-    import shiny
     import ipyshiny
+    import shiny
 
     all_package_versions = pypi_packages_info.copy()
     all_package_versions.update(
@@ -672,12 +508,11 @@ if __name__ == "__main__":
         print(usage_info)
         sys.exit(1)
 
-    if sys.argv[1] == "download_pypi_packages":
+    if sys.argv[1] == "retrieve_packages":
         if len(sys.argv) >= 3:
-            package_source_dir = sys.argv[2]
+            retrieve_packages(sys.argv[2])
         else:
-            package_source_dir = "."
-        download_pypi_packages(package_source_dir)
+            retrieve_packages()
 
     elif sys.argv[1] == "insert_into_pyodide_packages":
         insert_into_pyodide_packages()
