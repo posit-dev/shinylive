@@ -9,18 +9,19 @@ the base Pyodide distribution.
 
 Usage:
   py_package_versions.py generate_lockfile
-    Create shinylive_packages.lock file.
+    Create extra_packages_lock.json file.
 
   py_package_versions.py retrieve_packages [destdir]
     Gets packages listed in lockfile, from local sources and from PyPI.
     [destdir] defaults to {DEFAULT_PYODIDE_DIR}.
 
-  py_package_versions.py insert_into_pyodide_packages [pyodide_dir]
+  py_package_versions.py add_to_pyodide_packages [pyodide_dir]
     Modifies pyodide's package.json to include Shiny-related packages.
     [pyodide_dir] defaults to {DEFAULT_PYODIDE_DIR}.
 """
 
 
+import functools
 import hashlib
 import json
 import os
@@ -38,51 +39,50 @@ from typing_extensions import NotRequired
 top_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 package_source_dir = os.path.join(top_dir, "packages")
 requirements_file = os.path.join(top_dir, "requirements.json")
-package_lock_file = os.path.join(top_dir, "added_packages_lock.json")
+package_lock_file = os.path.join(top_dir, "extra_packages_lock.json")
 
-# The package information structure we use.
-class PackageInfo(TypedDict):
+# Packages that shouldn't be listed in "depends" in Pyodide's packages.json file.
+AVOID_DEPEND_PACKAGES = [
+    "typing",
+    "python",
+    # The next two are dependencies for Shiny, but they cause problems.
+    # contextvars causes "NameError: name 'asyncio' is not defined". Not sure why. It's
+    # already present anyway, as a built-in package.
+    "contextvars",
+    # websockets isn't used by Shiny when running in the browser.
+    "websockets",
+    # ipykernel is needed by ipywidgets. We've created a mock for it.
+    "ipykernel",
+    # This brings in IPython and a lot of unneeded dependencies with compiled code.
+    "widgetsnbextension",
+]
+
+
+# =============================================
+# Data structures used in our requirements.json
+# =============================================
+class RequirementsPackage(TypedDict):
     name: str
-    version: str
-    # For some packages, the name of the package (like "foo-bar") differs from the imported
-    # module name (like "foo_bar"). Also, some can have multiple imported modules.
-    imports: NotRequired[list[str]]
-
-    # source: Literal["pypi", "local"]
+    source: Literal["local", "pypi"]
+    version: Union[Literal["latest"], str]
 
 
-class PyodidePackageInfo(TypedDict):
+# ====================================================
+# Data structures used in our extra_packages_lock.json
+# ====================================================
+class LockfilePackageInfo(TypedDict):
     name: str
     version: str
     filename: str
-    install_dir: Literal["lib", "site"]
-    depends: list[str]
-    imports: list[str]
-    unvendored_tests: NotRequired[bool]
-
-
-# The package information structure used by Pyodide's packages.json.
-class PyodidePackagesFile(TypedDict):
-    info: dict[str, str]
-    packages: dict[str, PyodidePackageInfo]
-
-
-class PackageInfoLockfile(TypedDict):
-    name: str
-    version: str
-    file_name: str
     sha256: Optional[str]
     url: Optional[str]
     depends: list[str]
     imports: list[str]
 
 
-class TargetPackage(TypedDict):
-    name: str
-    source: Literal["local", "pypi"]
-    version: Union[Literal["latest"], str]
-
-
+# =============================================
+# Data structures returned by PyPI's JSON API
+# =============================================
 class PypiUrlInfo(TypedDict):
     comment_text: str
     digests: dict[str, str]
@@ -140,34 +140,73 @@ class PypiPackageMetadata(TypedDict):
     vulnerabilities: list[object]
 
 
+# =============================================
+# Data structures used in pyodide/packages.json
+# =============================================
+class PyodidePackageInfo(TypedDict):
+    name: str
+    version: str
+    file_name: str
+    install_dir: Literal["lib", "site"]
+    depends: list[str]
+    imports: list[str]
+    unvendored_tests: NotRequired[bool]
+
+
+# The package information structure used by Pyodide's packages.json.
+class PyodidePackagesFile(TypedDict):
+    info: dict[str, str]
+    packages: dict[str, PyodidePackageInfo]
+
+
+# =============================================================================
+# Functions for generating the lockfile from the requirements file.
+# =============================================================================
 def generate_lockfile() -> None:
+    print(
+        f"Loading requirements package list from {os.path.relpath(requirements_file)}:"
+    )
     with open(requirements_file) as f:
-        target_packages: dict[str, TargetPackage] = json.load(f)
+        required_packages: dict[str, RequirementsPackage] = json.load(f)
 
-    target_package_info = find_package_info_lockfile(target_packages)
-    recurse_dependencies_lockfile(target_package_info)
+    print("  " + " ".join(required_packages.keys()))
+
+    print("Finding dependencies...")
+    required_package_info = _find_package_info_lockfile(required_packages)
+    _recurse_dependencies_lockfile(required_package_info)
+    print("Required packages and dependencies:")
+    print("  " + " ".join(required_package_info.keys()))
+
+    print(f"Writing {package_lock_file}")
     with open(package_lock_file, "w") as f:
-        json.dump(target_package_info, f, indent=2)
+        json.dump(required_package_info, f, indent=2)
 
 
-def recurse_dependencies_lockfile(
-    pkgs: dict[str, PackageInfoLockfile],
+def _recurse_dependencies_lockfile(
+    pkgs: dict[str, LockfilePackageInfo],
     pyodide_dir: str = DEFAULT_PYODIDE_DIR,
 ) -> None:
-    """Recursively find all dependencies of the given packages. This will mutate the
-    object passed in."""
+    """
+    Recursively find all dependencies of the given packages. This will mutate the object
+    passed in.
+    """
+    pyodide_packages_info = orig_pyodide_packages(pyodide_dir)["packages"]
+    i = 0
+    while i < len(pkgs):
+        pkg_info = pkgs[list(pkgs.keys())[i]]
+        i += 1
 
-    pyodide_packages_info = base_pyodide_packages_info(pyodide_dir)
-    for pkg_info in list(pkgs.values()):
+        print(f"  {pkg_info['name']}:", end="")
         for dep_name in pkg_info["depends"]:
-            print(f"Looking for dependency: {dep_name}")
+            print(" " + dep_name, end="")
             if dep_name in pkgs or dep_name.lower() in pyodide_packages_info:
-                # We already have it; do nothing.
+                # We already have it, either in our extra packages, or in the original
+                # set of pyodide packages. Do nothing.
                 # Note that the keys in pyodide_packages_info are all lower-cased, even
                 # if the package name has capitals.
                 pass
             else:
-                pkgs[dep_name] = find_package_info_lockfile_one(
+                pkgs[dep_name] = _find_package_info_lockfile_one(
                     {
                         "name": dep_name,
                         "source": "pypi",
@@ -175,20 +214,32 @@ def recurse_dependencies_lockfile(
                         "version": "latest",
                     }
                 )
+        print("")
 
 
-def find_package_info_lockfile(
-    pkgs: dict[str, TargetPackage]
-) -> dict[str, PackageInfoLockfile]:
-
-    res: dict[str, PackageInfoLockfile] = {}
+def _find_package_info_lockfile(
+    pkgs: dict[str, RequirementsPackage]
+) -> dict[str, LockfilePackageInfo]:
+    """
+    Given a dict of RequirementsPackage objects, find package information that will be
+    inserted into the package lock file. For PyPI packages, this involves fetching
+    package metadata from PyPI.
+    """
+    res: dict[str, LockfilePackageInfo] = {}
 
     for pkg_name, pkg_info in pkgs.items():
-        res[pkg_name] = find_package_info_lockfile_one(pkg_info)
+        res[pkg_name] = _find_package_info_lockfile_one(pkg_info)
     return res
 
 
-def find_package_info_lockfile_one(pkg_info: TargetPackage) -> PackageInfoLockfile:
+def _find_package_info_lockfile_one(
+    pkg_info: RequirementsPackage,
+) -> LockfilePackageInfo:
+    """
+    Given a RequirementsPackage object, find package information for it that will be inserted
+    into the package lock file. For PyPI packages, this involves fetching package
+    metadata from PyPI.
+    """
     all_wheel_files = os.listdir(package_source_dir)
     all_wheel_files = [f for f in all_wheel_files if f.endswith(".whl")]
 
@@ -213,7 +264,7 @@ def find_package_info_lockfile_one(pkg_info: TargetPackage) -> PackageInfoLockfi
 
 def _get_pypi_package_info(
     name: str, version: Union[Literal["latest"], str]
-) -> PackageInfoLockfile:
+) -> LockfilePackageInfo:
     """
     Get the package info for a package from PyPI, and return it in our lockfile
     format.
@@ -232,7 +283,7 @@ def _get_pypi_package_info(
     return {
         "name": name,
         "version": version,
-        "file_name": wheel_url_info["filename"],
+        "filename": wheel_url_info["filename"],
         "sha256": wheel_url_info["digests"]["sha256"],
         "url": wheel_url_info["url"],
         "depends": _filter_requires(pkg_meta["info"]["requires_dist"]),
@@ -240,8 +291,11 @@ def _get_pypi_package_info(
     }
 
 
+# Memoize this function because there may be many duplicate requests for the same
+# package and version combination.
+@functools.cache
 def _find_pypi_meta_with_wheel(
-    name: str, version: str
+    name: str, version: Union[Literal["latest"], str]
 ) -> tuple[PypiPackageMetadata, PypiUrlInfo]:
     """
     Find the URL information for the wheel file for a package from PyPI. Returns a tuple
@@ -284,13 +338,13 @@ def _find_pypi_meta_with_wheel(
     raise Exception(f"No wheel URL found for {name} from PyPI")
 
 
-def _get_local_wheel_info(file: str) -> PackageInfoLockfile:
+def _get_local_wheel_info(file: str) -> LockfilePackageInfo:
     """Get the package info from a local wheel file."""
     info: Any = pkginfo.Wheel(file)  # type: ignore
-    res: PackageInfoLockfile = {
+    res: LockfilePackageInfo = {
         "name": info.name,
         "version": info.version,
-        "file_name": os.path.basename(file),
+        "filename": os.path.basename(file),
         "sha256": None,
         "url": None,
         "depends": _filter_requires(info.requires_dist),
@@ -300,142 +354,6 @@ def _get_local_wheel_info(file: str) -> PackageInfoLockfile:
     # (and it is nontrivial to find the actual modules provided by a package). But for
     # the packages we're using from local wheels, that is not the case. If this changes
     # in the future, we can find a better.
-
-    return res
-
-
-def base_pyodide_packages_info(
-    pyodide_dir: str = DEFAULT_PYODIDE_DIR,
-) -> dict[str, PyodidePackageInfo]:
-    base_packages_file = os.path.join(pyodide_dir, "packages.orig.json")
-    packages_file = os.path.join(pyodide_dir, "packages.json")
-
-    if not os.path.isfile(base_packages_file):
-        import shutil
-
-        print(
-            f"{base_packages_file} does not exist. Copying {packages_file} to {base_packages_file}."
-        )
-        shutil.copy(packages_file, base_packages_file)
-
-    print(f"Inserting package versions into {packages_file}")
-
-    with open(base_packages_file, "r") as f:
-        pyodide_packages_info = cast(PyodidePackagesFile, json.load(f))
-
-    return pyodide_packages_info["packages"]
-
-
-def retrieve_packages(package_output_dir: str = DEFAULT_PYODIDE_DIR):
-    """
-    Download packages listed in the lockfile, either from PyPI, or from local wheels, as
-    specified in the lockfile.
-    """
-    with open(package_lock_file, "r") as f:
-        packages: dict[str, PackageInfoLockfile] = json.load(f)
-
-    print(f"Copying packages to {package_output_dir}")
-
-    for pkg_info in packages.values():
-        destfile = os.path.join(package_output_dir, pkg_info["file_name"])
-
-        if pkg_info["url"] is None:
-            srcfile = os.path.join(package_source_dir, pkg_info["file_name"])
-            print("  " + os.path.relpath(srcfile))
-            shutil.copyfile(srcfile, destfile)
-        else:
-            print("  " + pkg_info["url"])
-            req = urllib.request.urlopen(pkg_info["url"])
-            with open(destfile, "b+w") as f:
-                f.write(req.read())
-
-        if pkg_info["sha256"] is not None:
-            sha256 = _sha256_file(destfile)
-            if sha256 != pkg_info["sha256"]:
-                raise Exception(
-                    f"SHA256 mismatch for {pkg_info['url']}.\n"
-                    + f"  Expected {pkg_info['sha256']}\n"
-                    + f"  Actual   {sha256}"
-                )
-
-
-def _sha256_file(filename: str) -> str:
-    with open(filename, "rb") as f:
-        return hashlib.sha256(f.read()).hexdigest()
-
-
-def insert_into_pyodide_packages(pyodide_dir: str = DEFAULT_PYODIDE_DIR):
-    orig_packages_file = os.path.join(pyodide_dir, "packages.orig.json")
-    packages_file = os.path.join(pyodide_dir, "packages.json")
-
-    if not os.path.isfile(orig_packages_file):
-        import shutil
-
-        print(
-            f"{orig_packages_file} does not exist. Copying {packages_file} to {orig_packages_file}."
-        )
-        shutil.copy(packages_file, orig_packages_file)
-
-    print(f"Inserting package versions into {packages_file}")
-
-    with open(orig_packages_file, "r") as f:
-        pyodide_packages = json.load(f)
-
-    # Packages that we're going to add to pyodide's package.json.
-    all_packages_info = _get_all_packages_info()
-    all_pyodide_package_files = os.listdir(pyodide_dir)
-
-    # Build list of filenames like shinylive/pyodide/shiny-0.2.0.9002-py3-none-any.whl
-    new_pyodide_packages_filenames: list[str] = []
-    for pkg_name in all_packages_info.keys():
-        # Convert package name like "uc-micro-py" to "uc_micro_py"; the latter is used
-        # for the package filename.
-        pkg_file_prefix = pkg_name.replace("-", "_")
-        r = re.compile(f"^{pkg_file_prefix}-.*\\.whl$")
-        pkg_file = [
-            filename for filename in all_pyodide_package_files if r.match(filename)
-        ]
-
-        if len(pkg_file) != 1:
-            raise RuntimeError(
-                f"""Expected to find exactly one package file in {pyodide_dir} for package {pkg_name}, found {pkg_file}
-                You need to copy over the package file first."""
-            )
-        new_pyodide_packages_filenames.append(os.path.join(pyodide_dir, pkg_file[0]))
-
-    new_pyodide_package_info_list: list[PyodidePackageInfo] = [
-        _get_pyodide_package_info(x, all_packages_info)
-        for x in new_pyodide_packages_filenames
-    ]
-    new_pyodide_package_info_dict: dict[str, PyodidePackageInfo] = {
-        x["name"]: x for x in new_pyodide_package_info_list
-    }
-
-    pyodide_packages["packages"].update(new_pyodide_package_info_dict)
-
-    with open(packages_file, "w") as f:
-        json.dump(pyodide_packages, f)
-
-
-def _get_pyodide_package_info(
-    wheel_file: str, all_packages_info: dict[str, PackageInfo]
-) -> PyodidePackageInfo:
-    import pkginfo
-
-    info: Any = pkginfo.Wheel(wheel_file)  # type: ignore
-    res: PyodidePackageInfo = {
-        "name": info.name,
-        "version": info.version,
-        "file_name": os.path.basename(wheel_file),
-        "install_dir": "site",
-        "depends": _filter_requires(info.requires_dist),
-        "imports": [info.name],
-    }
-
-    # If imports was specified, use it; otherwise just use the package name.
-    package_info = all_packages_info[info.name]
-    if "imports" in package_info:
-        res["imports"] = package_info["imports"]
 
     return res
 
@@ -459,47 +377,120 @@ def _filter_requires(requires: Union[list[str], None]) -> list[str]:
     if requires is None:
         return []
 
-    # Packages that don't need to be listed in "depends".
-    AVOID_PACKAGES = [
-        "typing",
-        "python",
-        # The next two are dependencies for Shiny, but they cause problems.
-        # contextvars causes "NameError: name 'asyncio' is not defined". Not sure why.
-        "contextvars",
-        # websockets isn't used by Shiny when running in the browser.
-        "websockets",
-        # ipykernel is needed by ipywidgets. We've created a mock for it.
-        "ipykernel",
-        # This brings in IPython and a lot of unneeded dependencies with compiled code.
-        "widgetsnbextension",
-    ]
-
-    res = [x for x in requires if ";" not in x]
-    res = [re.sub("([a-zA-Z0-9_-]+).*", "\\1", x) for x in res]
-    res = [x for x in res if x not in AVOID_PACKAGES]
+    # Remove package descriptions with extras, like "scikit-learn ; extra == 'all'"
+    res = filter(lambda x: ";" not in x, requires)
+    # Strip off version numbers: "python-dateutil (>=2.8.2)" => "python-dateutil"
+    res = map(lambda x: re.sub("([a-zA-Z0-9_-]+).*", "\\1", x), res)
+    # Filter out packages that cause problems.
+    res = filter(lambda x: x not in AVOID_DEPEND_PACKAGES, res)
     return list(res)
 
 
-# Reads htmltools and shiny package versions from their subdirs, and then merges them
-# with the pypi_package_versions
-def _get_all_packages_info() -> dict[str, PackageInfo]:
-    sys.path.insert(0, os.path.join(package_source_dir, "./py-htmltools"))
-    sys.path.insert(0, os.path.join(package_source_dir, "./py-shiny"))
+# =============================================================================
+# Functions for copying and downloading the wheel files.
+# =============================================================================
+def retrieve_packages(package_output_dir: str = DEFAULT_PYODIDE_DIR):
+    """
+    Download packages listed in the lockfile, either from PyPI, or from local wheels, as
+    specified in the lockfile.
+    """
+    with open(package_lock_file, "r") as f:
+        packages: dict[str, LockfilePackageInfo] = json.load(f)
 
-    import htmltools
-    import ipyshiny
-    import shiny
+    print(f"Copying packages to {package_output_dir}")
 
-    all_package_versions = pypi_packages_info.copy()
-    all_package_versions.update(
-        {
-            "htmltools": {"name": "htmltools", "version": htmltools.__version__},
-            "shiny": {"name": "shiny", "version": shiny.__version__},
-            "ipyshiny": {"name": "ipyshiny", "version": ipyshiny.__version__},
-        }
+    for pkg_info in packages.values():
+        destfile = os.path.join(package_output_dir, pkg_info["filename"])
+
+        if pkg_info["url"] is None:
+            srcfile = os.path.join(package_source_dir, pkg_info["filename"])
+            print("  " + os.path.relpath(srcfile))
+            shutil.copyfile(srcfile, destfile)
+        else:
+            print("  " + pkg_info["url"])
+            req = urllib.request.urlopen(pkg_info["url"])
+            with open(destfile, "b+w") as f:
+                f.write(req.read())
+
+        if pkg_info["sha256"] is not None:
+            sha256 = _sha256_file(destfile)
+            if sha256 != pkg_info["sha256"]:
+                raise Exception(
+                    f"SHA256 mismatch for {pkg_info['url']}.\n"
+                    + f"  Expected {pkg_info['sha256']}\n"
+                    + f"  Actual   {sha256}"
+                )
+
+
+def _sha256_file(filename: str) -> str:
+    with open(filename, "rb") as f:
+        return hashlib.sha256(f.read()).hexdigest()
+
+
+# =============================================================================
+# Functions for modifying the pyodide/packages.json file with the extra packages.
+# =============================================================================
+def add_to_pyodide_packages(pyodide_dir: str = DEFAULT_PYODIDE_DIR):
+    pyodide_packages_file = os.path.join(pyodide_dir, "packages.json")
+    pyodide_packages = orig_pyodide_packages(pyodide_dir)
+
+    print(
+        f"Adding package information from {package_lock_file} into {pyodide_packages_file}"
     )
 
-    return all_package_versions
+    with open(package_lock_file, "r") as f:
+        lockfile_packages = cast(dict[str, LockfilePackageInfo], json.load(f))
+
+    print("Adding packages to Pyodide packages:")
+    for name, pkg_info in lockfile_packages.items():
+        if name in pyodide_packages:
+            raise Exception(f"  {name} already in {pyodide_packages_file}")
+
+        print(f"  {name}")
+        pyodide_packages["packages"][name] = _lockfile_to_pyodide_package_info(pkg_info)
+
+    print("Writing pyodide/packages.json")
+    with open(pyodide_packages_file, "w") as f:
+        json.dump(pyodide_packages, f)
+
+
+def _lockfile_to_pyodide_package_info(pkg: LockfilePackageInfo) -> PyodidePackageInfo:
+    """
+    Given the information about a package from the lockfile, translate it to the format
+    used by pyodide/packages.json.
+    """
+    return {
+        "name": pkg["name"],
+        "version": pkg["version"],
+        "file_name": pkg["filename"],
+        "install_dir": "site",
+        "depends": pkg["depends"],
+        "imports": pkg["imports"],
+    }
+
+
+def orig_pyodide_packages(
+    pyodide_dir: str = DEFAULT_PYODIDE_DIR,
+) -> PyodidePackagesFile:
+    """
+    Read in the original Pyodide packages.json from the Pyodide directory. If it doesn't
+    already exist, this will make a copy, named packages.orig.json. Then it will read in
+    packages.orig.json and return the "packages" field.
+    """
+
+    base_packages_file = os.path.join(pyodide_dir, "packages.orig.json")
+    packages_file = os.path.join(pyodide_dir, "packages.json")
+
+    if not os.path.isfile(base_packages_file):
+        print(
+            f"{base_packages_file} does not exist. Copying {packages_file} to {base_packages_file}."
+        )
+        shutil.copy(packages_file, base_packages_file)
+
+    with open(base_packages_file, "r") as f:
+        pyodide_packages_info = cast(PyodidePackagesFile, json.load(f))
+
+    return pyodide_packages_info
 
 
 if __name__ == "__main__":
@@ -514,8 +505,8 @@ if __name__ == "__main__":
         else:
             retrieve_packages()
 
-    elif sys.argv[1] == "insert_into_pyodide_packages":
-        insert_into_pyodide_packages()
+    elif sys.argv[1] == "add_to_pyodide_packages":
+        add_to_pyodide_packages()
 
     elif sys.argv[1] == "generate_lockfile":
         generate_lockfile()
