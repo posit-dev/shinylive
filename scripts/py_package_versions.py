@@ -9,7 +9,7 @@ the base Pyodide distribution.
 
 Usage:
   py_package_versions.py generate_lockfile
-    Create/update extra_packages_lock.json file, based on requirements.txt.
+    Create/update shinylive_lock.json file, based on shinylive_requirements.json.
 
   py_package_versions.py retrieve_packages
     Gets packages listed in lockfile, from local sources and from PyPI.
@@ -38,8 +38,8 @@ from typing_extensions import NotRequired
 
 top_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 package_source_dir = os.path.join(top_dir, "packages")
-requirements_file = os.path.join(top_dir, "requirements.json")
-package_lock_file = os.path.join(top_dir, "extra_packages_lock.json")
+requirements_file = os.path.join(top_dir, "shinylive_requirements.json")
+package_lock_file = os.path.join(top_dir, "shinylive_lock.json")
 
 # Packages that shouldn't be listed in "depends" in Pyodide's packages.json file.
 AVOID_DEPEND_PACKAGES = [

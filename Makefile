@@ -165,17 +165,17 @@ $(PACKAGE_DIR)/$(IPYSHINY_WHEEL): $(PYBIN) $(PACKAGE_DIR)/ipyshiny
 	$(PYBIN)/pip install -e $(PACKAGE_DIR)/ipyshiny
 	. $(PYBIN)/activate && cd $(PACKAGE_DIR)/ipyshiny && make dist && mv dist/*.whl ../
 
-## Update the extra_packages_lock.json file, based on requirements.json
+## Update the shinylive_lock.json file, based on shinylive_requirements.json
 update_packages_lock: $(PYBIN) $(BUILD_DIR)/shinylive/pyodide
 	$(PYBIN)/pip install -r requirements-dev.txt
 	. $(PYBIN)/activate && scripts/py_package_versions.py generate_lockfile
 
-## Download dependency packages from PyPI
+## Download packages in shinylive_lock.json from PyPI
 retrieve_packages: $(PYBIN)
 	mkdir -p $(BUILD_DIR)/shinylive/pyodide
 	. $(PYBIN)/activate && scripts/py_package_versions.py retrieve_packages
 
-## Update pyodide/packages.json to include shiny and other packages and dependencies.
+## Update pyodide/packages.json to include packages in shinylive_lock.json
 update_pyodide_packages_json: $(PYBIN)
 	. $(PYBIN)/activate && scripts/py_package_versions.py update_pyodide_packages_json
 
