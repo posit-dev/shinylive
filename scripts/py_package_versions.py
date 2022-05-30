@@ -405,9 +405,17 @@ def retrieve_packages():
 
         if pkg_info["url"] is None:
             srcfile = os.path.join(package_source_dir, pkg_info["filename"])
-            print("  " + os.path.relpath(srcfile))
+            print("  Copying " + os.path.relpath(srcfile))
             shutil.copyfile(srcfile, destfile)
         else:
+            if os.path.exists(destfile):
+                print(f"  {destfile} already exists. Checking SHA256... ", end="")
+                if _sha256_file(destfile) == pkg_info["sha256"]:
+                    print("OK")
+                    continue
+                else:
+                    print("Mismatch! Downloading...")
+
             print("  " + pkg_info["url"])
             req = urllib.request.urlopen(pkg_info["url"])
             with open(destfile, "b+w") as f:

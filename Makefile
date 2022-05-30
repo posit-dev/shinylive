@@ -170,8 +170,6 @@ update_packages_lock: $(PYBIN) $(BUILD_DIR)/shinylive/pyodide
 	$(PYBIN)/pip install -r requirements-dev.txt
 	. $(PYBIN)/activate && scripts/py_package_versions.py generate_lockfile
 
-# TODO: Figure out how to make this _not_ run every time, or at least not need
-# network access.
 ## Download dependency packages from PyPI
 retrieve_packages: $(PYBIN)
 	mkdir -p $(BUILD_DIR)/shinylive/pyodide
