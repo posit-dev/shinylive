@@ -1,0 +1,37 @@
+{
+  "htmltools": {
+    "name": "htmltools",
+    "source": "local",
+    "version": "latest"
+  },
+  "shiny": {
+    "name": "shiny",
+    "source": "local",
+    "version": "latest"
+  },
+  "ipyshiny": {
+    "name": "ipyshiny",
+    "source": "local",
+    "version": "latest"
+  },
+  "plotnine": {
+    "name": "plotnine",
+    "source": "pypi",
+    "version": "latest"
+  },
+  "plotly": {
+    "name": "plotly",
+    "source": "pypi",
+    "version": "latest"
+  },
+  "pyllusion": {
+    "name": "pyllusion",
+    "source": "pypi",
+    "version": "latest"
+  },
+  "siuba": {
+    "name": "siuba",
+    "source": "pypi",
+    "version": "latest"
+  }
+}
