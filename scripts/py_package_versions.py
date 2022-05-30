@@ -9,15 +9,15 @@ the base Pyodide distribution.
 
 Usage:
   py_package_versions.py generate_lockfile
-    Create extra_packages_lock.json file.
+    Create/update extra_packages_lock.json file, based on requirements.txt.
 
-  py_package_versions.py retrieve_packages [destdir]
+  py_package_versions.py retrieve_packages
     Gets packages listed in lockfile, from local sources and from PyPI.
-    [destdir] defaults to {DEFAULT_PYODIDE_DIR}.
+    Saves packages to {DEFAULT_PYODIDE_DIR}.
 
-  py_package_versions.py add_to_pyodide_packages [pyodide_dir]
+  py_package_versions.py update_pyodide_packages_json [pyodide_dir]
     Modifies pyodide's package.json to include Shiny-related packages.
-    [pyodide_dir] defaults to {DEFAULT_PYODIDE_DIR}.
+    Modifies {DEFAULT_PYODIDE_DIR}/packages.json.
 """
 
 
@@ -174,7 +174,7 @@ def generate_lockfile() -> None:
     print("Finding dependencies...")
     required_package_info = _find_package_info_lockfile(required_packages)
     _recurse_dependencies_lockfile(required_package_info)
-    print("Required packages and dependencies:")
+    print("All required packages and dependencies:")
     print("  " + " ".join(required_package_info.keys()))
 
     print(f"Writing {package_lock_file}")
@@ -184,13 +184,12 @@ def generate_lockfile() -> None:
 
 def _recurse_dependencies_lockfile(
     pkgs: dict[str, LockfilePackageInfo],
-    pyodide_dir: str = DEFAULT_PYODIDE_DIR,
 ) -> None:
     """
     Recursively find all dependencies of the given packages. This will mutate the object
     passed in.
     """
-    pyodide_packages_info = orig_pyodide_packages(pyodide_dir)["packages"]
+    pyodide_packages_info = orig_pyodide_packages()["packages"]
     i = 0
     while i < len(pkgs):
         pkg_info = pkgs[list(pkgs.keys())[i]]
@@ -339,7 +338,9 @@ def _find_pypi_meta_with_wheel(
 
 
 def _get_local_wheel_info(file: str) -> LockfilePackageInfo:
-    """Get the package info from a local wheel file."""
+    """
+    Get package info from a local wheel file.
+    """
     info: Any = pkginfo.Wheel(file)  # type: ignore
     res: LockfilePackageInfo = {
         "name": info.name,
@@ -389,7 +390,7 @@ def _filter_requires(requires: Union[list[str], None]) -> list[str]:
 # =============================================================================
 # Functions for copying and downloading the wheel files.
 # =============================================================================
-def retrieve_packages(package_output_dir: str = DEFAULT_PYODIDE_DIR):
+def retrieve_packages():
     """
     Download packages listed in the lockfile, either from PyPI, or from local wheels, as
     specified in the lockfile.
@@ -397,10 +398,10 @@ def retrieve_packages(package_output_dir: str = DEFAULT_PYODIDE_DIR):
     with open(package_lock_file, "r") as f:
         packages: dict[str, LockfilePackageInfo] = json.load(f)
 
-    print(f"Copying packages to {package_output_dir}")
+    print(f"Copying packages to {DEFAULT_PYODIDE_DIR}")
 
     for pkg_info in packages.values():
-        destfile = os.path.join(package_output_dir, pkg_info["filename"])
+        destfile = os.path.join(DEFAULT_PYODIDE_DIR, pkg_info["filename"])
 
         if pkg_info["url"] is None:
             srcfile = os.path.join(package_source_dir, pkg_info["filename"])
@@ -430,9 +431,9 @@ def _sha256_file(filename: str) -> str:
 # =============================================================================
 # Functions for modifying the pyodide/packages.json file with the extra packages.
 # =============================================================================
-def add_to_pyodide_packages(pyodide_dir: str = DEFAULT_PYODIDE_DIR):
-    pyodide_packages_file = os.path.join(pyodide_dir, "packages.json")
-    pyodide_packages = orig_pyodide_packages(pyodide_dir)
+def update_pyodide_packages_json():
+    pyodide_packages_file = os.path.join(DEFAULT_PYODIDE_DIR, "packages.json")
+    pyodide_packages = orig_pyodide_packages()
 
     print(
         f"Adding package information from {package_lock_file} into {pyodide_packages_file}"
@@ -469,17 +470,15 @@ def _lockfile_to_pyodide_package_info(pkg: LockfilePackageInfo) -> PyodidePackag
     }
 
 
-def orig_pyodide_packages(
-    pyodide_dir: str = DEFAULT_PYODIDE_DIR,
-) -> PyodidePackagesFile:
+def orig_pyodide_packages() -> PyodidePackagesFile:
     """
     Read in the original Pyodide packages.json from the Pyodide directory. If it doesn't
     already exist, this will make a copy, named packages.orig.json. Then it will read in
     packages.orig.json and return the "packages" field.
     """
 
-    base_packages_file = os.path.join(pyodide_dir, "packages.orig.json")
-    packages_file = os.path.join(pyodide_dir, "packages.json")
+    base_packages_file = os.path.join(DEFAULT_PYODIDE_DIR, "packages.orig.json")
+    packages_file = os.path.join(DEFAULT_PYODIDE_DIR, "packages.json")
 
     if not os.path.isfile(base_packages_file):
         print(
@@ -499,17 +498,14 @@ if __name__ == "__main__":
         print(usage_info)
         sys.exit(1)
 
-    if sys.argv[1] == "retrieve_packages":
-        if len(sys.argv) >= 3:
-            retrieve_packages(sys.argv[2])
-        else:
-            retrieve_packages()
-
-    elif sys.argv[1] == "add_to_pyodide_packages":
-        add_to_pyodide_packages()
-
-    elif sys.argv[1] == "generate_lockfile":
+    if sys.argv[1] == "generate_lockfile":
         generate_lockfile()
+
+    elif sys.argv[1] == "retrieve_packages":
+        retrieve_packages()
+
+    elif sys.argv[1] == "update_pyodide_packages_json":
+        update_pyodide_packages_json()
 
     else:
         print(usage_info)
