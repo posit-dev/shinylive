@@ -1,5 +1,6 @@
 .PHONY: all dist \
-	packages download_pypi_packages \
+	packages \
+	update_packages_lock retrieve_packages update_pyodide_packages_json \
 	submodules submodules-pull \
 	buildjs watch serve \
 	packages \
@@ -85,11 +86,8 @@ all: node_modules \
 	$(BUILD_DIR)/shinylive/jquery.min.js \
 	$(BUILD_DIR)/shinylive/style-resets.css \
 	$(BUILD_DIR)/shinylive/pyodide \
-	$(BUILD_DIR)/shinylive/pyodide/$(HTMLTOOLS_WHEEL) \
-	$(BUILD_DIR)/shinylive/pyodide/$(SHINY_WHEEL) \
-	$(BUILD_DIR)/shinylive/pyodide/$(IPYSHINY_WHEEL) \
-	download_pypi_packages \
-	$(BUILD_DIR)/shinylive/pyodide/packages.json \
+	retrieve_packages \
+	update_pyodide_packages_json \
 	$(BUILD_DIR)/shinylive/shiny_static/index.html \
 	$(BUILD_DIR)/shinylive/shiny_static/edit/index.html \
 	buildjs
@@ -120,24 +118,6 @@ $(BUILD_DIR)/shinylive/pyodide:
 	cd $(BUILD_DIR)/shinylive && \
 	curl -L https://github.com/pyodide/pyodide/releases/download/$(PYODIDE_VERSION)/$(PYODIDE_DIST_FILENAME) \
 	    | tar --exclude "*test*.tar" --exclude "node_modules" -xvj
-
-$(BUILD_DIR)/shinylive/pyodide/$(HTMLTOOLS_WHEEL): $(PACKAGE_DIR)/$(HTMLTOOLS_WHEEL)
-	mkdir -p $(BUILD_DIR)/shinylive/pyodide
-	# Remove any old copies of htmltools
-	rm -f $(BUILD_DIR)/shinylive/pyodide/htmltools*.whl
-	cp $(PACKAGE_DIR)/$(HTMLTOOLS_WHEEL) $(BUILD_DIR)/shinylive/pyodide/$(HTMLTOOLS_WHEEL)
-
-$(BUILD_DIR)/shinylive/pyodide/$(SHINY_WHEEL): $(PACKAGE_DIR)/$(SHINY_WHEEL)
-	mkdir -p $(BUILD_DIR)/shinylive/pyodide
-	# Remove any old copies of shiny
-	rm -f $(BUILD_DIR)/shinylive/pyodide/shiny*.whl
-	cp $(PACKAGE_DIR)/$(SHINY_WHEEL) $(BUILD_DIR)/shinylive/pyodide/$(SHINY_WHEEL)
-
-$(BUILD_DIR)/shinylive/pyodide/$(IPYSHINY_WHEEL): $(PACKAGE_DIR)/$(IPYSHINY_WHEEL)
-	mkdir -p $(BUILD_DIR)/shinylive/pyodide
-	# Remove any old copies of ipyshiny
-	rm -f $(BUILD_DIR)/shinylive/pyodide/ipyshiny*.whl
-	cp $(PACKAGE_DIR)/$(IPYSHINY_WHEEL) $(BUILD_DIR)/shinylive/pyodide/$(IPYSHINY_WHEEL)
 
 $(BUILD_DIR)/shinylive/shiny_static/index.html: shiny_static/index.html
 	mkdir -p $(BUILD_DIR)/shinylive/shiny_static
@@ -185,20 +165,21 @@ $(PACKAGE_DIR)/$(IPYSHINY_WHEEL): $(PYBIN) $(PACKAGE_DIR)/ipyshiny
 	$(PYBIN)/pip install -e $(PACKAGE_DIR)/ipyshiny
 	. $(PYBIN)/activate && cd $(PACKAGE_DIR)/ipyshiny && make dist && mv dist/*.whl ../
 
+## Update the extra_packages_lock.json file, based on requirements.json
+update_packages_lock: $(PYBIN) $(BUILD_DIR)/shinylive/pyodide
+	$(PYBIN)/pip install -r requirements-dev.txt
+	. $(PYBIN)/activate && scripts/py_package_versions.py generate_lockfile
+
 # TODO: Figure out how to make this _not_ run every time, or at least not need
 # network access.
 ## Download dependency packages from PyPI
-download_pypi_packages: $(PYBIN) scripts/py_package_versions.py
+retrieve_packages: $(PYBIN)
 	mkdir -p $(BUILD_DIR)/shinylive/pyodide
-	. $(PYBIN)/activate && scripts/py_package_versions.py download_pypi_packages $(BUILD_DIR)/shinylive/pyodide
+	. $(PYBIN)/activate && scripts/py_package_versions.py retrieve_packages
 
-# Update pyodide's package.json to include htmltools, shiny, and their deps which aren't included in Pyodide.
-$(BUILD_DIR)/shinylive/pyodide/packages.json: $(PYBIN) scripts/py_package_versions.py \
-		$(BUILD_DIR)/shinylive/pyodide/$(HTMLTOOLS_WHEEL) \
-		$(BUILD_DIR)/shinylive/pyodide/$(SHINY_WHEEL) \
-		$(BUILD_DIR)/shinylive/pyodide/$(IPYSHINY_WHEEL)
-	$(PYBIN)/pip install -r requirements-dev.txt
-	. $(PYBIN)/activate && scripts/py_package_versions.py insert_into_pyodide_packages $(BUILD_DIR)/shinylive/pyodide
+## Update pyodide/packages.json to include shiny and other packages and dependencies.
+update_pyodide_packages_json: $(PYBIN)
+	. $(PYBIN)/activate && scripts/py_package_versions.py update_pyodide_packages_json
 
 ## Build Shiny API docs
 api-docs: $(PYBIN)
