@@ -3,3 +3,4 @@
 /packages/*.whl
 /dist/
 /build/
+__pycache__
