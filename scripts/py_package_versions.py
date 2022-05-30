@@ -235,9 +235,9 @@ def _find_package_info_lockfile_one(
     pkg_info: RequirementsPackage,
 ) -> LockfilePackageInfo:
     """
-    Given a RequirementsPackage object, find package information for it that will be inserted
-    into the package lock file. For PyPI packages, this involves fetching package
-    metadata from PyPI.
+    Given a RequirementsPackage object, find package information for it that will be
+    inserted into the package lock file. For PyPI packages, this involves fetching
+    package metadata from PyPI.
     """
     all_wheel_files = os.listdir(package_source_dir)
     all_wheel_files = [f for f in all_wheel_files if f.endswith(".whl")]
@@ -274,7 +274,7 @@ def _get_pypi_package_info(
     # Some packages have a different package name from the import (module) name.
     # "linkify-it-py" -> "linkify_it"
     # "python-multipart" -> "multipart"
-    # There's no to know the import name for sure from the package name, so it's
+    # There's no way to be certain of the import name from the package name, so it's
     # possible that in the future we'll need to special-case some packages.
     # https://stackoverflow.com/questions/11453866/given-the-name-of-a-python-package-what-is-the-name-of-the-module-to-import
     import_name = name.removeprefix("python-").removesuffix("-py").replace("-", "_")
