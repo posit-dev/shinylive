@@ -12,7 +12,16 @@ import shutil
 import sys
 import urllib.error
 import urllib.request
-from typing import Any, Literal, Optional, TypedDict, Union, cast
+from typing import (
+    Any,
+    Callable,
+    Iterator,
+    Literal,
+    Optional,
+    TypedDict,
+    Union,
+    cast,
+)
 
 import pkginfo
 import requirements
@@ -39,7 +48,7 @@ Usage:
     Gets packages listed in lockfile, from local sources and from PyPI.
     Saves packages to {os.path.relpath(pyodide_dir)}.
 
-  pyodide_packages.py update_pyodide_packages_json [pyodide_dir]
+  pyodide_packages.py update_pyodide_packages_json
     Modifies pyodide's package.json to include Shiny-related packages.
     Modifies {os.path.relpath(packages_json_file)}
 """
@@ -189,7 +198,12 @@ def generate_lockfile() -> None:
 
     print(f"Writing {package_lock_file}")
     with open(package_lock_file, "w") as f:
-        json.dump(required_package_info, f, indent=2, cls=MyEncoder)
+        json.dump(
+            _mark_no_indent(required_package_info, _is_lockfile_dependency),
+            f,
+            indent=2,
+            cls=NoIndentEncoder,
+        )
 
 
 def _recurse_dependencies_lockfile(
@@ -405,7 +419,6 @@ def _filter_requires(requires: Union[list[str], None]) -> list[LockfileDependenc
     res = map(_get_dep_info, res)
     # Filter out packages that cause problems.
     res = filter(lambda x: x["name"] not in AVOID_DEPEND_PACKAGES, res)
-    res = map(NoIndent, res)
     return list(res)
 
 
@@ -524,57 +537,97 @@ def orig_pyodide_packages() -> PyodidePackagesFile:
 
 
 # =============================================================================
-# JSON encoder
+# JSON encoding tools
 # =============================================================================
+# The purpose of this custom JSON encoder (and related functions) is to print some
+# objects on a single line when ecoded to JSON. With the default JSON formatting,
+# LockfileDependency objects use a lot of unnecessary vertical space, even though they
+# can easily fit on one line.
+
+
+def _is_lockfile_dependency(x: object):
+    """
+    Return True if the object is a LockfileDependency object.
+    """
+    return isinstance(x, dict) and set(x) == {"name", "specs"}  # type: ignore
+
+
+def _mark_no_indent(x: Any, check_fn: Callable[[object], bool]) -> Any:
+    """
+    Traverse a tree-like sctructure with dicts, lists, and tuples, and mark some objects
+    to not be indented when the object is JSON-formatted. The function `f` is called on
+    each object, and if it returns true, then it is marked to not be indented.
+    """
+    if check_fn(x):
+        return NoIndent(x)
+    if isinstance(x, dict):
+        return {k: _mark_no_indent(v, check_fn) for k, v in x.items()}  # type: ignore
+    if isinstance(x, (list, tuple)):
+        return [_mark_no_indent(y, check_fn) for y in x]  # type: ignore
+    return x
+
+
 class NoIndent(object):
-    """Value wrapper."""
+    """
+    Wrapper class to mark objects to be formatted without line wrapping and indentation.
+    """
 
     def __init__(self, value: object):
-        # if not isinstance(value, (list, tuple)):
-        #     raise TypeError("Only lists and tuples can be wrapped")
         self.value = value
 
-    def __getitem__(self, index: object) -> Any:
-        return self.value[index]
 
+class NoIndentEncoder(json.JSONEncoder):
+    """
+    A JSON encoder that does not indent objects that are wrapped with the NoIndent
+    class.
 
-from _ctypes import PyObj_FromPtr  # see https://stackoverflow.com/a/15012814/355230
+    To be used with mark_no_indent().
+    """
 
-
-class MyEncoder(json.JSONEncoder):
-    FORMAT_SPEC = "@@{}@@"  # Unique string pattern of NoIndent object ids.
-    regex = re.compile(FORMAT_SPEC.format(r"(\d+)"))  # compile(r'@@(\d+)@@')
-
+    # For each object to be encoded: First, the default() method is called on it, if the
+    # JSONEncoder doesn't already know how to encode it. (default() won't be called for
+    # things like numbers, strings, lists, dicts, etc; only for things like custom
+    # objects.) In this phase, we look for NoIndent objects, replace them with a string
+    # with format like "@@123@@", and store the object in a dictionary.
+    #
+    # Then, the iterencode() method is called on the object. At this point, we replace
+    # the string with a JSON-encoding of the original object, but this JSON does not
+    # have any indentation or line-wrapping.
     def __init__(self, **kwargs: object):
+        self._obj_registry: dict[int, object] = {}
+        self._id_counter = 0
+
         # Keyword arguments to ignore when encoding NoIndent wrapped values.
         ignore = {"cls", "indent"}
 
         # Save copy of any keyword argument values needed for use here.
         self._kwargs = {k: v for k, v in kwargs.items() if k not in ignore}
-        super(MyEncoder, self).__init__(**kwargs)
+        super(NoIndentEncoder, self).__init__(**kwargs)
 
-    def default(self, o: object):
+    def default(self, o: object) -> object:
         if isinstance(o, NoIndent):
-            return self.FORMAT_SPEC.format(id(o))
+            obj_id = self._id_counter
+            self._id_counter += 1
+            self._obj_registry[obj_id] = o
+            return f"@@{obj_id}@@"
         else:
-            return super(MyEncoder, self).default(o)
+            return super(NoIndentEncoder, self).default(o)
 
-    def iterencode(self, o: object, **kwargs: object):
-        format_spec = self.FORMAT_SPEC  # Local var to expedite access.
+    def iterencode(self, o: object, **kwargs: object) -> Iterator[str]:
+        regex = re.compile("@@(\\d+)@@")
 
         # Replace any marked-up NoIndent wrapped values in the JSON repr
         # with the json.dumps() of the corresponding wrapped Python object.
-        for encoded in super(MyEncoder, self).iterencode(o, **kwargs):
-            match = self.regex.search(encoded)
+        for encoded in super(NoIndentEncoder, self).iterencode(o, **kwargs):
+            match = regex.search(encoded)
             if match:
-                id = int(match.group(1))
-                no_indent = PyObj_FromPtr(id)
-                json_repr = json.dumps(no_indent.value, **self._kwargs)
+                obj_id = match.group(1)
+                no_indent_obj = cast(NoIndent, self._obj_registry[int(obj_id)])
+                json_repr = json.dumps(no_indent_obj.value, **self._kwargs)
                 # Replace the matched id string with json formatted representation
                 # of the corresponding Python object.
-                encoded = encoded.replace(
-                    '"{}"'.format(format_spec.format(id)), json_repr
-                )
+                # "@@123@@" -> {"name": "shiny", "specs": [[">=", "0.2.0.9004"]]}
+                encoded = encoded.replace(f'"@@{obj_id}@@"', json_repr)
 
             yield encoded
 

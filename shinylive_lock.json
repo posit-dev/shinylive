@@ -6,24 +6,8 @@
     "sha256": null,
     "url": null,
     "depends": [
-      {
-        "name": "typing-extensions",
-        "specs": [
-          [
-            ">=",
-            "3.10.0.0"
-          ]
-        ]
-      },
-      {
-        "name": "packaging",
-        "specs": [
-          [
-            ">=",
-            "20.9"
-          ]
-        ]
-      }
+      {"name": "typing-extensions", "specs": [[">=", "3.10.0.0"]]},
+      {"name": "packaging", "specs": [[">=", "20.9"]]}
     ],
     "imports": [
       "htmltools"
@@ -36,82 +20,15 @@
     "sha256": null,
     "url": null,
     "depends": [
-      {
-        "name": "typing-extensions",
-        "specs": [
-          [
-            ">=",
-            "4.0.1"
-          ]
-        ]
-      },
-      {
-        "name": "uvicorn",
-        "specs": [
-          [
-            ">=",
-            "0.16.0"
-          ]
-        ]
-      },
-      {
-        "name": "starlette",
-        "specs": [
-          [
-            ">=",
-            "0.17.1"
-          ]
-        ]
-      },
-      {
-        "name": "python-multipart",
-        "specs": []
-      },
-      {
-        "name": "htmltools",
-        "specs": [
-          [
-            ">=",
-            "0.1.0.9001"
-          ]
-        ]
-      },
-      {
-        "name": "click",
-        "specs": [
-          [
-            ">=",
-            "8.0.3"
-          ]
-        ]
-      },
-      {
-        "name": "markdown-it-py",
-        "specs": [
-          [
-            ">=",
-            "1.1.0"
-          ]
-        ]
-      },
-      {
-        "name": "linkify-it-py",
-        "specs": [
-          [
-            ">=",
-            "1.0"
-          ]
-        ]
-      },
-      {
-        "name": "appdirs",
-        "specs": [
-          [
-            ">=",
-            "1.4.4"
-          ]
-        ]
-      }
+      {"name": "typing-extensions", "specs": [[">=", "4.0.1"]]},
+      {"name": "uvicorn", "specs": [[">=", "0.16.0"]]},
+      {"name": "starlette", "specs": [[">=", "0.17.1"]]},
+      {"name": "python-multipart", "specs": []},
+      {"name": "htmltools", "specs": [[">=", "0.1.0.9001"]]},
+      {"name": "click", "specs": [[">=", "8.0.3"]]},
+      {"name": "markdown-it-py", "specs": [[">=", "1.1.0"]]},
+      {"name": "linkify-it-py", "specs": [[">=", "1.0"]]},
+      {"name": "appdirs", "specs": [[">=", "1.4.4"]]}
     ],
     "imports": [
       "shiny"
@@ -124,37 +41,10 @@
     "sha256": null,
     "url": null,
     "depends": [
-      {
-        "name": "ipywidgets",
-        "specs": [
-          [
-            ">=",
-            "7.6.5"
-          ]
-        ]
-      },
-      {
-        "name": "jupyter-core",
-        "specs": []
-      },
-      {
-        "name": "shiny",
-        "specs": [
-          [
-            ">=",
-            "0.2.0.9004"
-          ]
-        ]
-      },
-      {
-        "name": "python-dateutil",
-        "specs": [
-          [
-            ">=",
-            "2.8.2"
-          ]
-        ]
-      }
+      {"name": "ipywidgets", "specs": [[">=", "7.6.5"]]},
+      {"name": "jupyter-core", "specs": []},
+      {"name": "shiny", "specs": [[">=", "0.2.0.9004"]]},
+      {"name": "python-dateutil", "specs": [[">=", "2.8.2"]]}
     ],
     "imports": [
       "ipyshiny"
@@ -167,78 +57,14 @@
     "sha256": "3c938093e20c6e68d1ee4591967a2e5093d185046bad88af00af81bf14215549",
     "url": "https://files.pythonhosted.org/packages/e1/cf/e895bd6aea6c12b97fb9e014657aaa8a886b9fd6fc1eb3e90f9f55ddf71a/plotnine-0.8.0-py3-none-any.whl",
     "depends": [
-      {
-        "name": "mizani",
-        "specs": [
-          [
-            ">=",
-            "0.7.3"
-          ]
-        ]
-      },
-      {
-        "name": "matplotlib",
-        "specs": [
-          [
-            ">=",
-            "3.1.1"
-          ]
-        ]
-      },
-      {
-        "name": "numpy",
-        "specs": [
-          [
-            ">=",
-            "1.19.0"
-          ]
-        ]
-      },
-      {
-        "name": "scipy",
-        "specs": [
-          [
-            ">=",
-            "1.5.0"
-          ]
-        ]
-      },
-      {
-        "name": "patsy",
-        "specs": [
-          [
-            ">=",
-            "0.5.1"
-          ]
-        ]
-      },
-      {
-        "name": "statsmodels",
-        "specs": [
-          [
-            ">=",
-            "0.12.1"
-          ]
-        ]
-      },
-      {
-        "name": "pandas",
-        "specs": [
-          [
-            ">=",
-            "1.1.0"
-          ]
-        ]
-      },
-      {
-        "name": "descartes",
-        "specs": [
-          [
-            ">=",
-            "1.1.0"
-          ]
-        ]
-      }
+      {"name": "mizani", "specs": [[">=", "0.7.3"]]},
+      {"name": "matplotlib", "specs": [[">=", "3.1.1"]]},
+      {"name": "numpy", "specs": [[">=", "1.19.0"]]},
+      {"name": "scipy", "specs": [[">=", "1.5.0"]]},
+      {"name": "patsy", "specs": [[">=", "0.5.1"]]},
+      {"name": "statsmodels", "specs": [[">=", "0.12.1"]]},
+      {"name": "pandas", "specs": [[">=", "1.1.0"]]},
+      {"name": "descartes", "specs": [[">=", "1.1.0"]]}
     ],
     "imports": [
       "plotnine"
@@ -251,15 +77,7 @@
     "sha256": "0e6e2382aafe2b2978d2c1b10ea93e73ad1ec80fa9a195ff6eea62af7905dfdc",
     "url": "https://files.pythonhosted.org/packages/79/92/f8282ed209c2e7d4077c5f236bc241d42fb9a2b2986330188909a60be7bb/plotly-5.8.0-py2.py3-none-any.whl",
     "depends": [
-      {
-        "name": "tenacity",
-        "specs": [
-          [
-            ">=",
-            "6.2.0"
-          ]
-        ]
-      }
+      {"name": "tenacity", "specs": [[">=", "6.2.0"]]}
     ],
     "imports": [
       "plotly"
@@ -272,22 +90,10 @@
     "sha256": "74c5656645a55dfa9412065365a0d58fc48dd05ca243bfb168f0f9afd9c46245",
     "url": "https://files.pythonhosted.org/packages/d8/ac/8bced8d6f0bf4dc084c8be7df152ff81aeb43152a32e567b6aa1ba98c9dd/pyllusion-0.0.12-py2.py3-none-any.whl",
     "depends": [
-      {
-        "name": "numpy",
-        "specs": []
-      },
-      {
-        "name": "pandas",
-        "specs": []
-      },
-      {
-        "name": "Pillow",
-        "specs": []
-      },
-      {
-        "name": "scipy",
-        "specs": []
-      }
+      {"name": "numpy", "specs": []},
+      {"name": "pandas", "specs": []},
+      {"name": "Pillow", "specs": []},
+      {"name": "scipy", "specs": []}
     ],
     "imports": [
       "pyllusion"
@@ -300,42 +106,10 @@
     "sha256": "6c915be013a77a26ca3f4ffa803c120dfabb030c9d62425661bce1ea6bcfc82b",
     "url": "https://files.pythonhosted.org/packages/bd/ce/91e0e7b4e215966ac8fed0f716b68fe669468203a10a826e7d0672cf34df/siuba-0.3.0-py3-none-any.whl",
     "depends": [
-      {
-        "name": "pandas",
-        "specs": [
-          [
-            ">=",
-            "0.24.0"
-          ]
-        ]
-      },
-      {
-        "name": "numpy",
-        "specs": [
-          [
-            ">=",
-            "1.12.0"
-          ]
-        ]
-      },
-      {
-        "name": "SQLAlchemy",
-        "specs": [
-          [
-            ">=",
-            "1.2.19"
-          ]
-        ]
-      },
-      {
-        "name": "PyYAML",
-        "specs": [
-          [
-            ">=",
-            "3.0.0"
-          ]
-        ]
-      }
+      {"name": "pandas", "specs": [[">=", "0.24.0"]]},
+      {"name": "numpy", "specs": [[">=", "1.12.0"]]},
+      {"name": "SQLAlchemy", "specs": [[">=", "1.2.19"]]},
+      {"name": "PyYAML", "specs": [[">=", "3.0.0"]]}
     ],
     "imports": [
       "siuba"
@@ -348,33 +122,9 @@
     "sha256": "19e2a0e96c9ac5581c01eb1a79a7d2f72bb479691acd2b8921fce48ed5b961a6",
     "url": "https://files.pythonhosted.org/packages/36/ab/c13847c53d0624ee5a2e19c9c8d19a8cea5f865b95d08b839fac375a9e83/uvicorn-0.17.6-py3-none-any.whl",
     "depends": [
-      {
-        "name": "asgiref",
-        "specs": [
-          [
-            ">=",
-            "3.4.0"
-          ]
-        ]
-      },
-      {
-        "name": "click",
-        "specs": [
-          [
-            ">=",
-            "7.0"
-          ]
-        ]
-      },
-      {
-        "name": "h11",
-        "specs": [
-          [
-            ">=",
-            "0.8"
-          ]
-        ]
-      }
+      {"name": "asgiref", "specs": [[">=", "3.4.0"]]},
+      {"name": "click", "specs": [[">=", "7.0"]]},
+      {"name": "h11", "specs": [[">=", "0.8"]]}
     ],
     "imports": [
       "uvicorn"
@@ -387,19 +137,7 @@
     "sha256": "4fe6f005ac9cd973ca885c3679c8d991fde7d2ea4f27b2318b79a6673c3b70af",
     "url": "https://files.pythonhosted.org/packages/22/fa/7516729f4a4d08467df8a70cec243001eb492da12846d71dcd82824c928e/starlette-0.20.1-py3-none-any.whl",
     "depends": [
-      {
-        "name": "anyio",
-        "specs": [
-          [
-            ">=",
-            "3.4.0"
-          ],
-          [
-            "<",
-            "5"
-          ]
-        ]
-      }
+      {"name": "anyio", "specs": [["<", "5"], [">=", "3.4.0"]]}
     ],
     "imports": [
       "starlette"
@@ -412,15 +150,7 @@
     "sha256": "eba19f9aa5a2a1ee5c9402a11edd8480926934c8ee7d66de7c8444f78af9be74",
     "url": "https://files.pythonhosted.org/packages/4b/5b/6fc4a322c8ae1349d3cecf83f8412ec10a67b06b7518dea686cfef594b07/python_multipart-0.0.4-py3-none-any.whl",
     "depends": [
-      {
-        "name": "six",
-        "specs": [
-          [
-            ">=",
-            "1.4.0"
-          ]
-        ]
-      }
+      {"name": "six", "specs": [[">=", "1.4.0"]]}
     ],
     "imports": [
       "multipart"
@@ -444,15 +174,7 @@
     "sha256": "93de681e5c021a432c63147656fe21790bc01231e0cd2da73626f1aa3ac0fe27",
     "url": "https://files.pythonhosted.org/packages/f9/3f/ecd1b708973b9a3e4574b43cffc1ce8eb98696da34f1a1c44a68c3c0d737/markdown_it_py-2.1.0-py3-none-any.whl",
     "depends": [
-      {
-        "name": "mdurl",
-        "specs": [
-          [
-            "~=",
-            "0.1"
-          ]
-        ]
-      }
+      {"name": "mdurl", "specs": [["~=", "0.1"]]}
     ],
     "imports": [
       "markdown_it"
@@ -465,10 +187,7 @@
     "sha256": "1bff43823e24e507a099e328fc54696124423dd6320c75a9da45b4b754b748ad",
     "url": "https://files.pythonhosted.org/packages/fa/1a/2280e2eb892162ef5c0480a131d1d176b61f5f24abdce8dd9862454f7d14/linkify_it_py-2.0.0-py3-none-any.whl",
     "depends": [
-      {
-        "name": "uc-micro-py",
-        "specs": []
-      }
+      {"name": "uc-micro-py", "specs": []}
     ],
     "imports": [
       "linkify_it"
@@ -492,33 +211,9 @@
     "sha256": "e58ff58bc94d481e91ecb6e13a5cb96a87b6b8ade135e055603d0ca24593df38",
     "url": "https://files.pythonhosted.org/packages/86/7d/06b48ec5fd605775c7e85b3ea397d8f0294f66d570bcee59496eb5195fc5/ipywidgets-7.7.0-py2.py3-none-any.whl",
     "depends": [
-      {
-        "name": "ipython-genutils",
-        "specs": [
-          [
-            "~=",
-            "0.2.0"
-          ]
-        ]
-      },
-      {
-        "name": "traitlets",
-        "specs": [
-          [
-            ">=",
-            "4.3.1"
-          ]
-        ]
-      },
-      {
-        "name": "nbformat",
-        "specs": [
-          [
-            ">=",
-            "4.2.0"
-          ]
-        ]
-      }
+      {"name": "ipython-genutils", "specs": [["~=", "0.2.0"]]},
+      {"name": "traitlets", "specs": [[">=", "4.3.1"]]},
+      {"name": "nbformat", "specs": [[">=", "4.2.0"]]}
     ],
     "imports": [
       "ipywidgets"
@@ -531,10 +226,7 @@
     "sha256": "e7f5212177af7ab34179690140f188aa9bf3d322d8155ed972cbded19f55b6f3",
     "url": "https://files.pythonhosted.org/packages/34/7d/8e442c0637a648c0136f686e015dc2f547f1a19f2690b183aa340a6762bc/jupyter_core-4.10.0-py3-none-any.whl",
     "depends": [
-      {
-        "name": "traitlets",
-        "specs": []
-      }
+      {"name": "traitlets", "specs": []}
     ],
     "imports": [
       "jupyter_core"
@@ -547,46 +239,11 @@
     "sha256": "f8cd18a4e761846d948ee87429cc84730277d128a46861c719eb6997e6c538a1",
     "url": "https://files.pythonhosted.org/packages/6a/10/999db77b9ce38adc22eb51a869b8c29b6b6fbd9c3b71a627bfee15b8f4d5/mizani-0.7.4-py3-none-any.whl",
     "depends": [
-      {
-        "name": "numpy",
-        "specs": [
-          [
-            ">=",
-            "1.19.0"
-          ]
-        ]
-      },
-      {
-        "name": "scipy",
-        "specs": [
-          [
-            ">=",
-            "1.5.0"
-          ]
-        ]
-      },
-      {
-        "name": "pandas",
-        "specs": [
-          [
-            ">=",
-            "1.3.5"
-          ]
-        ]
-      },
-      {
-        "name": "matplotlib",
-        "specs": [
-          [
-            ">=",
-            "3.5.0"
-          ]
-        ]
-      },
-      {
-        "name": "palettable",
-        "specs": []
-      }
+      {"name": "numpy", "specs": [[">=", "1.19.0"]]},
+      {"name": "scipy", "specs": [[">=", "1.5.0"]]},
+      {"name": "pandas", "specs": [[">=", "1.3.5"]]},
+      {"name": "matplotlib", "specs": [[">=", "3.5.0"]]},
+      {"name": "palettable", "specs": []}
     ],
     "imports": [
       "mizani"
@@ -599,10 +256,7 @@
     "sha256": "4c62dc41109689d03e4b35de0a2bcbdeeb81047badc607c4415d5c753bd683af",
     "url": "https://files.pythonhosted.org/packages/e5/b6/1ed2eb03989ae574584664985367ba70cd9cf8b32ee8cad0e8aaeac819f3/descartes-1.1.0-py3-none-any.whl",
     "depends": [
-      {
-        "name": "matplotlib",
-        "specs": []
-      }
+      {"name": "matplotlib", "specs": []}
     ],
     "imports": [
       "descartes"
@@ -648,24 +302,8 @@
     "sha256": "cb29b9c70620506a9a8f87a309591713446953302d7d995344d0d7c6c0c9a7be",
     "url": "https://files.pythonhosted.org/packages/c3/22/4cba7e1b4f45ffbefd2ca817a6800ba1c671c26f288d7705f20289872012/anyio-3.6.1-py3-none-any.whl",
     "depends": [
-      {
-        "name": "idna",
-        "specs": [
-          [
-            ">=",
-            "2.8"
-          ]
-        ]
-      },
-      {
-        "name": "sniffio",
-        "specs": [
-          [
-            ">=",
-            "1.1"
-          ]
-        ]
-      }
+      {"name": "idna", "specs": [[">=", "2.8"]]},
+      {"name": "sniffio", "specs": [[">=", "1.1"]]}
     ],
     "imports": [
       "anyio"
@@ -722,32 +360,10 @@
     "sha256": "0d6072aaec95dddc39735c144ee8bbc6589c383fb462e4058abc855348152dad",
     "url": "https://files.pythonhosted.org/packages/2f/9a/97151abb954af0cc5d0e3ff2eb7b6d96704a317ac2c0ce0cc76cef003991/nbformat-5.4.0-py3-none-any.whl",
     "depends": [
-      {
-        "name": "traitlets",
-        "specs": [
-          [
-            ">=",
-            "5.1"
-          ]
-        ]
-      },
-      {
-        "name": "jsonschema",
-        "specs": [
-          [
-            ">=",
-            "2.6"
-          ]
-        ]
-      },
-      {
-        "name": "jupyter-core",
-        "specs": []
-      },
-      {
-        "name": "fastjsonschema",
-        "specs": []
-      }
+      {"name": "traitlets", "specs": [[">=", "5.1"]]},
+      {"name": "jsonschema", "specs": [[">=", "2.6"]]},
+      {"name": "jupyter-core", "specs": []},
+      {"name": "fastjsonschema", "specs": []}
     ],
     "imports": [
       "nbformat"
@@ -793,36 +409,8 @@
     "sha256": "71b5e39324422543546572954ce71c67728922c104902cb7ce252e522235b33f",
     "url": "https://files.pythonhosted.org/packages/de/ad/850070f0d9e6a9278cc44013c60c467558791cbc2e462925ba4559dec914/jsonschema-4.5.1-py3-none-any.whl",
     "depends": [
-      {
-        "name": "attrs",
-        "specs": [
-          [
-            ">=",
-            "17.4.0"
-          ]
-        ]
-      },
-      {
-        "name": "pyrsistent",
-        "specs": [
-          [
-            ">=",
-            "0.14.0"
-          ],
-          [
-            "!=",
-            "0.17.2"
-          ],
-          [
-            "!=",
-            "0.17.0"
-          ],
-          [
-            "!=",
-            "0.17.1"
-          ]
-        ]
-      }
+      {"name": "attrs", "specs": [[">=", "17.4.0"]]},
+      {"name": "pyrsistent", "specs": [[">=", "0.14.0"], ["!=", "0.17.0"], ["!=", "0.17.2"], ["!=", "0.17.1"]]}
     ],
     "imports": [
       "jsonschema"
