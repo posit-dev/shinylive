@@ -108,7 +108,7 @@ This an overview of some of the important files and directories in this project.
 ├── packages               # Git submodules for shiny and htmltools. Used for
 │   ├── py-htmltools       #   building wheel files for shinylive.
 │   └── py-shiny
-├── py_package_versions.py # Script for downloading PyPI packages and inserting
+├── pyodide_packages.py    # Script for downloading PyPI packages and inserting
 │                          #   package metadata into pyodide's package.json.
 │
 ├── src                    # TypeScript source files.

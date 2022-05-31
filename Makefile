@@ -190,7 +190,7 @@ $(PACKAGE_DIR)/$(IPYSHINY_WHEEL): $(PYBIN) $(PACKAGE_DIR)/ipyshiny
 ## Update the shinylive_lock.json file, based on shinylive_requirements.json
 update_packages_lock: $(PYBIN) $(BUILD_DIR)/shinylive/pyodide
 	$(PYBIN)/pip install -r requirements-dev.txt
-	. $(PYBIN)/activate && scripts/py_package_versions.py generate_lockfile
+	. $(PYBIN)/activate && scripts/pyodide_packages.py generate_lockfile
 
 ## Download packages in shinylive_lock.json from PyPI
 retrieve_packages: $(PYBIN) $(BUILD_DIR)/shinylive/pyodide \
@@ -199,11 +199,11 @@ retrieve_packages: $(PYBIN) $(BUILD_DIR)/shinylive/pyodide \
 		$(BUILD_DIR)/shinylive/pyodide/$(IPYSHINY_WHEEL)
 	$(PYBIN)/pip install -r requirements-dev.txt
 	mkdir -p $(BUILD_DIR)/shinylive/pyodide
-	. $(PYBIN)/activate && scripts/py_package_versions.py retrieve_packages
+	. $(PYBIN)/activate && scripts/pyodide_packages.py retrieve_packages
 
 ## Update pyodide/packages.json to include packages in shinylive_lock.json
 update_pyodide_packages_json: $(PYBIN)
-	. $(PYBIN)/activate && scripts/py_package_versions.py update_pyodide_packages_json
+	. $(PYBIN)/activate && scripts/pyodide_packages.py update_pyodide_packages_json
 
 ## Build Shiny API docs
 api-docs: $(PYBIN)

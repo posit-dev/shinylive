@@ -8,14 +8,14 @@ Find the versions of htmltools, shiny, and their dependencies that are needed to
 the base Pyodide distribution.
 
 Usage:
-  py_package_versions.py generate_lockfile
+  pyodide_packages.py generate_lockfile
     Create/update shinylive_lock.json file, based on shinylive_requirements.json.
 
-  py_package_versions.py retrieve_packages
+  pyodide_packages.py retrieve_packages
     Gets packages listed in lockfile, from local sources and from PyPI.
     Saves packages to {DEFAULT_PYODIDE_DIR}.
 
-  py_package_versions.py update_pyodide_packages_json [pyodide_dir]
+  pyodide_packages.py update_pyodide_packages_json [pyodide_dir]
     Modifies pyodide's package.json to include Shiny-related packages.
     Modifies {DEFAULT_PYODIDE_DIR}/packages.json.
 """
