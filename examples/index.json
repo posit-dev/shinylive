@@ -12,7 +12,8 @@
       "file_download",
       "insert_ui",
       "input_update",
-      "modules"
+      "modules",
+      "extra_packages"
     ]
   },
   {

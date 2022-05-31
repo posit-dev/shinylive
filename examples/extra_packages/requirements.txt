@@ -1,0 +1,5 @@
+# Each line must contain either a requirements specification or the URL for a
+# wheel file.
+isodate
+attrs==21.4.0
+https://files.pythonhosted.org/packages/ca/80/7c0cad11bd99985cfe7c09427ee0b4f9bd6b048bd13d4ffb32c6db237dfb/tabulate-0.8.9-py3-none-any.whl

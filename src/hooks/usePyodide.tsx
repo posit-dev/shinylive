@@ -271,6 +271,37 @@ def _save_files(files: list[dict[str, str]], destdir: str) -> None:
             with open(destdir + "/" + file["name"], "w") as f:
                 f.write(file["content"])
 
+async def _install_requirements_from_dir(dir: str) -> None:
+    import os
+    import re
+    import micropip
+    import sys
+
+    files = os.listdir(dir)
+    if "requirements.txt" not in files:
+        return
+    with open(os.path.join(dir, "requirements.txt"), "r") as f:
+        reqs = f.readlines()
+
+    for req in reqs:
+        if req == "" or req.startswith("#"):
+            continue
+        req = req.strip()
+        # If it's a URL, then it must be a wheel file.
+        if req.startswith("http://") or req.startswith("https://"):
+            pkg_name = re.sub(r"^.+/(.*)-\d.*$", "\\1", req)
+
+        # If we got here, it's either a local wheel, or package name (to be installed
+        # from PyPI).
+        # Remove any trailing version info: "my-package (>= 1.0.0)" -> "my-package"
+        pkg_name = re.sub(r"([a-zA-Z0-9._-]+)(.*)", r"\\1", req).strip()
+
+        if pkg_name in sys.modules:
+            continue
+        print(f"Installing {req} ...")
+        await micropip.install(req)
+
+
 async def _load_packages_from_dir(dir: str) -> None:
     import os
     import pyodide
@@ -299,6 +330,8 @@ async def _start_app(app_name, scope = _shiny_app_registry):
 
     app_path = f"/home/pyodide/{app_name}"
     sys.path.insert(0, app_path)
+
+    await _install_requirements_from_dir(app_path)
 
     await _load_packages_from_dir(app_path)
 
