@@ -37,20 +37,39 @@ pyodide_dir = os.path.join(top_dir, "build", "shinylive", "pyodide")
 packages_json_file = os.path.join(pyodide_dir, "packages.json")
 
 usage_info = f"""
-Find the versions of htmltools, shiny, and their dependencies that are needed to add to
-the base Pyodide distribution.
+This script is a tool to find the versions of htmltools, shiny, and their dependencies
+that are needed to add to the base Pyodide distribution.
+
+It proceeds in three steps:
+
+1. It reads shinylive_requirements.json to find the set of packages that we want to add
+   to pyodide. It finds all the dependencies for these packages, excluding packages that
+   are already included in Pyodide, and writes a new shinylive_lock.json file.
+
+2. It retrieves the packages listed in shinylive_lock.json, from local directories, and
+   from PyPI.
+
+3. It updates Pyodide's packages.json file to include the new packages (the ones listed
+   in shinylive_lock.json).
+
+Note that the dependency resolution in step 1 is not very smart about versions. The
+version for packages in shinylive_requirements.json can be either "latest" or a specific
+version like "1.2.1", but not constraints like "<1.2.1". Also, if a package depends on a
+constrained version of a package like "<1.2.1", then the constraint will be ignored for
+the dependency when generating the lockfile. It will simply use the most recent version
+for which there is a pure Python wheel.
 
 Usage:
   pyodide_packages.py generate_lockfile
     Create/update shinylive_lock.json file, based on shinylive_requirements.json.
 
   pyodide_packages.py retrieve_packages
-    Gets packages listed in lockfile, from local sources and from PyPI.
-    Saves packages to {os.path.relpath(pyodide_dir)}.
+    Gets packages listed in lockfile, from local sources and from PyPI. Saves packages
+    to {os.path.relpath(pyodide_dir)}.
 
   pyodide_packages.py update_pyodide_packages_json
-    Modifies pyodide's package.json to include Shiny-related packages.
-    Modifies {os.path.relpath(packages_json_file)}
+    Modifies pyodide's package.json to include Shiny-related packages. Modifies
+    {os.path.relpath(packages_json_file)}
 """
 
 # Packages that shouldn't be listed in "depends" in Pyodide's packages.json file.
