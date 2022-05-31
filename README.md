@@ -101,17 +101,19 @@ make submodules-pull
 This an overview of some of the important files and directories in this project.
 
 ```
-├── bundle-and-serve.mjs
+├── build                  # Generated JS/CSS/wasm components for shinylive (not committed to repo)
 ├── examples               # Shiny app examples used in Examples browser
+├── packages               # Git submodules for htmltools, shiny, and ipyshiny.
+│   ├── py-htmltools       #   Used for building wheel files for shinylive.
+│   ├── py-shiny
+│   └── ipyshiny
 ├── quarto                 # Sources for an example Quarto site
 │   └── docs               # Generated files for Quarto site
-├── packages               # Git submodules for shiny and htmltools. Used for
-│   ├── py-htmltools       #   building wheel files for shinylive.
-│   └── py-shiny
-├── pyodide_packages.py    # Script for downloading PyPI packages and inserting
-│                          #   package metadata into pyodide's package.json.
+├── shiny_static           # Files used for deployment via `shiny static`
+├── scripts
+│   └── pyodide_packages.py # Script for downloading PyPI packages and inserting
+│                           #   package metadata into pyodide's package.json.
 │
 ├── src                    # TypeScript source files.
-├── site                   # Example web site with shinylive, served by `yarn build-and-reload`.
-└── dist                   # Generated JS/CSS/wasm components for shinylive.
+└── site                   # Example web site with shinylive, served by `make serve`.
 ```
