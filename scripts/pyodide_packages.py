@@ -1,25 +1,7 @@
 #!/usr/bin/env python3
 
+
 BUILD_DIR = "build"
-DEFAULT_PYODIDE_DIR = BUILD_DIR + "/shinylive/pyodide"
-
-usage_info = f"""
-Find the versions of htmltools, shiny, and their dependencies that are needed to add to
-the base Pyodide distribution.
-
-Usage:
-  pyodide_packages.py generate_lockfile
-    Create/update shinylive_lock.json file, based on shinylive_requirements.json.
-
-  pyodide_packages.py retrieve_packages
-    Gets packages listed in lockfile, from local sources and from PyPI.
-    Saves packages to {DEFAULT_PYODIDE_DIR}.
-
-  pyodide_packages.py update_pyodide_packages_json [pyodide_dir]
-    Modifies pyodide's package.json to include Shiny-related packages.
-    Modifies {DEFAULT_PYODIDE_DIR}/packages.json.
-"""
-
 
 import functools
 import hashlib
@@ -33,6 +15,7 @@ import urllib.request
 from typing import Any, Literal, Optional, TypedDict, Union, cast
 
 import pkginfo
+import requirements
 from packaging.version import Version
 from typing_extensions import NotRequired
 
@@ -40,6 +23,26 @@ top_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 package_source_dir = os.path.join(top_dir, "packages")
 requirements_file = os.path.join(top_dir, "shinylive_requirements.json")
 package_lock_file = os.path.join(top_dir, "shinylive_lock.json")
+
+pyodide_dir = os.path.join(top_dir, "build", "shinylive", "pyodide")
+packages_json_file = os.path.join(pyodide_dir, "packages.json")
+
+usage_info = f"""
+Find the versions of htmltools, shiny, and their dependencies that are needed to add to
+the base Pyodide distribution.
+
+Usage:
+  pyodide_packages.py generate_lockfile
+    Create/update shinylive_lock.json file, based on shinylive_requirements.json.
+
+  pyodide_packages.py retrieve_packages
+    Gets packages listed in lockfile, from local sources and from PyPI.
+    Saves packages to {os.path.relpath(pyodide_dir)}.
+
+  pyodide_packages.py update_pyodide_packages_json [pyodide_dir]
+    Modifies pyodide's package.json to include Shiny-related packages.
+    Modifies {os.path.relpath(packages_json_file)}
+"""
 
 # Packages that shouldn't be listed in "depends" in Pyodide's packages.json file.
 AVOID_DEPEND_PACKAGES = [
@@ -70,13 +73,20 @@ class RequirementsPackage(TypedDict):
 # ====================================================
 # Data structures used in our extra_packages_lock.json
 # ====================================================
+class LockfileDependency(TypedDict):
+    name: str
+    specs: list[tuple[str, str]]
+    # version: Union[str, None]
+    # operator: Union[Literal["~=", "==", "!=", ">=", "<=", ">", "<"], None]
+
+
 class LockfilePackageInfo(TypedDict):
     name: str
     version: str
     filename: str
     sha256: Optional[str]
     url: Optional[str]
-    depends: list[str]
+    depends: list[LockfileDependency]
     imports: list[str]
 
 
@@ -196,7 +206,8 @@ def _recurse_dependencies_lockfile(
         i += 1
 
         print(f"  {pkg_info['name']}:", end="")
-        for dep_name in pkg_info["depends"]:
+        for dep in pkg_info["depends"]:
+            dep_name = dep["name"]
             print(" " + dep_name, end="")
             if dep_name in pkgs or dep_name.lower() in pyodide_packages_info:
                 # We already have it, either in our extra packages, or in the original
@@ -374,16 +385,26 @@ def _get_local_wheel_info(file: str) -> LockfilePackageInfo:
 # ["mdurl", "h11", "foo"]
 #
 # It's a little dumb in that it ignores python_version, but it's sufficient for our use.
-def _filter_requires(requires: Union[list[str], None]) -> list[str]:
+def _filter_requires(requires: Union[list[str], None]) -> list[LockfileDependency]:
     if requires is None:
         return []
+
+    def _get_dep_info(dep_str: str) -> LockfileDependency:
+        reqs = requirements.parse(dep_str)
+        req = next(reqs)
+        if next(reqs, None) is not None:
+            raise Exception(f"More than one requirement in {dep_str}")
+        return {
+            "name": req.name,
+            "specs": req.specs,  # type: ignore - Due to a type bug in requirements package.
+        }
 
     # Remove package descriptions with extras, like "scikit-learn ; extra == 'all'"
     res = filter(lambda x: ";" not in x, requires)
     # Strip off version numbers: "python-dateutil (>=2.8.2)" => "python-dateutil"
-    res = map(lambda x: re.sub("([a-zA-Z0-9_-]+).*", "\\1", x), res)
+    res = map(_get_dep_info, res)
     # Filter out packages that cause problems.
-    res = filter(lambda x: x not in AVOID_DEPEND_PACKAGES, res)
+    res = filter(lambda x: x["name"] not in AVOID_DEPEND_PACKAGES, res)
     return list(res)
 
 
@@ -398,10 +419,10 @@ def retrieve_packages():
     with open(package_lock_file, "r") as f:
         packages: dict[str, LockfilePackageInfo] = json.load(f)
 
-    print(f"Copying packages to {DEFAULT_PYODIDE_DIR}")
+    print(f"Copying packages to {os.path.relpath(pyodide_dir)}")
 
     for pkg_info in packages.values():
-        destfile = os.path.join(DEFAULT_PYODIDE_DIR, pkg_info["filename"])
+        destfile = os.path.join(pyodide_dir, pkg_info["filename"])
 
         if pkg_info["url"] is None:
             srcfile = os.path.join(package_source_dir, pkg_info["filename"])
@@ -440,11 +461,10 @@ def _sha256_file(filename: str) -> str:
 # Functions for modifying the pyodide/packages.json file with the extra packages.
 # =============================================================================
 def update_pyodide_packages_json():
-    pyodide_packages_file = os.path.join(DEFAULT_PYODIDE_DIR, "packages.json")
     pyodide_packages = orig_pyodide_packages()
 
     print(
-        f"Adding package information from {package_lock_file} into {pyodide_packages_file}"
+        f"Adding package information from {package_lock_file} into {packages_json_file}"
     )
 
     with open(package_lock_file, "r") as f:
@@ -453,13 +473,13 @@ def update_pyodide_packages_json():
     print("Adding packages to Pyodide packages:")
     for name, pkg_info in lockfile_packages.items():
         if name in pyodide_packages:
-            raise Exception(f"  {name} already in {pyodide_packages_file}")
+            raise Exception(f"  {name} already in {packages_json_file}")
 
         print(f"  {name}")
         pyodide_packages["packages"][name] = _lockfile_to_pyodide_package_info(pkg_info)
 
     print("Writing pyodide/packages.json")
-    with open(pyodide_packages_file, "w") as f:
+    with open(packages_json_file, "w") as f:
         json.dump(pyodide_packages, f)
 
 
@@ -473,7 +493,7 @@ def _lockfile_to_pyodide_package_info(pkg: LockfilePackageInfo) -> PyodidePackag
         "version": pkg["version"],
         "file_name": pkg["filename"],
         "install_dir": "site",
-        "depends": pkg["depends"],
+        "depends": [x["name"] for x in pkg["depends"]],
         "imports": pkg["imports"],
     }
 
@@ -485,16 +505,18 @@ def orig_pyodide_packages() -> PyodidePackagesFile:
     packages.orig.json and return the "packages" field.
     """
 
-    base_packages_file = os.path.join(DEFAULT_PYODIDE_DIR, "packages.orig.json")
-    packages_file = os.path.join(DEFAULT_PYODIDE_DIR, "packages.json")
+    orig_packages_json_file = os.path.join(
+        os.path.dirname(packages_json_file), "packages.orig.json"
+    )
 
-    if not os.path.isfile(base_packages_file):
+    if not os.path.isfile(orig_packages_json_file):
         print(
-            f"{base_packages_file} does not exist. Copying {packages_file} to {base_packages_file}."
+            f"{os.path.relpath(orig_packages_json_file)} does not exist. "
+            + f" Copying {os.path.relpath(packages_json_file)} to {os.path.relpath(orig_packages_json_file)}."
         )
-        shutil.copy(packages_file, base_packages_file)
+        shutil.copy(packages_json_file, orig_packages_json_file)
 
-    with open(base_packages_file, "r") as f:
+    with open(orig_packages_json_file, "r") as f:
         pyodide_packages_info = cast(PyodidePackagesFile, json.load(f))
 
     return pyodide_packages_info
