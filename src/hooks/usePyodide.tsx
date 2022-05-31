@@ -289,14 +289,13 @@ async def _install_requirements_from_dir(dir: str) -> None:
         req = req.strip()
         # If it's a URL, then it must be a wheel file.
         if req.startswith("http://") or req.startswith("https://"):
-            pkg_name = re.sub(r"^.+/(.*)-\d.*$", "\\1", req)
+            pkg_name = re.sub(r"^.+/(.*)-\\d.*$", r"\\1", req)
+        else:
+            # If we got here, it's a package specification.
+            # Remove any trailing version info: "my-package (>= 1.0.0)" -> "my-package"
+            pkg_name = re.sub(r"([a-zA-Z0-9._-]+)(.*)", r"\\1", req).strip()
 
-        # If we got here, it's either a local wheel, or package name (to be installed
-        # from PyPI).
-        # Remove any trailing version info: "my-package (>= 1.0.0)" -> "my-package"
-        pkg_name = re.sub(r"([a-zA-Z0-9._-]+)(.*)", r"\\1", req).strip()
-
-        if pkg_name in sys.modules:
+        if pkg_name in micropip.list():
             continue
         print(f"Installing {req} ...")
         await micropip.install(req)
