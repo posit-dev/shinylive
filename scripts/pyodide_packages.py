@@ -205,9 +205,9 @@ def generate_lockfile() -> None:
         f"Loading requirements package list from {os.path.relpath(requirements_file)}:"
     )
     with open(requirements_file) as f:
-        required_packages: dict[str, RequirementsPackage] = json.load(f)
+        required_packages: list[RequirementsPackage] = json.load(f)
 
-    print("  " + " ".join(required_packages.keys()))
+    print("  " + " ".join([x["name"] for x in required_packages]))
 
     print("Finding dependencies...")
     required_package_info = _find_package_info_lockfile(required_packages)
@@ -261,7 +261,7 @@ def _recurse_dependencies_lockfile(
 
 
 def _find_package_info_lockfile(
-    pkgs: dict[str, RequirementsPackage]
+    pkgs: list[RequirementsPackage],
 ) -> dict[str, LockfilePackageInfo]:
     """
     Given a dict of RequirementsPackage objects, find package information that will be
@@ -270,8 +270,8 @@ def _find_package_info_lockfile(
     """
     res: dict[str, LockfilePackageInfo] = {}
 
-    for pkg_name, pkg_info in pkgs.items():
-        res[pkg_name] = _find_package_info_lockfile_one(pkg_info)
+    for pkg in pkgs:
+        res[pkg["name"]] = _find_package_info_lockfile_one(pkg)
     return res
 
 
