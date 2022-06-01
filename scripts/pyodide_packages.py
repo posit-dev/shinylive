@@ -427,9 +427,12 @@ def _filter_requires(requires: Union[list[str], None]) -> list[LockfileDependenc
         req = next(reqs)
         if next(reqs, None) is not None:
             raise Exception(f"More than one requirement in {dep_str}")
+
         return {
             "name": req.name,
-            "specs": req.specs,  # type: ignore - Due to a type bug in requirements package.
+            # req.specs will be something [["!=", "0.17.2"], [">=", "0.17.1"]], but the
+            # order is not consistent between runs. Sort it to make it consistent.
+            "specs": sorted(req.specs),  # type: ignore - Due to a type bug in requirements package.
         }
 
     # Remove package descriptions with extras, like "scikit-learn ; extra == 'all'"

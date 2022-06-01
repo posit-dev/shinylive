@@ -410,7 +410,7 @@
     "url": "https://files.pythonhosted.org/packages/de/ad/850070f0d9e6a9278cc44013c60c467558791cbc2e462925ba4559dec914/jsonschema-4.5.1-py3-none-any.whl",
     "depends": [
       {"name": "attrs", "specs": [[">=", "17.4.0"]]},
-      {"name": "pyrsistent", "specs": [[">=", "0.14.0"], ["!=", "0.17.0"], ["!=", "0.17.2"], ["!=", "0.17.1"]]}
+      {"name": "pyrsistent", "specs": [["!=", "0.17.0"], ["!=", "0.17.1"], ["!=", "0.17.2"], [">=", "0.14.0"]]}
     ],
     "imports": [
       "jsonschema"
