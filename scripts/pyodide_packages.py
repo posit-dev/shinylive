@@ -325,7 +325,7 @@ def _get_pypi_package_info(
 
     return {
         "name": name,
-        "version": version,
+        "version": pkg_meta["info"]["version"],
         "filename": wheel_url_info["filename"],
         "sha256": wheel_url_info["digests"]["sha256"],
         "url": wheel_url_info["url"],
