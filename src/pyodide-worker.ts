@@ -9,25 +9,13 @@ import type {
 } from "./pyodide-proxy";
 import {
   PyProxyIterable,
-  PyProxyWithGet,
-  PyProxyWithSet,
-  loadPyodide as loadPyodide_orig,
+  loadPyodide,
   Py2JsResult,
-} from "../shinylive/pyodide/pyodide";
+} from "../build/shinylive/pyodide/pyodide";
 import { openChannel } from "./messageportwebsocket-channel";
 import { ASGIHTTPRequestScope, makeRequest } from "./messageporthttp";
 
-// This is needed in TypeScipt 4.4 and below; with 4.5 and up, it can be removed
-// because Awaited is built into TypeScript.
-type Awaited<T> = T extends PromiseLike<infer U> ? U : T;
 type Pyodide = Awaited<ReturnType<typeof loadPyodide>>;
-
-declare global {
-  // Note: the original pyodide.d.ts file seems to be incorrect; loadPyodide is
-  // globally available, but not exported.
-  // eslint-disable-next-line no-var
-  var loadPyodide: typeof loadPyodide_orig;
-}
 
 let pyodideStatus: "none" | "loading" | "loaded" = "none";
 let pyodide: Pyodide;

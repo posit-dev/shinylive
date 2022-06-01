@@ -2,17 +2,9 @@ import { AwaitableQueue } from "./awaitable-queue";
 import { MessagePortWebSocket } from "./messageportwebsocket";
 import {
   PyProxyCallable,
-  loadPyodide as loadPyodide_orig,
-} from "../shinylive/pyodide/pyodide";
+  loadPyodide,
+} from "../build/shinylive/pyodide/pyodide";
 
-declare global {
-  // Note: the original pyodide.d.ts file seems to be incorrect; loadPyodide is
-  // globally available, but not exported.
-  // eslint-disable-next-line no-var
-  var loadPyodide: typeof loadPyodide_orig;
-}
-
-type Awaited<T> = T extends PromiseLike<infer U> ? U : T;
 type Pyodide = Awaited<ReturnType<typeof loadPyodide>>;
 
 /**

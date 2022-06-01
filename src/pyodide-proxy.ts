@@ -1,8 +1,8 @@
 import {
-  loadPackagesFromImports,
+  loadPyodide,
   PyProxyIterable,
   Py2JsResult,
-} from "../shinylive/pyodide/pyodide";
+} from "../build/shinylive/pyodide/pyodide";
 
 import type * as PyodideWorker from "./pyodide-worker";
 
@@ -10,7 +10,6 @@ import { openChannel } from "./messageportwebsocket-channel";
 import { ASGIHTTPRequestScope, makeRequest } from "./messageporthttp.js";
 import * as utils from "./utils";
 
-type Awaited<T> = T extends PromiseLike<infer U> ? U : T;
 type Pyodide = Awaited<ReturnType<typeof loadPyodide>>;
 
 export type ProxyType = "webworker" | "normal";
@@ -38,7 +37,7 @@ export interface PyodideProxy {
   // pyodide_py: PyProxy;
   // version: string;
   // loadPackage: typeof loadPackage;
-  loadPackagesFromImports: typeof loadPackagesFromImports;
+  loadPackagesFromImports: Pyodide["loadPackagesFromImports"];
   // loadedPackages: any;
   // isPyProxy: typeof isPyProxy;
   // runPython: typeof runPython;
