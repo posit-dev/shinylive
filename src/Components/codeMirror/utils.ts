@@ -1,4 +1,4 @@
-import { Text } from "@codemirror/text";
+import { Text } from "@codemirror/state";
 import { EditorView } from "@codemirror/view";
 
 export type CursorPosition = { line: number; col: number };
@@ -9,7 +9,10 @@ export function offsetToPosition(cmDoc: Text, offset: number): CursorPosition {
 }
 
 export function positionToOffset(cmDoc: Text, pos: CursorPosition): number {
-  const newOffset = cmDoc.line(pos.line).from + pos.col;
+  const line = cmDoc.line(pos.line);
+  // Try go to the next computed position (line.from + pos.col), but don't go
+  // past the end of the line (line.to).
+  const newOffset = Math.min(line.from + pos.col, line.to);
 
   // If the new offset is beyond the end of the document, just go to the end.
   if (newOffset > cmDoc.length) {
