@@ -193,28 +193,6 @@ self.onmessage = async function (e: MessageEvent): Promise<void> {
           x: string
         ) => PyProxyIterable;
 
-        toHtml = await (pyodide.runPythonAsync(`
-          def _to_html(x):
-            if hasattr(x, 'to_html'):
-              return { "type": "html", "value": x.to_html() }
-
-            if "matplotlib" in sys.modules:
-              import matplotlib.figure
-              if isinstance(x, matplotlib.figure.Figure):
-                import io
-                import base64
-                img = io.BytesIO()
-                x.savefig(img, format='png', bbox_inches='tight')
-                img.seek(0)
-                img_encoded = base64.b64encode(img.getvalue())
-                img_html = '<img src="data:image/png;base64, {}">'.format(img_encoded.decode('utf-8'))
-                return { "type": "html", "value": img_html }
-
-            return { "type": "text", "value": repr(x) }
-
-          _to_html
-        `) as Promise<(x: any) => ToHtmlResult>);
-
         self.stdout_callback(pyconsole.BANNER);
         pyconsole.destroy();
 
@@ -257,6 +235,12 @@ self.onmessage = async function (e: MessageEvent): Promise<void> {
           messagePort.postMessage({ type: "reply", subtype: "done" });
         }
       } else if (msg.returnResult === "to_html") {
+        try {
+          toHtml = pyodide.globals.get("_to_html") as (x: any) => ToHtmlResult;
+        } catch (e) {
+          console.error("Couldn't find _to_html function: ", e);
+        }
+
         messagePort.postMessage({
           type: "reply",
           subtype: "done",

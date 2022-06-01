@@ -310,6 +310,25 @@ async def _load_packages_from_dir(dir: str) -> None:
         if file.endswith(".py"):
             with open(os.path.join(dir, file)) as f:
                 await js_pyodide.loadPackagesFromImports(f.read())
+
+def _to_html(x):
+    import sys
+    if hasattr(x, 'to_html'):
+      return { "type": "html", "value": x.to_html() }
+
+    if "matplotlib" in sys.modules:
+      import matplotlib.figure
+      if isinstance(x, matplotlib.figure.Figure):
+        import io
+        import base64
+        img = io.BytesIO()
+        x.savefig(img, format='png', bbox_inches='tight')
+        img.seek(0)
+        img_encoded = base64.b64encode(img.getvalue())
+        img_html = '<img src="data:image/png;base64, {}">'.format(img_encoded.decode('utf-8'))
+        return { "type": "html", "value": img_html }
+
+    return { "type": "text", "value": repr(x) }
 ` +
   // When we start the app, add the app's directory to the sys.path so that it
   // can import other files in the dir with "import foo". We'll remove it from
@@ -321,7 +340,6 @@ async def _load_packages_from_dir(dir: str) -> None:
   // cause problems if an app has an import that occurs after startup (like in a
   // function).
   `
-
 _shiny_app_registry = {}
 
 async def _start_app(app_name, scope = _shiny_app_registry):

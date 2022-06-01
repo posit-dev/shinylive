@@ -150,29 +150,6 @@ class NormalPyodideProxy implements PyodideProxy {
       x: string
     ) => PyProxyIterable;
 
-    this.toHtml = await (this.pyodide.runPythonAsync(`
-      def _to_html(x):
-        if hasattr(x, 'to_html'):
-          return { "type": "html", "value": x.to_html() }
-
-        if "matplotlib" in sys.modules:
-          import matplotlib.figure
-          if isinstance(x, matplotlib.figure.Figure):
-            import io
-            import base64
-            img = io.BytesIO()
-            x.savefig(img, format='png', bbox_inches='tight')
-            img.seek(0)
-            img_encoded = base64.b64encode(img.getvalue())
-            img_html = '<img src="data:image/png;base64, {}">'.format(img_encoded.decode('utf-8'))
-            return { "type": "html", "value": img_html }
-
-        return { "type": "text", "value": repr(x) }
-
-
-      _to_html
-    `) as Promise<(x: any) => ToHtmlResult>);
-
     this.stdoutCallback(pyconsole.BANNER);
     pyconsole.destroy();
 
@@ -236,6 +213,14 @@ class NormalPyodideProxy implements PyodideProxy {
         return self.repr(result);
       },
       get to_html() {
+        try {
+          self.toHtml = self.pyodide.globals.get("_to_html") as (
+            x: any
+          ) => ToHtmlResult;
+        } catch (e) {
+          console.error("Couldn't find _to_html function: ", e);
+        }
+
         const value = (self.toHtml(result) as Py2JsResult).toJs({
           dict_converter: Object.fromEntries,
         });
