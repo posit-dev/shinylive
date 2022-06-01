@@ -8,7 +8,6 @@ app_ui = ui.page_fluid(output_widget("slider", height="50px"), ui.output_text("v
 
 
 def server(input: Inputs, output: Outputs, session: Session):
-    v = reactive.Value(None)
     s = ipy.IntSlider(
         value=5,
         min=0,
@@ -20,9 +19,6 @@ def server(input: Inputs, output: Outputs, session: Session):
         readout=False,
     )
 
-    # This should print on every client-side change to the slider
-    s.observe(lambda change: v.set(change.new), "value")
-
     @output()
     @render_widget()
     def slider():
@@ -31,7 +27,7 @@ def server(input: Inputs, output: Outputs, session: Session):
     @output()
     @render_text()
     def value():
-        return f"The value of the slider is: {v()}"
+        return f"The value of the slider is: {reactive_read(s, 'value')}"
 
 
 app = App(app_ui, server, debug=True)
