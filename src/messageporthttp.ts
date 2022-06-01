@@ -3,6 +3,7 @@ import {
   PyProxyCallable,
   loadPyodide as loadPyodide_orig,
 } from "../shinylive/pyodide/pyodide";
+import { uint8ArrayToString } from "./utils";
 
 declare global {
   // Note: the original pyodide.d.ts file seems to be incorrect; loadPyodide is
@@ -215,7 +216,7 @@ function asgiToRes(res: ASGIHttpResponse, body: ReadableStream): Response {
 
 function asgiHeadersToRecord(headers: any): Record<string, string> {
   headers = headers.map(([key, val]: [Uint8Array, Uint8Array]) => {
-    return [String.fromCharCode(...key), String.fromCharCode(...val)];
+    return [uint8ArrayToString(key), uint8ArrayToString(val)];
   });
   return Object.fromEntries(headers);
 }

@@ -1,6 +1,6 @@
 /// <reference lib="WebWorker" />
 
-import { dirname, sleep, uint8ArrayToBinaryString } from "./utils";
+import { dirname, sleep, uint8ArrayToString } from "./utils";
 import { fetchASGI } from "./messageporthttp";
 
 // When doing development, it's best to disable caching so that you don't have
@@ -185,7 +185,7 @@ function identityFilter(bodyChunk: Uint8Array, response: Response) {
 function injectSocketFilter(bodyChunk: Uint8Array, response: Response) {
   const contentType = response.headers.get("content-type");
   if (contentType && /^text\/html(;|$)/.test(contentType)) {
-    const bodyChunkStr = uint8ArrayToBinaryString(bodyChunk);
+    const bodyChunkStr = uint8ArrayToString(bodyChunk);
     const base_path = dirname(self.location.pathname);
     const newStr = bodyChunkStr.replace(
       /<\/head>/,
