@@ -1,9 +1,6 @@
 import { AwaitableQueue } from "./awaitable-queue";
 import { MessagePortWebSocket } from "./messageportwebsocket";
-import {
-  PyProxyCallable,
-  loadPyodide,
-} from "../build/shinylive/pyodide/pyodide";
+import type { PyProxyCallable } from "./types/pyodide";
 
 type Pyodide = Awaited<ReturnType<typeof loadPyodide>>;
 

@@ -1,8 +1,8 @@
-import {
-  loadPyodide,
+import type {
+  loadPyodide as _loadPyodide,
   PyProxyIterable,
   Py2JsResult,
-} from "../build/shinylive/pyodide/pyodide";
+} from "./types/pyodide";
 
 import type * as PyodideWorker from "./pyodide-worker";
 
@@ -10,7 +10,14 @@ import { openChannel } from "./messageportwebsocket-channel";
 import { ASGIHTTPRequestScope, makeRequest } from "./messageporthttp.js";
 import * as utils from "./utils";
 
-type Pyodide = Awaited<ReturnType<typeof loadPyodide>>;
+type Pyodide = Awaited<ReturnType<typeof _loadPyodide>>;
+
+declare global {
+  // Note: the original pyodide.d.ts file seems to be incorrect; loadPyodide is
+  // globally available, but not exported.
+  // eslint-disable-next-line no-var
+  var loadPyodide: typeof _loadPyodide;
+}
 
 export type ProxyType = "webworker" | "normal";
 

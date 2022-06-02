@@ -1,8 +1,5 @@
+import type { PyProxyCallable } from "./types/pyodide";
 import { AwaitableQueue } from "./awaitable-queue";
-import {
-  PyProxyCallable,
-  loadPyodide,
-} from "../build/shinylive/pyodide/pyodide";
 import { uint8ArrayToString } from "./utils";
 
 type Pyodide = Awaited<ReturnType<typeof loadPyodide>>;

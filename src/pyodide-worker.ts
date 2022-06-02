@@ -7,15 +7,22 @@ import type {
   ResultType,
   ToHtmlResult,
 } from "./pyodide-proxy";
-import {
+import type {
   PyProxyIterable,
-  loadPyodide,
+  loadPyodide as _loadPyodide,
   Py2JsResult,
-} from "../build/shinylive/pyodide/pyodide";
+} from "./types/pyodide";
 import { openChannel } from "./messageportwebsocket-channel";
 import { ASGIHTTPRequestScope, makeRequest } from "./messageporthttp";
 
 type Pyodide = Awaited<ReturnType<typeof loadPyodide>>;
+
+declare global {
+  // Note: the original pyodide.d.ts file seems to be incorrect; loadPyodide is
+  // globally available, but not exported.
+  // eslint-disable-next-line no-var
+  var loadPyodide: typeof _loadPyodide;
+}
 
 let pyodideStatus: "none" | "loading" | "loaded" = "none";
 let pyodide: Pyodide;

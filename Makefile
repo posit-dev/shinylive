@@ -86,6 +86,7 @@ all: node_modules \
 	$(BUILD_DIR)/shinylive/jquery.min.js \
 	$(BUILD_DIR)/shinylive/style-resets.css \
 	$(BUILD_DIR)/shinylive/pyodide \
+	src/types/pyodide.d.ts \
 	$(BUILD_DIR)/shinylive/pyodide/$(HTMLTOOLS_WHEEL) \
 	$(BUILD_DIR)/shinylive/pyodide/$(SHINY_WHEEL) \
 	$(BUILD_DIR)/shinylive/pyodide/$(IPYSHINY_WHEEL) \
@@ -121,6 +122,12 @@ $(BUILD_DIR)/shinylive/pyodide:
 	cd $(BUILD_DIR)/shinylive && \
 	curl -L https://github.com/pyodide/pyodide/releases/download/$(PYODIDE_VERSION)/$(PYODIDE_DIST_FILENAME) \
 	    | tar --exclude "*test*.tar" --exclude "node_modules" -xvj
+
+# Copy pyodide type file to src/types/. This is a little weird in that in `make
+# all`, it comes after downloading pyodide. In the future we may be able to use
+# a pyodide node module, but the one currently on npm is a bit out of date.
+src/types/pyodide.d.ts: $(BUILD_DIR)/shinylive/pyodide/pyodide.d.ts
+	cp $(BUILD_DIR)/shinylive/pyodide/pyodide.d.ts src/types/
 
 $(BUILD_DIR)/shinylive/pyodide/$(HTMLTOOLS_WHEEL): $(PACKAGE_DIR)/$(HTMLTOOLS_WHEEL)
 	mkdir -p $(BUILD_DIR)/shinylive/pyodide
