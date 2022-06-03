@@ -101,6 +101,7 @@ Binary files can be used with `## type: binary`, and the file must be base64-enc
 ## file: utils.py
 <Utils code here>
 ## file: www/logo.png
+## type: binary
 <Base64-encoded binary file here>
 ```
 ````
