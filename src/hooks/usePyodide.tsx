@@ -39,7 +39,8 @@ export async function initPyodide({
     // except that it is conditional on being in normal (non-webworker) mode:
     // <script src="./pyodide/pyodide.js"></script>
     // It will make loadPyodide available at the top level. The reason it's here
-    // is because loading it is unnecessary in webworker mode.
+    // is because loading pyodide.js in the main thread is unnecessary when
+    // we're in webworker mode.
     const pyodide_js_path = "./pyodide/pyodide.js";
     await import(pyodide_js_path);
   }
