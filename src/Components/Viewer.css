@@ -32,3 +32,27 @@
   place-content: center;
   padding: 1rem;
 }
+
+.Viewer .loading-wrapper .error-message {
+  text-align: center;
+  font-size: 1.2rem;
+  font-family: var(--font-face);
+  color: #3d3c49;
+  -webkit-animation: loading-animation-fade-in 0.5s;
+  animation: loading-animation-fade-in 0.5s;
+}
+
+.Viewer .loading-wrapper .error-message .error-icon {
+  font-size: 6rem;
+  margin: 0 0 -1.2rem 0;
+  fill: #bcbfc8;
+}
+
+@keyframes loading-animation-fade-in {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}

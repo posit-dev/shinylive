@@ -3,6 +3,7 @@ import { PyodideProxyHandle } from "../hooks/usePyodide";
 import { PyodideProxy } from "../pyodide-proxy";
 import * as utils from "../utils";
 import { FileContent } from "./filecontent";
+import { Icon } from "./Icons";
 import { LoadingAnimation } from "./LoadingAnimation";
 import "./Viewer.css";
 
@@ -114,7 +115,7 @@ export function Viewer({
 }) {
   const viewerFrameRef = React.useRef<HTMLIFrameElement>(null);
   const [appRunningState, setAppRunningState] = React.useState<
-    "loading" | "running" | "empty"
+    "loading" | "running" | "errored" | "empty"
   >("loading");
 
   React.useEffect(() => {
@@ -161,6 +162,7 @@ export function Viewer({
         viewerFrameRef.current.src = appInfo.urlPath;
         setAppRunningState("running");
       } catch (e) {
+        setAppRunningState("errored");
         if (e instanceof Error) {
           console.error(e.message);
         } else {
@@ -193,6 +195,15 @@ export function Viewer({
       {appRunningState === "loading" ? (
         <div className="loading-wrapper">
           <LoadingAnimation />
+        </div>
+      ) : appRunningState === "errored" ? (
+        <div className="loading-wrapper">
+          <div className="error-message">
+            <div className="error-icon">
+              <Icon icon="skull"></Icon>
+            </div>
+            Error loading app!
+          </div>
         </div>
       ) : null}
     </div>
