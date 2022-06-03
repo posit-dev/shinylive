@@ -6,9 +6,31 @@ format:
     css: quarto-style.css
 ---
 
+This page has some examples of using PyShiny components in Quarto documents. This is currently a work in progress, so the API is not fully stabilized.
+
+The source code for this document is [here](https://github.com/rstudio/pyshiny-site/blob/main/components.qmd).
+
+
+The YAML header for this page uses the following
+
+```yaml
+format:
+  html:
+    include-in-header: quarto-header.html
+    css: quarto-style.css
+```
+
 ### Editor with app
 
-Code editor with live running Shiny app:
+To display the code editor with live running Shiny app, use a code block with `{.pyshiny}`.
+
+````default
+```{.pyshiny}
+<App code here>
+
+```
+````
+
 
 ```{.pyshiny}
 from shiny import *
@@ -29,7 +51,19 @@ app = App(app_ui, server)
 
 ```
 
-With components stacked vertically:
+
+#### Vertically stacked components
+
+You can use a vertical layout with `#| layout: vertical`. The height can be set to, say, 300 pixels, with `#| viewerHeight: 300`.
+
+````default
+```{.pyshiny}
+#| layout: vertical
+#| viewerHeight: 200
+<App code here>
+```
+````
+
 
 ```{.pyshiny}
 #| layout: vertical
@@ -52,7 +86,24 @@ app = App(app_ui, server)
 
 ```
 
-Multiple files::
+#### Multiple files
+
+For apps that have multiple files, you can mark the start of each file with `## file: filename.py`.
+
+Binary files can be used with `## type: binary`, and the file must be base64-encoded. This can be done with the `base64` command line tool.
+
+````default
+```{.pyshiny}
+#| layout: vertical
+#| viewerHeight: 300
+## file: app.py
+<App code here>
+## file: utils.py
+<Utils code here>
+## file: www/logo.png
+<Base64-encoded binary file here>
+```
+````
 
 ```{.pyshiny}
 #| layout: vertical
@@ -97,7 +148,13 @@ iVBORw0KGgoAAAANSUhEUgAAACgAAAAuCAYAAABap1twAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6
 
 ### Standalone app
 
-Shiny app running without editor:
+Shiny app running in an iframe, without an editor panel. Note that the height is currently set with a `style` attribute, instead of with `#| viewerHeight: 180`. This will change in the future.
+
+````default
+```{.pyshinyapp style="height:180px;"}
+<App code here>
+```
+````
 
 ```{.pyshinyapp style="height:180px;"}
 from shiny import *
@@ -120,6 +177,13 @@ app = App(app_ui, server)
 ### Notebook-style code cells
 
 The code in these cells can be edited and re-run by clicking on the icon in the upper right, or by pressing ⌘/Ctrl-Shift-Enter.
+
+````default
+```{.pycell}
+<Code here>
+```
+````
+
 
 ```{.pycell}
 def add(x, y):
@@ -153,6 +217,13 @@ df
 ### Editor and terminal
 
 Run selected code or current line with ⌘/Ctrl-Enter; run the entire file with ⌘/Ctrl-Shift-Enter.
+
+````default
+```{.pyterminal style="height:350px;"}
+<Code here>
+```
+````
+
 
 ```{.pyterminal style="height:350px;"}
 sums = map(add, [1, 2, 3], [4, 5, 6])
