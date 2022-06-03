@@ -1,4 +1,4 @@
-import os
+from pathlib import Path
 import pandas
 from shiny import *
 
@@ -11,7 +11,7 @@ def server(input: Inputs, output: Outputs, session: Session):
     @output()
     @render_ui()
     def table():
-        infile = os.path.join(os.path.dirname(__file__), "mtcars.csv")
+        infile = Path(__file__).parent / "mtcars.csv"
         df = pandas.read_csv(infile)
         # Use the DataFrame's to_html() function to convert it to an HTML table, and
         # then wrap with ui.HTML() so Shiny knows to treat it as raw HTML.

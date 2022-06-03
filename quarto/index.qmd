@@ -58,7 +58,7 @@ Multiple files::
 #| layout: vertical
 #| viewerHeight: 300
 ## file: app.py
-import os
+from pathlib import Path
 from shiny import *
 from utils import square
 
@@ -80,7 +80,7 @@ def server(input: Inputs, output: Outputs, session: Session):
         img = ui.img(src="logo.jpg", style="width: 40px;")
         return square(img, input.n())
 
-www_dir = os.path.join(os.path.dirname(__file__), "www")
+www_dir = Path(__file__).parent / "www"
 app = App(app_ui, server, static_assets=www_dir)
 
 ## file: utils.py

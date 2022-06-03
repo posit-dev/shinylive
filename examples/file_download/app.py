@@ -1,5 +1,5 @@
 import asyncio
-import os
+from pathlib import Path
 import io
 from datetime import date
 from typing import Any
@@ -84,8 +84,8 @@ def server(input: Inputs, output: Outputs, session: Session):
         corresponds to this function.
         """
 
-        path = os.path.join(os.path.dirname(__file__), "mtcars.csv")
-        return path
+        path = Path(__file__).parent / "mtcars.csv"
+        return str(path)
 
     @session.download(filename="image.png")
     def download2():

@@ -1,6 +1,6 @@
 # pyright: reportUnusedFunction=false
 
-import os.path
+from pathlib import Path
 import random
 from typing import TypedDict, cast
 
@@ -30,7 +30,7 @@ def read_file(filename: str) -> str:
 app_ui = ui.page_fluid(
     head_content(
         tags.meta(name="viewport", content="width=device-width, initial-scale=1.0"),
-        tags.style(read_file(os.path.join(os.path.dirname(__file__), "style.css"))),
+        tags.style((Path(__file__).parent / "style.css").read_text()),
     ),
     div(
         h3("Shiny Wordle"),
