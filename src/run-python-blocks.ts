@@ -3,11 +3,12 @@
 // App.tsx gets compiled to).
 // import { AppMode, runApp } from "./Components/App";
 import { AppMode, runApp } from "./shinylive.js";
+import type { FileContent } from "./Components/filecontent";
 
 type classToAppTypeMapping = {
   class: string;
   appMode: AppMode;
-  filename: string;
+  defaultFilename: string;
 };
 
 type CommentArgument = {
@@ -17,10 +18,14 @@ type CommentArgument = {
 
 // Mappings from HTML class names to types (passed to App component.
 const classToAppTypeMappings: classToAppTypeMapping[] = [
-  { class: "pyshiny", appMode: "editor-viewer", filename: "app.py" },
-  { class: "pyshinyapp", appMode: "viewer", filename: "app.py" },
-  { class: "pyterminal", appMode: "editor-terminal", filename: "code.py" },
-  { class: "pycell", appMode: "editor-cell", filename: "code.py" },
+  { class: "pyshiny", appMode: "editor-viewer", defaultFilename: "app.py" },
+  { class: "pyshinyapp", appMode: "viewer", defaultFilename: "app.py" },
+  {
+    class: "pyterminal",
+    appMode: "editor-terminal",
+    defaultFilename: "code.py",
+  },
+  { class: "pycell", appMode: "editor-cell", defaultFilename: "code.py" },
 ];
 
 // Get a string that selects all the cells, like
@@ -61,7 +66,7 @@ blocks.forEach((block) => {
 
   const { lines, args } = processQuartoArgs(block.innerText.split("\n"));
 
-  const files = [{ name: mapping.filename, content: lines.join("\n") }];
+  const files = parseFileContents(lines, mapping.defaultFilename);
   runApp(container, mapping.appMode, files, args);
 });
 
@@ -110,4 +115,79 @@ function processQuartoArgs(lines: string[]): {
     lines: outLines,
     args,
   };
+}
+
+function parseFileContents(
+  lines: string[],
+  defaultFilename: string
+): FileContent[] {
+  const files: FileContent[] = [];
+
+  let currentFile: FileContent = {
+    name: defaultFilename,
+    content: "",
+    type: "text",
+  };
+
+  let state: "START" | "HEADER" | "FILE_CONTENT" = "START";
+
+  for (const line of lines) {
+    if (state === "START") {
+      if (line.match(/^##\s?file:/)) {
+        state = "HEADER";
+        currentFile = {
+          name: line.replace(/^##\s?file:/, "").trim(),
+          content: "",
+          type: "text",
+        };
+      } else if (line === "") {
+        // Blank leading lines are ignored.
+      } else {
+        // File content starts with a non-blank line.
+        state = "FILE_CONTENT";
+        currentFile.content += line;
+      }
+    } else if (state === "HEADER") {
+      if (line.match(/^##\s?file:/)) {
+        // We've found the start of a new file -- if the previous state was
+        // HEADER, the previous file would have been empty.
+        state = "HEADER";
+        files.push(currentFile);
+        currentFile = {
+          name: line.replace(/^##\s?file:/, "").trim(),
+          content: "",
+          type: "text",
+        };
+      } else if (line.match(/^##\s?type:/)) {
+        const fileType = line.replace(/^##\s?type:/, "").trim();
+        if (fileType === "text" || fileType === "binary") {
+          currentFile.type = fileType;
+        } else {
+          console.warn(`Invalid type string: "${line}".`);
+        }
+      } else {
+        // Anything else is file content.
+        state = "FILE_CONTENT";
+        currentFile.content += line;
+      }
+    } else if (state === "FILE_CONTENT") {
+      if (line.match(/^##\s?file:/)) {
+        // We've found the start of a new file.
+        state = "HEADER";
+        files.push(currentFile);
+        currentFile = {
+          name: line.replace(/^##\s?file:/, "").trim(),
+          content: "",
+          type: "text",
+        };
+      } else {
+        // Anything else is more file content.
+        currentFile.content += "\n" + line;
+      }
+    }
+  }
+
+  files.push(currentFile);
+
+  return files;
 }
