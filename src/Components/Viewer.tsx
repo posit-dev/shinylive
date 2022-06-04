@@ -118,6 +118,10 @@ export function Viewer({
     "loading" | "running" | "errored" | "empty"
   >("loading");
 
+  const [lastErrorMessage, setLastErrorMessage] = React.useState<string | null>(
+    null
+  );
+
   React.useEffect(() => {
     if (!pyodideProxyHandle.shinyReady) return;
 
@@ -165,6 +169,7 @@ export function Viewer({
         setAppRunningState("errored");
         if (e instanceof Error) {
           console.error(e.message);
+          setLastErrorMessage(e.message);
         } else {
           console.error(e);
         }
@@ -197,12 +202,15 @@ export function Viewer({
           <LoadingAnimation />
         </div>
       ) : appRunningState === "errored" ? (
-        <div className="loading-wrapper">
-          <div className="error-message">
-            <div className="error-icon">
+        <div className="loading-wrapper loading-error">
+          <div className="error-alert">
+            {/* <div className="error-icon">
               <Icon icon="skull"></Icon>
+            </div> */}
+            <div className="error-message">Error starting app!</div>
+            <div className="error-log">
+              <pre>{lastErrorMessage}</pre>
             </div>
-            Error loading app!
           </div>
         </div>
       ) : null}

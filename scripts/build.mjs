@@ -43,6 +43,7 @@ esbuild
     format: "esm",
     target: "es2020",
     ...watchProp,
+    loader: { ".svg": "dataurl" },
     plugins: [
       {
         name: "example-builder",

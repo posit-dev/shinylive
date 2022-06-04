@@ -22,6 +22,7 @@
 }
 
 .Viewer .loading-wrapper {
+  overflow: auto;
   background-color: white;
   position: absolute;
   height: 100%;
@@ -30,22 +31,40 @@
   left: 0px;
   display: grid;
   place-content: center;
-  padding: 1rem;
 }
 
-.Viewer .loading-wrapper .error-message {
+.Viewer .loading-wrapper.loading-error {
+  background-image: url("skull.svg");
+  background-size: 200px;
+  background-repeat: no-repeat;
+  background-position: center center;
+}
+
+.Viewer .loading-wrapper .error-alert {
   text-align: center;
-  font-size: 1.2rem;
+  font-size: 1.4rem;
   font-family: var(--font-face);
   color: #3d3c49;
   -webkit-animation: loading-animation-fade-in 0.5s;
   animation: loading-animation-fade-in 0.5s;
 }
 
-.Viewer .loading-wrapper .error-message .error-icon {
+/* .Viewer .loading-wrapper .error-alert .error-icon {
   font-size: 6rem;
-  margin: 0 0 -1.2rem 0;
+  margin-bottom: -1.2rem;
   fill: #bcbfc8;
+} */
+
+.Viewer .loading-wrapper .error-alert .error-message {
+  margin-bottom: 1rem;
+  color: #3d3c49;
+}
+
+.Viewer .loading-wrapper .error-alert .error-log {
+  font-size: 0.7rem;
+  text-align: left;
+  color: #444;
+  padding: 0.3rem;
 }
 
 @keyframes loading-animation-fade-in {
