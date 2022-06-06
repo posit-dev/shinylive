@@ -162,6 +162,8 @@ export async function setupPythonEnv(
     return { type: "text", value: "" };
   };
 
+  // This provides a more concise formatting of the last traceback. In the
+  // future we may want to move to using Pyodide's ConsoleFuture for this.
   const shortFormatLastTraceback = await pyodide.runPythonAsync(`
   def _short_format_last_traceback() -> str:
       import sys
