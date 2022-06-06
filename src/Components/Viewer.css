@@ -33,37 +33,24 @@
   place-content: center;
 }
 
-.Viewer .loading-wrapper.loading-error {
-  background-image: url("skull.svg");
-  background-size: 200px;
-  background-repeat: no-repeat;
-  background-position: center center;
-}
-
 .Viewer .loading-wrapper .error-alert {
   text-align: center;
   font-size: 1.4rem;
   font-family: var(--font-face);
-  color: #3d3c49;
   -webkit-animation: loading-animation-fade-in 0.5s;
   animation: loading-animation-fade-in 0.5s;
 }
 
-/* .Viewer .loading-wrapper .error-alert .error-icon {
-  font-size: 6rem;
-  margin-bottom: -1.2rem;
-  fill: #bcbfc8;
-} */
-
-.Viewer .loading-wrapper .error-alert .error-message {
-  margin-bottom: 1rem;
-  color: #3d3c49;
+.Viewer .loading-wrapper .error-alert .error-icon {
+  display: inline-block;
+  text-align: center;
+  width: 100px;
+  margin-bottom: 0.5rem;
 }
 
 .Viewer .loading-wrapper .error-alert .error-log {
   font-size: 0.7rem;
   text-align: left;
-  color: #444;
   padding: 0.3rem;
 }
 

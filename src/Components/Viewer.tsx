@@ -3,7 +3,7 @@ import { PyodideProxyHandle } from "../hooks/usePyodide";
 import { PyodideProxy } from "../pyodide-proxy";
 import * as utils from "../utils";
 import { FileContent } from "./filecontent";
-import { Icon } from "./Icons";
+import skull from "./skull.svg";
 import { LoadingAnimation } from "./LoadingAnimation";
 import "./Viewer.css";
 
@@ -202,11 +202,11 @@ export function Viewer({
           <LoadingAnimation />
         </div>
       ) : appRunningState === "errored" ? (
-        <div className="loading-wrapper loading-error">
+        <div className="loading-wrapper">
           <div className="error-alert">
-            {/* <div className="error-icon">
-              <Icon icon="skull"></Icon>
-            </div> */}
+            <div className="error-icon">
+              <img src={skull} alt="skull" />
+            </div>
             <div className="error-message">Error starting app!</div>
             <div className="error-log">
               <pre>{lastErrorMessage}</pre>

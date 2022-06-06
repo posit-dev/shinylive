@@ -4,10 +4,10 @@
 	 viewBox="0 0 838.3 838.7" style="enable-background:new 0 0 838.3 838.7;" xml:space="preserve">
 <style type="text/css">
 	.head {
-		fill:#eeeeee;
+		fill: #ccc;
 	}
 	.open, .blink {
-		fill:#ffffff;
+		fill: #fff;
 	}
 	.open{
 		animation: hideshow 12s ease infinite;
