@@ -7,7 +7,7 @@ project:
     - scripts/post-render.py
 
 website:
-  title: "Shiny for Python wasm"
+  title: "PyShiny Quarto"
   navbar:
     search: true
     right:
