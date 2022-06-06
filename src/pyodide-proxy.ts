@@ -118,18 +118,81 @@ export interface LoadPyodideConfig {
 }
 
 // =============================================================================
+// PyUtils interface
+// =============================================================================
+
+// A set of proxies for Python functions that the are called from JS.
+export interface PyUtils {
+  repr: (x: any) => string;
+  tabComplete: (x: string) => PyProxyIterable;
+  toHtml: (x: any) => ToHtmlResult;
+  shortFormatLastTraceback: () => string;
+}
+
+export async function setupPythonEnv(
+  pyodide: Pyodide,
+  callJS:
+    | null
+    | ((fn_name: PyProxyIterable, args: PyProxyIterable) => Promise<any>)
+): Promise<PyUtils> {
+  const repr = pyodide.globals.get("repr") as (x: any) => string;
+
+  // Make the JS pyodide object available in Python.
+  pyodide.globals.set("js_pyodide", pyodide);
+
+  const pyconsole = await pyodide.runPythonAsync(`
+  import pyodide.console
+  import __main__
+  pyodide.console.PyodideConsole(__main__.__dict__)
+  `);
+
+  const tabComplete = pyconsole.complete.copy() as (
+    x: string
+  ) => PyProxyIterable;
+
+  pyconsole.destroy();
+
+  // Inject the callJS function into the Python global namespace.
+  if (callJS) {
+    pyodide.globals.set("callJS", callJS);
+  }
+
+  // Placeholder
+  const toHtml = (x: any): ToHtmlResult => {
+    return { type: "text", value: "" };
+  };
+
+  const shortFormatLastTraceback = await pyodide.runPythonAsync(`
+  def _short_format_last_traceback() -> str:
+      import sys
+      import traceback
+      e = sys.last_value
+      found_marker = False
+      nframes = 0
+      for (frame, _) in traceback.walk_tb(e.__traceback__):
+          if frame.f_code.co_filename in ("<console>", "<exec>"):
+              found_marker = True
+          if found_marker:
+              nframes += 1
+      return "".join(traceback.format_exception(type(e), e, e.__traceback__, -nframes))
+
+  _short_format_last_traceback
+  `);
+  await pyodide.runPythonAsync(`del _short_format_last_traceback`);
+
+  return {
+    repr,
+    tabComplete,
+    toHtml,
+    shortFormatLastTraceback,
+  };
+}
+// =============================================================================
 // NormalPyodideProxy
 // =============================================================================
 class NormalPyodideProxy implements PyodideProxy {
   pyodide!: Pyodide;
-  // A proxy to Python's repr() function. When defined later on, it's actually a
-  // PyProxyCallable object.
-  repr: (x: any) => string = function (x: any) {
-    return "";
-  };
-  declare tabComplete_: (x: string) => PyProxyIterable;
-
-  declare toHtml: (x: any) => ToHtmlResult;
+  pyUtils!: PyUtils;
 
   constructor(
     private stdoutCallback: (text: string) => void,
@@ -139,28 +202,7 @@ class NormalPyodideProxy implements PyodideProxy {
   async init(config: LoadPyodideConfig) {
     this.pyodide = await loadPyodide(config);
 
-    this.repr = this.pyodide.globals.get("repr") as (x: any) => string;
-
-    // Make the JS pyodide object available in Python.
-    this.pyodide.globals.set("js_pyodide", this.pyodide);
-
-    // Need these `as` casts because the type declaration of runPythonAsync in
-    // pyodide is incorrect.
-    const pyconsole = await (this.pyodide.runPythonAsync(`
-      import pyodide.console
-      import __main__
-      pyodide.console.PyodideConsole(__main__.__dict__)
-    `) as Promise<any>);
-
-    this.tabComplete_ = pyconsole.complete.copy() as (
-      x: string
-    ) => PyProxyIterable;
-
-    this.stdoutCallback(pyconsole.BANNER);
-    pyconsole.destroy();
-
-    // Inject the callJS function into the global namespace.
-    this.pyodide.globals.set("callJS", this.callJS);
+    this.pyUtils = await setupPythonEnv(this.pyodide, this.callJS);
   }
 
   loadPackagesFromImports(code: string) {
@@ -184,19 +226,21 @@ class NormalPyodideProxy implements PyodideProxy {
   ): Promise<ReturnMapping[K]> {
     await this.pyodide.loadPackagesFromImports(code);
     let result: Py2JsResult;
-    let error: Error | null = null;
     try {
       result = await (this.pyodide.runPythonAsync(
         code
       ) as Promise<Py2JsResult>);
     } catch (err) {
-      error = err as Error;
-      this.stderrCallback(error.message);
-      throw error;
+      if (err instanceof this.pyodide.PythonError) {
+        const shortTraceback = this.pyUtils.shortFormatLastTraceback();
+        err.message = shortTraceback;
+      }
+      this.stderrCallback((err as Error).message);
+      throw err;
     }
 
     if (printResult && result !== undefined) {
-      this.stdoutCallback(this.repr(result));
+      this.stdoutCallback(this.pyUtils.repr(result));
     }
 
     // eslint-disable-next-line @typescript-eslint/no-this-alias
@@ -216,18 +260,18 @@ class NormalPyodideProxy implements PyodideProxy {
         }
       },
       get printed_value() {
-        return self.repr(result);
+        return self.pyUtils.repr(result);
       },
       get to_html() {
         try {
-          self.toHtml = self.pyodide.globals.get("_to_html") as (
+          self.pyUtils.toHtml = self.pyodide.globals.get("_to_html") as (
             x: any
           ) => ToHtmlResult;
         } catch (e) {
           console.error("Couldn't find _to_html function: ", e);
         }
 
-        const value = (self.toHtml(result) as Py2JsResult).toJs({
+        const value = (self.pyUtils.toHtml(result) as Py2JsResult).toJs({
           dict_converter: Object.fromEntries,
         });
         return value;
@@ -248,7 +292,7 @@ class NormalPyodideProxy implements PyodideProxy {
 
   tabComplete(code: string): Promise<string[]> {
     return new Promise((resolve, reject) => {
-      resolve(this.tabComplete_(code).toJs()[0]);
+      resolve(this.pyUtils.tabComplete(code).toJs()[0]);
     });
   }
 

@@ -6,7 +6,11 @@ import type {
   LoadPyodideConfig,
   ResultType,
   ToHtmlResult,
+  PyUtils,
 } from "./pyodide-proxy";
+
+import { setupPythonEnv } from "./pyodide-proxy";
+
 import type {
   PyProxyIterable,
   loadPyodide as _loadPyodide,
@@ -125,7 +129,7 @@ self.stderr_callback = function (s: string) {
 // which is equivalent to the following JS call:
 //   foo.bar("a", 2)
 // This function gets injected into the Python global namespace.
-function callJS(fn_name: PyProxyIterable, args: PyProxyIterable) {
+async function callJS(fn_name: PyProxyIterable, args: PyProxyIterable) {
   self.postMessage({
     type: "nonreply",
     subtype: "callJS",
@@ -134,18 +138,7 @@ function callJS(fn_name: PyProxyIterable, args: PyProxyIterable) {
   });
 }
 
-// =============================================================================
-// A proxy to Python repr() function. This definition is just a placeholder.
-// When defined later on, it's actually a PyProxyCallable object.
-let repr: (x: any) => string = function (x: any) {
-  return "";
-};
-// Placeholder Python pyodide.console.Console().complete() function
-let tabComplete: (x: string) => PyProxyIterable;
-
-let toHtml: (x: any) => ToHtmlResult = function (x: any) {
-  return { type: "text", value: "" };
-};
+let pyUtils: PyUtils;
 
 self.onmessage = async function (e: MessageEvent): Promise<void> {
   const msg = e.data as InMessage;
@@ -173,26 +166,7 @@ self.onmessage = async function (e: MessageEvent): Promise<void> {
           stderr: self.stderr_callback,
         });
 
-        repr = pyodide.globals.get("repr") as (x: any) => string;
-
-        // Make the JS pyodide object available in Python.
-        pyodide.globals.set("js_pyodide", pyodide);
-
-        const pyconsole = await pyodide.runPythonAsync(`
-          import pyodide.console
-          import __main__
-          pyodide.console.PyodideConsole(__main__.__dict__)
-        `);
-
-        tabComplete = pyconsole.complete.copy() as (
-          x: string
-        ) => PyProxyIterable;
-
-        self.stdout_callback(pyconsole.BANNER);
-        pyconsole.destroy();
-
-        // Inject the callJS function into the global namespace.
-        pyodide.globals.set("callJS", callJS);
+        pyUtils = await setupPythonEnv(pyodide, callJS);
 
         pyodideStatus = "loaded";
       }
@@ -208,7 +182,7 @@ self.onmessage = async function (e: MessageEvent): Promise<void> {
       ) as Promise<Py2JsResult>);
 
       if (msg.printResult && result !== undefined) {
-        self.stdout_callback(repr(result));
+        self.stdout_callback(pyUtils.repr(result));
       }
 
       if (msg.returnResult === "value") {
@@ -231,7 +205,9 @@ self.onmessage = async function (e: MessageEvent): Promise<void> {
         }
       } else if (msg.returnResult === "to_html") {
         try {
-          toHtml = pyodide.globals.get("_to_html") as (x: any) => ToHtmlResult;
+          pyUtils.toHtml = pyodide.globals.get("_to_html") as (
+            x: any
+          ) => ToHtmlResult;
         } catch (e) {
           console.error("Couldn't find _to_html function: ", e);
         }
@@ -239,7 +215,7 @@ self.onmessage = async function (e: MessageEvent): Promise<void> {
         messagePort.postMessage({
           type: "reply",
           subtype: "done",
-          value: (toHtml(result) as Py2JsResult).toJs({
+          value: (pyUtils.toHtml(result) as Py2JsResult).toJs({
             dict_converter: Object.fromEntries,
           }),
         });
@@ -247,7 +223,7 @@ self.onmessage = async function (e: MessageEvent): Promise<void> {
         messagePort.postMessage({
           type: "reply",
           subtype: "done",
-          value: repr(result),
+          value: pyUtils.repr(result),
         });
       } else {
         messagePort.postMessage({ type: "reply", subtype: "done" });
@@ -257,7 +233,7 @@ self.onmessage = async function (e: MessageEvent): Promise<void> {
         result.destroy();
       }
     } else if (msg.type === "tabComplete") {
-      const completions: string[] = tabComplete(msg.code).toJs()[0];
+      const completions: string[] = pyUtils.tabComplete(msg.code).toJs()[0];
       messagePort.postMessage({
         type: "reply",
         subtype: "tabCompletions",
@@ -283,6 +259,10 @@ self.onmessage = async function (e: MessageEvent): Promise<void> {
       });
     }
   } catch (e) {
+    if (e instanceof pyodide.PythonError) {
+      const shortTraceback = pyUtils.shortFormatLastTraceback();
+      e.message = shortTraceback;
+    }
     messagePort.postMessage({
       type: "reply",
       subtype: "done",
