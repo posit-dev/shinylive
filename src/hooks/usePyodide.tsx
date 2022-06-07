@@ -311,15 +311,26 @@ async def _load_packages_from_dir(dir: str) -> None:
         if file.endswith(".py"):
             with open(os.path.join(dir, file)) as f:
                 await js_pyodide.loadPackagesFromImports(f.read())
-
+` +
+  // In the function below, the odd importlib step for matplotlib is to work
+  // around Pyodide's automatic import detection via
+  // `loadPackagesFromImports()`. When this code is initially evaluated (but
+  // before the _to_html() function is executed), Pyodide will scan the text and
+  // install packages which are in `import xx` statements. So if we have `import
+  // matplotlib.figure`, even the conditional branch, Pyodide will _always_ load
+  // it when initially evaluating this code, because the code is first passed to
+  // `loadPackagesFromImports()`.
+  `
 def _to_html(x):
     import sys
     if hasattr(x, 'to_html'):
       return { "type": "html", "value": x.to_html() }
 
     if "matplotlib" in sys.modules:
-      import matplotlib.figure
-      if isinstance(x, matplotlib.figure.Figure):
+      import importlib
+      figure = importlib.import_module('matplotlib.figure')
+
+      if isinstance(x, figure.Figure):
         import io
         import base64
         img = io.BytesIO()
