@@ -26,12 +26,12 @@ def server(input: Inputs, output: Outputs, session: Session):
         return input.n() * 2
 
     @output()
-    @render_text()
+    @render.text()
     def txt():
         return f"n*2 is {r()}, session id is {session.id}"
 
     @output()
-    @render_plot(alt="A histogram")
+    @render.plot(alt="A histogram")
     def plot():
         np.random.seed(19680801)
         x = 100 + 15 * np.random.randn(437)
@@ -41,10 +41,10 @@ def server(input: Inputs, output: Outputs, session: Session):
         return fig
 
     @output(name="ui")
-    @render_ui()
+    @render.ui()
     def _():
         return ui.input_slider(
-            "This slider is rendered via @render_ui()", "N", 0, 100, 20
+            "This slider is rendered via @render.ui()", "N", 0, 100, 20
         )
 
     @reactive.Effect()

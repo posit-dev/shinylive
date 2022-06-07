@@ -26,7 +26,7 @@ app_ui = ui.page_fluid(
 
 def server(input: Inputs, output: Outputs, session: Session):
     @output()
-    @render_image()
+    @render.image()
     async def image():
         file_infos: list[FileInfo] = input.file()
         if not file_infos:
@@ -54,7 +54,7 @@ def server(input: Inputs, output: Outputs, session: Session):
         val = skimage.filters.threshold_otsu(image_data)
         mask = image_data < val
 
-        # Save for render_image
+        # Save for render.image
         skimage.io.imsave("small.png", skimage.util.img_as_ubyte(mask))
         return {"src": "small.png", "width": "100%"}
 

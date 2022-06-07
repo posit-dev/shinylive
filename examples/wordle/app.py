@@ -6,7 +6,7 @@ from typing import TypedDict, cast
 
 import shiny
 from htmltools import TagList, div, h3, head_content, tags
-from shiny import Inputs, Outputs, Session, event, reactive, render_ui, ui
+from shiny import Inputs, Outputs, Session, event, reactive, render, ui
 from typing_extensions import Literal
 
 import words
@@ -116,7 +116,7 @@ def server(input: Inputs, output: Outputs, session: Session):
     # UI displaying guesses
     # ==========================================================================
     @output()
-    @render_ui()
+    @render.ui()
     def previous_guesses() -> TagList:
         res = TagList()
         for guess in all_guesses():
@@ -138,7 +138,7 @@ def server(input: Inputs, output: Outputs, session: Session):
         return res
 
     @output()
-    @render_ui()
+    @render.ui()
     def current_guess():
         if finished():
             return
@@ -198,7 +198,7 @@ def server(input: Inputs, output: Outputs, session: Session):
     ]
 
     @output()
-    @render_ui()
+    @render.ui()
     def keyboard():
         prev_match_type = used_letters()
         keyboard_div = div(class_="keyboard")
@@ -285,7 +285,7 @@ def server(input: Inputs, output: Outputs, session: Session):
             make_key_listener(key)
 
     @output()
-    @render_ui()
+    @render.ui()
     def endgame():
         if not finished():
             return tags.script(
@@ -319,7 +319,7 @@ def server(input: Inputs, output: Outputs, session: Session):
     # New game button
     # ==========================================================================
     @output()
-    @render_ui()
+    @render.ui()
     def new_game_ui():
         if finished():
             return ui.input_action_button("new_game", "New Game")

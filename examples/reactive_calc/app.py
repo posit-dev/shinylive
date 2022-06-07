@@ -24,12 +24,12 @@ def server(input: Inputs, output: Outputs, session: Session):
         return val
 
     @output()
-    @render_text()
+    @render.text()
     def txt1():
         return f'x times 2 is: "{x_times_2()}"'
 
     @output()
-    @render_text()
+    @render.text()
     def txt2():
         return f'x times 2 is: "{x_times_2()}"'
 

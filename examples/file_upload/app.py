@@ -8,7 +8,7 @@ app_ui = ui.page_fluid(
 
 def server(input: Inputs, output: Outputs, session: Session):
     @output()
-    @render_text()
+    @render.text()
     def file_content():
         file_infos = input.file1()
         if not file_infos:

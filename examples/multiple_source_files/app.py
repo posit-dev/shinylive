@@ -9,7 +9,7 @@ app_ui = ui.page_fluid(
 
 def server(input: Inputs, output: Outputs, session: Session):
     @output()
-    @render_text()
+    @render.text()
     def txt():
         val = square(input.n())
         return f"{input.n()} squared is {val}"

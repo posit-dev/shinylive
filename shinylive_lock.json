@@ -15,8 +15,8 @@
   },
   "shiny": {
     "name": "shiny",
-    "version": "0.2.0.9004",
-    "filename": "shiny-0.2.0.9004-py3-none-any.whl",
+    "version": "0.2.0.9005",
+    "filename": "shiny-0.2.0.9005-py3-none-any.whl",
     "sha256": null,
     "url": null,
     "depends": [
@@ -132,10 +132,10 @@
   },
   "starlette": {
     "name": "starlette",
-    "version": "0.20.1",
-    "filename": "starlette-0.20.1-py3-none-any.whl",
-    "sha256": "4fe6f005ac9cd973ca885c3679c8d991fde7d2ea4f27b2318b79a6673c3b70af",
-    "url": "https://files.pythonhosted.org/packages/22/fa/7516729f4a4d08467df8a70cec243001eb492da12846d71dcd82824c928e/starlette-0.20.1-py3-none-any.whl",
+    "version": "0.20.2",
+    "filename": "starlette-0.20.2-py3-none-any.whl",
+    "sha256": "99d264fbcc07e4d24e9486f55fe99982b8e3869a94f4e6e2879c79f4a9cc8bcd",
+    "url": "https://files.pythonhosted.org/packages/62/3a/9a087fa757c71ba7e54d23d73933231b4d01ccd8e572ad993973c839534d/starlette-0.20.2-py3-none-any.whl",
     "depends": [
       {"name": "anyio", "specs": [["<", "5"], [">=", "3.4.0"]]}
     ],
@@ -404,10 +404,10 @@
   },
   "jsonschema": {
     "name": "jsonschema",
-    "version": "4.5.1",
-    "filename": "jsonschema-4.5.1-py3-none-any.whl",
-    "sha256": "71b5e39324422543546572954ce71c67728922c104902cb7ce252e522235b33f",
-    "url": "https://files.pythonhosted.org/packages/de/ad/850070f0d9e6a9278cc44013c60c467558791cbc2e462925ba4559dec914/jsonschema-4.5.1-py3-none-any.whl",
+    "version": "4.6.0",
+    "filename": "jsonschema-4.6.0-py3-none-any.whl",
+    "sha256": "1c92d2db1900b668201f1797887d66453ab1fbfea51df8e4b46236689c427baf",
+    "url": "https://files.pythonhosted.org/packages/aa/13/0063ea808b6a1bee57e0780d83bf0c57f0ed25a1b5ed3685524359c485fd/jsonschema-4.6.0-py3-none-any.whl",
     "depends": [
       {"name": "attrs", "specs": [[">=", "17.4.0"]]},
       {"name": "pyrsistent", "specs": [["!=", "0.17.0"], ["!=", "0.17.1"], ["!=", "0.17.2"], [">=", "0.14.0"]]}

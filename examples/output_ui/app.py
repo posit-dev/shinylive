@@ -12,7 +12,7 @@ app_ui = ui.page_fluid(
 
 def server(input: Inputs, output: Outputs, session: Session):
     @output()
-    @render_ui()
+    @render.ui()
     def dyn_ui():
         if input.type() == "text":
             return ui.TagList(
@@ -46,7 +46,7 @@ def server(input: Inputs, output: Outputs, session: Session):
             return ui.div("You selected", ui.tags.b("other", style="color: red;"))
 
     @output()
-    @render_text()
+    @render.text()
     def txt():
         return f'x is: "{input.x()}"'
 

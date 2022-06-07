@@ -25,7 +25,7 @@ def server(input: Inputs, output: Outputs, session: Session):
         return s
 
     @output()
-    @render_text()
+    @render.text()
     def value():
         return f"The value of the slider is: {reactive_read(s, 'value')}"
 
