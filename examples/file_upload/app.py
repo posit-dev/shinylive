@@ -1,8 +1,7 @@
 from shiny import *
-from shiny.types import FileInfo
 
 app_ui = ui.page_fluid(
-    ui.input_file("file1", "Choose file", multiple=True),
+    ui.input_file("file1", "Choose a text file to upload:", multiple=True),
     ui.output_text_verbatim("file_content"),
 )
 
@@ -11,10 +10,19 @@ def server(input: Inputs, output: Outputs, session: Session):
     @output()
     @render_text()
     def file_content():
-        file_infos: list[FileInfo] = input.file1()
+        file_infos = input.file1()
         if not file_infos:
             return
 
+        # file_infos is a list of dicts; each dict represents one file. Example:
+        # [
+        #   {
+        #     'name': 'data.csv',
+        #     'size': 2601,
+        #     'type': 'text/csv',
+        #     'datapath': '/tmp/fileupload-1wnx_7c2/tmpga4x9mps/0.csv'
+        #   }
+        # ]
         out_str = ""
         for file_info in file_infos:
             out_str += "====== " + file_info["name"] + " ======\n"
