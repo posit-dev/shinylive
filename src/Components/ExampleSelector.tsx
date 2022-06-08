@@ -1,11 +1,12 @@
 import * as React from "react";
+
 import {
-  getExampleCategories,
+  ExampleCategory,
+  ExampleItem,
   ExamplePosition,
   findExampleByTitle,
-  ExampleCategory,
+  getExampleCategories,
   sanitizeTitleForUrl,
-  ExampleItem,
 } from "../examples";
 import "./ExampleSelector.css";
 import { FileContent } from "./filecontent";

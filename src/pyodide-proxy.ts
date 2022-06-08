@@ -1,13 +1,13 @@
 import type {
   loadPyodide as _loadPyodide,
-  PyProxyIterable,
   Py2JsResult,
+  PyProxyIterable,
 } from "./types/pyodide";
 
 import type * as PyodideWorker from "./pyodide-worker";
 
-import { openChannel } from "./messageportwebsocket-channel";
 import { ASGIHTTPRequestScope, makeRequest } from "./messageporthttp.js";
+import { openChannel } from "./messageportwebsocket-channel";
 import * as utils from "./utils";
 
 type Pyodide = Awaited<ReturnType<typeof _loadPyodide>>;

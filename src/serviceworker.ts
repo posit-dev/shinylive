@@ -1,7 +1,7 @@
 /// <reference lib="WebWorker" />
 
-import { dirname, sleep, uint8ArrayToString } from "./utils";
 import { fetchASGI } from "./messageporthttp";
+import { dirname, sleep, uint8ArrayToString } from "./utils";
 
 // When doing development, it's best to disable caching so that you don't have
 // to keep manually clearing the browser's application cache.

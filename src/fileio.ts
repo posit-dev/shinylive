@@ -1,5 +1,5 @@
-import { arrayBufferToString, stringToUint8Array, isBinary } from "./utils";
 import { FileContent } from "./Components/filecontent";
+import { arrayBufferToString, isBinary, stringToUint8Array } from "./utils";
 
 // Maximum size of all files together in the app.
 const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20 MB

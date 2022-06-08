@@ -1,5 +1,6 @@
 import { Extension } from "@codemirror/state";
 import * as React from "react";
+
 import {
   EditorFile,
   editorFileToFileContent,

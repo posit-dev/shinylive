@@ -4,25 +4,26 @@
 // https://github.com/microsoft/vscode/issues/141908
 /// <reference types="wicg-file-system-access" />
 
-import { EditorState, Prec, Extension } from "@codemirror/state";
+import { EditorState, Extension, Prec } from "@codemirror/state";
 import { EditorView, KeyBinding, keymap, ViewUpdate } from "@codemirror/view";
 import * as React from "react";
+
+import * as fileio from "../fileio";
 import { inferFiletype, modKeySymbol } from "../utils";
 import {
+  getBinaryFileExtensions,
   getExtensionForFiletype,
   getExtensions,
-  getBinaryFileExtensions,
 } from "./codeMirror/extensions";
 import { FileTabs } from "./codeMirror/FileTabs";
 import { useTabbedCodeMirror } from "./codeMirror/useTabbedCodeMirror";
 import * as cmUtils from "./codeMirror/utils";
 import "./Editor.css";
+import { FileContent } from "./filecontent";
+import { Icon } from "./Icons";
 import { ShareModal } from "./ShareModal";
 import { TerminalMethods } from "./Terminal";
-import { FileContent } from "./filecontent";
 import { ViewerMethods } from "./Viewer";
-import { Icon } from "./Icons";
-import * as fileio from "../fileio";
 
 export type EditorFile =
   | {

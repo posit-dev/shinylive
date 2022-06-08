@@ -2,8 +2,8 @@
 // but have the compiled JS import from shinylive.js (because that's what
 // App.tsx gets compiled to).
 // import { AppMode, runApp } from "./Components/App";
-import { AppMode, runApp } from "./shinylive.js";
 import type { FileContent } from "./Components/filecontent";
+import { AppMode, runApp } from "./shinylive.js";
 
 type classToAppTypeMapping = {
   class: string;

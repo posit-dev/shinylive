@@ -2,6 +2,7 @@
 /// <reference types="jquery" />
 
 import * as React from "react";
+
 import { PyodideProxyHandle } from "../hooks/usePyodide";
 import "./Terminal.css";
 

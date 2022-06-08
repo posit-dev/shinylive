@@ -2,22 +2,20 @@
 // file.
 importScripts("./pyodide/pyodide.js");
 
+import { ASGIHTTPRequestScope, makeRequest } from "./messageporthttp";
+import { openChannel } from "./messageportwebsocket-channel";
 import type {
   LoadPyodideConfig,
+  PyUtils,
   ResultType,
   ToHtmlResult,
-  PyUtils,
 } from "./pyodide-proxy";
-
 import { setupPythonEnv } from "./pyodide-proxy";
-
 import type {
-  PyProxyIterable,
   loadPyodide as _loadPyodide,
   Py2JsResult,
+  PyProxyIterable,
 } from "./types/pyodide";
-import { openChannel } from "./messageportwebsocket-channel";
-import { ASGIHTTPRequestScope, makeRequest } from "./messageporthttp";
 
 type Pyodide = Awaited<ReturnType<typeof loadPyodide>>;
 

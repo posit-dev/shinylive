@@ -1,40 +1,42 @@
 import {
   autocompletion,
-  completionKeymap,
   closeBrackets,
   closeBracketsKeymap,
+  completionKeymap,
 } from "@codemirror/autocomplete";
-import { defaultKeymap, history, historyKeymap } from "@codemirror/commands";
+import {
+  defaultKeymap,
+  history,
+  historyKeymap,
+  indentWithTab,
+} from "@codemirror/commands";
 import { css } from "@codemirror/lang-css";
 import { html } from "@codemirror/lang-html";
 import { javascript } from "@codemirror/lang-javascript";
 import { python } from "@codemirror/lang-python";
 import {
-  StreamLanguage,
-  indentOnInput,
-  indentUnit,
-  foldKeymap,
   bracketMatching,
   defaultHighlightStyle,
+  foldKeymap,
+  indentOnInput,
+  indentUnit,
+  StreamLanguage,
   syntaxHighlighting,
 } from "@codemirror/language";
-import { indentWithTab } from "@codemirror/commands";
 import { r } from "@codemirror/legacy-modes/mode/r";
 import { lintKeymap } from "@codemirror/lint";
 import { highlightSelectionMatches, searchKeymap } from "@codemirror/search";
 import { EditorState, Extension } from "@codemirror/state";
 import {
-  EditorView,
-  highlightActiveLineGutter,
-  lineNumbers,
-  rectangularSelection,
-} from "@codemirror/view";
-import {
   drawSelection,
   // highlightActiveLine,
   dropCursor,
+  EditorView,
+  highlightActiveLineGutter,
   highlightSpecialChars,
   keymap,
+  lineNumbers,
+  rectangularSelection,
 } from "@codemirror/view";
 
 export function getExtensions(

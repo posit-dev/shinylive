@@ -1,8 +1,9 @@
 import * as React from "react";
-import { ToHtmlResult } from "../pyodide-proxy";
+
 import { PyodideProxyHandle } from "../hooks/usePyodide";
-import { TerminalMethods } from "./Terminal";
+import { ToHtmlResult } from "../pyodide-proxy";
 import "./OutputCell.css";
+import { TerminalMethods } from "./Terminal";
 
 // =============================================================================
 // OutputCell component

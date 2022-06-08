@@ -1,10 +1,11 @@
 import * as React from "react";
+
 import { PyodideProxyHandle } from "../hooks/usePyodide";
 import { PyodideProxy } from "../pyodide-proxy";
 import * as utils from "../utils";
 import { FileContent } from "./filecontent";
-import skull from "./skull.svg";
 import { LoadingAnimation } from "./LoadingAnimation";
+import skull from "./skull.svg";
 import "./Viewer.css";
 
 export type ViewerMethods =

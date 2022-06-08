@@ -1,6 +1,8 @@
+import LZString from "lz-string";
 import * as React from "react";
 import { createRoot } from "react-dom/client";
-import LZString from "lz-string";
+
+import { findExampleByTitle, getExampleCategories } from "../examples";
 import {
   initPyodide,
   initShiny,
@@ -10,7 +12,6 @@ import {
 import { ProxyType } from "../pyodide-proxy";
 import "./App.css";
 import { Editor } from "./Editor";
-import { getExampleCategories, findExampleByTitle } from "../examples";
 import { ExampleSelector } from "./ExampleSelector";
 import {
   completeFileContents,
@@ -19,8 +20,8 @@ import {
 } from "./filecontent";
 import { OutputCell } from "./OutputCell";
 import { ResizableGrid } from "./ResizableGrid/ResizableGrid";
-import { TerminalInterface, TerminalMethods, Terminal } from "./Terminal";
-import { ViewerMethods, Viewer } from "./Viewer";
+import { Terminal, TerminalInterface, TerminalMethods } from "./Terminal";
+import { Viewer, ViewerMethods } from "./Viewer";
 
 const terminalInterface: TerminalInterface = (() => {
   let _exec = async (x: string) => console.log("preload exec:" + x);

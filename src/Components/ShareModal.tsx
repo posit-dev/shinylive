@@ -1,8 +1,8 @@
 import LZString from "lz-string";
 import * as React from "react";
 
-import { FileContent } from "./filecontent";
 import { useOnEscOrClickOutside } from "../hooks/useOnEscOrClickOutside";
+import { FileContent } from "./filecontent";
 import "./ShareModal.css";
 
 // =============================================================================
