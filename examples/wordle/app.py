@@ -1,7 +1,7 @@
 # pyright: reportUnusedFunction=false
 
-from pathlib import Path
 import random
+from pathlib import Path
 from typing import TypedDict, cast
 
 import shiny
@@ -11,20 +11,15 @@ from typing_extensions import Literal
 
 import words
 
+# The state of each key on the keyboard.
 LetterMatch = Literal["correct", "in-word", "not-in-word"]
 
-
+# Information about each guess made by the player.
 class GuessInfo(TypedDict):
     word: str
     letters: list[str]
     match_types: list[LetterMatch]
     win: bool
-
-
-# Read in a file and return contents as a string.
-def read_file(filename: str) -> str:
-    with open(filename) as f:
-        return " ".join(f.readlines())
 
 
 app_ui = ui.page_fluid(
@@ -92,6 +87,7 @@ app_ui = ui.page_fluid(
 )
 
 
+# This subclass of Inputs is used to help the static type checker.
 class ShinyInputs(Inputs):
     Enter: reactive.Value[int]
     Back: reactive.Value[int]
@@ -100,17 +96,22 @@ class ShinyInputs(Inputs):
 
 
 def server(input: Inputs, output: Outputs, session: Session):
+    # Treat `input` as a ShinyInputs object, for the static type checker.
     input = cast(ShinyInputs, input)
 
-    target_word = reactive.Value(random.choice(tuple(words.targets)))
-    all_guesses = reactive.Value(list[GuessInfo]())
-    finished = reactive.Value(False)
-    current_guess_letters = reactive.Value(list[str]())
+    # These reactive.Values represent the current state of the game.
+    target_word = reactive.Value[str]()
+    all_guesses = reactive.Value[list[GuessInfo]]()
+    game_has_ended = reactive.Value[bool]()
+    current_guess_letters = reactive.Value[list[str]]()
 
     def reset_game():
         target_word.set(random.choice(tuple(words.targets)))
-        all_guesses.set(list[GuessInfo]())
-        finished.set(False)
+        all_guesses.set([])
+        game_has_ended.set(False)
+        current_guess_letters.set([])
+
+    reset_game()
 
     # ==========================================================================
     # UI displaying guesses
@@ -139,8 +140,9 @@ def server(input: Inputs, output: Outputs, session: Session):
 
     @output()
     @render.ui()
+    @event(current_guess_letters, game_has_ended)
     def current_guess():
-        if finished():
+        if game_has_ended():
             return
 
         letters = current_guess_letters().copy()
@@ -149,8 +151,7 @@ def server(input: Inputs, output: Outputs, session: Session):
         #   "a" "r"
         # then result is:
         #   "a" "r" "" "" ""
-        with reactive.isolate():
-            target_length = len(target_word())
+        target_length = len(target_word())
         for _i in range(target_length - len(letters)):
             letters.append("")
 
@@ -222,7 +223,7 @@ def server(input: Inputs, output: Outputs, session: Session):
     @reactive.Effect()
     @event(input.Back)  # Take a dependency on the Back button
     def _():
-        if finished():
+        if game_has_ended():
             return
         current_letters = current_guess_letters().copy()
         if len(current_letters) > 0:
@@ -232,35 +233,34 @@ def server(input: Inputs, output: Outputs, session: Session):
     @reactive.Effect()
     @event(input.Enter)  # Take a dependency on the Enter button
     def _():
-        with reactive.isolate():
-            guess = "".join(current_guess_letters())
+        if game_has_ended():
+            return
 
-            if guess not in words.all:
-                return
+        guess = "".join(current_guess_letters())
 
-            # if input["hard"]:
-            #     # Letters in the target word that the player has previously
-            #     # guessed correctly.
-            #     matched_letters = used_letters().intersection(set(target_word()))
-            #     if not set(guess).issuperset(matched_letters):
-            #         return
+        if guess not in words.all:
+            return
 
-            all_guesses_new: list[GuessInfo] = all_guesses()
-            # This copy is needed because the list is returned by reference, and
-            # is a mutable object. If we didn't copy it and simply assigned it
-            # back to all_guesses, then it wouldn't invalidate anything that
-            # depends on all_guesses.
-            all_guesses_new = all_guesses_new.copy()
+        # if input["hard"]:
+        #     # Letters in the target word that the player has previously
+        #     # guessed correctly.
+        #     matched_letters = used_letters().intersection(set(target_word()))
+        #     if not set(guess).issuperset(matched_letters):
+        #         return
 
-            check_result = check_word(guess, target_word())
-            all_guesses_new.append(check_result)
-            all_guesses.set(all_guesses_new)
-            all_guesses.set(all_guesses_new)
+        check_result = check_word(guess, target_word())
 
-            if check_result["win"]:
-                finished.set(True)
+        # This copy is needed because the list is returned by reference, and is a
+        # mutable object. If we didn't copy it and simply assigned it back to
+        # all_guesses, then it wouldn't invalidate anything that depends on all_guesses.
+        all_guesses_new: list[GuessInfo] = all_guesses().copy()
+        all_guesses_new.append(check_result)
+        all_guesses.set(all_guesses_new)
 
-            current_guess_letters.set([])
+        if check_result["win"]:
+            game_has_ended.set(True)
+
+        current_guess_letters.set([])
 
     # ==========================================================================
     # Create observers to listen to each possible keypress
@@ -269,10 +269,11 @@ def server(input: Inputs, output: Outputs, session: Session):
         @reactive.Effect()
         @event(input[key])
         def _():
-            if finished():
+            if game_has_ended():
                 return
+
             cur_letters = current_guess_letters().copy()
-            if len(cur_letters) >= 5:
+            if len(cur_letters) >= len(target_word()):
                 return
             cur_letters.append(key.lower())
             current_guess_letters.set(cur_letters)
@@ -280,14 +281,18 @@ def server(input: Inputs, output: Outputs, session: Session):
     for keyboard_row in keys:
         for key in keyboard_row:
             if key == "Enter" or key == "Back":
-                continue
+                pass
+            else:
+                make_key_listener(key)
 
-            make_key_listener(key)
-
+    # ==========================================================================
+    # Endgame dialog
+    # ==========================================================================
     @output()
     @render.ui()
+    @event(game_has_ended)
     def endgame():
-        if not finished():
+        if not game_has_ended():
             return tags.script(
                 """
                 document.querySelector('.guesses').classList.remove('finished');
@@ -321,7 +326,7 @@ def server(input: Inputs, output: Outputs, session: Session):
     @output()
     @render.ui()
     def new_game_ui():
-        if finished():
+        if game_has_ended():
             return ui.input_action_button("new_game", "New Game")
 
     @reactive.Effect()
@@ -343,16 +348,16 @@ def check_word(guess_str: str, target_str: str) -> GuessInfo:
 
     result: list[LetterMatch] = ["not-in-word"] * len(guess)
 
-    # First pass: find matches in correct position. Letters in the target that
-    # do not match the guess are added to the remaining list.
+    # First pass: find matches in correct position. Letters in the target that do not
+    # match the guess are added to the remaining list.
     for i in range(len(guess)):
         if guess[i] == target[i]:
             result[i] = "correct"
         else:
             remaining.append(target[i])
 
-    # Second pass: find matches in remaining letters, using them up as we find
-    # matches in the guess.
+    # Second pass: find matches in remaining letters, using them up as we find matches
+    # in the guess.
     for i in range(len(guess)):
         if guess[i] != target[i] and guess[i] in remaining:
             result[i] = "in-word"
