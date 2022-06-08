@@ -13,7 +13,8 @@
       "insert_ui",
       "input_update",
       "modules",
-      "extra_packages"
+      "extra_packages",
+      "www_dir"
     ]
   },
   {
