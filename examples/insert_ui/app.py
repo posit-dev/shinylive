@@ -44,7 +44,7 @@ def server(input: Inputs, output: Outputs, session: Session):
     @render.ui()
     def _():
         return ui.input_slider(
-            "This slider is rendered via @render.ui()", "N", 0, 100, 20
+            "This slider is rendered via @render.ui()", "N", min=0, max=100, value=20
         )
 
     @reactive.Effect()

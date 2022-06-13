@@ -5,7 +5,7 @@
 from shiny import *
 
 app_ui = ui.page_fluid(
-    ui.input_slider("n", "N", 0, 20, 10),
+    ui.input_slider("n", "N", min=0, max=20, value=10),
     ui.input_action_button("btn", "Click me"),
     ui.tags.br(),
     "The value of the slider when the button was last clicked:",

@@ -36,7 +36,7 @@ To display the code editor with live running Shiny app, use a code block with `{
 from shiny import *
 
 app_ui = ui.page_fluid(
-    ui.input_slider("n", "N", 0, 100, 40),
+    ui.input_slider("n", "N", min=0, max=100, value=40),
     ui.output_text_verbatim("txt"),
 )
 
@@ -71,7 +71,7 @@ You can use a vertical layout with `#| layout: vertical`. The height can be set 
 from shiny import *
 
 app_ui = ui.page_fluid(
-    ui.input_slider("n", "N", 0, 100, 40),
+    ui.input_slider("n", "N", min=0, max=100, value=40),
     ui.output_text_verbatim("txt"),
 )
 
@@ -161,7 +161,7 @@ Shiny app running in an iframe, without an editor panel. Note that the height is
 from shiny import *
 
 app_ui = ui.page_fluid(
-    ui.input_slider("n", "N", 0, 100, 40),
+    ui.input_slider("n", "N", min=0, max=100, value=40),
     ui.output_text_verbatim("txt"),
 )
 

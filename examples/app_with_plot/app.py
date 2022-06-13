@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 app_ui = ui.page_fluid(
     ui.layout_sidebar(
         ui.panel_sidebar(
-            ui.input_slider("n", "N", 0, 100, 20),
+            ui.input_slider("n", "N", min=0, max=100, value=20),
         ),
         ui.panel_main(
             ui.output_text_verbatim("txt"),

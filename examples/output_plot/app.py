@@ -5,7 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 app_ui = ui.page_fluid(
-    ui.input_slider("n", "Number of bins", 0, 100, 20),
+    ui.input_slider("n", "Number of bins", min=0, max=100, value=20),
     ui.output_plot("plot"),
 )
 

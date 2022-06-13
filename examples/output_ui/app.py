@@ -38,7 +38,7 @@ def server(input: Inputs, output: Outputs, session: Session):
 
         elif input.type() == "slider":
             return ui.TagList(
-                ui.input_slider("x", "Select a number", 1, 100, 50),
+                ui.input_slider("x", "Select a number", min=1, max=100, value=50),
                 ui.output_text_verbatim("txt"),
             )
 

@@ -30,7 +30,7 @@ app_ui = ui.page_fluid(
             # doesn't work.
             ui.div(
                 {"style": "display: none"},
-                ui.input_slider("XX", "XX", 1, 2, 1, step=1),
+                ui.input_slider("XX", "XX", min=1, max=2, value=1, step=1),
             ),
         ),
         ui.panel_main(
@@ -47,8 +47,10 @@ def server(input: Inputs, output: Outputs, session: Session):
         illusion = input.illusion()
         if illusion in ["Delboeuf", "Ebbinghaus"]:
             return ui.TagList(
-                ui.input_slider("strength", "Illusion Strength", 0, 5, 3, step=0.5),
-                ui.input_slider("diff", "Difference", -1, 1, 0, step=0.2),
+                ui.input_slider(
+                    "strength", "Illusion Strength", min=0, max=5, value=3, step=0.5
+                ),
+                ui.input_slider("diff", "Difference", min=-1, max=1, value=0, step=0.2),
             )
         elif illusion in [
             "MullerLyer",
@@ -61,7 +63,7 @@ def server(input: Inputs, output: Outputs, session: Session):
         ]:
             return ui.TagList(
                 ui.input_slider("strength", "Illusion Strength", -60, 60, 0, step=5),
-                ui.input_slider("diff", "Difference", -1, 1, 0, step=0.2),
+                ui.input_slider("diff", "Difference", min=-1, max=1, value=0, step=0.2),
             )
         elif illusion in ["Autostereogram"]:
             return ui.TagList(ui.input_text("stimulus", "Stimulus", value="Hello"))
