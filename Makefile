@@ -214,7 +214,9 @@ update_pyodide_packages_json: $(PYBIN)
 
 ## Build Shiny API docs
 api-docs: $(PYBIN)
-	. $(PYBIN)/activate && cd packages/py-shiny/docs && make html
+	mkdir -p $(BUILD_DIR)/shinylive
+	export SHINYLIVE_SRC=$(realpath $(BUILD_DIR)/shinylive) && \
+		. $(PYBIN)/activate && cd packages/py-shiny/docs && make html
 
 ## Build Quarto example site in quarto/
 quarto:
