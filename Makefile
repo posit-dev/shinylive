@@ -90,6 +90,7 @@ all: node_modules \
 	$(BUILD_DIR)/shinylive/pyodide/$(HTMLTOOLS_WHEEL) \
 	$(BUILD_DIR)/shinylive/pyodide/$(SHINY_WHEEL) \
 	$(BUILD_DIR)/shinylive/pyodide/$(IPYSHINY_WHEEL) \
+	update_packages_lock_local \
 	retrieve_packages \
 	update_pyodide_packages_json \
 	$(BUILD_DIR)/shinylive/shiny_static/index.html \
@@ -198,6 +199,11 @@ $(PACKAGE_DIR)/$(IPYSHINY_WHEEL): $(PYBIN) $(PACKAGE_DIR)/ipyshiny
 update_packages_lock: $(PYBIN) $(BUILD_DIR)/shinylive/pyodide
 	$(PYBIN)/pip install -r requirements-dev.txt
 	. $(PYBIN)/activate && scripts/pyodide_packages.py generate_lockfile
+
+## Update the shinylive_lock.json file, but with local packages only
+update_packages_lock_local: $(PYBIN) $(BUILD_DIR)/shinylive/pyodide
+	$(PYBIN)/pip install -r requirements-dev.txt
+	. $(PYBIN)/activate && scripts/pyodide_packages.py update_lockfile_local
 
 ## Download packages in shinylive_lock.json from PyPI
 retrieve_packages: $(PYBIN) $(BUILD_DIR)/shinylive/pyodide \

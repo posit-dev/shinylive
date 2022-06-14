@@ -61,7 +61,12 @@ for which there is a pure Python wheel.
 
 Usage:
   pyodide_packages.py generate_lockfile
-    Create/update shinylive_lock.json file, based on shinylive_requirements.json.
+    Create/replace shinylive_lock.json file, based on shinylive_requirements.json.
+
+  pyodide_packages.py update_lockfile_local
+    Update shinylive_lock.json file, based on shinylive_requirements.json, but only
+    with local packages (not those from PyPI). This should be run whenever the local
+    package versions change.
 
   pyodide_packages.py retrieve_packages
     Gets packages listed in lockfile, from local sources and from PyPI. Saves packages
@@ -200,6 +205,39 @@ class PyodidePackagesFile(TypedDict):
 # =============================================================================
 # Functions for generating the lockfile from the requirements file.
 # =============================================================================
+def update_lockfile_local() -> None:
+    """
+    Update the lockfile with local packages only (none from PyPI). This is
+    useful when the local package versions change. It will not recurse into
+    dependencies.
+    """
+    print(
+        f"Loading requirements package list from {os.path.relpath(requirements_file)}:"
+    )
+    with open(requirements_file) as f:
+        required_packages: list[RequirementsPackage] = json.load(f)
+
+    required_packages = [x for x in required_packages if x["source"] == "local"]
+
+    print("  " + " ".join([x["name"] for x in required_packages]))
+
+    required_package_info = _find_package_info_lockfile(required_packages)
+
+    print(f"Updating {package_lock_file}")
+    with open(package_lock_file) as f:
+        lockfile_info: dict[str, LockfilePackageInfo] = json.load(f)
+
+    lockfile_info.update(required_package_info)
+
+    with open(package_lock_file, "w") as f:
+        json.dump(
+            _mark_no_indent(lockfile_info, _is_lockfile_dependency),
+            f,
+            indent=2,
+            cls=NoIndentEncoder,
+        )
+
+
 def generate_lockfile() -> None:
     print(
         f"Loading requirements package list from {os.path.relpath(requirements_file)}:"
@@ -662,6 +700,9 @@ if __name__ == "__main__":
 
     if sys.argv[1] == "generate_lockfile":
         generate_lockfile()
+
+    if sys.argv[1] == "update_lockfile_local":
+        update_lockfile_local()
 
     elif sys.argv[1] == "retrieve_packages":
         retrieve_packages()
