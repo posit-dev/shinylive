@@ -1,25 +1,28 @@
-# This app uses a phone or tablet's camera to take a picture and process it.
-# It cannot use a computer's webcam.
+# This app uses a phone or tablet's camera to take a picture and process it. It cannot
+# use a desktop computer's webcam. If opened on a desktop computer, it will open up an
+# ordinary file chooser dialog.
+#
+# This particular application uses some memory-intensive libraries, like skimage, and so
+# it may not work properly on all phones. However, the camera input part should still
+# work on most phones.
 
-from typing import Optional
 from shiny import *
-from shiny.types import FileInfo, SilentException
+from shiny.types import FileInfo, SilentException, ImgData
+
 import skimage
 import numpy as np
 from PIL import Image, ImageOps
 
-# Customize input_file to open the camera
-def input_camera(id: str, label: Optional[str]):
-    x = ui.input_file(id, label)
-    x.children[1].children[0].children[0].children[0] = "Open camera"
-    x.children[1].children[0].children[0].children[1].attrs.update(
-        {"capture": "user", "accept": "image/*"}
-    )
-    return x
-
-
 app_ui = ui.page_fluid(
-    input_camera("file", None),
+    ui.input_file(
+        "file",
+        None,
+        button_label="Open camera",
+        # This tells it to accept still photos only (not videos).
+        accept="image/*",
+        # This tells it to use the phone's rear camera. Use "user" for the front camera.
+        capture="environment",
+    ),
     ui.output_image("image"),
 )
 
@@ -27,7 +30,7 @@ app_ui = ui.page_fluid(
 def server(input: Inputs, output: Outputs, session: Session):
     @output()
     @render.image()
-    async def image():
+    async def image() -> ImgData:
         file_infos: list[FileInfo] = input.file()
         if not file_infos:
             raise SilentException()
