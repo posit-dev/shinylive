@@ -15,8 +15,8 @@
   },
   "shiny": {
     "name": "shiny",
-    "version": "0.2.0.9005",
-    "filename": "shiny-0.2.0.9005-py3-none-any.whl",
+    "version": "0.2.0.9006",
+    "filename": "shiny-0.2.0.9006-py3-none-any.whl",
     "sha256": null,
     "url": null,
     "depends": [
@@ -43,7 +43,7 @@
     "depends": [
       {"name": "ipywidgets", "specs": [[">=", "7.6.5"]]},
       {"name": "jupyter-core", "specs": []},
-      {"name": "shiny", "specs": [[">=", "0.2.0.9004"]]},
+      {"name": "shiny", "specs": [[">=", "0.2.0.9006"]]},
       {"name": "python-dateutil", "specs": [[">=", "2.8.2"]]}
     ],
     "imports": [
