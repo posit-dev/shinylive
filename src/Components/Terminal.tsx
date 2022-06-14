@@ -76,6 +76,10 @@ export function Terminal({
     const term = $(containerRef.current).terminal(interpreter, {
       greetings: "Starting Python...",
       prompt: "",
+      // @ts-expect-error: This disables jquery.terminal's customized scroll
+      // handling, which is way too fast.
+      // See https://github.com/jcubic/jquery.terminal/issues/795
+      mousewheel: () => true,
       scrollOnEcho: true,
       completionEscape: false,
       completion: function (command: string, callback: (x: string[]) => void) {
