@@ -1,14 +1,17 @@
 from math import ceil
 from shiny import *
+import mimetypes
 
 app_ui = ui.page_fluid(
     ui.input_file("file1", "Choose a file to upload:", multiple=True),
-    ui.input_radio_buttons("type", "Type:", ["Text", "Binary"]),
+    ui.input_radio_buttons("type", "Type:", ["Binary", "Text"]),
     ui.output_text_verbatim("file_content"),
 )
 
 
 def server(input: Inputs, output: Outputs, session: Session):
+    MAX_SIZE = 50000
+
     @output
     @render.text
     def file_content():
@@ -27,13 +30,24 @@ def server(input: Inputs, output: Outputs, session: Session):
         # ]
         out_str = ""
         for file_info in file_infos:
-            out_str += "====== " + file_info["name"] + " (showing max 32kB) ======\n"
+            out_str += (
+                "=" * 47
+                + "\n"
+                + file_info["name"]
+                + "\nMIME type: "
+                + str(mimetypes.guess_type(file_info["name"])[0])
+            )
+            if file_info["size"] > MAX_SIZE:
+                out_str += f"\nTruncating at {MAX_SIZE} bytes."
+
+            out_str += "\n" + "=" * 47 + "\n"
+
             if input.type() == "Text":
                 with open(file_info["datapath"], "r") as f:
-                    out_str += f.read(32768)  # Read in at most 32kB
+                    out_str += f.read(MAX_SIZE)
             else:
                 with open(file_info["datapath"], "rb") as f:
-                    data = f.read(32768)
+                    data = f.read(MAX_SIZE)
                     out_str += format_hexdump(data)
 
         return out_str
