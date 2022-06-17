@@ -36,14 +36,14 @@
   },
   "ipyshiny": {
     "name": "ipyshiny",
-    "version": "0.1.0.9000",
-    "filename": "ipyshiny-0.1.0.9000-py3-none-any.whl",
+    "version": "0.1.0.9001",
+    "filename": "ipyshiny-0.1.0.9001-py3-none-any.whl",
     "sha256": null,
     "url": null,
     "depends": [
       {"name": "ipywidgets", "specs": [[">=", "7.6.5"]]},
       {"name": "jupyter-core", "specs": []},
-      {"name": "shiny", "specs": [[">=", "0.2.0.9006"]]},
+      {"name": "shiny", "specs": [[">=", "0.2.0.9007"]]},
       {"name": "python-dateutil", "specs": [[">=", "2.8.2"]]}
     ],
     "imports": [

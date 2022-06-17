@@ -701,7 +701,7 @@ if __name__ == "__main__":
     if sys.argv[1] == "generate_lockfile":
         generate_lockfile()
 
-    if sys.argv[1] == "update_lockfile_local":
+    elif sys.argv[1] == "update_lockfile_local":
         update_lockfile_local()
 
     elif sys.argv[1] == "retrieve_packages":

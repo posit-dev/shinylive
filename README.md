@@ -75,7 +75,10 @@ buildjs                Build JS resources from src/ dir
 watch                  Build JS resources and watch for changes
 serve                  Build JS resources, watch for changes, and serve site
 packages               Build htmltools and shiny wheels
-download_pypi_packages Download dependency packages from PyPI
+update_packages_lock   Update the shinylive_lock.json file, based on shinylive_requirements.json
+update_packages_lock_local Update the shinylive_lock.json file, but with local packages only
+retrieve_packages      Download packages in shinylive_lock.json from PyPI
+update_pyodide_packages_json Update pyodide/packages.json to include packages in shinylive_lock.json
 api-docs               Build Shiny API docs
 quarto                 Build Quarto example site in quarto/
 quartoserve            Build Quarto example site and serve
@@ -95,12 +98,22 @@ git pull
 make submodules-pull
 ```
 
+## Adding new packages
+
+If you add a package to `shinylive_requirements.json`, the lockfile must also be regenerated:
+
+```
+make update_packages_lock
+```
+
 
 ## File overview
 
 This an overview of some of the important files and directories in this project.
 
 ```
+├── shinylive_requirements.json # List of packages to add on top of standard Pyodide installation.
+├── shinylive_lock.json    # Lockfile generated from shinylive_requirements.json.
 ├── build                  # Generated JS/CSS/wasm components for shinylive (not committed to repo)
 ├── examples               # Shiny app examples used in Examples browser
 ├── packages               # Git submodules for htmltools, shiny, and ipyshiny.
