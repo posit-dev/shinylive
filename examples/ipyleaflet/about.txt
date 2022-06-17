@@ -1,1 +1,2 @@
-Map with ipyleaflet
+Map
+Interactive map with ipyleaflet
