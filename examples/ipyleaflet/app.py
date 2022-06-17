@@ -40,17 +40,24 @@ def server(input: Inputs, output: Outputs, session: Session):
             return
 
         lat = dms2str(dec2dms(center[0]))
-        lon = dms2str(dec2dms(center[1]))
+        lon = (center[1] + 180) % 360 - 180
+        lon = dms2str(dec2dms(lon))
 
         return ui.p(f"Latitude: {lat}", ui.br(), f"Longitude: {lon}")
 
 
-def dec2dms(x: float):
-    is_positive = x >= 0
-    x = abs(x)
-    minutes, seconds = divmod(x * 3600, 60)
+def dec2dms(dd: float):
+    negative = dd < 0
+    dd = abs(dd)
+    minutes, seconds = divmod(dd * 3600, 60)
     degrees, minutes = divmod(minutes, 60)
-    degrees = degrees if is_positive else -degrees
+    if negative:
+        if degrees > 0:
+            degrees = -degrees
+        elif minutes > 0:
+            minutes = -minutes
+        else:
+            seconds = -seconds
     return (degrees, minutes, seconds)
 
 
