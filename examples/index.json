@@ -43,7 +43,12 @@
   },
   {
     "category": "Reactivity",
-    "apps": ["reactive_effect", "reactive_calc", "reactive_event"]
+    "apps": [
+      "reactive_event",
+      "reactive_effect",
+      "reactive_calc",
+      "reactive_value"
+    ]
   },
   {
     "category": "Advanced",
