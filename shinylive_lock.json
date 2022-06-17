@@ -72,15 +72,31 @@
   },
   "plotly": {
     "name": "plotly",
-    "version": "5.8.0",
-    "filename": "plotly-5.8.0-py2.py3-none-any.whl",
-    "sha256": "0e6e2382aafe2b2978d2c1b10ea93e73ad1ec80fa9a195ff6eea62af7905dfdc",
-    "url": "https://files.pythonhosted.org/packages/79/92/f8282ed209c2e7d4077c5f236bc241d42fb9a2b2986330188909a60be7bb/plotly-5.8.0-py2.py3-none-any.whl",
+    "version": "5.8.2",
+    "filename": "plotly-5.8.2-py2.py3-none-any.whl",
+    "sha256": "bd5376ac8cc06e195e3d397da089f3189243b61b27b6c837c1930edbf75fb8f3",
+    "url": "https://files.pythonhosted.org/packages/d6/9c/1eb76aec4a307e2a13ade069065e524d1106ce03168ea2952322365830db/plotly-5.8.2-py2.py3-none-any.whl",
     "depends": [
       {"name": "tenacity", "specs": [[">=", "6.2.0"]]}
     ],
     "imports": [
       "plotly"
+    ]
+  },
+  "seaborn": {
+    "name": "seaborn",
+    "version": "0.11.2",
+    "filename": "seaborn-0.11.2-py3-none-any.whl",
+    "sha256": "85a6baa9b55f81a0623abddc4a26b334653ff4c6b18c418361de19dbba0ef283",
+    "url": "https://files.pythonhosted.org/packages/10/5b/0479d7d845b5ba410ca702ffcd7f2cd95a14a4dfff1fde2637802b258b9b/seaborn-0.11.2-py3-none-any.whl",
+    "depends": [
+      {"name": "numpy", "specs": [[">=", "1.15"]]},
+      {"name": "scipy", "specs": [[">=", "1.0"]]},
+      {"name": "pandas", "specs": [[">=", "0.23"]]},
+      {"name": "matplotlib", "specs": [[">=", "2.2"]]}
+    ],
+    "imports": [
+      "seaborn"
     ]
   },
   "pyllusion": {
@@ -132,10 +148,10 @@
   },
   "starlette": {
     "name": "starlette",
-    "version": "0.20.2",
-    "filename": "starlette-0.20.2-py3-none-any.whl",
-    "sha256": "99d264fbcc07e4d24e9486f55fe99982b8e3869a94f4e6e2879c79f4a9cc8bcd",
-    "url": "https://files.pythonhosted.org/packages/62/3a/9a087fa757c71ba7e54d23d73933231b4d01ccd8e572ad993973c839534d/starlette-0.20.2-py3-none-any.whl",
+    "version": "0.20.3",
+    "filename": "starlette-0.20.3-py3-none-any.whl",
+    "sha256": "4d39be143dffde65782865ce40f86e5a8986400c5be0217b3cda3e732bfd7233",
+    "url": "https://files.pythonhosted.org/packages/d5/b1/1fc2c004e40abf9f23b6169c762065d10051fba51465104c2841e7938f41/starlette-0.20.3-py3-none-any.whl",
     "depends": [
       {"name": "anyio", "specs": [["<", "5"], [">=", "3.4.0"]]}
     ],
@@ -344,10 +360,10 @@
   },
   "traitlets": {
     "name": "traitlets",
-    "version": "5.2.2.post1",
-    "filename": "traitlets-5.2.2.post1-py3-none-any.whl",
-    "sha256": "1530d04badddc6a73d50b7ee34667d4b96914da352109117b4280cb56523a51b",
-    "url": "https://files.pythonhosted.org/packages/c1/b2/8ee381f21863d496c449ef79dd05962d6970b935ad78f8183381f07808a8/traitlets-5.2.2.post1-py3-none-any.whl",
+    "version": "5.3.0",
+    "filename": "traitlets-5.3.0-py3-none-any.whl",
+    "sha256": "65fa18961659635933100db8ca120ef6220555286949774b9cfc106f941d1c7a",
+    "url": "https://files.pythonhosted.org/packages/83/a9/1059771062cb80901c34a4dea020e76269412e69300b4ba12e3356865ad8/traitlets-5.3.0-py3-none-any.whl",
     "depends": [],
     "imports": [
       "traitlets"
