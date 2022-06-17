@@ -18,16 +18,16 @@ app_ui = ui.page_fluid(
 
 
 def server(input: Inputs, output: Outputs, session: Session):
-    @reactive.Calc()
+    @reactive.Calc
     def r():
         return input.n() * 2
 
-    @output()
-    @render.text()
+    @output
+    @render.text
     def txt():
         return f"n*2 is {r()}, session id is {session.id}"
 
-    @output()
+    @output
     @render.plot(alt="A histogram")
     def plot():
         np.random.seed(19680801)

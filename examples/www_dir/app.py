@@ -20,8 +20,8 @@ def square(x: ui.TagChildArg, n: int) -> ui.Tag:
 
 
 def server(input: Inputs, output: Outputs, session: Session):
-    @output()
-    @render.ui()
+    @output
+    @render.ui
     def images() -> ui.Tag:
         img = ui.img(src="logo.png", style="width: 40px;")
         return square(img, input.n())

@@ -17,19 +17,19 @@ def server(input: Inputs, output: Outputs, session: Session):
     # The value is cached, so if another function calls x_times_2(), it will simply
     # return the cached value, without re-running the function.  When input.x() changes
     # again, it will invalidate this reactive.Calc, and the cache will be cleared.
-    @reactive.Calc()
+    @reactive.Calc
     def x_times_2():
         val = input.x() * 2
         print(f"Running x_times_2(). Result is {val}.")
         return val
 
-    @output()
-    @render.text()
+    @output
+    @render.text
     def txt1():
         return f'x times 2 is: "{x_times_2()}"'
 
-    @output()
-    @render.text()
+    @output
+    @render.text
     def txt2():
         return f'x times 2 is: "{x_times_2()}"'
 

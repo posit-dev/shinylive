@@ -19,13 +19,13 @@ def server(input: Inputs, output: Outputs, session: Session):
         readout=False,
     )
 
-    @output()
-    @render_widget()
+    @output
+    @render_widget
     def slider():
         return s
 
-    @output()
-    @render.text()
+    @output
+    @render.text
     def value():
         return f"The value of the slider is: {reactive_read(s, 'value')}"
 

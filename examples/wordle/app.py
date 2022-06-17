@@ -116,8 +116,8 @@ def server(input: Inputs, output: Outputs, session: Session):
     # ==========================================================================
     # UI displaying guesses
     # ==========================================================================
-    @output()
-    @render.ui()
+    @output
+    @render.ui
     def previous_guesses() -> TagList:
         res = TagList()
         for guess in all_guesses():
@@ -138,8 +138,8 @@ def server(input: Inputs, output: Outputs, session: Session):
 
         return res
 
-    @output()
-    @render.ui()
+    @output
+    @render.ui
     @event(current_guess_letters, game_has_ended)
     def current_guess():
         if game_has_ended():
@@ -161,7 +161,7 @@ def server(input: Inputs, output: Outputs, session: Session):
 
         return res
 
-    @reactive.Calc()
+    @reactive.Calc
     def used_letters() -> dict[str, LetterMatch]:
         # This is a dictionary. The structure will be something like:
         # {"p": "not-in-word", "a": "in-word", "e": "correct")
@@ -198,8 +198,8 @@ def server(input: Inputs, output: Outputs, session: Session):
         ["Enter", "Z", "X", "C", "V", "B", "N", "M", "Back"],
     ]
 
-    @output()
-    @render.ui()
+    @output
+    @render.ui
     def keyboard():
         prev_match_type = used_letters()
         keyboard_div = div(class_="keyboard")
@@ -220,7 +220,7 @@ def server(input: Inputs, output: Outputs, session: Session):
 
         return keyboard_div
 
-    @reactive.Effect()
+    @reactive.Effect
     @event(input.Back)  # Take a dependency on the Back button
     def _():
         if game_has_ended():
@@ -230,7 +230,7 @@ def server(input: Inputs, output: Outputs, session: Session):
             current_letters.pop()
             current_guess_letters.set(current_letters)
 
-    @reactive.Effect()
+    @reactive.Effect
     @event(input.Enter)  # Take a dependency on the Enter button
     def _():
         if game_has_ended():
@@ -266,7 +266,7 @@ def server(input: Inputs, output: Outputs, session: Session):
     # Create observers to listen to each possible keypress
     # ==========================================================================
     def make_key_listener(key: str):
-        @reactive.Effect()
+        @reactive.Effect
         @event(input[key])
         def _():
             if game_has_ended():
@@ -288,8 +288,8 @@ def server(input: Inputs, output: Outputs, session: Session):
     # ==========================================================================
     # Endgame dialog
     # ==========================================================================
-    @output()
-    @render.ui()
+    @output
+    @render.ui
     @event(game_has_ended)
     def endgame():
         if not game_has_ended():
@@ -323,13 +323,13 @@ def server(input: Inputs, output: Outputs, session: Session):
     # ==========================================================================
     # New game button
     # ==========================================================================
-    @output()
-    @render.ui()
+    @output
+    @render.ui
     def new_game_ui():
         if game_has_ended():
             return ui.input_action_button("new_game", "New Game")
 
-    @reactive.Effect()
+    @reactive.Effect
     @event(input.new_game)
     def _():
         reset_game()

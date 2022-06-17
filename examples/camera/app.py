@@ -28,8 +28,8 @@ app_ui = ui.page_fluid(
 
 
 def server(input: Inputs, output: Outputs, session: Session):
-    @output()
-    @render.image()
+    @output
+    @render.image
     async def image() -> ImgData:
         file_infos: list[FileInfo] = input.file()
         if not file_infos:

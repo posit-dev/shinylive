@@ -9,8 +9,8 @@ app_ui = ui.page_fluid(
 
 
 def server(input: Inputs, output: Outputs, session: Session):
-    @output()
-    @render.text()
+    @output
+    @render.text
     def txt():
         return f'x: "{input.x()}"'
 

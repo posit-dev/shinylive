@@ -41,8 +41,8 @@ app_ui = ui.page_fluid(
 
 
 def server(input: Inputs, output: Outputs, session: Session):
-    @output()
-    @render.ui()
+    @output
+    @render.ui
     def controls():
         illusion = input.illusion()
         if illusion in ["Delboeuf", "Ebbinghaus"]:
@@ -70,7 +70,7 @@ def server(input: Inputs, output: Outputs, session: Session):
 
         # if (input.illusion() == "Delboeuf"):
 
-    @output()
+    @output
     @render.plot(alt="A histogram")
     def plot():
         if input.strength() is None or input.diff() is None:
