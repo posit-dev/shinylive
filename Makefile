@@ -181,16 +181,22 @@ packages: $(PACKAGE_DIR)/$(HTMLTOOLS_WHEEL) \
 	rm $(PACKAGE_DIR)/*.whl
 
 $(PACKAGE_DIR)/$(HTMLTOOLS_WHEEL): $(PYBIN) $(PACKAGE_DIR)/py-htmltools
+	# Remove any old copies of the package
+	rm -f $(PACKAGE_DIR)/htmltools*.whl
 	$(PYBIN)/pip install -r $(PACKAGE_DIR)/py-htmltools/requirements-dev.txt
 	$(PYBIN)/pip install -e $(PACKAGE_DIR)/py-htmltools
 	. $(PYBIN)/activate && cd $(PACKAGE_DIR)/py-htmltools && make dist && mv dist/*.whl ../
 
 $(PACKAGE_DIR)/$(SHINY_WHEEL): $(PYBIN) $(PACKAGE_DIR)/py-shiny
+	# Remove any old copies of the package
+	rm -f $(PACKAGE_DIR)/shiny*.whl
 	$(PYBIN)/pip install -r $(PACKAGE_DIR)/py-shiny/requirements-dev.txt
 	$(PYBIN)/pip install -e $(PACKAGE_DIR)/py-shiny
 	. $(PYBIN)/activate && cd $(PACKAGE_DIR)/py-shiny && make dist && mv dist/*.whl ../
 
 $(PACKAGE_DIR)/$(IPYSHINY_WHEEL): $(PYBIN) $(PACKAGE_DIR)/ipyshiny
+	# Remove any old copies of the package
+	rm -f $(PACKAGE_DIR)/ipyshiny*.whl
 	$(PYBIN)/pip install -r $(PACKAGE_DIR)/ipyshiny/requirements-dev.txt
 	$(PYBIN)/pip install -e $(PACKAGE_DIR)/ipyshiny
 	. $(PYBIN)/activate && cd $(PACKAGE_DIR)/ipyshiny && make dist && mv dist/*.whl ../
