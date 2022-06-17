@@ -5,6 +5,7 @@
   { "name": "plotnine", "source": "pypi", "version": "latest" },
   { "name": "plotly", "source": "pypi", "version": "latest" },
   { "name": "seaborn", "source": "pypi", "version": "latest" },
+  { "name": "ipyleaflet", "source": "pypi", "version": "latest" },
   { "name": "pyllusion", "source": "pypi", "version": "latest" },
   { "name": "siuba", "source": "pypi", "version": "latest" }
 ]

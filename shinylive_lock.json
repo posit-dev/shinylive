@@ -99,6 +99,21 @@
       "seaborn"
     ]
   },
+  "ipyleaflet": {
+    "name": "ipyleaflet",
+    "version": "0.16.0",
+    "filename": "ipyleaflet-0.16.0-py2.py3-none-any.whl",
+    "sha256": "bd5706cf2e550ca63cbb39c35204ec4d345f062ee4728077313a634b5a717894",
+    "url": "https://files.pythonhosted.org/packages/ad/29/29e52b65f1363b195c82c3143eb3b5b1ed4966b967d7c3cf4f2f255bd567/ipyleaflet-0.16.0-py2.py3-none-any.whl",
+    "depends": [
+      {"name": "ipywidgets", "specs": [["<", "8"], [">=", "7.6.0"]]},
+      {"name": "traittypes", "specs": [["<", "3"], [">=", "0.2.1"]]},
+      {"name": "xyzservices", "specs": [[">=", "2021.8.1"]]}
+    ],
+    "imports": [
+      "ipyleaflet"
+    ]
+  },
   "pyllusion": {
     "name": "pyllusion",
     "version": "0.0.12",
@@ -287,6 +302,30 @@
     "depends": [],
     "imports": [
       "tenacity"
+    ]
+  },
+  "traittypes": {
+    "name": "traittypes",
+    "version": "0.2.1",
+    "filename": "traittypes-0.2.1-py2.py3-none-any.whl",
+    "sha256": "1340af133810b6eee1a2eb2e988f862b0d12b6c2d16f282aaf3207b782134c2e",
+    "url": "https://files.pythonhosted.org/packages/9c/d1/8d5bd662703cc1764d986f6908a608777305946fa634d34c470cd4a1e729/traittypes-0.2.1-py2.py3-none-any.whl",
+    "depends": [
+      {"name": "traitlets", "specs": [[">=", "4.2.2"]]}
+    ],
+    "imports": [
+      "traittypes"
+    ]
+  },
+  "xyzservices": {
+    "name": "xyzservices",
+    "version": "2022.4.0",
+    "filename": "xyzservices-2022.4.0-py3-none-any.whl",
+    "sha256": "070d055857cb16fa9e3b53a7b948fc09ba5b2b34a6cf91ee4eed7ffca9321e76",
+    "url": "https://files.pythonhosted.org/packages/16/5d/b29f6f8aab6fae9d1f8c5079399603410c98afa06b39a445345cb8141873/xyzservices-2022.4.0-py3-none-any.whl",
+    "depends": [],
+    "imports": [
+      "xyzservices"
     ]
   },
   "asgiref": {

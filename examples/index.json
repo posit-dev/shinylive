@@ -52,7 +52,7 @@
   },
   {
     "category": "Advanced",
-    "apps": ["wordle", "camera", "pyllusion", "ipywidgets"]
+    "apps": ["wordle", "camera", "pyllusion", "ipywidgets", "ipyleaflet"]
   },
   {
     "category": "Non-Apps",
