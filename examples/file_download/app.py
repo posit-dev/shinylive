@@ -2,7 +2,6 @@ import asyncio
 from pathlib import Path
 import io
 from datetime import date
-from typing import Any
 
 from shiny import *
 from htmltools import *
@@ -10,67 +9,31 @@ from htmltools import *
 import matplotlib.pyplot as plt
 import numpy as np
 
-
-def make_example(id: str, label: str, title: str, desc: str, extra: Any = None):
-    return ui.column(
-        4,
+# A card component wrapper.
+def ui_card(title, *args):
+    return (
         div(
             {"class": "card mb-4"},
             div(title, class_="card-header"),
-            div(
-                {"class": "card-body"},
-                p(desc, class_="card-text text-muted"),
-                extra,
-                ui.download_button(id, label, class_="btn-primary"),
-            ),
+            div({"class": "card-body"}, *args),
         ),
     )
 
 
 app_ui = ui.page_fluid(
-    ui.row(
-        make_example(
-            "download1",
-            label="Download CSV",
-            title="Simple case",
-            desc="Downloads a pre-existing file, using its existing name on disk.",
-        ),
+    ui_card(
+        "Download a pre-existing file, using its existing name on disk.",
+        ui.download_button("download1", "Download CSV"),
     ),
-    ui.row(
-        make_example(
-            "download2",
-            label="Download plot",
-            title="Dynamic data generation",
-            desc="Downloads a PNG that's generated on the fly.",
-            extra=[
-                ui.input_text("title", "Plot title", "Random scatter plot"),
-                ui.input_slider("num_points", "Number of data points", 1, 100, 50),
-            ],
-        ),
+    ui_card(
+        "Download a PNG that is generated dynamically.",
+        ui.input_text("title", "Plot title", "Random scatter plot"),
+        ui.input_slider("num_points", "Number of data points", 1, 100, 50),
+        ui.download_button("download2", "Download PNG"),
     ),
-    ui.row(
-        make_example(
-            "download3",
-            "Download",
-            "Dynamic filename",
-            "Demonstrates that filenames can be generated on the fly (and use Unicode characters!).",
-        ),
-    ),
-    ui.row(
-        make_example(
-            "download4",
-            "Download",
-            "Failed downloads",
-            "Throws an error in the download handler, download should not succeed.",
-        ),
-    ),
-    ui.row(
-        make_example(
-            "download5",
-            "Download",
-            "Undefined download",
-            "This button doesn't have corresponding server code registered to it, download should result in 404 error",
-        ),
+    ui_card(
+        "Download a file with name that is generated dynamically.",
+        ui.download_button("download3", "Download CSV"),
     ),
 )
 
@@ -78,26 +41,19 @@ app_ui = ui.page_fluid(
 def server(input: Inputs, output: Outputs, session: Session):
     @session.download()
     def download1():
-        """
-        This is the simplest case. The implementation simply returns the name of a file.
-        Note that the function name (`download1`) determines which download_button()
-        corresponds to this function.
-        """
-
+        # This is the simplest case. The implementation simply returns the path to a
+        # file on disk.
         path = Path(__file__).parent / "mtcars.csv"
         return str(path)
 
     @session.download(filename="image.png")
     def download2():
-        """
-        Another way to implement a file download is by yielding bytes; either all at
-        once, like in this case, or by yielding multiple times. When using this
-        approach, you should pass a filename argument to @session.download, which
-        determines what the browser will name the downloaded file.
-        """
-
-        x = np.random.uniform(size=session.input["num_points"])
-        y = np.random.uniform(size=session.input["num_points"])
+        # Another way to implement a file download is by yielding bytes; either all at
+        # once, like in this case, or by yielding multiple times. When using this
+        # approach, you should pass a filename argument to @session.download, which
+        # determines what the browser will name the downloaded file.
+        x = np.random.uniform(size=session.input.num_points())
+        y = np.random.uniform(size=session.input.num_points())
         plt.figure()
         plt.scatter(x, y)
         plt.title(input.title())
@@ -106,18 +62,15 @@ def server(input: Inputs, output: Outputs, session: Session):
             yield buf.getvalue()
 
     @session.download(
-        filename=lambda: f"新型-{date.today().isoformat()}-{np.random.randint(100,999)}.csv"
+        filename=lambda: f"data-{date.today().isoformat()}-{np.random.randint(100,999)}.csv"
     )
     async def download3():
+        # This version uses a function to generate the filename. It also yields data
+        # multiple times.
         await asyncio.sleep(0.25)
         yield "one,two,three\n"
         yield "新,1,2\n"
         yield "型,4,5\n"
-
-    @session.download(name="download4", filename="failuretest.txt")
-    async def _():
-        yield "hello"
-        raise Exception("This error was caused intentionally")
 
 
 app = App(app_ui, server)
