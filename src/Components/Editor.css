@@ -108,16 +108,24 @@ the size bigger.  */
   keep things aligned properly. */
   border-color: rgba(0, 0, 0, 0);
   font-weight: bold;
+  padding: 0 2px;
 }
 
 .Editor--header--files > button > .Editor--header--files--closebutton,
-.Editor--header--files > button > .Editor--header--files--addbutton {
+.Editor--header--files > button > .Editor--header--files--addbutton,
+.Editor--header--files > button > .Editor--header--files--uploadbutton {
+  line-height: 1.2rem;
   width: 1.2rem;
   display: inline-block;
 }
 
+.Editor--header--files > button > .Editor--header--files--uploadbutton {
+  font-size: 0.6rem;
+}
+
 .Editor--header--files > button > .Editor--header--files--closebutton:hover,
-.Editor--header--files > button > .Editor--header--files--addbutton:hover {
+.Editor--header--files > button > .Editor--header--files--addbutton:hover,
+.Editor--header--files > button > .Editor--header--files--uploadbutton:hover {
   background-color: #e8e8e8;
   border-radius: 3px;
   cursor: pointer;

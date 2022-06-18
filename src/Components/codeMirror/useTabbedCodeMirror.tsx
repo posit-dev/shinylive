@@ -1,6 +1,4 @@
-import { Extension } from "@codemirror/state";
-import * as React from "react";
-
+import { loadFileContent } from "../../fileio";
 import {
   EditorFile,
   editorFileToFileContent,
@@ -8,6 +6,8 @@ import {
   fileContentToEditorFile,
 } from "../Editor";
 import type { FileContent } from "../filecontent";
+import { Extension } from "@codemirror/state";
+import * as React from "react";
 
 export function useTabbedCodeMirror({
   currentFilesFromApp,
@@ -76,6 +76,21 @@ export function useTabbedCodeMirror({
     setActiveFileIdx(files.length);
   }
 
+  const uploadFile = React.useCallback(async () => {
+    const [fileHandle] = await window.showOpenFilePicker();
+    const fileContent = await loadFileContent(fileHandle);
+
+    const newFile: EditorFile = fileContentToEditorFile(
+      fileContent,
+      inferEditorExtensions
+    );
+
+    setEditingFilename(newFile.name);
+    setNewFileCounter(newFileCounter + 1);
+    setFiles([...files, newFile]);
+    setActiveFileIdx(files.length);
+  }, [files, inferEditorExtensions, newFileCounter]);
+
   function renameFile(oldFileName: string, newFileName: string) {
     const updatedFiles = [...files];
     const fileIndex = updatedFiles.findIndex((f) => f.name === oldFileName);
@@ -124,6 +139,7 @@ export function useTabbedCodeMirror({
     activeFile,
     editingFilename,
     addFile,
+    uploadFile,
     renameFile,
     closeFile,
     selectFile,

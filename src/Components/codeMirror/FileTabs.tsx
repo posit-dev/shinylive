@@ -1,3 +1,4 @@
+import { Icon } from "../Icons";
 import { useTabbedCodeMirror } from "./useTabbedCodeMirror";
 import * as React from "react";
 
@@ -9,6 +10,7 @@ export function FileTabs({
   activeFile,
   editingFilename,
   addFile,
+  uploadFile,
   renameFile,
   closeFile,
   selectFile,
@@ -103,15 +105,23 @@ export function FileTabs({
           );
         })}
 
-        <button
-          className="Editor--header--files--addtab"
-          style={{ paddingLeft: "2px", paddingRight: "2px" }}
-        >
+        <button className="Editor--header--files--addtab" title="Add a file">
           <span
             className="Editor--header--files--addbutton"
             onClick={() => addFile()}
           >
             +
+          </span>
+        </button>
+        <button
+          className="Editor--header--files--addtab"
+          title="Load a file from disk"
+        >
+          <span
+            className="Editor--header--files--uploadbutton"
+            onClick={() => uploadFile()}
+          >
+            <Icon icon="arrow-up-from-bracket"></Icon>
           </span>
         </button>
       </div>

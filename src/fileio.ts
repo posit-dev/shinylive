@@ -1,8 +1,11 @@
 import { FileContent } from "./Components/filecontent";
 import { arrayBufferToString, isBinary, stringToUint8Array } from "./utils";
 
-// Maximum size of all files together in the app.
+// Maximum size files to upload, in bytes.
 const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20 MB
+// Maximum number of files to load from a directory. If we have anywhere near
+// this many, it's probably a mistake.
+const MAX_FILES = 20;
 // Don't load files or directories whose names match these patterns.
 const IGNORE_PATTERNS = [/^\./, /^_/];
 
@@ -16,12 +19,18 @@ function matches_ignore_pattern(s: string): boolean {
 export async function loadDirectoryRecursive(
   dirHandle: FileSystemDirectoryHandle,
   dirPrefix = "",
-  maxBytes = MAX_FILE_SIZE
+  maxBytes = MAX_FILE_SIZE,
+  maxFiles = MAX_FILES
 ): Promise<FileContent[]> {
-  let totalBytes = 0;
   const files: FileContent[] = [];
 
   for await (const fileHandle of dirHandle.values()) {
+    if (files.length > maxFiles) {
+      throw new Error(
+        `Too many files in directory ${dirHandle.name}; maximum is ${maxFiles}.`
+      );
+    }
+
     let filePath = fileHandle.name;
     if (matches_ignore_pattern(filePath)) continue;
 
@@ -30,30 +39,12 @@ export async function loadDirectoryRecursive(
     }
 
     if (fileHandle.kind === "file") {
-      const fileData = await fileHandle.getFile();
-      totalBytes += fileData.size;
-      if (totalBytes > maxBytes) {
-        throw new Error(
-          `Total data in directory exceeds max size of ${maxBytes} bytes.`
-        );
-      }
-
-      const contentBuffer = await fileData.arrayBuffer();
-      let type: "text" | "binary";
-      let contentString: string;
-      if (isBinary(contentBuffer)) {
-        type = "binary";
-        contentString = window.btoa(arrayBufferToString(contentBuffer));
-      } else {
-        type = "text";
-        contentString = new TextDecoder().decode(contentBuffer);
-      }
-
-      files.push({
-        name: filePath,
-        content: contentString,
-        type: type,
-      });
+      const fileContent = await loadFileContent(fileHandle, maxBytes);
+      // loadFile() uses the name of the file on disk, but it doesn't include
+      // the leading path. We already have the path+filename, so we'll just use
+      // that.
+      fileContent.name = filePath;
+      // totalBytes = files.push(fileContent);
     } else if (fileHandle.kind === "directory") {
       const subdirFiles = await loadDirectoryRecursive(fileHandle, filePath);
       files.push(...subdirFiles);
@@ -61,6 +52,33 @@ export async function loadDirectoryRecursive(
   }
 
   return files;
+}
+
+export async function loadFileContent(
+  fileHandle: FileSystemFileHandle,
+  maxBytes: number = MAX_FILE_SIZE
+): Promise<FileContent> {
+  const fileData = await fileHandle.getFile();
+  if (fileData.size > maxBytes) {
+    throw new Error(`File exceeds max size of ${maxBytes} bytes.`);
+  }
+
+  const contentBuffer = await fileData.arrayBuffer();
+  let type: "text" | "binary";
+  let contentString: string;
+  if (isBinary(contentBuffer)) {
+    type = "binary";
+    contentString = window.btoa(arrayBufferToString(contentBuffer));
+  } else {
+    type = "text";
+    contentString = new TextDecoder().decode(contentBuffer);
+  }
+
+  return {
+    name: fileData.name,
+    content: contentString,
+    type: type,
+  };
 }
 
 export async function saveFileContentsToDirectory(
