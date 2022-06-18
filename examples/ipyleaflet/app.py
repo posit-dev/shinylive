@@ -5,7 +5,7 @@ from shiny import App, Inputs, Outputs, Session, reactive, render, ui
 
 app_ui = ui.page_fluid(
     ui.div(
-        ui.input_slider("zoom", "Map zoom level", value=4, min=1, max=18),
+        ui.input_slider("zoom", "Map zoom level", value=12, min=1, max=18),
         ui.output_ui("map_bounds"),
         style=css(
             display="flex", justify_content="center", align_items="center", gap="2rem"
@@ -18,7 +18,7 @@ app_ui = ui.page_fluid(
 def server(input: Inputs, output: Outputs, session: Session):
 
     # Initialize and display when the session starts (1)
-    map = L.Map(center=(52, 360), zoom=4)
+    map = L.Map(center=(51.476852, -0.000500), zoom=12)
     register_widget("map", map)
 
     # When the slider changes, update the map's zoom attribute (2)
