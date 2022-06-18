@@ -1,15 +1,13 @@
-import * as React from "react";
-
 import {
   ExampleCategory,
   ExampleItem,
   ExamplePosition,
-  findExampleByTitle,
   getExampleCategories,
   sanitizeTitleForUrl,
 } from "../examples";
 import "./ExampleSelector.css";
 import { FileContent } from "./filecontent";
+import * as React from "react";
 
 export function ExampleSelector({
   setCurrentFiles,
@@ -36,17 +34,12 @@ export function ExampleSelector({
     })();
   }, []);
 
+  // If we were told to automatically select an example, pick the first one.
   React.useEffect(() => {
-    (async () => {
-      if (!exampleCategories) return;
-      if (!autoSelectExample) return;
+    if (!autoSelectExample) return;
+    if (!exampleCategories) return;
 
-      let position = findExampleByTitle(exampleUrlHash, exampleCategories);
-      if (!position) {
-        position = { categoryIndex: 0, index: 0 };
-      }
-      setCurrentSelection(position);
-    })();
+    setCurrentSelection({ categoryIndex: 0, index: 0 });
   }, [autoSelectExample, exampleUrlHash, exampleCategories]);
 
   const setFilesForApp = React.useCallback(

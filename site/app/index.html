@@ -38,9 +38,10 @@
     <script type="module">
       import { runApp } from "../shinylive/shinylive.js";
       const appRoot = document.getElementById("root");
-      if (appRoot) {
-        runApp(appRoot, "viewer", "auto");
-      }
+      runApp(appRoot, "viewer", "auto", {
+        allowCodeUrl: true,
+        allowExampleUrl: true,
+      });
     </script>
     <link rel="stylesheet" href="../shinylive/style-resets.css" />
     <link rel="stylesheet" href="../shinylive/shinylive.css" />

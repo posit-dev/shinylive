@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Python code editor</title>
+    <title>Python Shiny editor</title>
     <script type="module">
       const localhostNames = ["localhost", "127.0.0.1", "[::1]"];
       if (
@@ -44,7 +44,10 @@
     <script type="module">
       import { runApp } from "../shinylive/shinylive.js";
       const appRoot = document.getElementById("root");
-      runApp(appRoot, "editor-terminal-viewer");
+      runApp(appRoot, "editor-terminal-viewer", "auto", {
+        allowCodeUrl: true,
+        allowExampleUrl: true,
+      });
     </script>
     <link rel="stylesheet" href="../shinylive/style-resets.css" />
     <link rel="stylesheet" href="../shinylive/shinylive.css" />

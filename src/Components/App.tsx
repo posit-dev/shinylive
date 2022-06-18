@@ -1,7 +1,3 @@
-import LZString from "lz-string";
-import * as React from "react";
-import { createRoot } from "react-dom/client";
-
 import { findExampleByTitle, getExampleCategories } from "../examples";
 import {
   initPyodide,
@@ -13,15 +9,18 @@ import { ProxyType } from "../pyodide-proxy";
 import "./App.css";
 import { Editor } from "./Editor";
 import { ExampleSelector } from "./ExampleSelector";
+import { OutputCell } from "./OutputCell";
+import { ResizableGrid } from "./ResizableGrid/ResizableGrid";
+import { Terminal, TerminalInterface, TerminalMethods } from "./Terminal";
+import { Viewer, ViewerMethods } from "./Viewer";
 import {
   completeFileContents,
   FileContent,
   FileContentInput,
 } from "./filecontent";
-import { OutputCell } from "./OutputCell";
-import { ResizableGrid } from "./ResizableGrid/ResizableGrid";
-import { Terminal, TerminalInterface, TerminalMethods } from "./Terminal";
-import { Viewer, ViewerMethods } from "./Viewer";
+import LZString from "lz-string";
+import * as React from "react";
+import { createRoot } from "react-dom/client";
 
 const terminalInterface: TerminalInterface = (() => {
   let _exec = async (x: string) => console.log("preload exec:" + x);
@@ -347,9 +346,13 @@ export function App({
 // The exported function that can be used for embedding into another app
 export function runApp(
   domTarget: HTMLElement,
+  // TODO: Move these into opts?
   appMode: AppMode,
   startFiles: FileContentInput[] | "auto" = "auto",
-  args?: EditorViewerOptions
+  opts: {
+    allowCodeUrl?: boolean;
+    allowExampleUrl?: boolean;
+  } & EditorViewerOptions = {}
 ) {
   (async () => {
     if (startFiles === "auto") {
@@ -357,7 +360,7 @@ export function runApp(
       // it defaults to the first example.
       const hashContent = window.location.hash.replace(/^#/, "");
 
-      if (hashContent.startsWith("code=")) {
+      if (opts.allowCodeUrl && hashContent.startsWith("code=")) {
         try {
           const codeEncoded = hashContent.replace("code=", "");
           // Returns null if decoding fails
@@ -374,7 +377,7 @@ export function runApp(
           console.log("Could not parse JSON from URL hash.");
           startFiles = [];
         }
-      } else {
+      } else if (opts.allowExampleUrl) {
         const exampleCategories = await getExampleCategories();
         const pos = findExampleByTitle(hashContent, exampleCategories);
         if (pos) {
@@ -383,10 +386,12 @@ export function runApp(
         } else {
           startFiles = [];
         }
+      } else {
+        startFiles = [];
       }
     }
 
-    const { layout, viewerHeight, ...unusedArgs } = args ?? {};
+    const { layout, viewerHeight, ...unusedArgs } = opts ?? {};
 
     if (Object.keys(unusedArgs).length > 0) {
       console.warn(
