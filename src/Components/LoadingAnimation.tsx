@@ -1,9 +1,5 @@
-// prettier-plugin-organize-imports will remove the React import, but that
-// raises an eslint error. So we'll disable the rule for this file.
-//   'React' must be in scope when using JSX eslint(react/react-in-jsx-scope)
-// organize-imports-ignore
-import * as React from "react";
 import "./LoadingAnimation.css";
+import * as React from "react";
 
 export function LoadingAnimation() {
   return (
