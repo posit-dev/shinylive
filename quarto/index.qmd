@@ -41,8 +41,8 @@ app_ui = ui.page_fluid(
 )
 
 def server(input, output, session):
-    @output()
-    @render_text()
+    @output
+    @render.text
     def txt():
         return f"The value of n*2 is {input.n() * 2}"
 
@@ -76,8 +76,8 @@ app_ui = ui.page_fluid(
 )
 
 def server(input, output, session):
-    @output()
-    @render_text()
+    @output
+    @render.text
     def txt():
         return f"The value of n*2 is {input.n() * 2}"
 
@@ -126,9 +126,9 @@ app_ui = ui.page_fluid(
 )
 
 def server(input: Inputs, output: Outputs, session: Session):
-    @output()
-    @render_ui()
-    def images() -> ui.Tag:
+    @output
+    @render.ui
+    def images():
         img = ui.img(src="logo.png", style="width: 40px;")
         return square(img, input.n())
 
@@ -166,8 +166,8 @@ app_ui = ui.page_fluid(
 )
 
 def server(input, output, session):
-    @output()
-    @render_text()
+    @output
+    @render.text
     def txt():
         return f"n*5 is {input.n() * 5}"
 
