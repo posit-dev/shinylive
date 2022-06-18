@@ -37,8 +37,9 @@
     </script>
     <script type="module">
       import { runApp } from "../shinylive/shinylive.js";
+
       const appRoot = document.getElementById("root");
-      runApp(appRoot, "viewer", "auto", {
+      runApp(appRoot, "viewer", {
         allowCodeUrl: true,
         allowExampleUrl: true,
       });

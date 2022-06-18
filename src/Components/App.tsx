@@ -61,15 +61,15 @@ export type AppMode =
   | "editor-cell"
   | "viewer";
 
-type EditorViewerOptions = {
-  /**
-   * What orientation should we layout the app? Currently this only gets applied
-   * to the editor-viewer app mode
-   */
+type AppOptions = {
+  // An optional set of files to start with.
+  startFiles?: FileContentInput[];
+
+  // What orientation should we layout the app? Currently this only gets applied
+  // to the editor-viewer app mode.
   layout?: "horizontal" | "vertical";
-  /**
-   * Height of viewer in pixels
-   */
+
+  // Height of viewer in pixels.
   viewerHeight?: number;
 };
 
@@ -118,11 +118,11 @@ function ensurePyodideProxyHandlePromise({
 export function App({
   appMode = "examples-editor-terminal-viewer",
   startFiles = [],
-  editorViewerOptions = {},
+  appOptions = {},
 }: {
   appMode: AppMode;
-  startFiles: FileContent[];
-  editorViewerOptions?: EditorViewerOptions;
+  startFiles: FileContentInput[];
+  appOptions?: AppOptions;
 }) {
   let autoSelectExample = false;
 
@@ -163,8 +163,9 @@ export function App({
     }
   );
 
-  const [currentFiles, setCurrentFiles] =
-    React.useState<FileContent[]>(startFiles);
+  const [currentFiles, setCurrentFiles] = React.useState<FileContent[]>(
+    completeFileContents(startFiles)
+  );
   const [filesHaveChanged, setFilesHaveChanged] =
     React.useState<boolean>(false);
 
@@ -294,8 +295,8 @@ export function App({
       );
 
     case "editor-viewer": {
-      const layout = editorViewerOptions.layout ?? "horizontal";
-      const viewerHeight = Number(editorViewerOptions.viewerHeight ?? 200);
+      const layout = appOptions.layout ?? "horizontal";
+      const viewerHeight = Number(appOptions.viewerHeight ?? 200);
 
       const gridDef =
         layout === "horizontal"
@@ -343,19 +344,25 @@ export function App({
   }
 }
 
-// The exported function that can be used for embedding into another app
+// The exported function that can be used for embedding into a web page.
 export function runApp(
   domTarget: HTMLElement,
-  // TODO: Move these into opts?
-  appMode: AppMode,
-  startFiles: FileContentInput[] | "auto" = "auto",
-  opts: {
+  mode: AppMode,
+  opts: AppOptions & {
     allowCodeUrl?: boolean;
     allowExampleUrl?: boolean;
-  } & EditorViewerOptions = {}
+  } = {}
 ) {
+  const optsDefaults = {
+    allowCodeUrl: false,
+    allowExampleUrl: false,
+  };
+
+  opts = { ...optsDefaults, ...opts };
+  let startFiles: undefined | FileContentInput[] = opts.startFiles;
+
   (async () => {
-    if (startFiles === "auto") {
+    if (startFiles === undefined) {
       // Use the hash to determine which example to load. If no match is found,
       // it defaults to the first example.
       const hashContent = window.location.hash.replace(/^#/, "");
@@ -372,8 +379,7 @@ export function runApp(
         } catch (e) {
           // Do nothing
         }
-
-        if (startFiles === "auto") {
+        if (startFiles === undefined) {
           console.log("Could not parse JSON from URL hash.");
           startFiles = [];
         }
@@ -391,9 +397,13 @@ export function runApp(
       }
     }
 
-    const { layout, viewerHeight, ...unusedArgs } = opts ?? {};
-
-    if (Object.keys(unusedArgs).length > 0) {
+    const { ...appOpts } = opts;
+    delete appOpts.allowCodeUrl;
+    delete appOpts.allowExampleUrl;
+    const unusedArgs = Object.keys(appOpts).filter(
+      (key) => !propertyOfAppOptions(key)
+    );
+    if (unusedArgs.length > 0) {
       console.warn(
         "The following arguments were detected but not used in running app",
         unusedArgs
@@ -404,11 +414,17 @@ export function runApp(
     root.render(
       <React.StrictMode>
         <App
-          appMode={appMode}
+          appMode={mode}
           startFiles={completeFileContents(startFiles)}
-          editorViewerOptions={{ layout, viewerHeight }}
+          appOptions={appOpts}
         />
       </React.StrictMode>
     );
   })();
 }
+
+// Return true if a string is a valid key for AppOptions objects, false
+// otherwise.
+const propertyOfAppOptions = function <AppOptions>(name: keyof AppOptions) {
+  return name;
+};

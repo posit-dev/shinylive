@@ -64,10 +64,13 @@ blocks.forEach((block) => {
 
   block.parentNode!.replaceChild(container, block);
 
-  const { lines, args } = processQuartoArgs(block.innerText.split("\n"));
+  const { lines, args: quartoArgs } = processQuartoArgs(
+    block.innerText.split("\n")
+  );
 
   const files = parseFileContents(lines, mapping.defaultFilename);
-  runApp(container, mapping.appMode, files, args);
+  const opts = { startFiles: files, ...quartoArgs };
+  runApp(container, mapping.appMode, opts);
 });
 
 // Loop through all the lines of the file and extract the lines that start

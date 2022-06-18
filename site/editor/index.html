@@ -43,8 +43,9 @@
     />
     <script type="module">
       import { runApp } from "../shinylive/shinylive.js";
+
       const appRoot = document.getElementById("root");
-      runApp(appRoot, "editor-terminal-viewer", "auto", {
+      runApp(appRoot, "editor-terminal-viewer", {
         allowCodeUrl: true,
         allowExampleUrl: true,
       });
