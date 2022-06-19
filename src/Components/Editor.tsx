@@ -379,7 +379,7 @@ export function Editor({
       } (${modKeySymbol()})-Shift-Enter`}
       onClick={() => runAllAuto.current()}
     >
-      <Icon icon="arrow-rotate-right"></Icon>
+      <Icon icon="play"></Icon>
     </button>
   );
 
