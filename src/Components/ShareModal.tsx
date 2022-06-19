@@ -1,9 +1,8 @@
+import { useOnEscOrClickOutside } from "../hooks/useOnEscOrClickOutside";
+import "./ShareModal.css";
+import { FileContent } from "./filecontent";
 import LZString from "lz-string";
 import * as React from "react";
-
-import { useOnEscOrClickOutside } from "../hooks/useOnEscOrClickOutside";
-import { FileContent } from "./filecontent";
-import "./ShareModal.css";
 
 // =============================================================================
 // ShareModal component
@@ -53,7 +52,7 @@ export function ShareModal({
   return (
     <div className="ShareModal" ref={showModalRef}>
       <div>
-        <label>Editor URL</label>
+        <label>Editor URL ({editorUrl.length} bytes)</label>
         <div className="ShareModal--row">
           <span className="ShareModal--url">
             <input
@@ -80,7 +79,7 @@ export function ShareModal({
         </div>
       </div>
       <div>
-        <label>Application URL</label>
+        <label>Application URL ({appUrl.length} bytes)</label>
         <div className="ShareModal--row">
           <span className="ShareModal--url">
             <input
