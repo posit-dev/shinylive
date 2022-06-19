@@ -4,6 +4,7 @@
 // https://github.com/microsoft/vscode/issues/141908
 /// <reference types="wicg-file-system-access" />
 import * as fileio from "../fileio";
+import * as utils from "../utils";
 import { inferFiletype, modKeySymbol, stringToUint8Array } from "../utils";
 import "./Editor.css";
 import { Icon } from "./Icons";
@@ -346,6 +347,32 @@ export function Editor({
     </button>
   );
 
+  const openEditorWindow = React.useCallback(async () => {
+    syncFileState();
+    const fileContents = editorFilesToFileContents(files);
+
+    const editorWindow = window.open(
+      window.location.origin +
+        utils.dirname(window.location.pathname) +
+        "/editor/",
+      "_blank"
+    );
+    // @ts-ignore: .fileContents is a custom field we're adding to the window.
+    editorWindow.fileContents = fileContents;
+  }, [files, syncFileState]);
+
+  // Run button either gets placed in the header or floating over the editor but
+  // it's the same button either way
+  const openWindowButton = (
+    <button
+      className="code-run-button"
+      title="Open in new window"
+      onClick={() => openEditorWindow()}
+    >
+      <Icon icon="window-restore"></Icon>
+    </button>
+  );
+
   const shareButton = (
     <button
       className="code-run-button"
@@ -393,6 +420,7 @@ export function Editor({
             {showLoadSaveButtons ? loadButton : null}
             {showLoadSaveButtons ? saveButton : null}
             {showLoadSaveButtons ? downloadButton : null}
+            {showShareButton ? openWindowButton : null}
             {showShareButton ? shareButton : null}
             {runButton}
           </div>

@@ -44,11 +44,18 @@
     <script type="module">
       import { runApp } from "../shinylive/shinylive.js";
 
-      const appRoot = document.getElementById("root");
-      runApp(appRoot, "editor-terminal-viewer", {
+      const runAppOpts = {
         allowCodeUrl: true,
         allowExampleUrl: true,
-      });
+      };
+      // If this page was opened from the examples page, window.fileContents may
+      // have been set. If so, use that as the initial contents of the editor.
+      if (window.fileContents) {
+        runAppOpts.startFiles = window.fileContents;
+      }
+
+      const appRoot = document.getElementById("root");
+      runApp(appRoot, "editor-terminal-viewer", runAppOpts);
     </script>
     <link rel="stylesheet" href="../shinylive/style-resets.css" />
     <link rel="stylesheet" href="../shinylive/shinylive.css" />
