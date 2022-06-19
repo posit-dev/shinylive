@@ -284,7 +284,7 @@ export function Editor({
   const loadButton = (
     <button
       className="code-run-button"
-      title="Load files from disk"
+      title="Load all files in a directory from disk"
       onClick={() => loadLocalFiles()}
     >
       <Icon icon="upload"></Icon>
@@ -311,7 +311,7 @@ export function Editor({
   const saveButton = (
     <button
       className="code-run-button"
-      title="Save files to disk"
+      title="Save all files to disk"
       onClick={() => saveLocalFiles()}
     >
       <Icon icon="download"></Icon>
