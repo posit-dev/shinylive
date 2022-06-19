@@ -4,7 +4,7 @@
 // https://github.com/microsoft/vscode/issues/141908
 /// <reference types="wicg-file-system-access" />
 import * as fileio from "../fileio";
-import { inferFiletype, modKeySymbol } from "../utils";
+import { inferFiletype, modKeySymbol, stringToArrayBuffer } from "../utils";
 import "./Editor.css";
 import { Icon } from "./Icons";
 import { ShareModal } from "./ShareModal";
@@ -21,6 +21,7 @@ import * as cmUtils from "./codeMirror/utils";
 import { FileContent } from "./filecontent";
 import { EditorState, Extension, Prec } from "@codemirror/state";
 import { EditorView, KeyBinding, keymap, ViewUpdate } from "@codemirror/view";
+import JSZip from "jszip";
 import * as React from "react";
 
 export type EditorFile =
@@ -283,7 +284,7 @@ export function Editor({
   const loadButton = (
     <button
       className="code-run-button"
-      title="Load app from disk"
+      title="Load files from disk"
       onClick={() => loadLocalFiles()}
     >
       <Icon icon="upload"></Icon>
@@ -306,13 +307,55 @@ export function Editor({
 
     await fileio.saveFileContentsToDirectory(fileContents, dirHandle);
   }, [files, syncFileState, localDirHandle]);
+
   const saveButton = (
     <button
       className="code-run-button"
-      title="Save app to disk"
+      title="Save files to disk"
       onClick={() => saveLocalFiles()}
     >
       <Icon icon="download"></Icon>
+    </button>
+  );
+
+  const downloadFiles = React.useCallback(async () => {
+    syncFileState();
+    const fileContents = editorFilesToFileContents(files);
+
+    if (fileContents.length == 1) {
+      const file = fileContents[0];
+      fileio.downloadFile(
+        file.name,
+        file.content,
+        file.type === "text" ? "text/plain" : "application/octet-stream"
+      );
+    } else {
+      const zip = new JSZip();
+      for (const file of fileContents) {
+        let content: string | ArrayBuffer;
+        if (file.type === "binary") {
+          // This is inefficient: we base64-encoded it when we called
+          // editorFilesToFileContents() above; now we're converting it back.
+          // But it probably doesn't matter for the small files we'll be working
+          // with.
+          content = stringToArrayBuffer(window.atob(file.content));
+        } else {
+          content = file.content;
+        }
+        zip.file(file.name, content);
+      }
+      const zipBuffer = await zip.generateAsync({ type: "arraybuffer" });
+      await fileio.downloadFile("app.zip", zipBuffer, "application/zip");
+    }
+  }, [files, syncFileState]);
+
+  const downloadButton = (
+    <button
+      className="code-run-button"
+      title="Download file(s)"
+      onClick={() => downloadFiles()}
+    >
+      <Icon icon="file-arrow-down"></Icon>
     </button>
   );
 
@@ -362,6 +405,7 @@ export function Editor({
           <div className="Editor--header--actions">
             {showLoadSaveButtons ? loadButton : null}
             {showLoadSaveButtons ? saveButton : null}
+            {showLoadSaveButtons ? downloadButton : null}
             {showShareButton ? shareButton : null}
             {runButton}
           </div>
@@ -390,7 +434,7 @@ export function fileContentToEditorFile(
   inferEditorExtensions: (f: FileContent) => Extension
 ): EditorFile {
   if (file.type === "binary") {
-    const content = atob(file.content);
+    const content = window.atob(file.content);
     return {
       name: file.name,
       type: file.type,

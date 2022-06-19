@@ -108,6 +108,10 @@ export function arrayBufferToString(buf: ArrayBuffer): string {
   return uint8ArrayToString(new Uint8Array(buf));
 }
 
+export function stringToArrayBuffer(s: string): ArrayBuffer {
+  return stringToUint8Array(s).buffer;
+}
+
 export function uint8ArrayToString(buf: Uint8Array): string {
   let result = "";
   for (let i = 0; i < buf.length; i++) {

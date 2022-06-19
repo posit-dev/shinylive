@@ -111,6 +111,19 @@ export async function saveFileContentsToDirectory(
   }
 }
 
+// Tell the browser to download a file.
+export async function downloadFile(
+  filename: string,
+  content: BlobPart,
+  type = "text/plain"
+): Promise<void> {
+  const element = document.createElement("a");
+  const file = new Blob([content], { type: type });
+  element.href = URL.createObjectURL(file);
+  element.download = filename;
+  element.click();
+}
+
 // If dirname is ["x"], then make sure there exists subdir of dirHandle named
 // "x", creating it if necessary.This can recurse: if dirname is ["x", "y",
 // "z"], then create the subdirs "x", "x/y", and "x/y/z". This returns the

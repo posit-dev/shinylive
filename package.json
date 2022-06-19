@@ -46,6 +46,7 @@
     "istextorbinary": "^6.0.0",
     "jest": "^27.4.5",
     "jquery.terminal": "^2.33.3",
+    "jszip": "^3.10.0",
     "lz-string": "^1.4.4",
     "prettier": "^2.6.2",
     "react": "^18.1.0",
