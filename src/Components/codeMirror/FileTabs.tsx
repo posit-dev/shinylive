@@ -105,25 +105,22 @@ export function FileTabs({
           );
         })}
 
-        <button className="Editor--header--files--addtab" title="Add a file">
-          <span
+        <span className="Editor--header--files--addtab">
+          <button
             className="Editor--header--files--addbutton"
+            title="Add a file"
             onClick={() => addFile()}
           >
             +
-          </span>
-        </button>
-        <button
-          className="Editor--header--files--addtab"
-          title="Load a file from disk"
-        >
-          <span
+          </button>
+          <button
             className="Editor--header--files--uploadbutton"
+            title="Load a file from disk"
             onClick={() => uploadFile()}
           >
             <Icon icon="arrow-up-from-bracket"></Icon>
-          </span>
-        </button>
+          </button>
+        </span>
       </div>
     </>
   );

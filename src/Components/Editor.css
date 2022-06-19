@@ -55,6 +55,12 @@ the size bigger.  */
   padding: 0 2px;
 }
 
+.Editor--header--files button svg {
+  /* When Bootstrap is used, it sets vertical-align:middle for svg, but that
+   * messes up alignment of our svg icons. */
+  vertical-align: unset;
+}
+
 .Editor--header--files--filename {
   padding: 0 4px;
 }
@@ -94,6 +100,12 @@ the size bigger.  */
   color: var(--colors-red);
 }
 
+.Editor--header--files > button > .Editor--header--files--closebutton {
+  width: 1.2rem;
+  display: inline-block;
+  color: var(--button-gray-color);
+}
+
 .Editor--header--files
   > button.selected
   > .Editor--header--files--closebutton
@@ -107,27 +119,33 @@ the size bigger.  */
   /* Make the border invisible, but keep the inherited thickness. This is to
   keep things aligned properly. */
   border-color: rgba(0, 0, 0, 0);
-  font-weight: bold;
-  padding: 0 2px;
-}
-
-.Editor--header--files > button > .Editor--header--files--closebutton,
-.Editor--header--files > button > .Editor--header--files--addbutton,
-.Editor--header--files > button > .Editor--header--files--uploadbutton {
-  line-height: 1.2rem;
-  width: 1.2rem;
   display: inline-block;
+  line-height: 1rem;
+  margin-left: 0.5rem;
+  padding: 0;
 }
 
-.Editor--header--files > button > .Editor--header--files--uploadbutton {
-  font-size: 0.6rem;
+.Editor--header--files .Editor--header--files--addbutton,
+.Editor--header--files .Editor--header--files--uploadbutton {
+  display: inline-block;
+  color: var(--button-gray-color);
+  fill: var(--button-gray-color);
+  background-color: inherit;
+  font-size: 1.2rem;
+  font-weight: bold;
+  padding: 0 0.3rem;
 }
 
-.Editor--header--files > button > .Editor--header--files--closebutton:hover,
-.Editor--header--files > button > .Editor--header--files--addbutton:hover,
-.Editor--header--files > button > .Editor--header--files--uploadbutton:hover {
-  background-color: #e8e8e8;
-  border-radius: 3px;
+.Editor--header--files .Editor--header--files--uploadbutton {
+  font-size: 0.7rem;
+}
+
+.Editor--header--files .Editor--header--files--closebutton:hover,
+.Editor--header--files .Editor--header--files--addbutton:hover,
+.Editor--header--files .Editor--header--files--uploadbutton:hover {
+  color: var(--colors-blue-dark);
+  fill: var(--colors-blue-dark);
+  /* border-radius: 3px; */
   cursor: pointer;
 }
 
