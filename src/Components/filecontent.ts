@@ -1,5 +1,6 @@
 // Shape of file content from user input (i.e. examples.json, data structure
-// passed to App.runApp)
+// passed to App.runApp). If the type is "binary", then content is a
+// base64-encoded string representation of the data.
 export type FileContentInput = {
   name: string;
   content: string;
