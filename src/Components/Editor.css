@@ -104,6 +104,7 @@ the size bigger.  */
   width: 1.2rem;
   display: inline-block;
   color: var(--button-gray-color);
+  font-weight: bold;
 }
 
 .Editor--header--files
