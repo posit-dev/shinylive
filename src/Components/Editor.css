@@ -152,14 +152,14 @@ the size bigger.  */
 
 .Editor--container .cm-gutters {
   color: #aaa;
-  background-color: inherit;
+  background-color: var(--colors-bg);
   border-right: 1px solid #eee;
   /* border-right: none; */
   padding-right: 4px;
 }
 
 .Editor--container .cm-activeLineGutter {
-  background-color: inherit;
+  background-color: var(--colors-bg);
 }
 
 /* Code run button styles */
