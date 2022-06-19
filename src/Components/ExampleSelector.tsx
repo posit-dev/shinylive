@@ -2,6 +2,7 @@ import {
   ExampleCategory,
   ExampleItem,
   ExamplePosition,
+  findExampleByTitle,
   getExampleCategories,
   sanitizeTitleForUrl,
 } from "../examples";
@@ -12,14 +13,12 @@ import * as React from "react";
 export function ExampleSelector({
   setCurrentFiles,
   filesHaveChanged,
-  autoSelectExample = true,
+  startWithSelectedExample,
 }: {
   setCurrentFiles: React.Dispatch<React.SetStateAction<FileContent[]>>;
   filesHaveChanged: boolean;
-  autoSelectExample: boolean;
+  startWithSelectedExample?: string;
 }) {
-  const { exampleUrlHash, setExampleUrlHash } = useExampleUrlHash();
-
   const [currentSelection, setCurrentSelection] =
     React.useState<ExamplePosition | null>(null);
 
@@ -34,13 +33,20 @@ export function ExampleSelector({
     })();
   }, []);
 
-  // If we were told to automatically select an example, pick the first one.
+  // If we were told to start with a specific example, find it and select it.
   React.useEffect(() => {
-    if (!autoSelectExample) return;
+    if (!startWithSelectedExample) return;
     if (!exampleCategories) return;
 
-    setCurrentSelection({ categoryIndex: 0, index: 0 });
-  }, [autoSelectExample, exampleUrlHash, exampleCategories]);
+    let position = findExampleByTitle(
+      startWithSelectedExample,
+      exampleCategories
+    );
+    if (!position) {
+      position = { categoryIndex: 0, index: 0 };
+    }
+    setCurrentSelection(position);
+  }, [startWithSelectedExample, exampleCategories]);
 
   const setFilesForApp = React.useCallback(
     ({ categoryIndex, index }: ExamplePosition) => {
@@ -61,12 +67,7 @@ export function ExampleSelector({
       setCurrentSelection({ categoryIndex, index });
       setExampleUrlHash(example.title);
     },
-    [
-      filesHaveChanged,
-      exampleCategories,
-      setCurrentSelection,
-      setExampleUrlHash,
-    ]
+    [filesHaveChanged, exampleCategories, setCurrentSelection]
   );
 
   // Keep app up-to-date with current selection
@@ -142,18 +143,8 @@ export function ExampleSelector({
   );
 }
 
-// Uses url hash to find and load a given example from a link
-function useExampleUrlHash() {
-  const exampleUrlHash = window.location.hash.replace(/^#/, "");
-
-  const setExampleUrlHash = React.useCallback((title: string) => {
-    window.location.hash = "#" + sanitizeTitleForUrl(title);
-  }, []);
-
-  return {
-    exampleUrlHash,
-    setExampleUrlHash,
-  };
+function setExampleUrlHash(title: string): void {
+  window.location.hash = "#" + sanitizeTitleForUrl(title);
 }
 
 function buildUrlForExample(title: string) {

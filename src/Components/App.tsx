@@ -1,4 +1,8 @@
-import { findExampleByTitle, getExampleCategories } from "../examples";
+import {
+  findExampleByTitle,
+  getExampleCategories,
+  sanitizeTitleForUrl,
+} from "../examples";
 import {
   initPyodide,
   initShiny,
@@ -71,6 +75,10 @@ type AppOptions = {
 
   // Height of viewer in pixels.
   viewerHeight?: number;
+
+  // If the ExampleSelector component is present, which example, if any, should
+  // start selected?
+  selectedExample?: string;
 };
 
 let pyodideProxyHandlePromise: Promise<PyodideProxyHandle> | null = null;
@@ -124,18 +132,27 @@ export function App({
   startFiles: FileContentInput[];
   appOptions?: AppOptions;
 }) {
-  let autoSelectExample = false;
-
   if (startFiles.length === 0) {
-    startFiles = [
-      {
-        name: "blank.py",
-        content: "",
-        type: "text",
-      },
-    ];
-
-    autoSelectExample = true;
+    if (appMode.includes("viewer")) {
+      // If we're in a mode with the Shiny app viewer panel, the template should
+      // be a Shiny app. If we're not, then the template should be a plain
+      // script.
+      startFiles = [
+        {
+          name: "app.py",
+          content: shinyAppTemplate,
+          type: "text",
+        },
+      ];
+    } else {
+      startFiles = [
+        {
+          name: "script.py",
+          content: pythonScriptTemplate,
+          type: "text",
+        },
+      ];
+    }
   }
 
   // For most but not all appMode, set up pyodide for shiny.
@@ -190,7 +207,7 @@ export function App({
           <ExampleSelector
             setCurrentFiles={setCurrentFiles}
             filesHaveChanged={filesHaveChanged}
-            autoSelectExample={autoSelectExample}
+            startWithSelectedExample={appOptions.selectedExample}
           />
           <Editor
             currentFilesFromApp={currentFiles}
@@ -385,13 +402,18 @@ export function runApp(
         }
       } else if (opts.allowExampleUrl) {
         const exampleCategories = await getExampleCategories();
-        const pos = findExampleByTitle(hashContent, exampleCategories);
+        let pos = findExampleByTitle(hashContent, exampleCategories);
         if (pos) {
-          startFiles = exampleCategories[pos.categoryIndex].apps[pos.index]
-            .files as FileContentInput[]; // A little help for type checker.
+          opts.selectedExample = hashContent;
         } else {
-          startFiles = [];
+          // If we didn't find an example name from the URL hash, we'll just use
+          // the first available example.
+          pos = { categoryIndex: 0, index: 0 };
+          opts.selectedExample = sanitizeTitleForUrl(
+            exampleCategories[pos.categoryIndex].apps[pos.index].title
+          );
         }
+        startFiles = exampleCategories[pos.categoryIndex].apps[pos.index].files;
       } else {
         startFiles = [];
       }
@@ -428,3 +450,33 @@ export function runApp(
 const propertyOfAppOptions = function <AppOptions>(name: keyof AppOptions) {
   return name;
 };
+
+// =============================================================================
+// Code templates
+// =============================================================================
+
+const shinyAppTemplate = `from shiny import *
+
+app_ui = ui.page_fluid(
+  ui.input_slider("n", "N", 0, 100, 20),
+  ui.output_text_verbatim("txt"),
+)
+
+def server(input, output, session):
+  @output
+  @render.text
+  def txt():
+      return f"n*2 is {input.n() * 2}"
+
+app = App(app_ui, server)
+`;
+
+const pythonScriptTemplate = `# To run this entire script, click on the reload icon in the upper right, or
+# press Ctrl- or Cmd-Shift-Enter.
+# To run a single line or a selected block of code, press Ctrl- or Cmd-Enter.
+
+def add(a, b):
+  return a + b
+
+add(1, 2)
+`;
