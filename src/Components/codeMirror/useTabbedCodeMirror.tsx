@@ -86,11 +86,21 @@ export function useTabbedCodeMirror({
       inferEditorExtensions
     );
 
-    setEditingFilename(newFile.name);
-    setNewFileCounter(newFileCounter + 1);
-    setFiles([...files, newFile]);
-    setActiveFileIdx(files.length);
-  }, [files, inferEditorExtensions, newFileCounter]);
+    const updatedFiles = [...files];
+    const filenameMatchIdx = updatedFiles.findIndex(
+      (f) => f.name === newFile.name
+    );
+    if (filenameMatchIdx === -1) {
+      updatedFiles.push(newFile);
+      setActiveFileIdx(updatedFiles.length - 1);
+    } else {
+      // If a file with the same name already exists, replace it.
+      updatedFiles[filenameMatchIdx] = newFile;
+      setActiveFileIdx(filenameMatchIdx);
+    }
+
+    setFiles(updatedFiles);
+  }, [files, inferEditorExtensions]);
 
   function renameFile(oldFileName: string, newFileName: string) {
     const updatedFiles = [...files];
