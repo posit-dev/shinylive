@@ -1,4 +1,4 @@
-import { loadFileContent } from "../../fileio";
+import * as fileio from "../../fileio";
 import {
   EditorFile,
   editorFileToFileContent,
@@ -77,8 +77,9 @@ export function useTabbedCodeMirror({
   }
 
   const uploadFile = React.useCallback(async () => {
+    fileio.checkForFileAccessApiSupport();
     const [fileHandle] = await window.showOpenFilePicker();
-    const fileContent = await loadFileContent(fileHandle);
+    const fileContent = await fileio.loadFileContent(fileHandle);
 
     const newFile: EditorFile = fileContentToEditorFile(
       fileContent,

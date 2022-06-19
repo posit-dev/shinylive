@@ -9,6 +9,10 @@ const MAX_FILES = 20;
 // Don't load files or directories whose names match these patterns.
 const IGNORE_PATTERNS = [/^\./, /^_/];
 
+export const FILE_SYSTEM_API_ERROR_MESSAGE =
+  "Sorry, this browser does not support the File System Access API." +
+  " This feature requires Chrome or Edge.";
+
 function matches_ignore_pattern(s: string): boolean {
   for (const p of IGNORE_PATTERNS) {
     if (p.test(s)) return true;
@@ -79,6 +83,13 @@ export async function loadFileContent(
     content: contentString,
     type: type,
   };
+}
+
+export function checkForFileAccessApiSupport(): void {
+  if (!window.showOpenFilePicker) {
+    alert(FILE_SYSTEM_API_ERROR_MESSAGE);
+    throw new Error(FILE_SYSTEM_API_ERROR_MESSAGE);
+  }
 }
 
 export async function saveFileContentsToDirectory(

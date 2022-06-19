@@ -3,27 +3,25 @@
 // released; when it's released, we can remove this.
 // https://github.com/microsoft/vscode/issues/141908
 /// <reference types="wicg-file-system-access" />
-
-import { EditorState, Extension, Prec } from "@codemirror/state";
-import { EditorView, KeyBinding, keymap, ViewUpdate } from "@codemirror/view";
-import * as React from "react";
-
 import * as fileio from "../fileio";
 import { inferFiletype, modKeySymbol } from "../utils";
+import "./Editor.css";
+import { Icon } from "./Icons";
+import { ShareModal } from "./ShareModal";
+import { TerminalMethods } from "./Terminal";
+import { ViewerMethods } from "./Viewer";
+import { FileTabs } from "./codeMirror/FileTabs";
 import {
   getBinaryFileExtensions,
   getExtensionForFiletype,
   getExtensions,
 } from "./codeMirror/extensions";
-import { FileTabs } from "./codeMirror/FileTabs";
 import { useTabbedCodeMirror } from "./codeMirror/useTabbedCodeMirror";
 import * as cmUtils from "./codeMirror/utils";
-import "./Editor.css";
 import { FileContent } from "./filecontent";
-import { Icon } from "./Icons";
-import { ShareModal } from "./ShareModal";
-import { TerminalMethods } from "./Terminal";
-import { ViewerMethods } from "./Viewer";
+import { EditorState, Extension, Prec } from "@codemirror/state";
+import { EditorView, KeyBinding, keymap, ViewUpdate } from "@codemirror/view";
+import * as React from "react";
 
 export type EditorFile =
   | {
@@ -273,10 +271,12 @@ export function Editor({
     React.useState<FileSystemDirectoryHandle | null>(null);
 
   const loadLocalFiles = React.useCallback(async () => {
-    const dirHandle = await window.showDirectoryPicker();
-    setLocalDirHandle(dirHandle);
+    fileio.checkForFileAccessApiSupport();
 
+    const dirHandle = await window.showDirectoryPicker();
     const localFiles = await fileio.loadDirectoryRecursive(dirHandle);
+
+    setLocalDirHandle(dirHandle);
     setCurrentFiles(localFiles);
   }, [setCurrentFiles]);
 
@@ -291,6 +291,8 @@ export function Editor({
   );
 
   const saveLocalFiles = React.useCallback(async () => {
+    fileio.checkForFileAccessApiSupport();
+
     let dirHandle: FileSystemDirectoryHandle;
     if (localDirHandle) {
       dirHandle = localDirHandle;
