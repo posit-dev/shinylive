@@ -4,7 +4,7 @@
 // https://github.com/microsoft/vscode/issues/141908
 /// <reference types="wicg-file-system-access" />
 import * as fileio from "../fileio";
-import { inferFiletype, modKeySymbol, stringToArrayBuffer } from "../utils";
+import { inferFiletype, modKeySymbol, stringToUint8Array } from "../utils";
 import "./Editor.css";
 import { Icon } from "./Icons";
 import { ShareModal } from "./ShareModal";
@@ -21,7 +21,7 @@ import * as cmUtils from "./codeMirror/utils";
 import { FileContent } from "./filecontent";
 import { EditorState, Extension, Prec } from "@codemirror/state";
 import { EditorView, KeyBinding, keymap, ViewUpdate } from "@codemirror/view";
-import JSZip from "jszip";
+import { zipSync, Zippable } from "fflate";
 import * as React from "react";
 
 export type EditorFile =
@@ -330,21 +330,8 @@ export function Editor({
         file.type === "text" ? "text/plain" : "application/octet-stream"
       );
     } else {
-      const zip = new JSZip();
-      for (const file of fileContents) {
-        let content: string | ArrayBuffer;
-        if (file.type === "binary") {
-          // This is inefficient: we base64-encoded it when we called
-          // editorFilesToFileContents() above; now we're converting it back.
-          // But it probably doesn't matter for the small files we'll be working
-          // with.
-          content = stringToArrayBuffer(window.atob(file.content));
-        } else {
-          content = file.content;
-        }
-        zip.file(file.name, content);
-      }
-      const zipBuffer = await zip.generateAsync({ type: "arraybuffer" });
+      const zippableContents = editorFilesToFflateZippable(files);
+      const zipBuffer = zipSync(zippableContents);
       await fileio.downloadFile("app.zip", zipBuffer, "application/zip");
     }
   }, [files, syncFileState]);
@@ -477,4 +464,18 @@ export function editorFileToFileContent(file: EditorFile): FileContent {
     type: file.type,
     content: content,
   };
+}
+
+function editorFilesToFflateZippable(files: EditorFile[]): Zippable {
+  const res: Zippable = {};
+
+  for (const file of files) {
+    if (file.type === "binary") {
+      res[file.name] = stringToUint8Array(file.content);
+    } else {
+      res[file.name] = stringToUint8Array(file.ref.editorState.doc.toString());
+    }
+  }
+
+  return res;
 }
