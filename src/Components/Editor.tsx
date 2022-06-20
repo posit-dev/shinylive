@@ -274,6 +274,9 @@ export function Editor({
 
   const loadLocalFiles = React.useCallback(async () => {
     fileio.assertHasFileAccessApiSupport();
+    const confirmMessage =
+      "Load files from disk? This will close all open files and load all the files from a directory on disk.";
+    if (!window.confirm(confirmMessage)) return;
 
     const dirHandle = await window.showDirectoryPicker();
     const localFiles = await fileio.loadDirectoryRecursive(dirHandle);
@@ -285,7 +288,7 @@ export function Editor({
   const loadButton = (
     <button
       className="code-run-button"
-      title="Load all files in a directory from disk"
+      title="Load project from a directory on disk"
       onClick={() => loadLocalFiles()}
     >
       <Icon icon="upload"></Icon>
@@ -294,6 +297,10 @@ export function Editor({
 
   const saveLocalFiles = React.useCallback(async () => {
     fileio.assertHasFileAccessApiSupport();
+
+    const confirmMessage =
+      "Save project files to disk? This will save all files from the editor to a directory on disk.";
+    if (!window.confirm(confirmMessage)) return;
 
     let dirHandle: FileSystemDirectoryHandle;
     if (localDirHandle) {
@@ -312,7 +319,7 @@ export function Editor({
   const saveButton = (
     <button
       className="code-run-button"
-      title="Save all files to disk"
+      title="Save all project files to disk"
       onClick={() => saveLocalFiles()}
     >
       <Icon icon="download"></Icon>
@@ -320,6 +327,8 @@ export function Editor({
   );
 
   const downloadFiles = React.useCallback(async () => {
+    if (!window.confirm("Downlad all project files?")) return;
+
     syncFileState();
     const fileContents = editorFilesToFileContents(files);
 
@@ -340,7 +349,7 @@ export function Editor({
   const downloadButton = (
     <button
       className="code-run-button"
-      title="Download file(s)"
+      title="Download project file(s)"
       onClick={() => downloadFiles()}
     >
       <Icon icon="file-arrow-down"></Icon>
@@ -366,7 +375,7 @@ export function Editor({
   const openWindowButton = (
     <button
       className="code-run-button"
-      title="Open in new window"
+      title="Open project files in new window"
       onClick={() => openEditorWindow()}
     >
       <Icon icon="window-restore"></Icon>
