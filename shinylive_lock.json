@@ -114,22 +114,6 @@
       "ipyleaflet"
     ]
   },
-  "pyllusion": {
-    "name": "pyllusion",
-    "version": "0.0.12",
-    "filename": "pyllusion-0.0.12-py2.py3-none-any.whl",
-    "sha256": "74c5656645a55dfa9412065365a0d58fc48dd05ca243bfb168f0f9afd9c46245",
-    "url": "https://files.pythonhosted.org/packages/d8/ac/8bced8d6f0bf4dc084c8be7df152ff81aeb43152a32e567b6aa1ba98c9dd/pyllusion-0.0.12-py2.py3-none-any.whl",
-    "depends": [
-      {"name": "numpy", "specs": []},
-      {"name": "pandas", "specs": []},
-      {"name": "Pillow", "specs": []},
-      {"name": "scipy", "specs": []}
-    ],
-    "imports": [
-      "pyllusion"
-    ]
-  },
   "siuba": {
     "name": "siuba",
     "version": "0.3.0",
