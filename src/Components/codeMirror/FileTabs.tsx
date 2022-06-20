@@ -51,9 +51,9 @@ export function FileTabs({
               {moreThanOneFile ? (
                 <span
                   className="Editor--header--files--closebutton"
-                  aria-label="Delete file"
+                  aria-label="Close file"
                   onClick={(e) => {
-                    if (!confirm("Delete " + f.name + "?")) {
+                    if (!confirm("Close " + f.name + "?")) {
                       e.stopPropagation();
                       return;
                     }
