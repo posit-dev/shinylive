@@ -1,5 +1,5 @@
 import { FileContent } from "./Components/filecontent";
-import { arrayBufferToString, isBinary, stringToUint8Array } from "./utils";
+import { isBinary } from "./utils";
 
 // Maximum size files to upload, in bytes.
 const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20 MB
@@ -67,22 +67,21 @@ export async function loadFileContent(
     throw new Error(`File exceeds max size of ${maxBytes} bytes.`);
   }
 
-  const contentBuffer = await fileData.arrayBuffer();
-  let type: "text" | "binary";
-  let contentString: string;
-  if (isBinary(contentBuffer)) {
-    type = "binary";
-    contentString = window.btoa(arrayBufferToString(contentBuffer));
+  const contentArray = new Uint8Array(await fileData.arrayBuffer());
+  if (isBinary(contentArray)) {
+    return {
+      name: fileData.name,
+      content: contentArray,
+      type: "binary",
+    };
   } else {
-    type = "text";
-    contentString = new TextDecoder().decode(contentBuffer);
+    const contentString = new TextDecoder().decode(contentArray);
+    return {
+      name: fileData.name,
+      content: contentString,
+      type: "text",
+    };
   }
-
-  return {
-    name: fileData.name,
-    content: contentString,
-    type: type,
-  };
 }
 
 export function assertHasFileAccessApiSupport(): void {
@@ -102,10 +101,14 @@ export async function saveFileContentsToDirectory(
       filePathParts.slice(0, -1),
       dirHandle
     );
+
     await saveFileContentToFile(
-      filePathParts.slice(-1)[0],
-      file.content,
-      file.type,
+      // Use the stuff from the `file` object, but use just the filename,
+      // without directory.
+      {
+        ...file,
+        name: filePathParts.slice(-1)[0],
+      },
       dir
     );
   }
@@ -144,20 +147,17 @@ async function ensureDirPathExists(
 }
 
 async function saveFileContentToFile(
-  filename: string,
-  content: string,
-  type: "text" | "binary",
+  file: FileContent,
   dirHandle: FileSystemDirectoryHandle
 ): Promise<void> {
-  const fileHandle = await dirHandle.getFileHandle(filename, {
+  const fileHandle = await dirHandle.getFileHandle(file.name, {
     create: true,
   });
   const fileStream = await fileHandle.createWritable();
-  if (type === "binary") {
-    const binContent = stringToUint8Array(atob(content));
-    await fileStream.write(binContent);
+  if (file.type === "binary") {
+    await fileStream.write(file.content);
   } else {
-    await fileStream.write(content);
+    await fileStream.write(file.content);
   }
   await fileStream.close();
 }

@@ -18,9 +18,10 @@ import { ResizableGrid } from "./ResizableGrid/ResizableGrid";
 import { Terminal, TerminalInterface, TerminalMethods } from "./Terminal";
 import { Viewer, ViewerMethods } from "./Viewer";
 import {
-  completeFileContents,
+  FCJSONtoFC,
+  FCorFCJSONtoFC,
   FileContent,
-  FileContentInput,
+  FileContentJson,
 } from "./filecontent";
 import LZString from "lz-string";
 import * as React from "react";
@@ -67,7 +68,7 @@ export type AppMode =
 
 type AppOptions = {
   // An optional set of files to start with.
-  startFiles?: FileContentInput[];
+  startFiles?: FileContentJson[] | FileContent[];
 
   // What orientation should we layout the app? Currently this only gets applied
   // to the editor-viewer app mode.
@@ -129,7 +130,7 @@ export function App({
   appOptions = {},
 }: {
   appMode: AppMode;
-  startFiles: FileContentInput[];
+  startFiles: FileContent[];
   appOptions?: AppOptions;
 }) {
   if (startFiles.length === 0) {
@@ -180,9 +181,8 @@ export function App({
     }
   );
 
-  const [currentFiles, setCurrentFiles] = React.useState<FileContent[]>(
-    completeFileContents(startFiles)
-  );
+  const [currentFiles, setCurrentFiles] =
+    React.useState<FileContent[]>(startFiles);
   const [filesHaveChanged, setFilesHaveChanged] =
     React.useState<boolean>(false);
 
@@ -376,7 +376,8 @@ export function runApp(
   };
 
   opts = { ...optsDefaults, ...opts };
-  let startFiles: undefined | FileContentInput[] = opts.startFiles;
+  let startFiles: undefined | FileContentJson[] | FileContent[] =
+    opts.startFiles;
 
   (async () => {
     if (startFiles === undefined) {
@@ -391,7 +392,7 @@ export function runApp(
           const code = LZString.decompressFromEncodedURIComponent(codeEncoded);
           if (code) {
             // Throws if parsing fails
-            startFiles = JSON.parse(code) as FileContentInput[];
+            startFiles = JSON.parse(code) as FileContentJson[];
           }
         } catch (e) {
           // Do nothing
@@ -419,6 +420,10 @@ export function runApp(
       }
     }
 
+    // At this point we know that startFiles is a FileContentJson[] or
+    // FileContent[].
+    startFiles = startFiles.map(FCorFCJSONtoFC);
+
     const { ...appOpts } = opts;
     delete appOpts.allowCodeUrl;
     delete appOpts.allowExampleUrl;
@@ -435,11 +440,7 @@ export function runApp(
     const root = createRoot(domTarget);
     root.render(
       <React.StrictMode>
-        <App
-          appMode={mode}
-          startFiles={completeFileContents(startFiles)}
-          appOptions={appOpts}
-        />
+        <App appMode={mode} startFiles={startFiles} appOptions={appOpts} />
       </React.StrictMode>
     );
   })();

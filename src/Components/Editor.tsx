@@ -38,7 +38,7 @@ export type EditorFile =
       type: "binary";
       // Binary files need to keep the actual content separate from what the
       // editor knows about (which is just a short string describing the file).
-      content: string;
+      content: Uint8Array;
       ref: {
         editorState: EditorState;
       };
@@ -196,7 +196,9 @@ export function Editor({
       const isShinyCode = currentFilesFromApp.some((f) => f.name === "app.py");
       if (!isShinyCode) {
         // TODO: use activeFile instead of currentFilesFromApp?
-        runCodeInTerminal(currentFilesFromApp[0].content!);
+        if (currentFilesFromApp[0].type === "text") {
+          runCodeInTerminal(currentFilesFromApp[0].content!);
+        }
       }
     })();
   }, [runOnLoad, currentFilesFromApp, terminalMethods, runCodeInTerminal]);
@@ -458,7 +460,7 @@ export function fileContentToEditorFile(
   inferEditorExtensions: (f: FileContent) => Extension
 ): EditorFile {
   if (file.type === "binary") {
-    const content = window.atob(file.content);
+    const content = file.content;
     return {
       name: file.name,
       type: file.type,
@@ -489,18 +491,19 @@ export function editorFilesToFileContents(files: EditorFile[]): FileContent[] {
 }
 
 export function editorFileToFileContent(file: EditorFile): FileContent {
-  let content: string;
   if (file.type === "binary") {
-    content = window.btoa(file.content);
+    return {
+      name: file.name,
+      type: file.type,
+      content: file.content,
+    };
   } else {
-    content = file.ref.editorState.doc.toString();
+    return {
+      name: file.name,
+      type: file.type,
+      content: file.ref.editorState.doc.toString(),
+    };
   }
-
-  return {
-    name: file.name,
-    type: file.type,
-    content: content,
-  };
 }
 
 function editorFilesToFflateZippable(files: EditorFile[]): Zippable {
@@ -508,7 +511,7 @@ function editorFilesToFflateZippable(files: EditorFile[]): Zippable {
 
   for (const file of files) {
     if (file.type === "binary") {
-      res[file.name] = stringToUint8Array(file.content);
+      res[file.name] = file.content;
     } else {
       res[file.name] = stringToUint8Array(file.ref.editorState.doc.toString());
     }

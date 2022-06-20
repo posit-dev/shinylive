@@ -1,8 +1,23 @@
-import { FileContent } from "./Components/filecontent";
+import {
+  FCJSONtoFC,
+  FileContent,
+  FileContentJson,
+} from "./Components/filecontent";
+
+export type ExampleItemJson = {
+  title: string;
+  about?: string;
+  files: FileContentJson[];
+};
+
+export type ExampleCategoryJson = {
+  category: string;
+  apps: ExampleItemJson[];
+};
 
 export type ExampleItem = {
   title: string;
-  about?: string;
+  about: string | null;
   files: FileContent[];
 };
 
@@ -24,7 +39,13 @@ export async function getExampleCategories(): Promise<ExampleCategory[]> {
   }
 
   const response = await fetch("../shinylive/examples.json");
-  exampleCategories = (await response.json()) as ExampleCategory[];
+  const exampleCategoriesJson =
+    (await response.json()) as ExampleCategoryJson[];
+
+  exampleCategories = exampleCategoriesJson.map(
+    exampleCategoryJsonToExampleCategory
+  );
+
   return exampleCategories;
 }
 
@@ -58,4 +79,21 @@ export function sanitizeTitleForUrl(title: string) {
     .toLowerCase()
     .replace(/\s/g, "-")
     .replace(/[^a-z0-9-]/g, "");
+}
+
+function exampleCategoryJsonToExampleCategory(
+  x: ExampleCategoryJson
+): ExampleCategory {
+  return {
+    category: x.category,
+    apps: x.apps.map(exampleItemJsonToExampleItem),
+  };
+}
+
+function exampleItemJsonToExampleItem(x: ExampleItemJson): ExampleItem {
+  return {
+    title: x.title,
+    about: x.about || null,
+    files: x.files.map(FCJSONtoFC),
+  };
 }

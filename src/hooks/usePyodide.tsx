@@ -267,7 +267,7 @@ def _save_files(files: list[dict[str, str]], destdir: str) -> None:
 
         if "type" in file and file["type"] == "binary":
             with open(destdir + "/" + file["name"], "wb") as f:
-                f.write(base64.b64decode(file["content"]))
+                f.write(file["content"])
         else:
             with open(destdir + "/" + file["name"], "w") as f:
                 f.write(file["content"])

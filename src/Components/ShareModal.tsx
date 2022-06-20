@@ -1,6 +1,6 @@
 import { useOnEscOrClickOutside } from "../hooks/useOnEscOrClickOutside";
 import "./ShareModal.css";
-import { FileContent } from "./filecontent";
+import { FCtoFCJSON, FileContent } from "./filecontent";
 import LZString from "lz-string";
 import * as React from "react";
 
@@ -35,7 +35,7 @@ export function ShareModal({
   const appPrefix = "https://pyshiny.netlify.app/app/#code=";
 
   const encodedCode = LZString.compressToEncodedURIComponent(
-    JSON.stringify(fileContents)
+    JSON.stringify(fileContents.map(FCtoFCJSON))
   );
 
   const editorUrl = editorPrefix + encodedCode;
