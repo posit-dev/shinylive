@@ -48,7 +48,7 @@ export async function loadDirectoryRecursive(
       // the leading path. We already have the path+filename, so we'll just use
       // that.
       fileContent.name = filePath;
-      // totalBytes = files.push(fileContent);
+      files.push(fileContent);
     } else if (fileHandle.kind === "directory") {
       const subdirFiles = await loadDirectoryRecursive(fileHandle, filePath);
       files.push(...subdirFiles);
