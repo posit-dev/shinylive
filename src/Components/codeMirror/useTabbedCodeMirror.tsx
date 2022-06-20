@@ -77,7 +77,7 @@ export function useTabbedCodeMirror({
   }
 
   const uploadFile = React.useCallback(async () => {
-    fileio.checkForFileAccessApiSupport();
+    fileio.assertHasFileAccessApiSupport();
     const [fileHandle] = await window.showOpenFilePicker();
     const fileContent = await fileio.loadFileContent(fileHandle);
 

@@ -85,7 +85,7 @@ export async function loadFileContent(
   };
 }
 
-export function checkForFileAccessApiSupport(): void {
+export function assertHasFileAccessApiSupport(): void {
   if (!window.showOpenFilePicker) {
     alert(FILE_SYSTEM_API_ERROR_MESSAGE);
     throw new Error(FILE_SYSTEM_API_ERROR_MESSAGE);

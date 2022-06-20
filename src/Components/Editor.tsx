@@ -273,7 +273,7 @@ export function Editor({
     React.useState<FileSystemDirectoryHandle | null>(null);
 
   const loadLocalFiles = React.useCallback(async () => {
-    fileio.checkForFileAccessApiSupport();
+    fileio.assertHasFileAccessApiSupport();
 
     const dirHandle = await window.showDirectoryPicker();
     const localFiles = await fileio.loadDirectoryRecursive(dirHandle);
@@ -293,7 +293,7 @@ export function Editor({
   );
 
   const saveLocalFiles = React.useCallback(async () => {
-    fileio.checkForFileAccessApiSupport();
+    fileio.assertHasFileAccessApiSupport();
 
     let dirHandle: FileSystemDirectoryHandle;
     if (localDirHandle) {
