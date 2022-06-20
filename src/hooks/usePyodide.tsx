@@ -1,7 +1,6 @@
-import React, { useEffect } from "react";
-
 import { loadPyodideProxy, ProxyType, PyodideProxy } from "../pyodide-proxy";
 import * as utils from "../utils";
+import React, { useEffect } from "react";
 
 export type PyodideProxyHandle =
   | {
@@ -357,6 +356,7 @@ _shiny_app_registry = {}
 
 async def _start_app(app_name, scope = _shiny_app_registry):
     import sys
+    import importlib
 
     app_path = f"/home/pyodide/{app_name}"
     sys.path.insert(0, app_path)
@@ -365,10 +365,13 @@ async def _start_app(app_name, scope = _shiny_app_registry):
 
     await _load_packages_from_dir(app_path)
 
-    app_obj = __import__(f"{app_name}.app")
+    # This prevents random occurrences of ModuleNotFoundError.
+    importlib.invalidate_caches()
+
+    app_obj = importlib.import_module(f"{app_name}.app")
     scope[app_name] = app_obj
 
-    lifespan = app_obj.app.app._lifespan(app_obj.app.app.starlette_app)
+    lifespan = app_obj.app._lifespan(app_obj.app.starlette_app)
     scope[f"__{app_name}_lifespan__"] = lifespan
     await lifespan.__aenter__()
 
@@ -383,8 +386,8 @@ async def _stop_app(app_name, scope = _shiny_app_registry):
         app_obj = scope[app_name]
         import shiny
 
-        if "app" in dir(app_obj) and isinstance(app_obj.app.app, shiny.App):
-            await app_obj.app.app.stop()
+        if "app" in dir(app_obj) and isinstance(app_obj.app, shiny.App):
+            await app_obj.app.stop()
             _res = True
 
         if f"__{app_name}_lifespan__" in scope:

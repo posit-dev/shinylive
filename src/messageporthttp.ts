@@ -100,7 +100,7 @@ export async function makeRequest(
   // behavior isn't compatible with ASGI (which wants dict, not JsProxy); we
   // need to explicitly convert stuff first, which is what call_pyodide does.
   const asgiFunc = pyodide.runPython(
-    `_shiny_app_registry["${appName}"].app.app.call_pyodide`
+    `_shiny_app_registry["${appName}"].app.call_pyodide`
   ) as PyProxyCallable;
   await connect(scope, clientPort, asgiFunc);
 }

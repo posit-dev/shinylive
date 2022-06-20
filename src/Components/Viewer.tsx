@@ -1,12 +1,11 @@
-import * as React from "react";
-
 import { PyodideProxyHandle } from "../hooks/usePyodide";
 import { PyodideProxy } from "../pyodide-proxy";
 import * as utils from "../utils";
-import { FileContent } from "./filecontent";
 import { LoadingAnimation } from "./LoadingAnimation";
-import skull from "./skull.svg";
 import "./Viewer.css";
+import { FileContent } from "./filecontent";
+import skull from "./skull.svg";
+import * as React from "react";
 
 export type ViewerMethods =
   | { ready: false }
@@ -155,12 +154,6 @@ export function Viewer({
           [appCode, "/home/pyodide/" + appName],
           {}
         );
-
-        // The _save_files() seems to need this `await` to occur before the
-        // imports below (in _start_app()). Without it, when starting multiple
-        // apps concurrently, the `import myapp.app` below can fail with a
-        // "ModuleNotFoundError". The error seems to happen randomly.
-        await pyodideproxy.runPyAsync("asyncio.sleep(0)");
 
         await pyodideproxy.runPyAsync(`_start_app('${appName}')`);
 
