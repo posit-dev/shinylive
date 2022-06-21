@@ -72,6 +72,7 @@ all                    Build everything _except_ the shinylive.tar.gz distributi
 dist                   Build shinylive distribution .tar.gz file
 node_modules           Install node modules using yarn
 buildjs                Build JS resources from src/ dir
+buildjs-prod           Build JS resources from src/ dir, for production (with minification)
 watch                  Build JS resources and watch for changes
 serve                  Build JS resources, watch for changes, and serve site
 packages               Build htmltools and shiny wheels

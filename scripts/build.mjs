@@ -1,8 +1,9 @@
 // Live-reload script taken from https://github.com/evanw/esbuild/issues/802#issuecomment-819578182
-import esbuild from "esbuild";
-import http from "http";
-import { spawn } from "child_process";
 import buildExamples from "./build_examples_json.mjs";
+import { spawn } from "child_process";
+import esbuild from "esbuild";
+import * as fs from "fs";
+import http from "http";
 import process from "process";
 
 const EXAMPLES_SOURCE_DIR = "./examples";
@@ -12,12 +13,20 @@ const clients = [];
 
 let watch = false;
 let serve = false;
+let minify = false;
+// Set this to true to generate a metadata file that can be analyzed for size of
+// modules in the bundle.
+let metafile = false;
+
 if (process.argv.some((x) => x === "--watch")) {
   watch = true;
 }
 if (process.argv.some((x) => x === "--serve")) {
   watch = true;
   serve = true;
+}
+if (process.argv.some((x) => x === "--minify")) {
+  minify = true;
 }
 
 const onRebuild = (error, result) => {
@@ -42,6 +51,8 @@ esbuild
     outfile: `${BUILD_DIR}/shinylive/shinylive.js`,
     format: "esm",
     target: "es2020",
+    minify: minify,
+    metafile: metafile,
     ...watchProp,
     loader: { ".svg": "dataurl" },
     plugins: [
@@ -58,6 +69,11 @@ esbuild
       },
     ],
   })
+  .then((result) => {
+    if (metafile) {
+      fs.writeFileSync("esbuild-meta.json", JSON.stringify(result.metafile));
+    }
+  })
   .catch(() => process.exit(1));
 
 esbuild
@@ -67,6 +83,7 @@ esbuild
     outdir: `${BUILD_DIR}/shinylive`,
     format: "esm",
     target: "es2020",
+    minify: minify,
     ...watchProp,
   })
   .catch(() => process.exit(1));
@@ -78,6 +95,7 @@ esbuild
     outdir: `${BUILD_DIR}/shinylive`,
     format: "esm",
     target: "es2020",
+    minify: minify,
     ...watchProp,
   })
   .catch(() => process.exit(1));
@@ -89,6 +107,7 @@ esbuild
     outdir: `${BUILD_DIR}`,
     format: "esm",
     target: "es2020",
+    minify: minify,
     ...watchProp,
   })
   .catch(() => process.exit(1));

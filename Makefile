@@ -162,6 +162,10 @@ $(BUILD_DIR)/shinylive/shiny_static/edit/index.html: shiny_static/edit/index.htm
 buildjs:
 	node scripts/build.mjs
 
+## Build JS resources for production (with minification)
+buildjs-prod:
+	node scripts/build.mjs --minify
+
 ## Build JS resources and watch for changes
 watch:
 	node scripts/build.mjs --watch
