@@ -1,6 +1,6 @@
 // Shape of file content from user input (i.e. examples.json, data structure
 // passed to App.runApp). If the type is "binary", then content is a
-import { stringToUint8Array, uint8ArrayToString } from "../utils";
+import { isBinary, stringToUint8Array, uint8ArrayToString } from "../utils";
 import { FileContent } from "./filecontent";
 
 export type GistApiResponse = {
@@ -45,54 +45,48 @@ export async function gistApiResponseToFileContents(
 
   for (const filename in gist.files) {
     const gistFile = gist.files[filename];
-    if (isTextGistFile(gistFile)) {
-      let content: string;
-      if (gistFile.truncated) {
-        // Some Gist file entries are truncated. The API docs say it happens
-        // when the files are over a megabyte. For these files, we need to fetch
-        // the file directly, and we'll put the content in place.
-        // https://docs.github.com/en/rest/gists/gists#truncation
-        const reponse = await fetch(gistFile.raw_url);
-        content = await reponse.text();
-      } else {
-        content = window.atob(gistFile.content);
+
+    let binary: boolean;
+    let contentString: string = "";
+    let contentArray: Uint8Array = new Uint8Array(0);
+
+    // Some Gist file entries are truncated. The API docs say it happens
+    // when the files are over a megabyte. For these files, we need to fetch
+    // the file directly, and we'll put the content in place.
+    // https://docs.github.com/en/rest/gists/gists#truncation
+    if (gistFile.truncated) {
+      const reponse = await fetch(gistFile.raw_url);
+      const contentBlob = await reponse.blob();
+      contentArray = new Uint8Array(await contentBlob.arrayBuffer());
+      // The gist API includes the 'type' field, but they are not always
+      // helpful. 'type' can be "text/plain" for some binary files like sqlite
+      // .db files.
+      binary = isBinary(contentArray);
+      if (binary) {
+        contentString = uint8ArrayToString(contentArray);
       }
-      result.push({
-        name: gistFile.filename,
-        type: "text",
-        content: content,
-      });
     } else {
-      let content: Uint8Array;
-      if (gistFile.truncated) {
-        console.log("Fetching binary file from Gist API");
-        const reponse = await fetch(gistFile.raw_url);
-        const contentBlob = await reponse.blob();
-        console.log(contentBlob);
-        content = new Uint8Array(await contentBlob.arrayBuffer());
-        console.log(content);
-      } else {
-        content = stringToUint8Array(window.atob(gistFile.content));
+      contentString = window.atob(gistFile.content);
+      binary = isBinary(contentString);
+      if (binary) {
+        contentArray = stringToUint8Array(contentString);
       }
+    }
+
+    if (binary) {
       result.push({
         name: gistFile.filename,
         type: "binary",
-        content: content,
+        content: contentArray,
+      });
+    } else {
+      result.push({
+        name: gistFile.filename,
+        type: "text",
+        content: contentString,
       });
     }
   }
 
   return result;
-}
-
-// Heuristic to determine if a file is text or binary.
-function isTextGistFile(gistFile: GistFile): boolean {
-  if (
-    gistFile.type.startsWith("text/") ||
-    typeof gistFile.language === "string"
-  ) {
-    return true;
-  }
-
-  return false;
 }

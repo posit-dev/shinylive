@@ -192,6 +192,24 @@ export function App({
     }
   }, [appMode, currentFiles, viewerMethods]);
 
+  // Experimental code: For non-apps, save the code to /home/pyodide. This will
+  // probably have to change in the future, because it (1) doesn't work well
+  // with multiple instances on a page, and (2) files that are modified in the
+  // editor won't be saved.
+  React.useEffect(() => {
+    (async () => {
+      if (!pyodideProxyHandle.ready) return;
+      if (currentFiles.some((file) => file.name === "app.py")) return;
+
+      // Save the code in /home/pyodide
+      await pyodideProxyHandle.pyodide.callPy(["_save_files"], [], {
+        files: currentFiles,
+        destdir: "/home/pyodide",
+        rm_destdir: false,
+      });
+    })();
+  }, [pyodideProxyHandle.ready, currentFiles]);
+
   switch (appMode) {
     case "examples-editor-terminal-viewer":
       return (

@@ -91,15 +91,24 @@ export function modKeySymbol(): string {
   }
 }
 
-// Use a heuristic to guess if an Uint8Array contains binary data, as opposed to
-// text.
-export function isBinary(buf: Uint8Array): boolean {
-  for (const b of buf) {
-    if (b === 0 || b === 255) {
-      return true;
+// Use a heuristic to guess if a string or Uint8Array contains binary data, as
+// opposed to text.
+export function isBinary(x: Uint8Array | string): boolean {
+  if (typeof x === "string") {
+    for (const b of x) {
+      if (b === "\x00" || b === "\xff") {
+        return true;
+      }
     }
+    return false;
+  } else {
+    for (const b of x) {
+      if (b === 0 || b === 255) {
+        return true;
+      }
+    }
+    return false;
   }
-  return false;
 }
 
 export function arrayBufferToString(buf: ArrayBuffer): string {

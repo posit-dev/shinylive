@@ -246,9 +246,8 @@ def _pyodide_env_init():
 _pyodide_env_init()
 
 # Function for saving a set of files so we can load them as a module.
-def _save_files(files: list[dict[str, str]], destdir: str) -> None:
+def _save_files(files: list[dict[str, str]], destdir: str, rm_destdir: bool = True) -> None:
     import shutil
-    import base64
     import pyodide
     # If called from JS and passed an Object, we need to convert it to a
     # dict.
@@ -256,9 +255,9 @@ def _save_files(files: list[dict[str, str]], destdir: str) -> None:
         files = files.to_py()
 
     import os
-    if os.path.exists(destdir):
+    if rm_destdir and os.path.exists(destdir):
         shutil.rmtree(destdir)
-    os.makedirs(destdir)
+    os.makedirs(destdir, exist_ok=True)
 
     for file in files:
         subdir = os.path.dirname(file["name"])
