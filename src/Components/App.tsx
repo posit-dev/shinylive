@@ -17,12 +17,12 @@ import { OutputCell } from "./OutputCell";
 import { ResizableGrid } from "./ResizableGrid/ResizableGrid";
 import { Terminal, TerminalInterface, TerminalMethods } from "./Terminal";
 import { Viewer, ViewerMethods } from "./Viewer";
+import { FCorFCJSONtoFC, FileContent, FileContentJson } from "./filecontent";
 import {
-  FCJSONtoFC,
-  FCorFCJSONtoFC,
-  FileContent,
-  FileContentJson,
-} from "./filecontent";
+  fetchGist,
+  GistApiResponse,
+  gistApiResponseToFileContents,
+} from "./gist";
 import LZString from "lz-string";
 import * as React from "react";
 import { createRoot } from "react-dom/client";
@@ -367,11 +367,13 @@ export function runApp(
   mode: AppMode,
   opts: AppOptions & {
     allowCodeUrl?: boolean;
+    allowGistUrl?: boolean;
     allowExampleUrl?: boolean;
   } = {}
 ) {
   const optsDefaults = {
     allowCodeUrl: false,
+    allowGistUrl: false,
     allowExampleUrl: false,
   };
 
@@ -381,10 +383,10 @@ export function runApp(
 
   (async () => {
     if (startFiles === undefined) {
-      // Use the hash to determine which example to load. If no match is found,
-      // it defaults to the first example.
+      // Use the URL hash to determine what files to start with.
       const hashContent = window.location.hash.replace(/^#/, "");
 
+      // Handle URL hash with "#code="
       if (opts.allowCodeUrl && hashContent.startsWith("code=")) {
         try {
           const codeEncoded = hashContent.replace("code=", "");
@@ -393,15 +395,27 @@ export function runApp(
           if (code) {
             // Throws if parsing fails
             startFiles = JSON.parse(code) as FileContentJson[];
+          } else {
+            startFiles = [];
           }
         } catch (e) {
-          // Do nothing
-        }
-        if (startFiles === undefined) {
           console.log("Could not parse JSON from URL hash.");
           startFiles = [];
         }
-      } else if (opts.allowExampleUrl) {
+      }
+      // Handle URL hash with "#gist="
+      else if (opts.allowGistUrl && hashContent.startsWith("gist=")) {
+        const gistId = hashContent.replace("gist=", "");
+        try {
+          const gistApiResponse = await fetchGist(gistId);
+          startFiles = await gistApiResponseToFileContents(gistApiResponse);
+        } catch (e) {
+          console.log("Could not parse JSON from gist " + gistId);
+          startFiles = [];
+        }
+      }
+      // Look for URL hash with example name, like "#app-with-plot"
+      else if (opts.allowExampleUrl) {
         const exampleCategories = await getExampleCategories();
         let pos = findExampleByTitle(hashContent, exampleCategories);
         if (pos) {
@@ -415,13 +429,16 @@ export function runApp(
           );
         }
         startFiles = exampleCategories[pos.categoryIndex].apps[pos.index].files;
-      } else {
+      }
+      // If we get here, we're either not looking for a URL hash that points to
+      // code, or we didn't find such a hash.
+      else {
         startFiles = [];
       }
     }
 
     // At this point we know that startFiles is a FileContentJson[] or
-    // FileContent[].
+    // FileContent[]. Ensure that they're all FileContent.
     startFiles = startFiles.map(FCorFCJSONtoFC);
 
     const { ...appOpts } = opts;
