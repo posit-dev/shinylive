@@ -13,4 +13,5 @@ def server(input: Inputs, output: Outputs, session: Session):
         return f"n*2 is {input.n() * 2}"
 
 
+# The debug=True causes it to print messages to the console.
 app = App(app_ui, server, debug=True)
