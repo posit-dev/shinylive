@@ -18,11 +18,7 @@ import { ResizableGrid } from "./ResizableGrid/ResizableGrid";
 import { Terminal, TerminalInterface, TerminalMethods } from "./Terminal";
 import { Viewer, ViewerMethods } from "./Viewer";
 import { FCorFCJSONtoFC, FileContent, FileContentJson } from "./filecontent";
-import {
-  fetchGist,
-  GistApiResponse,
-  gistApiResponseToFileContents,
-} from "./gist";
+import { fetchGist, gistApiResponseToFileContents } from "./gist";
 import LZString from "lz-string";
 import * as React from "react";
 import { createRoot } from "react-dom/client";
@@ -52,6 +48,10 @@ const terminalInterface: TerminalInterface = (() => {
     },
   };
 })();
+
+export type UtilityMethods = {
+  formatCode: (code: string) => Promise<string>;
+};
 
 const pyodideProxyType: ProxyType =
   new URLSearchParams(window.location.search).get("webworker") === "0"
@@ -210,6 +210,31 @@ export function App({
     })();
   }, [pyodideProxyHandle.ready, currentFiles]);
 
+  const [utilityMethods, setUtilityMethods] = React.useState<UtilityMethods>({
+    formatCode: async (code: string) => {
+      return code;
+    },
+  });
+
+  React.useEffect(() => {
+    if (!pyodideProxyHandle.ready) return;
+
+    setUtilityMethods({
+      formatCode: async (code: string) => {
+        pyodideProxyHandle.pyodide.callPy(["_format_py_code"], [code], {});
+        return await pyodideProxyHandle.pyodide.runPyAsync(
+          "import black\nblack._LAST_VALUE",
+          // "1",
+          {
+            returnResult: "value",
+            printResult: false,
+          }
+        );
+      },
+    });
+    if (currentFiles.some((file) => file.name === "app.py")) return;
+  }, [pyodideProxyHandle.ready, currentFiles]);
+
   switch (appMode) {
     case "examples-editor-terminal-viewer":
       return (
@@ -233,6 +258,7 @@ export function App({
             setFilesHaveChanged={setFilesHaveChanged}
             terminalMethods={terminalMethods}
             viewerMethods={viewerMethods}
+            utilityMethods={utilityMethods}
             runOnLoad={currentFiles.some((file) => file.name === "app.py")}
             showShareButton={true}
             showLoadSaveButtons={true}

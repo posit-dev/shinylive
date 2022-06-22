@@ -130,6 +130,33 @@
       "siuba"
     ]
   },
+  "black": {
+    "name": "black",
+    "version": "22.3.0",
+    "filename": "black-22.3.0-py3-none-any.whl",
+    "sha256": "bc58025940a896d7e5356952228b68f793cf5fcb342be703c3a2669a1488cb72",
+    "url": "https://files.pythonhosted.org/packages/2e/ef/a38a2189959246543e60859fb65bd3143129f6d18dfc7bcdd79217f81ca2/black-22.3.0-py3-none-any.whl",
+    "depends": [
+      {"name": "click", "specs": [[">=", "8.0.0"]]},
+      {"name": "platformdirs", "specs": [[">=", "2"]]},
+      {"name": "pathspec", "specs": [[">=", "0.9.0"]]},
+      {"name": "mypy-extensions", "specs": [[">=", "0.4.3"]]}
+    ],
+    "imports": [
+      "black"
+    ]
+  },
+  "tomli": {
+    "name": "tomli",
+    "version": "2.0.1",
+    "filename": "tomli-2.0.1-py3-none-any.whl",
+    "sha256": "939de3e7a6161af0c887ef91b7d41a53e7c5a1ca976325f429cb46ea9bc30ecc",
+    "url": "https://files.pythonhosted.org/packages/97/75/10a9ebee3fd790d20926a90a2547f0bf78f371b2f13aa822c759680ca7b9/tomli-2.0.1-py3-none-any.whl",
+    "depends": [],
+    "imports": [
+      "tomli"
+    ]
+  },
   "uvicorn": {
     "name": "uvicorn",
     "version": "0.17.6",
@@ -310,6 +337,39 @@
     "depends": [],
     "imports": [
       "xyzservices"
+    ]
+  },
+  "platformdirs": {
+    "name": "platformdirs",
+    "version": "2.5.2",
+    "filename": "platformdirs-2.5.2-py3-none-any.whl",
+    "sha256": "027d8e83a2d7de06bbac4e5ef7e023c02b863d7ea5d079477e722bb41ab25788",
+    "url": "https://files.pythonhosted.org/packages/ed/22/967181c94c3a4063fe64e15331b4cb366bdd7dfbf46fcb8ad89650026fec/platformdirs-2.5.2-py3-none-any.whl",
+    "depends": [],
+    "imports": [
+      "platformdirs"
+    ]
+  },
+  "pathspec": {
+    "name": "pathspec",
+    "version": "0.9.0",
+    "filename": "pathspec-0.9.0-py2.py3-none-any.whl",
+    "sha256": "7d15c4ddb0b5c802d161efc417ec1a2558ea2653c2e8ad9c19098201dc1c993a",
+    "url": "https://files.pythonhosted.org/packages/42/ba/a9d64c7bcbc7e3e8e5f93a52721b377e994c22d16196e2b0f1236774353a/pathspec-0.9.0-py2.py3-none-any.whl",
+    "depends": [],
+    "imports": [
+      "pathspec"
+    ]
+  },
+  "mypy-extensions": {
+    "name": "mypy-extensions",
+    "version": "0.4.3",
+    "filename": "mypy_extensions-0.4.3-py2.py3-none-any.whl",
+    "sha256": "090fedd75945a69ae91ce1303b5824f428daf5a028d2f6ab8a299250a846f15d",
+    "url": "https://files.pythonhosted.org/packages/5c/eb/975c7c080f3223a5cdaff09612f3a5221e4ba534f7039db34c35d95fa6a5/mypy_extensions-0.4.3-py2.py3-none-any.whl",
+    "depends": [],
+    "imports": [
+      "mypy_extensions"
     ]
   },
   "asgiref": {

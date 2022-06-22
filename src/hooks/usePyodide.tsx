@@ -164,6 +164,10 @@ def _mock_ssl():
     m.MemoryBIO = MemoryBIO
     sys.modules["ssl"] = m
 
+def _mock_multiprocessing():
+    import sys
+    sys.modules['_multiprocessing'] = object
+
 
 def _mock_ipykernel():
     import sys
@@ -227,6 +231,7 @@ def _mock_ipython():
     mods["IPython.core.pylabtools"] = m
 
 _mock_ssl()
+_mock_multiprocessing()
 _mock_ipykernel()
 _mock_ipython()
 
@@ -340,6 +345,13 @@ def _to_html(x):
         return { "type": "html", "value": img_html }
 
     return { "type": "text", "value": repr(x) }
+` +
+  // Reformat Python code using black.
+  `
+def _format_py_code(x: str):
+    import tomli
+    import black
+    black._LAST_VALUE = black.format_str(x, mode=black.Mode())
 ` +
   // When we start the app, add the app's directory to the sys.path so that it
   // can import other files in the dir with "import foo". We'll remove it from

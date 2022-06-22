@@ -6,6 +6,7 @@
 import * as fileio from "../fileio";
 import * as utils from "../utils";
 import { inferFiletype, modKeySymbol, stringToUint8Array } from "../utils";
+import type { UtilityMethods } from "./App";
 import "./Editor.css";
 import { Icon } from "./Icons";
 import { ShareModal } from "./ShareModal";
@@ -50,6 +51,7 @@ export function Editor({
   setFilesHaveChanged,
   terminalMethods,
   viewerMethods = null,
+  utilityMethods = null,
   showFileTabs = true,
   runOnLoad = true,
   lineNumbers = true,
@@ -63,6 +65,7 @@ export function Editor({
   setFilesHaveChanged: React.Dispatch<React.SetStateAction<boolean>>;
   terminalMethods: TerminalMethods;
   viewerMethods?: ViewerMethods | null;
+  utilityMethods?: UtilityMethods | null;
   showFileTabs?: boolean;
   runOnLoad?: boolean;
   lineNumbers?: boolean;
@@ -348,6 +351,40 @@ export function Editor({
     }
   }, [files, syncFileState]);
 
+  const formatCodeButton = (
+    <button
+      className="code-run-button"
+      title="Reformat code"
+      onClick={() => formatCode()}
+    >
+      <Icon icon="code"></Icon>
+    </button>
+  );
+
+  const formatCode = React.useCallback(async () => {
+    if (!cmViewRef.current) return;
+    if (!utilityMethods) return;
+    syncFileState();
+
+    if (activeFile.type !== "text") return;
+    const content = editorFileToFileContent(activeFile).content as string;
+
+    // TODO: pass file type to formatCode.
+    const formatted = await utilityMethods.formatCode(content);
+
+    // Replace the old code with the new formatted code.
+    const transaction = cmViewRef.current.state.update({
+      changes: {
+        from: 0,
+        to: cmViewRef.current.state.doc.length,
+        insert: formatted,
+      },
+      selection: { anchor: cmViewRef.current.state.selection.main.anchor },
+    });
+
+    cmViewRef.current.dispatch(transaction);
+  }, [utilityMethods, syncFileState, activeFile]);
+
   const downloadButton = (
     <button
       className="code-run-button"
@@ -433,6 +470,7 @@ export function Editor({
             {showLoadSaveButtons ? downloadButton : null}
             {showShareButton ? openWindowButton : null}
             {showShareButton ? shareButton : null}
+            {formatCodeButton}
             {runButton}
           </div>
         </div>
