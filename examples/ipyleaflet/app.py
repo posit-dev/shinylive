@@ -16,9 +16,10 @@ app_ui = ui.page_fluid(
 
 
 def server(input: Inputs, output: Outputs, session: Session):
-
     # Initialize and display when the session starts (1)
     map = L.Map(center=(51.476852, -0.000500), zoom=12, scroll_wheel_zoom=True)
+    # Add a distance scale
+    map.add_control(L.leaflet.ScaleControl(position="bottomleft"))
     register_widget("map", map)
 
     # When the slider changes, update the map's zoom attribute (2)
@@ -39,9 +40,9 @@ def server(input: Inputs, output: Outputs, session: Session):
         if len(center) == 0:
             return
 
-        lat = round(center[0], 5)
+        lat = round(center[0], 4)
         lon = (center[1] + 180) % 360 - 180
-        lon = round(lon, 5)
+        lon = round(lon, 4)
 
         return ui.p(f"Latitude: {lat}", ui.br(), f"Longitude: {lon}")
 
