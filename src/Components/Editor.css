@@ -1,5 +1,6 @@
 .Editor {
-  --button-gray-color: #aaa;
+  --button-gray-color: #999;
+  --button-hover-color: #hsl(207, 69%, 25%);
   --border-color: #aaa;
   --pad: 5px;
   display: grid;
@@ -144,8 +145,8 @@ the size bigger.  */
 .Editor--header--files .Editor--header--files--closebutton:hover,
 .Editor--header--files .Editor--header--files--addbutton:hover,
 .Editor--header--files .Editor--header--files--uploadbutton:hover {
-  color: var(--colors-blue-dark);
-  fill: var(--colors-blue-dark);
+  color: var(--button-hover-color);
+  fill: var(--button-hover-color);
   /* border-radius: 3px; */
   cursor: pointer;
 }
@@ -183,13 +184,15 @@ the size bigger.  */
 
 /* Code run button styles */
 .Editor button.code-run-button {
+  font-size: 0.8rem;
+  padding: 0.2rem 0.4rem;
   background-color: transparent;
   white-space: nowrap;
 }
 
 .Editor .code-run-button:hover {
-  color: var(--colors-blue-dark);
-  fill: var(--colors-blue-dark);
+  color: var(--button-hover-color);
+  fill: var(--button-hover-color);
 }
 
 /* When in the header of the app next to file tabs */
@@ -216,6 +219,6 @@ the size bigger.  */
 }
 
 .Editor .floating-buttons .code-run-button:hover {
-  color: var(--colors-blue-dark);
-  fill: var(--colors-blue-dark);
+  color: var(--button-hover-color);
+  fill: var(--button-hover-color);
 }

@@ -393,10 +393,10 @@ export function Editor({
   const downloadButton = (
     <button
       className="code-run-button"
-      title="Download project file(s)"
+      title="Download project files"
       onClick={() => downloadFiles()}
     >
-      <Icon icon="file-arrow-down"></Icon>
+      <Icon icon="cloud-arrow-down"></Icon>
     </button>
   );
 
@@ -422,7 +422,7 @@ export function Editor({
       title="Open project files in new window"
       onClick={() => openEditorWindow()}
     >
-      <Icon icon="window-restore"></Icon>
+      <Icon icon="clone"></Icon>
     </button>
   );
 
@@ -432,7 +432,7 @@ export function Editor({
       title={`Share ${isShinyApp ? "app" : "code"}`}
       onClick={() => setShowShareModal(true)}
     >
-      <Icon icon="share-nodes"></Icon> &nbsp;Share
+      <Icon icon="share-nodes"></Icon>
     </button>
   );
 
