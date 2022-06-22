@@ -14,7 +14,8 @@
       "input_update",
       "modules",
       "extra_packages",
-      "www_dir"
+      "www_dir",
+      "fetch"
     ]
   },
   {
