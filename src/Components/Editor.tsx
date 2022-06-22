@@ -372,6 +372,11 @@ export function Editor({
     // TODO: pass file type to formatCode.
     const formatted = await utilityMethods.formatCode(content);
 
+    // Make sure the cursor stays within the document.
+    const cursorPos = Math.min(
+      formatted.length,
+      cmViewRef.current.state.selection.main.anchor
+    );
     // Replace the old code with the new formatted code.
     const transaction = cmViewRef.current.state.update({
       changes: {
@@ -379,7 +384,7 @@ export function Editor({
         to: cmViewRef.current.state.doc.length,
         insert: formatted,
       },
-      selection: { anchor: cmViewRef.current.state.selection.main.anchor },
+      selection: { anchor: cursorPos },
     });
 
     cmViewRef.current.dispatch(transaction);
