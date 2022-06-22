@@ -292,6 +292,7 @@ export function App({
             setFilesHaveChanged={setFilesHaveChanged}
             terminalMethods={terminalMethods}
             viewerMethods={viewerMethods}
+            utilityMethods={utilityMethods}
             runOnLoad={currentFiles.some((file) => file.name === "app.py")}
             showShareButton={true}
             showLoadSaveButtons={true}
@@ -321,6 +322,7 @@ export function App({
             setCurrentFiles={setCurrentFiles}
             setFilesHaveChanged={setFilesHaveChanged}
             terminalMethods={terminalMethods}
+            utilityMethods={utilityMethods}
             runOnLoad={false}
             showShareButton={false}
             showLoadSaveButtons={false}
@@ -341,6 +343,7 @@ export function App({
             setCurrentFiles={setCurrentFiles}
             setFilesHaveChanged={setFilesHaveChanged}
             terminalMethods={terminalMethods}
+            utilityMethods={utilityMethods}
             showFileTabs={false}
             lineNumbers={false}
             showHeaderBar={false}
@@ -379,6 +382,7 @@ export function App({
             setCurrentFiles={setCurrentFiles}
             setFilesHaveChanged={setFilesHaveChanged}
             terminalMethods={terminalMethods}
+            utilityMethods={utilityMethods}
             viewerMethods={viewerMethods}
             showShareButton={false}
             showLoadSaveButtons={false}
