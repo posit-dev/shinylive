@@ -1,2 +1,0 @@
-www directory
-Serve files from a www/ subdirectory

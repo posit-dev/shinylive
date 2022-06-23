@@ -14,7 +14,7 @@
       "input_update",
       "modules",
       "extra_packages",
-      "www_dir",
+      "static_content",
       "fetch"
     ]
   },
