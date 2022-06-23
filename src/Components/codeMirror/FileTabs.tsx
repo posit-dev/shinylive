@@ -53,7 +53,6 @@ export function FileTabs({
                 <span
                   className="Editor--header--files--closebutton"
                   aria-label="Close file"
-                  data-balloon-pos="down"
                   onClick={(e) => {
                     if (!confirm("Close " + f.name + "?")) {
                       e.stopPropagation();
