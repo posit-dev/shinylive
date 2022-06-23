@@ -23,6 +23,7 @@ import * as cmUtils from "./codeMirror/utils";
 import { FileContent } from "./filecontent";
 import { EditorState, Extension, Prec } from "@codemirror/state";
 import { EditorView, KeyBinding, keymap, ViewUpdate } from "@codemirror/view";
+import "balloon-css";
 import { zipSync, Zippable } from "fflate";
 import * as React from "react";
 
@@ -293,7 +294,8 @@ export function Editor({
   const loadButton = (
     <button
       className="code-run-button"
-      title="Load project from a directory on disk"
+      aria-label="Load project from a directory on disk"
+      data-balloon-pos="down"
       onClick={() => loadLocalFiles()}
     >
       <Icon icon="upload"></Icon>
@@ -324,7 +326,8 @@ export function Editor({
   const saveButton = (
     <button
       className="code-run-button"
-      title="Save all project files to disk"
+      aria-label="Save all project files to disk"
+      data-balloon-pos="down"
       onClick={() => saveLocalFiles()}
     >
       <Icon icon="download"></Icon>
@@ -354,7 +357,8 @@ export function Editor({
   const formatCodeButton = (
     <button
       className="code-run-button"
-      title="Reformat code"
+      aria-label="Reformat code"
+      data-balloon-pos="down"
       onClick={() => formatCode()}
     >
       <Icon icon="code"></Icon>
@@ -393,7 +397,8 @@ export function Editor({
   const downloadButton = (
     <button
       className="code-run-button"
-      title="Download project files"
+      aria-label="Download project files"
+      data-balloon-pos="down"
       onClick={() => downloadFiles()}
     >
       <Icon icon="cloud-arrow-down"></Icon>
@@ -419,7 +424,8 @@ export function Editor({
   const openWindowButton = (
     <button
       className="code-run-button"
-      title="Open project files in new window"
+      aria-label="Open project files in new window"
+      data-balloon-pos="down"
       onClick={() => openEditorWindow()}
     >
       <Icon icon="clone"></Icon>
@@ -429,7 +435,8 @@ export function Editor({
   const shareButton = (
     <button
       className="code-run-button"
-      title={`Share ${isShinyApp ? "app" : "code"}`}
+      aria-label="Create share link"
+      data-balloon-pos="down"
       onClick={() => setShowShareModal(true)}
     >
       <Icon icon="share-nodes"></Icon>
@@ -454,9 +461,10 @@ export function Editor({
   const runButton = (
     <button
       className="code-run-button"
-      title={`Re-run ${
+      aria-label={`Re-run ${
         isShinyApp ? "app" : "code"
       } (${modKeySymbol()})-Shift-Enter`}
+      data-balloon-pos="down"
       onClick={() => runAllAuto.current()}
     >
       <Icon icon="play"></Icon>

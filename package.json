@@ -37,6 +37,7 @@
     "@types/wicg-file-system-access": "^2020.9.5",
     "@typescript-eslint/eslint-plugin": "^5.26.0",
     "@typescript-eslint/parser": "^5.26.0",
+    "balloon-css": "^1.2.0",
     "codemirror": "^6.0.0",
     "esbuild": "^0.14.40",
     "eslint": "^8.16.0",

@@ -1,5 +1,6 @@
 import { Icon } from "../Icons";
 import { useTabbedCodeMirror } from "./useTabbedCodeMirror";
+import "balloon-css";
 import * as React from "react";
 
 // =============================================================================
@@ -52,6 +53,7 @@ export function FileTabs({
                 <span
                   className="Editor--header--files--closebutton"
                   aria-label="Close file"
+                  data-balloon-pos="down"
                   onClick={(e) => {
                     if (!confirm("Close " + f.name + "?")) {
                       e.stopPropagation();
@@ -108,14 +110,16 @@ export function FileTabs({
         <span className="Editor--header--files--addtab">
           <button
             className="Editor--header--files--addbutton"
-            title="Add a file"
+            aria-label="Add a file"
+            data-balloon-pos="down"
             onClick={() => addFile()}
           >
             +
           </button>
           <button
             className="Editor--header--files--uploadbutton"
-            title="Load a file from disk"
+            aria-label="Load a file from disk"
+            data-balloon-pos="down"
             onClick={() => uploadFile()}
           >
             <Icon icon="arrow-up-from-bracket"></Icon>
