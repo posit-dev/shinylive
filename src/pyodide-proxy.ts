@@ -226,10 +226,10 @@ class NormalPyodideProxy implements PyodideProxy {
     code: string,
     {
       returnResult = "none" as K,
-      printResult = true,
+      printResult = false,
     }: { returnResult?: K; printResult?: boolean } = {
       returnResult: "none" as K,
-      printResult: true,
+      printResult: false,
     }
   ): Promise<ReturnMapping[K]> {
     await this.pyodide.loadPackagesFromImports(code);
@@ -452,7 +452,7 @@ class WebWorkerPyodideProxy implements PyodideProxy {
     code: string,
     {
       returnResult = "none" as K,
-      printResult = true,
+      printResult = false,
     }: { returnResult?: K; printResult?: boolean } = {
       returnResult: "none" as K,
       printResult: false,
@@ -478,7 +478,7 @@ class WebWorkerPyodideProxy implements PyodideProxy {
     args = [],
     kwargs = {},
     returnResult = "none",
-    printResult = true,
+    printResult = false,
   }: {
     fnName: string[];
     args: any[];

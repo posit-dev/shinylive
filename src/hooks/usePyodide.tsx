@@ -57,7 +57,7 @@ export async function initPyodide({
   // Public functions
   async function runCode(command: string) {
     try {
-      await pyodideProxy.runPyAsync(command);
+      await pyodideProxy.runPyAsync(command, { printResult: true });
     } catch (e) {
       if (e instanceof Error) {
         // outputCallbacks.stderr(e.message);
