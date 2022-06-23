@@ -202,10 +202,13 @@ export function App({
       if (currentFiles.some((file) => file.name === "app.py")) return;
 
       // Save the code in /home/pyodide
-      await pyodideProxyHandle.pyodide.callPy(["_save_files"], [], {
-        files: currentFiles,
-        destdir: "/home/pyodide",
-        rm_destdir: false,
+      await pyodideProxyHandle.pyodide.callPyAsync({
+        fnName: ["_save_files"],
+        kwargs: {
+          files: currentFiles,
+          destdir: "/home/pyodide",
+          rm_destdir: false,
+        },
       });
     })();
   }, [pyodideProxyHandle.ready, currentFiles]);
@@ -221,15 +224,12 @@ export function App({
 
     setUtilityMethods({
       formatCode: async (code: string) => {
-        pyodideProxyHandle.pyodide.callPy(["_format_py_code"], [code], {});
-        return await pyodideProxyHandle.pyodide.runPyAsync(
-          "import black\nblack._LAST_VALUE",
-          // "1",
-          {
-            returnResult: "value",
-            printResult: false,
-          }
-        );
+        const result = await pyodideProxyHandle.pyodide.callPyAsync({
+          fnName: ["_format_py_code"],
+          args: [code],
+          returnResult: "value",
+        });
+        return result;
       },
     });
     if (currentFiles.some((file) => file.name === "app.py")) return;

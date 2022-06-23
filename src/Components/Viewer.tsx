@@ -149,13 +149,15 @@ export function Viewer({
 
         // Save the code in /home/pyodide/{appName} so we can load it as a
         // module.
-        await pyodideproxy.callPy(
-          ["_save_files"],
-          [appCode, "/home/pyodide/" + appName],
-          {}
-        );
+        await pyodideproxy.callPyAsync({
+          fnName: ["_save_files"],
+          args: [appCode, "/home/pyodide/" + appName],
+        });
 
-        await pyodideproxy.runPyAsync(`_start_app('${appName}')`);
+        await pyodideproxy.callPyAsync({
+          fnName: ["_start_app"],
+          args: [appName],
+        });
 
         viewerFrameRef.current.src = appInfo.urlPath;
         setAppRunningState("running");

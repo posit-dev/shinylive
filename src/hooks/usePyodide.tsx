@@ -346,12 +346,20 @@ def _to_html(x):
 
     return { "type": "text", "value": repr(x) }
 ` +
-  // Reformat Python code using black.
+  // Reformat Python code using black. The odd importlib stuff is so that we
+  // only load black (and dependencies) when we actually need it. Otherwise
+  // Pyodide will load it automatically as soon as as it's loaded.
   `
-def _format_py_code(x: str):
-    import tomli
-    import black
-    black._LAST_VALUE = black.format_str(x, mode=black.Mode())
+async def _format_py_code(x: str):
+    import sys
+    import importlib
+    if "black" not in sys.modules:
+        import micropip
+        await micropip.install("tomli")
+        await micropip.install("black")
+    black = importlib.import_module("black")
+    result = black.format_str(x, mode=black.Mode())
+    return result
 ` +
   // When we start the app, add the app's directory to the sys.path so that it
   // can import other files in the dir with "import foo". We'll remove it from

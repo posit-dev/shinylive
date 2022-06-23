@@ -1,21 +1,16 @@
-// Location of pyodide.js relative to the output directory for the generated .js
-// file.
-importScripts("./pyodide/pyodide.js");
-
 import { ASGIHTTPRequestScope, makeRequest } from "./messageporthttp";
 import { openChannel } from "./messageportwebsocket-channel";
-import type {
-  LoadPyodideConfig,
-  PyUtils,
-  ResultType,
-  ToHtmlResult,
-} from "./pyodide-proxy";
-import { setupPythonEnv } from "./pyodide-proxy";
+import type { LoadPyodideConfig, PyUtils, ResultType } from "./pyodide-proxy";
+import { setupPythonEnv, processReturnValue } from "./pyodide-proxy";
 import type {
   loadPyodide as _loadPyodide,
   Py2JsResult,
   PyProxyIterable,
 } from "./types/pyodide";
+
+// Location of pyodide.js relative to the output directory for the generated .js
+// file.
+importScripts("./pyodide/pyodide.js");
 
 type Pyodide = Awaited<ReturnType<typeof loadPyodide>>;
 
@@ -79,14 +74,16 @@ export interface InMessageTabComplete {
 
 // Incoming message that contains the name of a python object, and an argument
 // to pass to it. For example, if the data component looks like:
-//    data: {fn_name: ["foo", "bar"], args: ["a", 2], kwargs: {x: 3}}
+//    data: {fnName: ["foo", "bar"], args: ["a", 2], kwargs: {x: 3}}
 // This translates to the following Python call:
 //    foo.bar("a", 2, x=3)
-export interface InMessageCallPy {
-  type: "callPy";
-  fn_name: string[];
+export interface InMessageCallPyAsync {
+  type: "callPyAsync";
+  fnName: string[];
   args: any[];
   kwargs: { [x: string]: any };
+  returnResult: ResultType;
+  printResult: boolean;
 }
 
 export interface InMessageOpenChannel {
@@ -106,7 +103,7 @@ export type InMessage =
   | InMessageLoadPackagesFromImports
   | InMessageRunPythonAsync
   | InMessageTabComplete
-  | InMessageCallPy
+  | InMessageCallPyAsync
   | InMessageOpenChannel
   | InMessageMakeRequest;
 
@@ -127,11 +124,11 @@ self.stderr_callback = function (s: string) {
 // which is equivalent to the following JS call:
 //   foo.bar("a", 2)
 // This function gets injected into the Python global namespace.
-async function callJS(fn_name: PyProxyIterable, args: PyProxyIterable) {
+async function callJS(fnName: PyProxyIterable, args: PyProxyIterable) {
   self.postMessage({
     type: "nonreply",
     subtype: "callJS",
-    fn_name: fn_name.toJs() as string[],
+    fnName: fnName.toJs() as string[],
     args: args.toJs() as any[],
   });
 }
@@ -170,9 +167,13 @@ self.onmessage = async function (e: MessageEvent): Promise<void> {
       }
 
       messagePort.postMessage({ type: "reply", subtype: "done" });
-    } else if (msg.type === "loadPackagesFromImports") {
+    }
+    //
+    else if (msg.type === "loadPackagesFromImports") {
       await pyodide.loadPackagesFromImports(msg.code);
-    } else if (msg.type === "runPythonAsync") {
+    }
+    //
+    else if (msg.type === "runPythonAsync") {
       await pyodide.loadPackagesFromImports(msg.code);
 
       const result = await (pyodide.runPythonAsync(
@@ -183,73 +184,75 @@ self.onmessage = async function (e: MessageEvent): Promise<void> {
         self.stdout_callback(pyUtils.repr(result));
       }
 
-      if (msg.returnResult === "value") {
+      try {
+        const processedResult = processReturnValue(
+          result,
+          msg.returnResult,
+          pyodide,
+          pyUtils.repr
+        );
+
+        messagePort.postMessage({
+          type: "reply",
+          subtype: "done",
+          value: processedResult,
+        });
+      } finally {
         if (pyodide.isPyProxy(result)) {
-          messagePort.postMessage({
-            type: "reply",
-            subtype: "done",
-            value: result.toJs(),
-          });
-        } else if (Py2JsResultBasicTypenames.includes(typeof result)) {
-          messagePort.postMessage({
-            type: "reply",
-            subtype: "done",
-            value: result,
-          });
-        } else {
-          // Shouldn't get here, but log it just in case.
-          console.error("Don't know how to handle result: ", result);
-          messagePort.postMessage({ type: "reply", subtype: "done" });
+          result.destroy();
         }
-      } else if (msg.returnResult === "to_html") {
-        try {
-          pyUtils.toHtml = pyodide.globals.get("_to_html") as (
-            x: any
-          ) => ToHtmlResult;
-        } catch (e) {
-          console.error("Couldn't find _to_html function: ", e);
-        }
-
-        messagePort.postMessage({
-          type: "reply",
-          subtype: "done",
-          value: (pyUtils.toHtml(result) as Py2JsResult).toJs({
-            dict_converter: Object.fromEntries,
-          }),
-        });
-      } else if (msg.returnResult === "printed_value") {
-        messagePort.postMessage({
-          type: "reply",
-          subtype: "done",
-          value: pyUtils.repr(result),
-        });
-      } else {
-        messagePort.postMessage({ type: "reply", subtype: "done" });
       }
-
-      if (pyodide.isPyProxy(result)) {
-        result.destroy();
-      }
-    } else if (msg.type === "tabComplete") {
+    }
+    //
+    else if (msg.type === "tabComplete") {
       const completions: string[] = pyUtils.tabComplete(msg.code).toJs()[0];
       messagePort.postMessage({
         type: "reply",
         subtype: "tabCompletions",
         completions,
       });
-    } else if (msg.type === "callPy") {
-      const { fn_name, args, kwargs } = msg;
-      // fn_name is something like ["os", "path", "join"]. Get the first
+    }
+    //
+    else if (msg.type === "callPyAsync") {
+      const { fnName: fnName, args, kwargs } = msg;
+      // fnName is something like ["os", "path", "join"]. Get the first
       // element with pyodide.globals.get(), then descend into it with [].
-      let fn = pyodide.globals.get(fn_name[0]) as any;
-      for (const el of fn_name.slice(1)) {
+      let fn = pyodide.globals.get(fnName[0]);
+      for (const el of fnName.slice(1)) {
         fn = fn[el];
       }
 
-      fn.callKwargs(...args, kwargs);
+      // If fn is an async function, this will return a Promise; if it is a normal
+      // function, it will reutrn a normal value.
+      const resultMaybePromise = fn.callKwargs(...args, kwargs);
+      // This will convert non-Promises to Promises, and then await them.
+      const result = await Promise.resolve(resultMaybePromise);
 
-      messagePort.postMessage({ type: "reply", subtype: "done" });
-    } else {
+      if (msg.printResult && result !== undefined) {
+        self.stdout_callback(pyUtils.repr(result));
+      }
+
+      try {
+        const processedResult = processReturnValue(
+          result,
+          msg.returnResult,
+          pyodide,
+          pyUtils.repr
+        );
+
+        messagePort.postMessage({
+          type: "reply",
+          subtype: "done",
+          value: processedResult,
+        });
+      } finally {
+        if (pyodide.isPyProxy(result)) {
+          result.destroy();
+        }
+      }
+    }
+    //
+    else {
       messagePort.postMessage({
         type: "reply",
         subtype: "done",
@@ -310,6 +313,6 @@ export interface NonReplyMessageOutput {
 export interface NonReplyMessageCallJS {
   type: "nonreply";
   subtype: "callJS";
-  fn_name: string[];
+  fnName: string[];
   args: any[];
 }
