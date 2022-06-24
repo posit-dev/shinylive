@@ -2,7 +2,9 @@
 # API. However, it won't work in Pyodide because sockets are not available.
 #
 # Instead, you can pyodide.http.pyfetch(), which is a wrapper for the JavaScript fetch()
-# function.
+# function. Note that when running shinylive, the endpoint MUST use https. This is
+# because shinylive must be served over https (unless you are running on localhost),
+# and browsers will not allow a https page to fetch data with http.
 #
 # One important difference between urllib.request.urlopen() and pyodide.http.pyfetch()
 # is that the latter is asynchronous. In a Shiny app, this just means that the
@@ -15,13 +17,31 @@
 
 from shiny import *
 import pyodide.http
+from pprint import pformat
 
 app_ui = ui.page_fluid(
-    ui.input_numeric("n", "Enter a number:", value=42),
-    ui.input_radio_buttons(
-        "type",
-        "What kind of fact do you want?",
-        {"trivia": "Trivia", "year": "Year", "date": "Date"},
+    ui.input_selectize(
+        "city",
+        "Select a city:",
+        [
+            "",
+            "Berlin",
+            "Cairo",
+            "Chicago",
+            "Kyiv",
+            "London",
+            "Lima",
+            "Los Angeles",
+            "Mexico City",
+            "Mumbai",
+            "New York",
+            "Paris",
+            "São Paulo",
+            "Seoul",
+            "Shanghai",
+            "Taipei",
+            "Tokyo",
+        ],
     ),
     ui.input_radio_buttons(
         "data_type",
@@ -32,23 +52,20 @@ app_ui = ui.page_fluid(
             "bytes": "Byte object",
         },
     ),
-    ui.input_action_button(
-        id="go", label="Fetch another fact", style="margin-bottom: 10px;"
-    ),
     ui.output_text_verbatim("info"),
 )
 
 
 def server(input: Inputs, output: Outputs, session: Session):
+    # Weather data API: https://github.com/robertoduessmann/weather-api
     @reactive.Calc
     def url():
-        return f"http://numbersapi.com/{input.n()}/{input.type()}?json"
+        return f"https://goweather.herokuapp.com/weather/{input.city()}"
 
     @reactive.Calc
-    async def number_data():
-        # Take a dependency on the button, so that the user can hit the API again with
-        # the same values.
-        input.go()
+    async def weather_data():
+        if input.city() == "":
+            return
 
         response = await pyodide.http.pyfetch(url())
         if response.status != 200:
@@ -69,8 +86,15 @@ def server(input: Inputs, output: Outputs, session: Session):
     @output
     @render.text
     async def info():
-        data = await number_data()
-        return f"Request URL: {url()}\nResult type: {type(data)}\n{str(data)}"
+        if input.city() == "":
+            return ""
+
+        data = await weather_data()
+        if isinstance(data, (str, bytes)):
+            data_str = data
+        else:
+            data_str = pformat(data)
+        return f"Request URL: {url()}\nResult type: {type(data)}\n{data_str}"
 
 
 app = App(app_ui, server)
