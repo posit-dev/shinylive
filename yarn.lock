@@ -900,6 +900,11 @@
   dependencies:
     "@babel/types" "^7.3.0"
 
+"@types/events@^3.0.0":
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/@types/events/-/events-3.0.0.tgz#2862f3f58a9a7f7c3e78d79f130dd4d71c25c2a7"
+  integrity sha512-EaObqwIvayI5a8dCzhFrjKzVwKLxjoG9T6Ppd5CEo07LRKfQ8Yokw54r5+Wq7FaBQ+yXRvQAYPrHwya1/UFt9g==
+
 "@types/graceful-fs@^4.1.2":
   version "4.1.5"
   resolved "https://registry.yarnpkg.com/@types/graceful-fs/-/graceful-fs-4.1.5.tgz#21ffba0d98da4350db64891f92a9e5db3cdb4e15"
@@ -2003,6 +2008,11 @@ esutils@^2.0.2:
   version "2.0.3"
   resolved "https://registry.yarnpkg.com/esutils/-/esutils-2.0.3.tgz#74d2eb4de0b8da1293711910d50775b9b710ef64"
   integrity sha512-kVscqXk4OCp68SZ0dkgEKVi6/8ij300KBWTJq32P/dYeWTSwK41WyTxalN1eRmA5Z9UU/LX9D7FWSmV9SAYx6g==
+
+events@^3.3.0:
+  version "3.3.0"
+  resolved "https://registry.yarnpkg.com/events/-/events-3.3.0.tgz#31a95ad0a924e2d2c419a813aeb2c4e878ea7400"
+  integrity sha512-mQw+2fkQbALzQ7V0MY0IqdnXNOeTtP4r0lN9z7AAawCXgqea7bDii20AYrIBrFd/Hx0M2Ocz6S111CaFkUcb0Q==
 
 execa@^5.0.0:
   version "5.1.1"
@@ -3994,6 +4004,24 @@ v8-to-istanbul@^8.1.0:
     "@types/istanbul-lib-coverage" "^2.0.1"
     convert-source-map "^1.6.0"
     source-map "^0.7.3"
+
+vscode-jsonrpc@8.0.1:
+  version "8.0.1"
+  resolved "https://registry.yarnpkg.com/vscode-jsonrpc/-/vscode-jsonrpc-8.0.1.tgz#f30b0625ebafa0fb3bc53e934ca47b706445e57e"
+  integrity sha512-N/WKvghIajmEvXpatSzvTvOIz61ZSmOSa4BRA4pTLi+1+jozquQKP/MkaylP9iB68k73Oua1feLQvH3xQuigiQ==
+
+vscode-languageserver-protocol@^3.17.1:
+  version "3.17.1"
+  resolved "https://registry.yarnpkg.com/vscode-languageserver-protocol/-/vscode-languageserver-protocol-3.17.1.tgz#e801762c304f740208b6c804a0cf21f2c87509ed"
+  integrity sha512-BNlAYgQoYwlSgDLJhSG+DeA8G1JyECqRzM2YO6tMmMji3Ad9Mw6AW7vnZMti90qlAKb0LqAlJfSVGEdqMMNzKg==
+  dependencies:
+    vscode-jsonrpc "8.0.1"
+    vscode-languageserver-types "3.17.1"
+
+vscode-languageserver-types@3.17.1:
+  version "3.17.1"
+  resolved "https://registry.yarnpkg.com/vscode-languageserver-types/-/vscode-languageserver-types-3.17.1.tgz#c2d87fa7784f8cac389deb3ff1e2d9a7bef07e16"
+  integrity sha512-K3HqVRPElLZVVPtMeKlsyL9aK0GxGQpvtAUTfX4k7+iJ4mc1M+JM+zQwkgGy2LzY0f0IAafe8MKqIkJrxfGGjQ==
 
 w3c-hr-time@^1.0.2:
   version "1.0.2"

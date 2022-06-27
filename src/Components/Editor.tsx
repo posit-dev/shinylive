@@ -4,6 +4,7 @@
 // https://github.com/microsoft/vscode/issues/141908
 /// <reference types="wicg-file-system-access" />
 import * as fileio from "../fileio";
+import { usePyrightLanguageServerClient } from "../language-server/useLanguageServerClient";
 import * as utils from "../utils";
 import { inferFiletype, modKeySymbol, stringToUint8Array } from "../utils";
 import type { UtilityMethods } from "./App";
@@ -75,6 +76,8 @@ export function Editor({
   showShareButton?: boolean;
   floatingButtons?: boolean;
 }) {
+  usePyrightLanguageServerClient();
+
   const [keyBindings] = React.useState<KeyBinding[]>([
     {
       key: "Mod-Enter",
