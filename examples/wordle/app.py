@@ -1,8 +1,9 @@
 # pyright: reportUnusedFunction=false
 
 import random
+from dataclasses import dataclass
 from pathlib import Path
-from typing import TypedDict, cast
+from typing import cast
 
 import shiny
 from htmltools import TagList, div, h3, head_content, tags
@@ -15,7 +16,8 @@ import words
 LetterMatch = Literal["correct", "in-word", "not-in-word"]
 
 # Information about each guess made by the player.
-class GuessInfo(TypedDict):
+@dataclass(init=True)
+class GuessInfo:
     word: str
     letters: list[str]
     match_types: list[LetterMatch]
@@ -121,11 +123,11 @@ def server(input: Inputs, output: Outputs, session: Session):
     def previous_guesses() -> TagList:
         res = TagList()
         for guess in all_guesses():
-            letters = guess["letters"]
+            letters = guess.letters
 
             row = div(class_="word")
             for i in range(len(letters)):
-                match = guess["match_types"][i]
+                match = guess.match_types[i]
                 row.children.append(div(letters[i].upper(), class_="letter " + match))
             res.append(row)
 
@@ -169,14 +171,14 @@ def server(input: Inputs, output: Outputs, session: Session):
 
         # Populate `letter_matches` by iterating over all letters in all the guesses.
         for guess in all_guesses():
-            for i in range(len(guess["letters"])):
-                letter = guess["letters"][i]
-                match_type = guess["match_types"][i]
+            for i in range(len(guess.letters)):
+                letter = guess.letters[i]
+                match_type = guess.match_types[i]
                 if letter not in letter_matches:
                     # If there isn't an existing entry for that letter, just use it.
-                    letter_matches[letter] = match_type
+                    letter_matches["letter"] = match_type
                 else:
-                    prev_match_type = letter_matches[letter]
+                    prev_match_type = letter_matches["letter"]
                     if match_type == "correct" and prev_match_type in [
                         "not-in-word",
                         "in-word",
@@ -257,7 +259,7 @@ def server(input: Inputs, output: Outputs, session: Session):
         all_guesses_new.append(check_result)
         all_guesses.set(all_guesses_new)
 
-        if check_result["win"]:
+        if check_result.win:
             game_has_ended.set(True)
 
         current_guess_letters.set([])
@@ -310,7 +312,7 @@ def server(input: Inputs, output: Outputs, session: Session):
 
         for guess in all_guesses():
             line_text = ""
-            for match in guess["match_types"]:
+            for match in guess.match_types:
                 if match == "correct":
                     line_text += "🟩"
                 elif match == "in-word":
@@ -363,9 +365,9 @@ def check_word(guess_str: str, target_str: str) -> GuessInfo:
             result[i] = "in-word"
             remaining.remove(guess[i])
 
-    return {
-        "word": guess_str,
-        "letters": guess,
-        "match_types": result,
-        "win": all(x == "correct" for x in result),
-    }
+    return GuessInfo(
+        word=guess_str,
+        letters=guess,
+        match_types=result,
+        win=all(x == "correct" for x in result),
+    )
