@@ -164,7 +164,7 @@ buildjs:
 
 ## Build JS resources for production (with minification)
 buildjs-prod:
-	node scripts/build.mjs --minify
+	node scripts/build.mjs --prod
 
 ## Build JS resources and watch for changes
 watch:
@@ -172,6 +172,10 @@ watch:
 
 ## Build JS resources, watch for changes, and serve site
 serve:
+	node scripts/build.mjs --serve
+
+## Build JS resources for production, watch for changes, and serve site
+serve-prod:
 	node scripts/build.mjs --serve
 
 

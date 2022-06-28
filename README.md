@@ -75,6 +75,7 @@ buildjs                Build JS resources from src/ dir
 buildjs-prod           Build JS resources from src/ dir, for production (with minification)
 watch                  Build JS resources and watch for changes
 serve                  Build JS resources, watch for changes, and serve site
+serve-prod             Build JS resources for production, watch for changes, and serve site
 packages               Build htmltools and shiny wheels
 update_packages_lock   Update the shinylive_lock.json file, based on shinylive_requirements.json
 update_packages_lock_local Update the shinylive_lock.json file, but with local packages only

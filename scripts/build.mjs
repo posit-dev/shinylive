@@ -14,6 +14,7 @@ const clients = [];
 let watch = false;
 let serve = false;
 let minify = false;
+let reactProductionMode = false;
 // Set this to true to generate a metadata file that can be analyzed for size of
 // modules in the bundle.
 let metafile = false;
@@ -25,8 +26,9 @@ if (process.argv.some((x) => x === "--serve")) {
   watch = true;
   serve = true;
 }
-if (process.argv.some((x) => x === "--minify")) {
+if (process.argv.some((x) => x === "--prod")) {
   minify = true;
+  reactProductionMode = true;
 }
 
 const onRebuild = (error, result) => {
@@ -53,6 +55,11 @@ esbuild
     target: "es2020",
     minify: minify,
     metafile: metafile,
+    define: {
+      "process.env.NODE_ENV": reactProductionMode
+        ? '"production"'
+        : '"development"',
+    },
     ...watchProp,
     loader: { ".svg": "dataurl" },
     plugins: [
