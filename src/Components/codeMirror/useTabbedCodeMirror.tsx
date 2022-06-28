@@ -12,9 +12,11 @@ import * as React from "react";
 export function useTabbedCodeMirror({
   currentFilesFromApp,
   inferEditorExtensions,
+  addPyrightLSPFile,
 }: {
   currentFilesFromApp: FileContent[];
   inferEditorExtensions: (f: FileContent) => Extension;
+  addPyrightLSPFile: (f: FileContent) => void;
 }) {
   const [files, setFiles] = React.useState<EditorFile[]>([]);
 
@@ -61,15 +63,17 @@ export function useTabbedCodeMirror({
   }
 
   function addFile() {
+    const fileContent: FileContent = {
+      name: `file${newFileCounter}.py`,
+      type: "text",
+      content: `def add(x, y):\n  return x + y\n`,
+    };
     const newFile: EditorFile = fileContentToEditorFile(
-      {
-        name: `file${newFileCounter}.py`,
-        type: "text",
-        content: `def add(x, y):\n  return x + y\n`,
-      },
+      fileContent,
       inferEditorExtensions
     );
 
+    addPyrightLSPFile(fileContent);
     setEditingFilename(newFile.name);
     setNewFileCounter(newFileCounter + 1);
     setFiles([...files, newFile]);

@@ -4,7 +4,7 @@
 // https://github.com/microsoft/vscode/issues/141908
 /// <reference types="wicg-file-system-access" />
 import * as fileio from "../fileio";
-import { usePyrightLanguageServerClient } from "../language-server/useLanguageServerClient";
+import { ensurePyrightLanguageServerClient } from "../language-server/pyright-client";
 import * as utils from "../utils";
 import { inferFiletype, modKeySymbol, stringToUint8Array } from "../utils";
 import type { UtilityMethods } from "./App";
@@ -27,6 +27,7 @@ import { EditorView, KeyBinding, keymap, ViewUpdate } from "@codemirror/view";
 import "balloon-css";
 import { zipSync, Zippable } from "fflate";
 import * as React from "react";
+import * as LSP from "vscode-languageserver-protocol";
 
 export type EditorFile =
   | {
@@ -76,7 +77,50 @@ export function Editor({
   showShareButton?: boolean;
   floatingButtons?: boolean;
 }) {
-  usePyrightLanguageServerClient();
+  const plsc = ensurePyrightLanguageServerClient();
+
+  React.useEffect(() => {
+    const diagnosticsListener = (params: LSP.PublishDiagnosticsParams) => {
+      console.log("LanguageServerView.diagnosticsListener");
+      console.log(params);
+      params.diagnostics.map((d) => {
+        console.log(d);
+      });
+    };
+
+    if (!plsc) return;
+    plsc.initialize().then(() => {
+      plsc.on("diagnostics", diagnosticsListener);
+    });
+
+    return () => {
+      if (!plsc) return;
+      plsc.initialize().then(() => {
+        plsc.off("diagnostics", diagnosticsListener);
+      });
+    };
+  }, [plsc]);
+
+  const addPyrightLSPFile = React.useCallback(
+    (file: FileContent) => {
+      if (file.type !== "text" || inferFiletype(file.name) !== "python") return;
+
+      const uri = `file:///src/${file.name}`;
+      const params: LSP.CreateFile = {
+        uri,
+        kind: "create",
+      };
+      plsc.connection.sendNotification("pyright/createFile", params);
+      plsc.didOpenTextDocument({
+        textDocument: {
+          languageId: "python",
+          text: file.content,
+          uri,
+        },
+      });
+    },
+    [plsc]
+  );
 
   const [keyBindings] = React.useState<KeyBinding[]>([
     {
@@ -108,18 +152,24 @@ export function Editor({
         getExtensionForFiletype(inferFiletype(file.name)),
         EditorView.updateListener.of((u: ViewUpdate) => {
           if (u.docChanged) {
+            plsc?.didChangeTextDocument(`file:///src/${file.name}`, [
+              {
+                text: u.view.state.doc.toString(),
+              },
+            ]);
             setFilesHaveChanged(true);
           }
         }),
         Prec.high(keymap.of(keyBindings)),
       ];
     },
-    [keyBindings, lineNumbers, setFilesHaveChanged]
+    [keyBindings, lineNumbers, setFilesHaveChanged, plsc]
   );
 
   const tabbedFiles = useTabbedCodeMirror({
     currentFilesFromApp,
     inferEditorExtensions,
+    addPyrightLSPFile,
   });
   const { files, activeFile } = tabbedFiles;
 
@@ -178,6 +228,28 @@ export function Editor({
 
     (async () => {
       await viewerMethods.stopApp();
+      currentFilesFromApp.map(addPyrightLSPFile);
+
+      // if (plsc) {
+      //   currentFilesFromApp.map((file) => {
+      //     if (file.type !== "text" || inferFiletype(file.name) !== "python")
+      //       return;
+
+      //     const uri = `file:///src/${file.name}`;
+      //     const params: LSP.CreateFile = {
+      //       uri,
+      //       kind: "create",
+      //     };
+      //     plsc.connection.sendNotification("pyright/createFile", params);
+      //     plsc.didOpenTextDocument({
+      //       textDocument: {
+      //         languageId: "python",
+      //         text: file.content,
+      //         uri,
+      //       },
+      //     });
+      //   });
+      // }
 
       if (!runOnLoad) return;
       // Note that we use this `isShinyCode` instead of the state var
