@@ -22,6 +22,7 @@ import {
   getExtensionForFiletype,
   getExtensions,
 } from "./codeMirror/extensions";
+import { autocompletion } from "./codeMirror/language-server/autocompletion";
 import { diagnosticsMapping } from "./codeMirror/language-server/diagnostics";
 import { useTabbedCodeMirror } from "./codeMirror/useTabbedCodeMirror";
 import * as cmUtils from "./codeMirror/utils";
@@ -126,6 +127,7 @@ export function Editor({
             setFilesHaveChanged(true);
           }
         }),
+        autocompletion(pyrightClient, file.name),
         Prec.high(keymap.of(keyBindings)),
       ];
     },
