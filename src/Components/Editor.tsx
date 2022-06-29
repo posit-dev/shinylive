@@ -22,9 +22,11 @@ import {
   getExtensionForFiletype,
   getExtensions,
 } from "./codeMirror/extensions";
+import { diagnosticsMapping } from "./codeMirror/language-server/diagnostics";
 import { useTabbedCodeMirror } from "./codeMirror/useTabbedCodeMirror";
 import * as cmUtils from "./codeMirror/utils";
 import { FileContent } from "./filecontent";
+import { setDiagnostics } from "@codemirror/lint";
 import { EditorState, Extension, Prec } from "@codemirror/state";
 import { EditorView, KeyBinding, keymap, ViewUpdate } from "@codemirror/view";
 import "balloon-css";
@@ -50,14 +52,6 @@ export type EditorFile =
         editorState: EditorState;
       };
     };
-
-const diagnosticsListener = (params: LSP.PublishDiagnosticsParams) => {
-  console.log("LanguageServerView.diagnosticsListener");
-  console.log(params);
-  params.diagnostics.map((d) => {
-    console.log(d);
-  });
-};
 
 export function Editor({
   currentFilesFromApp,
@@ -89,14 +83,6 @@ export function Editor({
   floatingButtons?: boolean;
 }) {
   const pyrightClient: PyrightClient = ensurePyrightClient();
-
-  React.useEffect(() => {
-    pyrightClient.on("diagnostics", diagnosticsListener);
-
-    return () => {
-      pyrightClient.off("diagnostics", diagnosticsListener);
-    };
-  }, [pyrightClient]);
 
   const addPyrightLSPFile = React.useCallback(
     (file: FileContent) => {
@@ -210,27 +196,6 @@ export function Editor({
       await viewerMethods.stopApp();
       currentFilesFromApp.map(addPyrightLSPFile);
 
-      // if (plsc) {
-      //   currentFilesFromApp.map((file) => {
-      //     if (file.type !== "text" || inferFiletype(file.name) !== "python")
-      //       return;
-
-      //     const uri = `file:///src/${file.name}`;
-      //     const params: LSP.CreateFile = {
-      //       uri,
-      //       kind: "create",
-      //     };
-      //     plsc.connection.sendNotification("pyright/createFile", params);
-      //     plsc.didOpenTextDocument({
-      //       textDocument: {
-      //         languageId: "python",
-      //         text: file.content,
-      //         uri,
-      //       },
-      //     });
-      //   });
-      // }
-
       if (!runOnLoad) return;
       // Note that we use this `isShinyCode` instead of the state var
       // `isShinyApp` because we need it to decide on the first pass whether to
@@ -323,6 +288,41 @@ export function Editor({
       }
     };
   }, [isShinyApp, runAllCode, runAllApp]);
+
+  // ===========================================================================
+  // LSP stuff
+  // ===========================================================================
+
+  const diagnosticsListener = React.useCallback(
+    (params: LSP.PublishDiagnosticsParams) => {
+      if (!cmViewRef.current) return;
+      console.log("diagnosticsListener");
+      console.log(params);
+
+      files.map((file) => {
+        if (`file:///src/${file.name}` !== params.uri) return;
+        if (!cmViewRef.current) return;
+
+        const diagnostics = diagnosticsMapping(
+          cmViewRef.current.state.doc,
+          params.diagnostics
+        );
+
+        cmViewRef.current.dispatch(
+          setDiagnostics(cmViewRef.current.state, diagnostics)
+        );
+      });
+    },
+    [files]
+  );
+
+  React.useEffect(() => {
+    pyrightClient.on("diagnostics", diagnosticsListener);
+
+    return () => {
+      pyrightClient.off("diagnostics", diagnosticsListener);
+    };
+  }, [pyrightClient, diagnosticsListener]);
 
   // ===========================================================================
   // React component
