@@ -4,7 +4,10 @@
 // https://github.com/microsoft/vscode/issues/141908
 /// <reference types="wicg-file-system-access" />
 import * as fileio from "../fileio";
-import { ensurePyrightLanguageServerClient } from "../language-server/pyright-client";
+import {
+  ensurePyrightClient,
+  PyrightClient,
+} from "../language-server/pyright-client";
 import * as utils from "../utils";
 import { inferFiletype, modKeySymbol, stringToUint8Array } from "../utils";
 import type { UtilityMethods } from "./App";
@@ -48,6 +51,14 @@ export type EditorFile =
       };
     };
 
+const diagnosticsListener = (params: LSP.PublishDiagnosticsParams) => {
+  console.log("LanguageServerView.diagnosticsListener");
+  console.log(params);
+  params.diagnostics.map((d) => {
+    console.log(d);
+  });
+};
+
 export function Editor({
   currentFilesFromApp,
   setCurrentFiles,
@@ -77,49 +88,22 @@ export function Editor({
   showShareButton?: boolean;
   floatingButtons?: boolean;
 }) {
-  const plsc = ensurePyrightLanguageServerClient();
+  const pyrightClient: PyrightClient = ensurePyrightClient();
 
   React.useEffect(() => {
-    const diagnosticsListener = (params: LSP.PublishDiagnosticsParams) => {
-      console.log("LanguageServerView.diagnosticsListener");
-      console.log(params);
-      params.diagnostics.map((d) => {
-        console.log(d);
-      });
-    };
-
-    if (!plsc) return;
-    plsc.initialize().then(() => {
-      plsc.on("diagnostics", diagnosticsListener);
-    });
+    pyrightClient.on("diagnostics", diagnosticsListener);
 
     return () => {
-      if (!plsc) return;
-      plsc.initialize().then(() => {
-        plsc.off("diagnostics", diagnosticsListener);
-      });
+      pyrightClient.off("diagnostics", diagnosticsListener);
     };
-  }, [plsc]);
+  }, [pyrightClient]);
 
   const addPyrightLSPFile = React.useCallback(
     (file: FileContent) => {
       if (file.type !== "text" || inferFiletype(file.name) !== "python") return;
-
-      const uri = `file:///src/${file.name}`;
-      const params: LSP.CreateFile = {
-        uri,
-        kind: "create",
-      };
-      plsc.connection.sendNotification("pyright/createFile", params);
-      plsc.didOpenTextDocument({
-        textDocument: {
-          languageId: "python",
-          text: file.content,
-          uri,
-        },
-      });
+      pyrightClient.createFile(file.name, file.content);
     },
-    [plsc]
+    [pyrightClient]
   );
 
   const [keyBindings] = React.useState<KeyBinding[]>([
@@ -152,24 +136,20 @@ export function Editor({
         getExtensionForFiletype(inferFiletype(file.name)),
         EditorView.updateListener.of((u: ViewUpdate) => {
           if (u.docChanged) {
-            plsc?.didChangeTextDocument(`file:///src/${file.name}`, [
-              {
-                text: u.view.state.doc.toString(),
-              },
-            ]);
+            pyrightClient.changeFile(file.name, u.view.state.doc.toString());
             setFilesHaveChanged(true);
           }
         }),
         Prec.high(keymap.of(keyBindings)),
       ];
     },
-    [keyBindings, lineNumbers, setFilesHaveChanged, plsc]
+    [keyBindings, lineNumbers, setFilesHaveChanged, pyrightClient]
   );
 
   const tabbedFiles = useTabbedCodeMirror({
     currentFilesFromApp,
     inferEditorExtensions,
-    addPyrightLSPFile,
+    pyrightClient,
   });
   const { files, activeFile } = tabbedFiles;
 

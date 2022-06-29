@@ -1,4 +1,5 @@
 import * as fileio from "../../fileio";
+import { PyrightClient } from "../../language-server/pyright-client";
 import {
   EditorFile,
   editorFileToFileContent,
@@ -12,11 +13,11 @@ import * as React from "react";
 export function useTabbedCodeMirror({
   currentFilesFromApp,
   inferEditorExtensions,
-  addPyrightLSPFile,
+  pyrightClient,
 }: {
   currentFilesFromApp: FileContent[];
   inferEditorExtensions: (f: FileContent) => Extension;
-  addPyrightLSPFile: (f: FileContent) => void;
+  pyrightClient: PyrightClient;
 }) {
   const [files, setFiles] = React.useState<EditorFile[]>([]);
 
@@ -73,11 +74,12 @@ export function useTabbedCodeMirror({
       inferEditorExtensions
     );
 
-    addPyrightLSPFile(fileContent);
     setEditingFilename(newFile.name);
     setNewFileCounter(newFileCounter + 1);
     setFiles([...files, newFile]);
     setActiveFileIdx(files.length);
+
+    pyrightClient.createFile(fileContent.name, fileContent.content);
   }
 
   const uploadFile = React.useCallback(async () => {
@@ -124,6 +126,12 @@ export function useTabbedCodeMirror({
 
     setEditingFilename(null);
     setActiveFileIdx(fileIndex);
+
+    pyrightClient.deleteFile(oldFileName);
+    pyrightClient.createFile(
+      newFileName,
+      updatedFiles[fileIndex].ref.editorState.doc.toString()
+    );
   }
 
   function selectFile(fileName: string) {
