@@ -24,6 +24,7 @@ import {
 } from "./codeMirror/extensions";
 import { autocompletion } from "./codeMirror/language-server/autocompletion";
 import { diagnosticsMapping } from "./codeMirror/language-server/diagnostics";
+import { signatureHelp } from "./codeMirror/language-server/signatureHelp";
 import { useTabbedCodeMirror } from "./codeMirror/useTabbedCodeMirror";
 import * as cmUtils from "./codeMirror/utils";
 import { FileContent } from "./filecontent";
@@ -128,6 +129,7 @@ export function Editor({
           }
         }),
         autocompletion(pyrightClient, file.name),
+        signatureHelp(pyrightClient, file.name, true),
         Prec.high(keymap.of(keyBindings)),
       ];
     },
