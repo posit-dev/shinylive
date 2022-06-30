@@ -53,7 +53,11 @@ export function loudPrint(msg: string) {
   console.log("%c" + msg, "color:forestgreen");
 }
 
-// Given a filename, return the file type.
+/**
+ * Given a filename, return the file type. These should match the language
+ * identifiers used by the Langauge Server Protocol.
+ * https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocumentItem
+ */
 export function inferFiletype(filename: string): string | null {
   const extMatch = filename.match(/\.[0-9a-z]+$/i);
   if (extMatch === null) {
@@ -70,6 +74,8 @@ export function inferFiletype(filename: string): string | null {
   return type;
 }
 
+// These language identifiers should match both the Language Server Protocol IDs
+// and the IDs used by `getLanguageExtension()`.
 const FILE_EXTENSIONS: Record<string, string> = {
   py: "python",
   js: "javascript",

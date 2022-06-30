@@ -3,36 +3,11 @@
  *
  * SPDX-License-Identifier: MIT
  */
-// import { Diagnostic } from "../lint/lint";
 import { positionToOffset } from "./positions";
-import { Text } from "@codemirror/state";
+import { Diagnostic, setDiagnostics } from "@codemirror/lint";
+import { EditorState, Text, Transaction } from "@codemirror/state";
 import { EditorView } from "@codemirror/view";
 import * as LSP from "vscode-languageserver-protocol";
-
-/// Describes a problem or hint for a piece of code.
-export interface Diagnostic {
-  /// The start position of the relevant text.
-  from: number;
-  /// The end position. May be equal to `from`, though actually
-  /// covering text is preferable.
-  to: number;
-  /// The severity of the problem. This will influence how it is
-  /// displayed.
-  severity: "hint" | "info" | "warning" | "error";
-  /// An optional source string indicating where the diagnostic is
-  /// coming from. You can put the name of your linter here, if
-  /// applicable.
-  source?: string;
-  /// The message associated with this diagnostic.
-  message: string;
-  /// An optional array of actions that can be taken on this
-  /// diagnostic.
-  actions?: readonly Action[];
-  /// Tags control alternative presentations for diagnostics.
-  /// Currently supported tags are `"unnecessary"` and `"deprecated"`
-  /// which are formatted with opacity and strikethrough respectively.
-  tags?: string[];
-}
 
 /// An action associated with a diagnostic.
 export interface Action {
@@ -48,7 +23,8 @@ const severityMapping = {
   [LSP.DiagnosticSeverity.Error]: "error",
   [LSP.DiagnosticSeverity.Warning]: "warning",
   [LSP.DiagnosticSeverity.Information]: "info",
-  [LSP.DiagnosticSeverity.Hint]: "hint",
+  //   [LSP.DiagnosticSeverity.Hint]: "hint",
+  [LSP.DiagnosticSeverity.Hint]: "info",
 } as const;
 
 export const diagnosticsMapping = (
@@ -67,7 +43,7 @@ export const diagnosticsMapping = (
           // Missing severity is client defined. Warn for now.
           severity: severityMapping[severity ?? LSP.DiagnosticSeverity.Warning],
           message,
-          tags: tags ? tags.map(convertTag) : undefined,
+          //   tags: tags ? tags.map(convertTag) : undefined,
         };
       }
       return undefined;
@@ -84,3 +60,21 @@ const convertTag = (tag: LSP.DiagnosticTag): string => {
       throw new Error("Unsupported tag.");
   }
 };
+
+/**
+ * Given an EditorState object and a LSP.Diagnostic[] for that state's
+ * document, generate and return a Transaction for that EditorState that
+ * that has diagnostics added to it.
+ */
+export function diagnosticToTransaction(
+  editorState: EditorState,
+  lspDiagnostics: LSP.Diagnostic[]
+): Transaction {
+  const diagnostics = diagnosticsMapping(editorState.doc, lspDiagnostics);
+
+  const diagnosticsTransaction = editorState.update(
+    setDiagnostics(editorState, diagnostics)
+  );
+
+  return diagnosticsTransaction;
+}

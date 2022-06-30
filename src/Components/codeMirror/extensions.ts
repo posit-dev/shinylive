@@ -28,8 +28,7 @@ import { lintKeymap } from "@codemirror/lint";
 import { highlightSelectionMatches, searchKeymap } from "@codemirror/search";
 import { EditorState, Extension } from "@codemirror/state";
 import {
-  drawSelection,
-  // highlightActiveLine,
+  drawSelection, // highlightActiveLine,
   dropCursor,
   EditorView,
   highlightActiveLineGutter,
@@ -91,7 +90,7 @@ const LANG_EXTENSIONS: Record<string, () => Extension> = {
   r: () => StreamLanguage.define(r),
 };
 
-export function getExtensionForFiletype(filetype: string | null): Extension {
+export function getLanguageExtension(filetype: string | null): Extension {
   if (filetype === null) return [];
   if (!(filetype in LANG_EXTENSIONS)) return [];
 

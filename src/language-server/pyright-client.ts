@@ -1,94 +1,48 @@
-import { LanguageServerClient } from "./client";
+import { createUri } from "./client";
+import { LSPClient } from "./lsp-client";
 import { pyright } from "./pyright";
 import * as LSP from "vscode-languageserver-protocol";
-import { PublishDiagnosticsParams } from "vscode-languageserver-protocol";
 
 let pyrightClient: PyrightClient | null = null;
 
+/**
+ * This returns a PyrightClient object. If this is called multiple times, it
+ * will return the same object each time.
+ */
 export function ensurePyrightClient(): PyrightClient {
   if (!pyrightClient) {
     pyrightClient = new PyrightClient();
   }
-
   return pyrightClient;
 }
 
-export class PyrightClient {
-  public client: LanguageServerClient;
-  public initPromise: Promise<void>;
-
+/**
+ * The in-browser Pyright Language Server needs a few extra notification
+ * messages over and above the standard Language Server Protocol. This class
+ * sends those messages.
+ */
+export class PyrightClient extends LSPClient {
   constructor() {
     const locale = "en";
-    this.client = pyright(locale)!;
-    // This promise resolves when initialization is complete. We keep it around
-    // so that if someone calls  before initialization finishes, we
-    // can still safely register those callbacks.
-    this.initPromise = this.client.initialize();
-  }
-
-  public on(
-    event: "diagnostics",
-    listener: (params: PublishDiagnosticsParams) => void
-  ): void {
-    this.initPromise.then(() => {
-      this.client.on(event, listener);
-    });
-  }
-
-  public off(
-    event: "diagnostics",
-    listener: (params: PublishDiagnosticsParams) => void
-  ): void {
-    this.initPromise.then(() => {
-      this.client.off(event, listener);
-    });
+    const client = pyright(locale)!;
+    super(client);
   }
 
   public createFile(filename: string, content: string): void {
-    (async (): Promise<void> => {
-      await this.initPromise;
-      const uri = `file:///src/${filename}`;
-      const params: LSP.CreateFile = {
-        uri,
-        kind: "create",
-      };
-      this.client.connection.sendNotification("pyright/createFile", params);
-      this.client.didOpenTextDocument({
-        textDocument: {
-          languageId: "python",
-          text: content,
-          uri,
-        },
-      });
-    })();
+    const params: LSP.CreateFile = {
+      uri: createUri(filename),
+      kind: "create",
+    };
+    this.client.connection.sendNotification("pyright/createFile", params);
+    super.createFile(filename, content);
   }
 
   public deleteFile(filename: string): void {
-    (async (): Promise<void> => {
-      await this.initPromise;
-      const uri = `file:///src/${filename}`;
-      const params: LSP.DeleteFile = {
-        uri,
-        kind: "delete",
-      };
-      this.client.connection.sendNotification("pyright/deleteFile", params);
-      this.client.didCloseTextDocument({
-        textDocument: {
-          uri,
-        },
-      });
-    })();
-  }
-
-  public changeFile(filename: string, content: string): void {
-    (async (): Promise<void> => {
-      await this.initPromise;
-      const uri = `file:///src/${filename}`;
-      this.client.didChangeTextDocument(uri, [
-        {
-          text: content,
-        },
-      ]);
-    })();
+    const params: LSP.DeleteFile = {
+      uri: createUri(filename),
+      kind: "delete",
+    };
+    this.client.connection.sendNotification("pyright/deleteFile", params);
+    super.deleteFile(filename);
   }
 }

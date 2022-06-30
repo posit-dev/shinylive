@@ -20,8 +20,8 @@ import {
   CompletionResolveRequest,
   CompletionTriggerKind,
 } from "vscode-languageserver-protocol";
-import { LanguageServerClient } from "../../../language-server/client";
-import { PyrightClient } from "../../../language-server/pyright-client";
+import { createUri, LanguageServerClient } from "../../../language-server/client";
+import { LSPClient } from "../../../language-server/lsp-client";
 import { clientFacet, uriFacet } from "./common";
 // import {
 //   DocSections,
@@ -38,13 +38,13 @@ const identifierLike = /[a-zA-Z0-9_\u{a1}-\u{10ffff}]+/u;
 
 type AugmentedCompletion = Completion & { item: CompletionItem };
 
-export const autocompletion = (pyrightClient: PyrightClient, filename: string) =>
+export const autocompletion = (lspClient: LSPClient, filename: string) =>
   cmAutocompletion({
     override: [
       async (context: CompletionContext): Promise<CompletionResult | null> => {
 
-        const client = pyrightClient.client;
-        const uri = `file:///src/${filename}`;
+        const client = lspClient.client;
+        const uri = createUri(filename);
 
         // const client = context.state.facet(clientFacet);
         // const uri = context.state.facet(uriFacet);

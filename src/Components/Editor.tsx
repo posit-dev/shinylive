@@ -4,10 +4,9 @@
 // https://github.com/microsoft/vscode/issues/141908
 /// <reference types="wicg-file-system-access" />
 import * as fileio from "../fileio";
-import {
-  ensurePyrightClient,
-  PyrightClient,
-} from "../language-server/pyright-client";
+import { createUri } from "../language-server/client";
+import { LSPClient } from "../language-server/lsp-client";
+import { ensurePyrightClient } from "../language-server/pyright-client";
 import * as utils from "../utils";
 import { inferFiletype, modKeySymbol, stringToUint8Array } from "../utils";
 import type { UtilityMethods } from "./App";
@@ -19,16 +18,14 @@ import { ViewerMethods } from "./Viewer";
 import { FileTabs } from "./codeMirror/FileTabs";
 import {
   getBinaryFileExtensions,
-  getExtensionForFiletype,
+  getLanguageExtension,
   getExtensions,
 } from "./codeMirror/extensions";
-import { autocompletion } from "./codeMirror/language-server/autocompletion";
-import { diagnosticsMapping } from "./codeMirror/language-server/diagnostics";
-import { signatureHelp } from "./codeMirror/language-server/signatureHelp";
+import { diagnosticToTransaction } from "./codeMirror/language-server/diagnostics";
+import { languageServerExtensions } from "./codeMirror/language-server/lsp-extension";
 import { useTabbedCodeMirror } from "./codeMirror/useTabbedCodeMirror";
 import * as cmUtils from "./codeMirror/utils";
 import { FileContent } from "./filecontent";
-import { setDiagnostics } from "@codemirror/lint";
 import { EditorState, Extension, Prec } from "@codemirror/state";
 import { EditorView, KeyBinding, keymap, ViewUpdate } from "@codemirror/view";
 import "balloon-css";
@@ -84,15 +81,7 @@ export function Editor({
   showShareButton?: boolean;
   floatingButtons?: boolean;
 }) {
-  const pyrightClient: PyrightClient = ensurePyrightClient();
-
-  const addPyrightLSPFile = React.useCallback(
-    (file: FileContent) => {
-      if (file.type !== "text" || inferFiletype(file.name) !== "python") return;
-      pyrightClient.createFile(file.name, file.content);
-    },
-    [pyrightClient]
-  );
+  const lspClient: LSPClient = ensurePyrightClient();
 
   const [keyBindings] = React.useState<KeyBinding[]>([
     {
@@ -119,29 +108,29 @@ export function Editor({
         return getBinaryFileExtensions();
       }
 
+      const language = inferFiletype(file.name);
+
       return [
         getExtensions({ lineNumbers }),
-        getExtensionForFiletype(inferFiletype(file.name)),
+        getLanguageExtension(language),
         EditorView.updateListener.of((u: ViewUpdate) => {
           if (u.docChanged) {
-            pyrightClient.changeFile(file.name, u.view.state.doc.toString());
             setFilesHaveChanged(true);
           }
         }),
-        autocompletion(pyrightClient, file.name),
-        signatureHelp(pyrightClient, file.name, true),
+        languageServerExtensions(lspClient, file.name),
         Prec.high(keymap.of(keyBindings)),
       ];
     },
-    [keyBindings, lineNumbers, setFilesHaveChanged, pyrightClient]
+    [keyBindings, lineNumbers, setFilesHaveChanged, lspClient]
   );
 
   const tabbedFiles = useTabbedCodeMirror({
     currentFilesFromApp,
     inferEditorExtensions,
-    pyrightClient,
+    lspClient: lspClient,
   });
-  const { files, activeFile } = tabbedFiles;
+  const { files, setFiles, activeFile } = tabbedFiles;
 
   // If there's a file named app.py, assume we have a Shiny app.
   const [isShinyApp, setIsShinyApp] = React.useState(false);
@@ -149,9 +138,11 @@ export function Editor({
     setIsShinyApp(files.some((file) => file.name === "app.py"));
   }, [files]);
 
-  // Store the currently active file's CodeMirror editor state in the
-  // corresponding entry in `files`, but in the `ref` property, which is meant
-  // to be mutable.
+  /**
+   * Store the currently active file's CodeMirror editor state in the
+   * corresponding entry in `files`, but in the `ref` property, which is meant
+   * to be mutable.
+   */
   const syncFileState = React.useCallback(() => {
     if (!cmViewRef.current) return;
     activeFile.ref.editorState = cmViewRef.current.state;
@@ -198,7 +189,11 @@ export function Editor({
 
     (async () => {
       await viewerMethods.stopApp();
-      currentFilesFromApp.map(addPyrightLSPFile);
+      currentFilesFromApp.map((file) => {
+        if (file.type === "text" && inferFiletype(file.name) === "python") {
+          lspClient.createFile(file.name, file.content);
+        }
+      });
 
       if (!runOnLoad) return;
       // Note that we use this `isShinyCode` instead of the state var
@@ -214,7 +209,13 @@ export function Editor({
       // issue that's causing problems.
       // runAppCurrentFiles.current();
     })();
-  }, [runOnLoad, currentFilesFromApp, viewerMethods, setFilesHaveChanged]);
+  }, [
+    runOnLoad,
+    currentFilesFromApp,
+    viewerMethods,
+    setFilesHaveChanged,
+    lspClient,
+  ]);
 
   React.useEffect(() => {
     if (!runOnLoad) return;
@@ -294,39 +295,46 @@ export function Editor({
   }, [isShinyApp, runAllCode, runAllApp]);
 
   // ===========================================================================
-  // LSP stuff
+  // Language Server
   // ===========================================================================
 
   const diagnosticsListener = React.useCallback(
     (params: LSP.PublishDiagnosticsParams) => {
       if (!cmViewRef.current) return;
-      console.log("diagnosticsListener");
-      console.log(params);
+      console.log("diagnosticsListener", params);
+
+      syncFileState();
 
       files.map((file) => {
-        if (`file:///src/${file.name}` !== params.uri) return;
-        if (!cmViewRef.current) return;
+        if (createUri(file.name) !== params.uri) return;
 
-        const diagnostics = diagnosticsMapping(
-          cmViewRef.current.state.doc,
+        const transaction = diagnosticToTransaction(
+          file.ref.editorState,
           params.diagnostics
         );
 
-        cmViewRef.current.dispatch(
-          setDiagnostics(cmViewRef.current.state, diagnostics)
-        );
+        // In the case where the View's state is the same as the file we're
+        // iterating over, dispatch the transaction so the View gets updated.
+        if (cmViewRef.current?.state === file.ref.editorState) {
+          cmViewRef.current.dispatch(transaction);
+        }
+
+        file.ref.editorState = transaction.state;
       });
+
+      // Trigger updates
+      setFiles([...files]);
     },
-    [files]
+    [files, setFiles, syncFileState]
   );
 
   React.useEffect(() => {
-    pyrightClient.on("diagnostics", diagnosticsListener);
+    lspClient.on("diagnostics", diagnosticsListener);
 
-    return () => {
-      pyrightClient.off("diagnostics", diagnosticsListener);
+    return function cleanup() {
+      lspClient.off("diagnostics", diagnosticsListener);
     };
-  }, [pyrightClient, diagnosticsListener]);
+  }, [lspClient, diagnosticsListener]);
 
   // ===========================================================================
   // React component

@@ -7,8 +7,11 @@
  *
  * SPDX-License-Identifier: MIT
  */
-import { LanguageServerClient } from "../../../language-server/client";
-import { PyrightClient } from "../../../language-server/pyright-client";
+import {
+  createUri,
+  LanguageServerClient,
+} from "../../../language-server/client";
+import { LSPClient } from "../../../language-server/lsp-client";
 import { BaseLanguageServerView, clientFacet, uriFacet } from "./common";
 // import {
 //   DocSections,
@@ -121,12 +124,12 @@ const signatureHelpKeymap: readonly KeyBinding[] = [
 ];
 
 export const signatureHelp = (
-  pyrightClient: PyrightClient,
+  lspClient: LSPClient,
   filename: string,
   automatic: boolean
 ) => {
-  const client = pyrightClient.client;
-  const uri = `file:///src/${filename}`;
+  const client = lspClient.client;
+  const uri = createUri(filename);
 
   const signatureHelpTooltipField = StateField.define<SignatureHelpState>({
     create: () => ({
