@@ -182,6 +182,18 @@ the size bigger.  */
   background-color: var(--colors-bg);
 }
 
+.Editor--container .cm-tooltip {
+  font-family: var(--font-mono-face);
+  font-size: var(--font-mono-size);
+}
+
+/* Need a more specific selector to override CodeMirror's default for
+autocompletions. */
+.Editor--container .cm-tooltip.cm-tooltip-autocomplete > ul {
+  font-family: var(--font-mono-face);
+  font-size: var(--font-mono-size);
+}
+
 /* Code run button styles */
 .Editor button.code-run-button {
   font-size: 0.8rem;
