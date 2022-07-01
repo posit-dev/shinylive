@@ -17,7 +17,8 @@ if sys.version_info < (3, 9):
 # The top-level directory of this repository.
 topdir = Path(__file__).parent.parent
 
-destfile = topdir / "build/shinylive/typeshed.en.json"
+destdir = topdir / "build" / "shinylive" / "pyright"
+destfile = destdir / "typeshed.en.json"
 
 
 shutil.rmtree(topdir / "typings/htmltools", ignore_errors=True)
@@ -116,5 +117,7 @@ all_contents = (
 
 
 print(f"Writing to {destfile}")
+if not destdir.exists():
+    destdir.mkdir(parents=True)
 with open(destfile, "w") as f:
     json.dump(all_contents, f, indent=2)

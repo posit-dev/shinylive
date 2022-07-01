@@ -3,6 +3,7 @@
  *
  * SPDX-License-Identifier: MIT
  */
+import * as utils from "../utils";
 import { createUri, LanguageServerClient } from "./client";
 import { createMessageConnection } from "vscode-jsonrpc";
 import {
@@ -27,7 +28,8 @@ export const pyright = (language: string): LanguageServerClient | undefined => {
   const { origin, pathname } = window.location;
   const base = `${origin}${pathname}${pathname.endsWith("/") ? "" : "/"}`;
   // const workerScript = `${base}workers/${workerScriptName}`;
-  const workerScript = `${base}../workers/${workerScriptName}`;
+  const workerScript =
+    utils.currentScriptDir() + `/pyright/${workerScriptName}`;
   const foreground = new Worker(workerScript, {
     name: "Pyright-foreground",
   });

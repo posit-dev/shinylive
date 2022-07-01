@@ -3,6 +3,7 @@
 	update_packages_lock retrieve_packages update_pyodide_packages_json \
 	pyodide_packages_local \
 	create_typeshed_json \
+	copy_pyright \
 	submodules submodules-pull \
 	buildjs watch serve \
 	packages \
@@ -94,6 +95,7 @@ all: node_modules \
 	retrieve_packages \
 	update_pyodide_packages_json \
 	create_typeshed_json \
+	copy_pyright \
 	$(BUILD_DIR)/shinylive/shiny_static/index.html \
 	$(BUILD_DIR)/shinylive/shiny_static/edit/index.html \
 	buildjs
@@ -241,6 +243,12 @@ update_pyodide_packages_json: $(PYBIN)
 ## Create the typeshed.json file which will be used by the shinylive type checker
 create_typeshed_json: $(PYBIN)
 	. $(PYBIN)/activate && scripts/create_typeshed.py
+
+## Copy src/pyright files to build directory
+copy_pyright:
+	mkdir -p $(BUILD_DIR)/shinylive/pyright
+	cp -r src/pyright/* $(BUILD_DIR)/shinylive/pyright
+
 
 ## Build Shiny API docs
 api-docs: $(PYBIN)
