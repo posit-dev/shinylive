@@ -93,6 +93,7 @@ all: node_modules \
 	update_packages_lock_local \
 	retrieve_packages \
 	update_pyodide_packages_json \
+	create_typeshed_json \
 	$(BUILD_DIR)/shinylive/shiny_static/index.html \
 	$(BUILD_DIR)/shinylive/shiny_static/edit/index.html \
 	buildjs

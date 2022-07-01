@@ -170,18 +170,23 @@ export class LanguageServerClient extends EventEmitter {
   }
 
   private async getInitializationOptions(): Promise<any> {
-    const typeshed = await retryAsyncLoad(() => {
-      switch (this.locale) {
-        // New languages go here.
-        default:
-          return import(`./typeshed.en.json`);
-      }
-    });
-    return {
-      files: typeshed,
-      // Custom option in our Pyright version
-      diagnosticStyle: "simplified",
-    };
+    // This is commented out because we have shimmed in our own version of this
+    // function. When this code is run through esbuild, esbuild will include the
+    // json file in the bundle. The shimmed version effectively does the same
+    // thing, but it loads the json file dynamically.
+    //
+    // const typeshed = await retryAsyncLoad(() => {
+    //   switch (this.locale) {
+    //     // New languages go here.
+    //     default:
+    //       return import(`./typeshed.en.json`);
+    //   }
+    // });
+    // return {
+    //   files: typeshed,
+    //   // Custom option in our Pyright version
+    //   diagnosticStyle: "simplified",
+    // };
   }
 
   didOpenTextDocument(params: {

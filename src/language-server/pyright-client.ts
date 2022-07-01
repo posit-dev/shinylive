@@ -25,6 +25,9 @@ export class PyrightClient extends LSPClient {
   constructor() {
     const locale = "en";
     const client = pyright(locale)!;
+    // @ts-ignore: LanguageServerClient.getInitializationOptions() is marked
+    // as private for TS, but we can just replace it.
+    client.getInitializationOptions = getInitializationOptions;
     super(client);
   }
 
@@ -45,4 +48,20 @@ export class PyrightClient extends LSPClient {
     this.client.connection.sendNotification("pyright/deleteFile", params);
     super.deleteFile(filename);
   }
+}
+
+/**
+ * This is a replacement for LanguageServerClient.getInitializationOptions().
+ * The primary purpose of this version is so that esbuild won't include the json
+ * file in .js bundle. This works because uses fetch() instead of import().
+ */
+async function getInitializationOptions(): Promise<any> {
+  const response = await fetch("../shinylive/typeshed.en.json");
+  const typeshed = await response.json();
+
+  return {
+    files: typeshed,
+    // Custom option in our Pyright version
+    // diagnosticStyle: "simplified",
+  };
 }

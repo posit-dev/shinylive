@@ -17,7 +17,7 @@ if sys.version_info < (3, 9):
 # The top-level directory of this repository.
 topdir = Path(__file__).parent.parent
 
-destfile = topdir / "src/language-server/typeshed.en.json"
+destfile = topdir / "build/shinylive/typeshed.en.json"
 
 
 shutil.rmtree(topdir / "typings/htmltools", ignore_errors=True)
