@@ -310,7 +310,7 @@ export function Editor({
 
         const transaction = diagnosticToTransaction(
           file.ref.editorState,
-          params.diagnostics
+          params.diagnostics.filter(diagnosticFilter)
         );
 
         // In the case where the View's state is the same as the file we're
@@ -636,4 +636,28 @@ function editorFilesToFflateZippable(files: EditorFile[]): Zippable {
   }
 
   return res;
+}
+
+/**
+ * Filter out specific disagnostic messages that we don't want to show.
+ */
+function diagnosticFilter(diagnostic: LSP.Diagnostic): boolean {
+  // Don't show diagnostics about unused vars.
+  if (diagnostic.severity === 4 && /is unused$/.test(diagnostic.message)) {
+    return false;
+  }
+
+  // The version of pyright we currently use still has a buggy diagnostic. Once
+  // we update pyright, we can remove this filter.
+  // https://github.com/rstudio/py-shiny/issues/124
+  // https://github.com/microsoft/pyright/issues/3344
+  if (
+    /Argument does not match parameter type for parameter "value".*Iterable\[SliderValueArg@input_slider\]/s.test(
+      diagnostic.message
+    )
+  ) {
+    return false;
+  }
+
+  return true;
 }
