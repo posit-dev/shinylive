@@ -181,7 +181,7 @@ serve:
 
 ## Build JS resources for production, watch for changes, and serve site
 serve-prod:
-	node scripts/build.mjs --serve
+	node scripts/build.mjs --serve --prod
 
 
 # Build htmltools, shiny, and ipyshiny. This target must be run manually after

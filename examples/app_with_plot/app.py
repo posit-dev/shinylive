@@ -10,7 +10,6 @@ app_ui = ui.page_fluid(
             ui.input_slider("n", "N", 0, 100, 20),
         ),
         ui.panel_main(
-            ui.output_text_verbatim("txt"),
             ui.output_plot("plot"),
         ),
     ),
@@ -18,15 +17,6 @@ app_ui = ui.page_fluid(
 
 
 def server(input: Inputs, output: Outputs, session: Session):
-    @reactive.Calc
-    def r():
-        return input.n() * 2
-
-    @output
-    @render.text
-    def txt():
-        return f"n*2 is {r()}, session id is {session.id}"
-
     @output
     @render.plot(alt="A histogram")
     def plot():
