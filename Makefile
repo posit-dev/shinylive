@@ -1,12 +1,13 @@
 .PHONY: all dist \
 	packages \
 	update_packages_lock retrieve_packages update_pyodide_packages_json \
+	pyodide_packages_local \
 	submodules submodules-pull \
 	buildjs watch serve \
 	packages \
 	api-docs \
 	quarto quartoserve \
-	clean distclean \
+	clean-packages clean distclean \
 	test test-watch
 
 .DEFAULT_GOAL := help
@@ -87,9 +88,7 @@ all: node_modules \
 	$(BUILD_DIR)/shinylive/style-resets.css \
 	$(BUILD_DIR)/shinylive/pyodide \
 	src/types/pyodide.d.ts \
-	$(BUILD_DIR)/shinylive/pyodide/$(HTMLTOOLS_WHEEL) \
-	$(BUILD_DIR)/shinylive/pyodide/$(SHINY_WHEEL) \
-	$(BUILD_DIR)/shinylive/pyodide/$(IPYSHINY_WHEEL) \
+	pyodide_packages_local \
 	update_packages_lock_local \
 	retrieve_packages \
 	update_pyodide_packages_json \
@@ -129,6 +128,11 @@ $(BUILD_DIR)/shinylive/pyodide:
 # a pyodide node module, but the one currently on npm is a bit out of date.
 src/types/pyodide.d.ts: $(BUILD_DIR)/shinylive/pyodide/pyodide.d.ts
 	cp $(BUILD_DIR)/shinylive/pyodide/pyodide.d.ts src/types/
+
+## Copy local package wheels to the pyodide directory
+pyodide_packages_local: $(BUILD_DIR)/shinylive/pyodide/$(HTMLTOOLS_WHEEL) \
+	$(BUILD_DIR)/shinylive/pyodide/$(SHINY_WHEEL) \
+	$(BUILD_DIR)/shinylive/pyodide/$(IPYSHINY_WHEEL)
 
 $(BUILD_DIR)/shinylive/pyodide/$(HTMLTOOLS_WHEEL): $(PACKAGE_DIR)/$(HTMLTOOLS_WHEEL)
 	mkdir -p $(BUILD_DIR)/shinylive/pyodide
@@ -179,14 +183,14 @@ serve-prod:
 	node scripts/build.mjs --serve
 
 
-# Build htmltools and shiny. This target must be run manually after updating the
-# package submodules; it will not run automatically with `make all` because I'm
-# not sure how to set up the dependencies reliably.
-## Build htmltools and shiny wheels
-packages: $(PACKAGE_DIR)/$(HTMLTOOLS_WHEEL) \
+# Build htmltools, shiny, and ipyshiny. This target must be run manually after
+# updating the package submodules; it will not run automatically with `make all`
+# because I'm not sure how to set up the dependencies reliably.
+## Build htmltools, shiny, and ipyshiny wheels
+packages: clean-packages \
+	$(PACKAGE_DIR)/$(HTMLTOOLS_WHEEL) \
 	$(PACKAGE_DIR)/$(SHINY_WHEEL) \
 	$(PACKAGE_DIR)/$(IPYSHINY_WHEEL)
-	rm $(PACKAGE_DIR)/*.whl
 
 $(PACKAGE_DIR)/$(HTMLTOOLS_WHEEL): $(PYBIN) $(PACKAGE_DIR)/py-htmltools
 	# Remove any old copies of the package
@@ -246,6 +250,10 @@ quarto:
 quartoserve:
 	cd quarto && quarto preview --port 8080
 
+
+## Remove built wheels from the packages/ directory
+clean-packages:
+	rm -f $(PACKAGE_DIR)/*.whl
 
 ## Remove all build files
 clean:
