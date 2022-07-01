@@ -5,9 +5,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import cast
 
-import shiny
 from htmltools import TagList, div, h3, head_content, tags
-from shiny import Inputs, Outputs, Session, event, reactive, render, ui
+from shiny import App, Inputs, Outputs, Session, event, reactive, render, ui
 from typing_extensions import Literal
 
 import words
@@ -337,7 +336,7 @@ def server(input: Inputs, output: Outputs, session: Session):
         reset_game()
 
 
-app = shiny.App(app_ui, server, debug=False)
+app = App(app_ui, server, debug=False)
 
 
 def check_word(guess_str: str, target_str: str) -> GuessInfo:
