@@ -1,8 +1,8 @@
 {
   "htmltools": {
     "name": "htmltools",
-    "version": "0.1.0.9001",
-    "filename": "htmltools-0.1.0.9001-py3-none-any.whl",
+    "version": "0.1.0.9002",
+    "filename": "htmltools-0.1.0.9002-py3-none-any.whl",
     "sha256": null,
     "url": null,
     "depends": [
@@ -15,8 +15,8 @@
   },
   "shiny": {
     "name": "shiny",
-    "version": "0.2.0.9007",
-    "filename": "shiny-0.2.0.9007-py3-none-any.whl",
+    "version": "0.2.0.9010",
+    "filename": "shiny-0.2.0.9010-py3-none-any.whl",
     "sha256": null,
     "url": null,
     "depends": [
@@ -28,7 +28,8 @@
       {"name": "click", "specs": [[">=", "8.0.3"]]},
       {"name": "markdown-it-py", "specs": [[">=", "1.1.0"]]},
       {"name": "linkify-it-py", "specs": [[">=", "1.0"]]},
-      {"name": "appdirs", "specs": [[">=", "1.4.4"]]}
+      {"name": "appdirs", "specs": [[">=", "1.4.4"]]},
+      {"name": "asgiref", "specs": [[">=", "3.5.2"]]}
     ],
     "imports": [
       "shiny"
