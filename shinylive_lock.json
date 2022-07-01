@@ -37,8 +37,8 @@
   },
   "ipyshiny": {
     "name": "ipyshiny",
-    "version": "0.1.0.9001",
-    "filename": "ipyshiny-0.1.0.9001-py3-none-any.whl",
+    "version": "0.1.0.9002",
+    "filename": "ipyshiny-0.1.0.9002-py3-none-any.whl",
     "sha256": null,
     "url": null,
     "depends": [
