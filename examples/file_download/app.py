@@ -52,8 +52,8 @@ def server(input: Inputs, output: Outputs, session: Session):
         # once, like in this case, or by yielding multiple times. When using this
         # approach, you should pass a filename argument to @session.download, which
         # determines what the browser will name the downloaded file.
-        x = np.random.uniform(size=session.input.num_points())
-        y = np.random.uniform(size=session.input.num_points())
+        x = np.random.uniform(size=input.num_points())
+        y = np.random.uniform(size=input.num_points())
         plt.figure()
         plt.scatter(x, y)
         plt.title(input.title())
