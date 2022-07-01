@@ -71,6 +71,7 @@ extra_files = {
   "typeCheckingMode": "basic",
   "typeshedPath": "/typeshed/",
   "reportMissingModuleSource": false,
+  "reportUnusedFunction": false,
   "reportWildcardImportFromLibrary": false,
   "reportMissingImports": false,
   "verboseOutput": true
@@ -97,7 +98,6 @@ stdlib_exclude = {
     "socket",
     "lib2to3",
     "wsgiref",
-    "ctypes",
     "xmlrpc",
 }
 
