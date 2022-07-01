@@ -2,6 +2,7 @@
 	packages \
 	update_packages_lock retrieve_packages update_pyodide_packages_json \
 	pyodide_packages_local \
+	create_typeshed_json \
 	submodules submodules-pull \
 	buildjs watch serve \
 	packages \
@@ -235,6 +236,10 @@ retrieve_packages: $(PYBIN) $(BUILD_DIR)/shinylive/pyodide \
 ## Update pyodide/packages.json to include packages in shinylive_lock.json
 update_pyodide_packages_json: $(PYBIN)
 	. $(PYBIN)/activate && scripts/pyodide_packages.py update_pyodide_packages_json
+
+## Create the typeshed.json file which will be used by the shinylive type checker
+create_typeshed_json: $(PYBIN)
+	. $(PYBIN)/activate && scripts/create_typeshed.py
 
 ## Build Shiny API docs
 api-docs: $(PYBIN)

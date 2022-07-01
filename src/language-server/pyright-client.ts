@@ -28,7 +28,7 @@ export class PyrightClient extends LSPClient {
     super(client);
   }
 
-  public createFile(filename: string, content: string): void {
+  public override createFile(filename: string, content: string): void {
     const params: LSP.CreateFile = {
       uri: createUri(filename),
       kind: "create",
@@ -37,7 +37,7 @@ export class PyrightClient extends LSPClient {
     super.createFile(filename, content);
   }
 
-  public deleteFile(filename: string): void {
+  public override deleteFile(filename: string): void {
     const params: LSP.DeleteFile = {
       uri: createUri(filename),
       kind: "delete",
