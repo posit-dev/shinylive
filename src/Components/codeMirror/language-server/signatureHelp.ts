@@ -73,8 +73,6 @@ const closeSignatureHelp: Command = (view: EditorView) => {
   });
   return true;
 };
-// TODO Cleanup
-window.shr_type = SignatureHelpRequest.type;
 
 const triggerSignatureHelpRequest = async (
   view: EditorView,
