@@ -24,7 +24,6 @@ import {
 } from "@codemirror/autocomplete";
 import { insertBracket } from "@codemirror/autocomplete";
 import { Extension, TransactionSpec } from "@codemirror/state";
-import sortBy from "lodash.sortby";
 import * as LSP from "vscode-languageserver-protocol";
 import {
   CompletionItem,
@@ -43,12 +42,12 @@ export function autocompletion(
   lspClient: LSPClient,
   filename: string
 ): Extension {
+  const client = lspClient.client;
+  const uri = createUri(filename);
+
   const findCompletion = async (
     context: CompletionContext
   ): Promise<CompletionResult | null> => {
-    const client = lspClient.client;
-    const uri = createUri(filename);
-
     if (!client || !uri || !client.capabilities?.completionProvider) {
       return null;
     }
@@ -70,8 +69,6 @@ export function autocompletion(
       }
     }
 
-    console.log("context: ", context);
-
     // const documentationResolver = createDocumentationResolver(client, intl);
     const lspCompletionList = await client.completionRequest({
       textDocument: {
@@ -84,25 +81,19 @@ export function autocompletion(
       },
     });
 
-    console.log("results: ", lspCompletionList);
-    let completionItems = lspCompletionList.items
+    const completionItems = lspCompletionList.items
       // For now we don't support these edits (they usually add imports).
       .filter((x) => !x.additionalTextEdits)
       .map(LSPCompletionItemToCMCompletion);
-
-    completionItems = sortBy(completionItems, (item) => {
-      // console.log(item.item.sortText);
-      return item.item.sortText ?? item.label;
-    });
 
     const result: CompletionResult = {
       from: before ? before.from : context.pos,
       // Could vary these based on isIncomplete? Needs investigation.
       // Very desirable to set most of the time to remove flicker.
-      filter: false,
+      filter: true,
+      validFor: identifierLike,
       options: completionItems,
     };
-    console.log(result);
     return result;
   };
 
@@ -111,6 +102,9 @@ export function autocompletion(
   });
 }
 
+/**
+ *  Convert a LSP CompletionItem to a CM Completion object.
+ */
 function LSPCompletionItemToCMCompletion(
   item: LSP.CompletionItem
 ): AugmentedCompletion {
@@ -191,6 +185,9 @@ const mapCompletionKind = Object.fromEntries(
 const boost = (item: LSP.CompletionItem): number | undefined => {
   if (item.label.startsWith("__")) {
     return -99;
+  }
+  if (item.label.startsWith("_")) {
+    return -9;
   }
   if (item.label.endsWith("=")) {
     // Counteract a single case mismatch penalty to allow
