@@ -77,7 +77,7 @@ def server(input: Inputs, output: Outputs, session: Session):
         elif input.data_type() == "string":
             # .string() returns the response as a string.
             data = await response.string()
-        elif input.data_type() == "bytes":
+        else:
             # .bytes() returns the response as a byte object.
             data = await response.bytes()
 
