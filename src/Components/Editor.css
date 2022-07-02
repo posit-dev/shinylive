@@ -194,6 +194,11 @@ autocompletions. */
   font-size: var(--font-mono-size);
 }
 
+.Editor--container .cm-signature-signature {
+  font-family: var(--font-mono-face);
+  font-size: var(--font-mono-size);
+}
+
 /* Code run button styles */
 .Editor button.code-run-button {
   font-size: 0.8rem;
