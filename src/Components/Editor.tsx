@@ -313,7 +313,7 @@ export function Editor({
   const diagnosticsListener = React.useCallback(
     (params: LSP.PublishDiagnosticsParams) => {
       if (!cmViewRef.current) return;
-      console.log("diagnosticsListener", params);
+      // console.log("diagnosticsListener", params);
 
       syncFileState();
 
