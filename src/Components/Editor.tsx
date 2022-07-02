@@ -83,6 +83,16 @@ export function Editor({
 }) {
   const lspClient: LSPClient = ensurePyrightClient();
 
+  // A unique ID for this instance of the Editor. At some point it might make
+  // sense to hoist this up into the App component, if we need unique IDs for
+  // each instance of the App.
+  const editorInstanceId = useInstanceCounter();
+  // Path prefix (like "editor2/") for files that are sent to the Language
+  // Server, to keep the files distinct from files in other Editor instances.
+  // This prefix is _not_ the same as the one used when we run a Shiny app in
+  // the Viewer component.
+  const lspPathPrefix = `editor${editorInstanceId}/`;
+
   const [keyBindings] = React.useState<KeyBinding[]>([
     {
       key: "Mod-Enter",
@@ -118,17 +128,18 @@ export function Editor({
             setFilesHaveChanged(true);
           }
         }),
-        languageServerExtensions(lspClient, file.name),
+        languageServerExtensions(lspClient, lspPathPrefix + file.name),
         Prec.high(keymap.of(keyBindings)),
       ];
     },
-    [keyBindings, lineNumbers, setFilesHaveChanged, lspClient]
+    [keyBindings, lineNumbers, setFilesHaveChanged, lspClient, lspPathPrefix]
   );
 
   const tabbedFiles = useTabbedCodeMirror({
     currentFilesFromApp,
     inferEditorExtensions,
     lspClient: lspClient,
+    lspPathPrefix: lspPathPrefix,
   });
   const { files, setFiles, activeFile } = tabbedFiles;
 
@@ -191,7 +202,7 @@ export function Editor({
       await viewerMethods.stopApp();
       currentFilesFromApp.map((file) => {
         if (file.type === "text" && inferFiletype(file.name) === "python") {
-          lspClient.createFile(file.name, file.content);
+          lspClient.createFile(lspPathPrefix + file.name, file.content);
         }
       });
 
@@ -215,6 +226,7 @@ export function Editor({
     viewerMethods,
     setFilesHaveChanged,
     lspClient,
+    lspPathPrefix,
   ]);
 
   React.useEffect(() => {
@@ -306,7 +318,7 @@ export function Editor({
       syncFileState();
 
       files.map((file) => {
-        if (createUri(file.name) !== params.uri) return;
+        if (createUri(lspPathPrefix + file.name) !== params.uri) return;
 
         const transaction = diagnosticToTransaction(
           file.ref.editorState,
@@ -325,7 +337,7 @@ export function Editor({
       // Trigger updates
       setFiles([...files]);
     },
-    [files, setFiles, syncFileState]
+    [files, lspPathPrefix, setFiles, syncFileState]
   );
 
   React.useEffect(() => {
@@ -638,8 +650,11 @@ function editorFilesToFflateZippable(files: EditorFile[]): Zippable {
   return res;
 }
 
+// =============================================================================
+// Misc utility functions
+// =============================================================================
 /**
- * Filter out specific disagnostic messages that we don't want to show.
+ * Filter out specific diagnostic messages that we don't want to show.
  */
 function diagnosticFilter(diagnostic: LSP.Diagnostic): boolean {
   // Don't show diagnostics about unused vars.
@@ -660,4 +675,22 @@ function diagnosticFilter(diagnostic: LSP.Diagnostic): boolean {
   }
 
   return true;
+}
+
+/**
+ * Get a unique sequential ID for each React component instance that calls this
+ * function.
+ */
+let instanceCount = 0;
+function useInstanceCounter() {
+  const [id] = React.useState(instanceCount);
+
+  React.useEffect(() => {
+    instanceCount += 1;
+    return () => {
+      instanceCount -= 1;
+    };
+  }, []);
+
+  return id;
 }

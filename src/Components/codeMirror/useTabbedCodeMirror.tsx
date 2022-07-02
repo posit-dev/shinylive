@@ -14,10 +14,12 @@ export function useTabbedCodeMirror({
   currentFilesFromApp,
   inferEditorExtensions,
   lspClient,
+  lspPathPrefix = "",
 }: {
   currentFilesFromApp: FileContent[];
   inferEditorExtensions: (f: FileContent) => Extension;
   lspClient: LSPClient;
+  lspPathPrefix: string;
 }) {
   const [files, setFiles] = React.useState<EditorFile[]>([]);
 
@@ -53,6 +55,7 @@ export function useTabbedCodeMirror({
     e.stopPropagation();
 
     const updatedFiles = [...files];
+    const filename = updatedFiles[index].name;
     updatedFiles.splice(index, 1);
     setFiles(updatedFiles);
 
@@ -61,6 +64,8 @@ export function useTabbedCodeMirror({
       // active tab to the new right-most tab.
       setActiveFileIdx(updatedFiles.length - 1);
     }
+
+    lspClient.deleteFile(lspPathPrefix + filename);
   }
 
   function addFile() {
@@ -79,7 +84,7 @@ export function useTabbedCodeMirror({
     setFiles([...files, newFile]);
     setActiveFileIdx(files.length);
 
-    lspClient.createFile(fileContent.name, fileContent.content);
+    lspClient.createFile(lspPathPrefix + fileContent.name, fileContent.content);
   }
 
   const uploadFile = React.useCallback(async () => {
@@ -127,9 +132,9 @@ export function useTabbedCodeMirror({
     setEditingFilename(null);
     setActiveFileIdx(fileIndex);
 
-    lspClient.deleteFile(oldFileName);
+    lspClient.deleteFile(lspPathPrefix + oldFileName);
     lspClient.createFile(
-      newFileName,
+      lspPathPrefix + newFileName,
       updatedFiles[fileIndex].ref.editorState.doc.toString()
     );
   }
