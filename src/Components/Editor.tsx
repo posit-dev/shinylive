@@ -152,7 +152,8 @@ export function Editor({
   /**
    * Store the currently active file's CodeMirror editor state in the
    * corresponding entry in `files`, but in the `ref` property, which is meant
-   * to be mutable.
+   * to be mutable. This should be called just before doing operations on
+   * `files` or `activeFile`.
    */
   const syncFileState = React.useCallback(() => {
     if (!cmViewRef.current) return;
