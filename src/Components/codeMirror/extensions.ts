@@ -24,7 +24,7 @@ import {
   syntaxHighlighting,
 } from "@codemirror/language";
 import { r } from "@codemirror/legacy-modes/mode/r";
-import { lintKeymap } from "@codemirror/lint";
+import { lintGutter, lintKeymap } from "@codemirror/lint";
 import { highlightSelectionMatches, searchKeymap } from "@codemirror/search";
 import { EditorState, Extension } from "@codemirror/state";
 import {
@@ -72,7 +72,7 @@ export function getExtensions(
   ];
 
   if (opts.lineNumbers) {
-    extensions.push(lineNumbers());
+    extensions.push(lineNumbers(), lintGutterWithCustomTheme());
   }
 
   return extensions;
@@ -96,3 +96,42 @@ export function getLanguageExtension(filetype: string | null): Extension {
 
   return LANG_EXTENSIONS[filetype]();
 }
+
+function lintGutterWithCustomTheme() {
+  // lintGutter() returns an Extension[], but it's marked as Extension.
+  let extensions = lintGutter() as Extension[];
+
+  // Remove the original theme. Filter by iterating over the Extensions and
+  // checking each one if it is of the same class as our custom theme. This may
+  // be fragile if, for example, lintGutter() changes in the future to nest
+  // Extensions differently.
+  extensions = extensions.filter(
+    // Compare .constructor to see if the classes match.
+    (ext) => ext.constructor !== lintGutterCustomTheme.constructor
+  );
+  extensions.push(lintGutterCustomTheme);
+
+  return extensions;
+}
+
+const lintGutterCustomTheme = EditorView.baseTheme({
+  ".cm-gutter-lint": {
+    width: "0.3em",
+    "& .cm-gutterElement": {
+      padding: "0 0 0 0.1em",
+    },
+  },
+  ".cm-lint-marker": {
+    opacity: "0.6",
+    height: "100%",
+  },
+  ".cm-lint-marker-info": {
+    "background-color": "#999",
+  },
+  ".cm-lint-marker-warning": {
+    "background-color": "orange",
+  },
+  ".cm-lint-marker-error": {
+    "background-color": "#d11",
+  },
+});
