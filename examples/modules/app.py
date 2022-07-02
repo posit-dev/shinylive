@@ -1,4 +1,4 @@
-from shiny import *
+from shiny import module, ui, render, reactive, Inputs, Outputs, Session, event, App
 
 # ============================================================
 # Counter module
