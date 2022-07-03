@@ -1,4 +1,5 @@
 import {
+  acceptCompletion,
   autocompletion,
   closeBrackets,
   closeBracketsKeymap,
@@ -28,7 +29,7 @@ import { lintGutter, lintKeymap } from "@codemirror/lint";
 import { highlightSelectionMatches, searchKeymap } from "@codemirror/search";
 import { EditorState, Extension } from "@codemirror/state";
 import {
-  drawSelection, // highlightActiveLine,
+  drawSelection,
   dropCursor,
   EditorView,
   highlightActiveLineGutter,
@@ -60,6 +61,7 @@ export function getExtensions(
     // highlightActiveLine(),
     highlightSelectionMatches(),
     keymap.of([
+      autocompleteWithTab,
       indentWithTab,
       ...closeBracketsKeymap,
       ...defaultKeymap,
@@ -77,6 +79,8 @@ export function getExtensions(
 
   return extensions;
 }
+
+const autocompleteWithTab = { key: "Tab", run: acceptCompletion };
 
 export function getBinaryFileExtensions(): Extension {
   return [EditorView.editable.of(false)];
