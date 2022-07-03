@@ -71,7 +71,7 @@ const closeSignatureHelp: Command = (view: EditorView) => {
       result: null,
     }),
   });
-  return true;
+  return false;
 };
 
 const triggerSignatureHelpRequest = async (
