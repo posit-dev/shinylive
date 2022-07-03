@@ -1,5 +1,6 @@
 import { LSPClient } from "../../../language-server/lsp-client";
 import { autocompletion } from "./autocompletion";
+import { hover } from "./hover";
 import { offsetToPosition } from "./positions";
 import { signatureHelp } from "./signatureHelp";
 import { Extension } from "@codemirror/state";
@@ -54,5 +55,6 @@ export function languageServerExtensions(
     }),
     autocompletion(lspClient, filename),
     signatureHelp(lspClient, filename, true),
+    hover(lspClient, filename),
   ];
 }

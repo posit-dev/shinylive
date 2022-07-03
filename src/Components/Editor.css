@@ -183,20 +183,42 @@ the size bigger.  */
 }
 
 .Editor--container .cm-tooltip {
-  font-family: var(--font-mono-face);
-  font-size: var(--font-mono-size);
+  font-family: var(--font-face);
+  font-size: var(--font-size);
 }
 
-/* Need a more specific selector to override CodeMirror's default for
-autocompletions. */
-.Editor--container .cm-tooltip.cm-tooltip-autocomplete > ul {
+.Editor--container .cm-tooltip code {
+  font-family: var(--font-mono-face);
+  font-size: var(--font-mono-size);
+  /* If used with Bootstrap, we need to override Bootstrap's wrapping behavior
+  for <code>. */
+  white-space: pre-wrap;
+}
+
+.Editor--container .cm-diagnostic {
   font-family: var(--font-mono-face);
   font-size: var(--font-mono-size);
 }
 
 .Editor--container .cm-signature-signature {
   font-family: var(--font-mono-face);
-  font-size: var(--font-mono-size);
+}
+
+/* The tooltip shown when hovering, with the formatted docstring. */
+.Editor--container .docstring {
+  padding: 3px 6px;
+  max-width: 650px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.Editor--container .docstring pre {
+  white-space: pre-wrap;
+}
+
+.Editor--container .docstring h2 {
+  font-size: 1.2em;
+  font-weight: 600;
 }
 
 /* Code run button styles */

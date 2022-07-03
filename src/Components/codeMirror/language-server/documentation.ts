@@ -3,12 +3,10 @@
  *
  * SPDX-License-Identifier: MIT
  */
+import { splitDocString } from "./docstrings";
 import DOMPurify from "dompurify";
 import { marked } from "marked";
-import { IntlShape } from "react-intl";
 import { MarkupContent } from "vscode-languageserver-types";
-import { splitDocString } from "./docstrings";
-import "./documentation.css";
 
 export const enum DocSections {
   Summary = 1 << 0,
@@ -20,12 +18,12 @@ export const enum DocSections {
 export const renderDocumentation = (
   documentation: MarkupContent | string | undefined,
   parts: DocSections = DocSections.All
-): Element => {
+): HTMLElement => {
   if (!documentation) {
     documentation = "No documentation";
   }
   const div = document.createElement("div");
-  div.className = "docs-spacing docs-code docs-code-muted";
+  div.className = "docstring";
   if (MarkupContent.is(documentation) && documentation.kind === "markdown") {
     try {
       div.innerHTML = renderMarkdown(documentation.value, parts).__html;
@@ -87,7 +85,7 @@ export const subsetMarkdown = (
   parts: DocSections
 ): string => {
   const split = splitDocString(markdown);
-  let sections = [];
+  const sections = [];
   if (parts & DocSections.Summary && split.summary) {
     sections.push(split.summary);
   }

@@ -136,6 +136,9 @@ export class LanguageServerClient extends EventEmitter {
                 },
               },
             },
+            hover: {
+              contentFormat: ["markdown"],
+            },
             publishDiagnostics: {
               tagSupport: {
                 valueSet: [DiagnosticTag.Unnecessary, DiagnosticTag.Deprecated],

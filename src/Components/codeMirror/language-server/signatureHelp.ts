@@ -13,11 +13,6 @@ import {
 } from "../../../language-server/client";
 import { LSPClient } from "../../../language-server/lsp-client";
 import { BaseLanguageServerView } from "./common";
-// import {
-//   DocSections,
-//   renderDocumentation,
-//   wrapWithDocumentationButton,
-// } from "./documentation";
 import { nameFromSignature, removeFullyQualifiedName } from "./names";
 import { offsetToPosition } from "./positions";
 import { Extension, StateEffect, StateField } from "@codemirror/state";
@@ -80,25 +75,23 @@ const triggerSignatureHelpRequest = async (
   uri: string
 ): Promise<void> => {
   await client.initialize();
-  // const uri = view.state.facet(uriFacet)!;
-  // const client = view.state.facet(clientFacet)!;
   const pos = view.state.selection.main.from;
   const params: SignatureHelpParams = {
     textDocument: { uri },
     position: offsetToPosition(view.state.doc, pos),
   };
-  console.log(
-    "trying to get signature help",
-    SignatureHelpRequest.type,
-    params
-  );
+  // console.log(
+  //   "trying to get signature help",
+  //   SignatureHelpRequest.type,
+  //   params
+  // );
   try {
-    console.log("SignatureHelpRequest");
+    // console.log("SignatureHelpRequest");
     const result = await client.connection.sendRequest(
       SignatureHelpRequest.type,
       params
     );
-    console.log("result:", result);
+    // console.log("result:", result);
     view.dispatch({
       effects: [setSignatureHelpEffect.of({ pos, result })],
     });
@@ -110,16 +103,23 @@ const triggerSignatureHelpRequest = async (
   }
 };
 
-const openSignatureHelp: Command = (view: EditorView) => {
-  triggerSignatureHelpRequest(view);
-  return true;
-};
+function createSignatureHelpKeymap(
+  client: LanguageServerClient,
+  filename: string
+) {
+  const openSignatureHelp: Command = (view: EditorView) => {
+    triggerSignatureHelpRequest(view, client, createUri(filename));
+    return true;
+  };
 
-const signatureHelpKeymap: readonly KeyBinding[] = [
-  // This matches VS Code.
-  { key: "Mod-Shift-Space", run: openSignatureHelp },
-  { key: "Escape", run: closeSignatureHelp },
-];
+  const signatureHelpKeymap: readonly KeyBinding[] = [
+    // This matches VS Code.
+    { key: "Mod-Shift-Space", run: openSignatureHelp },
+    { key: "Escape", run: closeSignatureHelp },
+  ];
+
+  return signatureHelpKeymap;
+}
 
 // =============================================================================
 // Signature help state field
@@ -237,26 +237,7 @@ const formatHighlightedParameter = (
   span.className = "cm-signature-activeParameter";
   span.appendChild(document.createTextNode(parameter));
   signature.appendChild(document.createTextNode(after));
-  parent.appendChild(document.createElement("hr"));
 
-  // if (activeParameterDoc) {
-  //   parent.appendChild(renderDocumentation(
-  //     activeParameterDoc,
-  //     DocSections.All
-  //   ));
-  //   parent.appendChild(renderDocumentation(
-  //     signatureDoc,
-  //     DocSections.Example
-  //   ));
-  // } else {
-  //   // No params so show summary and example from the signature docstring.
-  //   parent.appendChild(renderDocumentation(
-  //     signatureDoc,
-  //     DocSections.Summary | DocSections.Example
-  //   ));
-  // }
-
-  // return wrapWithDocumentationButton( parent, id);
   return parent;
 };
 
@@ -310,6 +291,6 @@ export const signatureHelp = (
     ViewPlugin.define((view) => new SignatureHelpView(view, automatic)),
     signatureHelpTooltipField,
     signatureHelpToolTipBaseTheme,
-    keymap.of(signatureHelpKeymap),
+    keymap.of(createSignatureHelpKeymap(client, filename)),
   ];
 };
