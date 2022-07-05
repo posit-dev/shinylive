@@ -52,7 +52,7 @@ export type EditorFile =
       };
     };
 
-export function Editor({
+export default function Editor({
   currentFilesFromApp,
   setCurrentFiles,
   setFilesHaveChanged,

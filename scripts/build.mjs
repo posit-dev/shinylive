@@ -16,7 +16,7 @@ let serve = false;
 let minify = false;
 let reactProductionMode = false;
 // Set this to true to generate a metadata file that can be analyzed for size of
-// modules in the bundle.
+// modules in the bundle, like with Bundle-Buddy.
 let metafile = false;
 
 if (process.argv.some((x) => x === "--watch")) {
@@ -49,10 +49,19 @@ if (watch) {
 esbuild
   .build({
     bundle: true,
-    entryPoints: ["src/Components/App.tsx"],
-    outfile: `${BUILD_DIR}/shinylive/shinylive.js`,
+    entryPoints: {
+      shinylive: "src/Components/App.tsx",
+      Editor: "src/Components/Editor.tsx",
+    },
+    outdir: `${BUILD_DIR}/shinylive/`,
     format: "esm",
     target: "es2020",
+    splitting: true,
+    // It would be more organized to put the chunks in "chunks/[name]", but this
+    // causes problems when ../pyodide/pyodide.js loads "pyodide_py.tar" -- it
+    // looks in /shinylive/chunks/pyodide/pyodide_py.tar, which doesn't exist.
+    // This probably has something to do with how pyodide.js specifies the path.
+    chunkNames: "[name]-[hash]",
     minify: minify,
     metafile: metafile,
     define: {
@@ -61,8 +70,24 @@ esbuild
         : '"development"',
     },
     ...watchProp,
-    loader: { ".svg": "dataurl" },
+    loader: {
+      ".svg": "dataurl",
+    },
     plugins: [
+      {
+        // This removes previously-built chunk-[hash].js files so that they
+        // don't clutter up the build directory.
+        name: "chunk-cleaner",
+        setup(build) {
+          build.onStart(async () => {
+            fs.readdirSync(`${BUILD_DIR}/shinylive/`)
+              .filter((file) => file.startsWith("chunk-"))
+              .forEach((file) => {
+                fs.unlinkSync(`${BUILD_DIR}/shinylive/${file}`);
+              });
+          });
+        },
+      },
       {
         name: "example-builder",
         setup(build) {

@@ -11,7 +11,6 @@ import {
 } from "../hooks/usePyodide";
 import { ProxyType } from "../pyodide-proxy";
 import "./App.css";
-import { Editor } from "./Editor";
 import { ExampleSelector } from "./ExampleSelector";
 import { OutputCell } from "./OutputCell";
 import { ResizableGrid } from "./ResizableGrid/ResizableGrid";
@@ -235,23 +234,24 @@ export function App({
     if (currentFiles.some((file) => file.name === "app.py")) return;
   }, [pyodideProxyHandle.ready, currentFiles]);
 
-  switch (appMode) {
-    case "examples-editor-terminal-viewer":
-      return (
-        <ResizableGrid
-          className="App--container"
-          areas={[
-            ["exampleselector", "editor", "viewer"],
-            ["exampleselector", "terminal", "viewer"],
-          ]}
-          rowSizes={["2fr", "1fr"]}
-          colSizes={["180px", "1.5fr", "1fr"]}
-        >
-          <ExampleSelector
-            setCurrentFiles={setCurrentFiles}
-            filesHaveChanged={filesHaveChanged}
-            startWithSelectedExample={appOptions.selectedExample}
-          />
+  if (appMode === "examples-editor-terminal-viewer") {
+    const Editor = React.lazy(() => import("./Editor"));
+    return (
+      <ResizableGrid
+        className="App--container"
+        areas={[
+          ["exampleselector", "editor", "viewer"],
+          ["exampleselector", "terminal", "viewer"],
+        ]}
+        rowSizes={["2fr", "1fr"]}
+        colSizes={["180px", "1.5fr", "1fr"]}
+      >
+        <ExampleSelector
+          setCurrentFiles={setCurrentFiles}
+          filesHaveChanged={filesHaveChanged}
+          startWithSelectedExample={appOptions.selectedExample}
+        />
+        <React.Suspense fallback={<div>Loading...</div>}>
           <Editor
             currentFilesFromApp={currentFiles}
             setCurrentFiles={setCurrentFiles}
@@ -263,29 +263,31 @@ export function App({
             showShareButton={true}
             showLoadSaveButtons={true}
           />
-          <Terminal
-            pyodideProxyHandle={pyodideProxyHandle}
-            setTerminalMethods={setTerminalMethods}
-            terminalInterface={terminalInterface}
-          />
-          <Viewer
-            pyodideProxyHandle={pyodideProxyHandle}
-            setViewerMethods={setViewerMethods}
-          />
-        </ResizableGrid>
-      );
-
-    case "editor-terminal-viewer":
-      return (
-        <ResizableGrid
-          className="App--container"
-          areas={[
-            ["editor", "viewer"],
-            ["terminal", "viewer"],
-          ]}
-          rowSizes={["2fr", "1fr"]}
-          colSizes={["1.5fr", "1fr"]}
-        >
+        </React.Suspense>
+        <Terminal
+          pyodideProxyHandle={pyodideProxyHandle}
+          setTerminalMethods={setTerminalMethods}
+          terminalInterface={terminalInterface}
+        />
+        <Viewer
+          pyodideProxyHandle={pyodideProxyHandle}
+          setViewerMethods={setViewerMethods}
+        />
+      </ResizableGrid>
+    );
+  } else if (appMode === "editor-terminal-viewer") {
+    const Editor = React.lazy(() => import("./Editor"));
+    return (
+      <ResizableGrid
+        className="App--container"
+        areas={[
+          ["editor", "viewer"],
+          ["terminal", "viewer"],
+        ]}
+        rowSizes={["2fr", "1fr"]}
+        colSizes={["1.5fr", "1fr"]}
+      >
+        <React.Suspense fallback={<div>Loading...</div>}>
           <Editor
             currentFilesFromApp={currentFiles}
             setCurrentFiles={setCurrentFiles}
@@ -297,26 +299,28 @@ export function App({
             showShareButton={true}
             showLoadSaveButtons={true}
           />
-          <Terminal
-            pyodideProxyHandle={pyodideProxyHandle}
-            setTerminalMethods={setTerminalMethods}
-            terminalInterface={terminalInterface}
-          />
-          <Viewer
-            pyodideProxyHandle={pyodideProxyHandle}
-            setViewerMethods={setViewerMethods}
-          />
-        </ResizableGrid>
-      );
-
-    case "editor-terminal":
-      return (
-        <ResizableGrid
-          className="App--container"
-          areas={[["editor", "terminal"]]}
-          rowSizes={["1fr"]}
-          colSizes={["1fr", "1fr"]}
-        >
+        </React.Suspense>
+        <Terminal
+          pyodideProxyHandle={pyodideProxyHandle}
+          setTerminalMethods={setTerminalMethods}
+          terminalInterface={terminalInterface}
+        />
+        <Viewer
+          pyodideProxyHandle={pyodideProxyHandle}
+          setViewerMethods={setViewerMethods}
+        />
+      </ResizableGrid>
+    );
+  } else if (appMode === "editor-terminal") {
+    const Editor = React.lazy(() => import("./Editor"));
+    return (
+      <ResizableGrid
+        className="App--container"
+        areas={[["editor", "terminal"]]}
+        rowSizes={["1fr"]}
+        colSizes={["1fr", "1fr"]}
+      >
+        <React.Suspense fallback={<div>Loading...</div>}>
           <Editor
             currentFilesFromApp={currentFiles}
             setCurrentFiles={setCurrentFiles}
@@ -327,17 +331,20 @@ export function App({
             showShareButton={false}
             showLoadSaveButtons={false}
           />
-          <Terminal
-            pyodideProxyHandle={pyodideProxyHandle}
-            setTerminalMethods={setTerminalMethods}
-            terminalInterface={terminalInterface}
-          />
-        </ResizableGrid>
-      );
+        </React.Suspense>
+        <Terminal
+          pyodideProxyHandle={pyodideProxyHandle}
+          setTerminalMethods={setTerminalMethods}
+          terminalInterface={terminalInterface}
+        />
+      </ResizableGrid>
+    );
+  } else if (appMode === "editor-cell") {
+    const Editor = React.lazy(() => import("./Editor"));
 
-    case "editor-cell":
-      return (
-        <div className="App--container editor-cell">
+    return (
+      <div className="App--container editor-cell">
+        <React.Suspense fallback={<div>Loading...</div>}>
           <Editor
             currentFilesFromApp={currentFiles}
             setCurrentFiles={setCurrentFiles}
@@ -351,32 +358,35 @@ export function App({
             showShareButton={false}
             showLoadSaveButtons={false}
           />
-          <OutputCell
-            pyodideProxyHandle={pyodideProxyHandle}
-            setTerminalMethods={setTerminalMethods}
-          />
-        </div>
-      );
+        </React.Suspense>
+        <OutputCell
+          pyodideProxyHandle={pyodideProxyHandle}
+          setTerminalMethods={setTerminalMethods}
+        />
+      </div>
+    );
+  } else if (appMode === "editor-viewer") {
+    const Editor = React.lazy(() => import("./Editor"));
 
-    case "editor-viewer": {
-      const layout = appOptions.layout ?? "horizontal";
-      const viewerHeight = Number(appOptions.viewerHeight ?? 200);
+    const layout = appOptions.layout ?? "horizontal";
+    const viewerHeight = Number(appOptions.viewerHeight ?? 200);
 
-      const gridDef =
-        layout === "horizontal"
-          ? {
-              areas: [["editor", "viewer"]],
-              rowSizes: ["1fr"],
-              colSizes: ["1fr", "1fr"],
-            }
-          : {
-              areas: [["editor"], ["viewer"]],
-              rowSizes: ["auto", `${viewerHeight}px`],
-              colSizes: ["1fr"],
-            };
+    const gridDef =
+      layout === "horizontal"
+        ? {
+            areas: [["editor", "viewer"]],
+            rowSizes: ["1fr"],
+            colSizes: ["1fr", "1fr"],
+          }
+        : {
+            areas: [["editor"], ["viewer"]],
+            rowSizes: ["auto", `${viewerHeight}px`],
+            colSizes: ["1fr"],
+          };
 
-      return (
-        <ResizableGrid className="App--container editor-viewer" {...gridDef}>
+    return (
+      <ResizableGrid className="App--container editor-viewer" {...gridDef}>
+        <React.Suspense fallback={<div>Loading...</div>}>
           <Editor
             currentFilesFromApp={currentFiles}
             setCurrentFiles={setCurrentFiles}
@@ -387,25 +397,24 @@ export function App({
             showShareButton={false}
             showLoadSaveButtons={false}
           />
-          <Viewer
-            pyodideProxyHandle={pyodideProxyHandle}
-            setViewerMethods={setViewerMethods}
-          />
-        </ResizableGrid>
-      );
-    }
-    case "viewer":
-      return (
-        <div className="App--container viewer">
-          <Viewer
-            pyodideProxyHandle={pyodideProxyHandle}
-            setViewerMethods={setViewerMethods}
-          />
-        </div>
-      );
-
-    default:
-      throw new Error("Have yet to setup this view mode");
+        </React.Suspense>
+        <Viewer
+          pyodideProxyHandle={pyodideProxyHandle}
+          setViewerMethods={setViewerMethods}
+        />
+      </ResizableGrid>
+    );
+  } else if (appMode === "viewer") {
+    return (
+      <div className="App--container viewer">
+        <Viewer
+          pyodideProxyHandle={pyodideProxyHandle}
+          setViewerMethods={setViewerMethods}
+        />
+      </div>
+    );
+  } else {
+    throw new Error("Have yet to setup this view mode");
   }
 }
 
