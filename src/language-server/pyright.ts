@@ -25,8 +25,8 @@ export const pyright = (language: string): LanguageServerClient | undefined => {
     return undefined;
   }
   // Needed to support review branches that use a path location.
-  const { origin, pathname } = window.location;
-  const base = `${origin}${pathname}${pathname.endsWith("/") ? "" : "/"}`;
+  // const { origin, pathname } = window.location;
+  // const base = `${origin}${pathname}${pathname.endsWith("/") ? "" : "/"}`;
   // const workerScript = `${base}workers/${workerScriptName}`;
   const workerScript =
     utils.currentScriptDir() + `/pyright/${workerScriptName}`;

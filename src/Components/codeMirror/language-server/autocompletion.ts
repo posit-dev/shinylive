@@ -8,12 +8,6 @@ import {
   LanguageServerClient,
 } from "../../../language-server/client";
 import { LSPClient } from "../../../language-server/lsp-client";
-// import {
-//   DocSections,
-//   renderDocumentation,
-//   wrapWithDocumentationButton,
-// } from "./documentation";
-// import { nameFromSignature, removeFullyQualifiedName } from "./names";
 import { offsetToPosition } from "./positions";
 import { escapeRegExp } from "./regexp-util";
 import {
@@ -21,14 +15,13 @@ import {
   Completion,
   CompletionContext,
   CompletionResult,
+  insertBracket,
 } from "@codemirror/autocomplete";
-import { insertBracket } from "@codemirror/autocomplete";
 import { Extension, TransactionSpec } from "@codemirror/state";
 import * as LSP from "vscode-languageserver-protocol";
 import {
   CompletionItem,
   CompletionItemKind,
-  CompletionResolveRequest,
   CompletionTriggerKind,
 } from "vscode-languageserver-protocol";
 

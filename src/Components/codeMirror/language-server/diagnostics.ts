@@ -43,23 +43,11 @@ export const diagnosticsMapping = (
           // Missing severity is client defined. Warn for now.
           severity: severityMapping[severity ?? LSP.DiagnosticSeverity.Warning],
           message,
-          //   tags: tags ? tags.map(convertTag) : undefined,
         };
       }
       return undefined;
     })
     .filter((x): x is Diagnostic => Boolean(x));
-
-const convertTag = (tag: LSP.DiagnosticTag): string => {
-  switch (tag) {
-    case LSP.DiagnosticTag.Deprecated:
-      return "deprecated";
-    case LSP.DiagnosticTag.Unnecessary:
-      return "unnecessary";
-    default:
-      throw new Error("Unsupported tag.");
-  }
-};
 
 /**
  * Given an EditorState object and a LSP.Diagnostic[] for that state's

@@ -3,7 +3,6 @@
  *
  * SPDX-License-Identifier: MIT
  */
-import { retryAsyncLoad } from "./chunk-util";
 import { EventEmitter } from "events";
 import {
   CompletionList,

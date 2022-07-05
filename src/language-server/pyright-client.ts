@@ -61,7 +61,5 @@ async function getInitializationOptions(): Promise<any> {
 
   return {
     files: typeshed,
-    // Custom option in our Pyright version
-    // diagnosticStyle: "simplified",
   };
 }

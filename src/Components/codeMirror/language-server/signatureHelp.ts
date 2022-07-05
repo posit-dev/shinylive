@@ -12,7 +12,6 @@ import {
   LanguageServerClient,
 } from "../../../language-server/client";
 import { LSPClient } from "../../../language-server/lsp-client";
-import { BaseLanguageServerView } from "./common";
 import { nameFromSignature, removeFullyQualifiedName } from "./names";
 import { offsetToPosition } from "./positions";
 import { Extension, StateEffect, StateField } from "@codemirror/state";
@@ -256,13 +255,8 @@ export const signatureHelp = (
   const client = lspClient.client;
   const uri = createUri(filename);
 
-  class SignatureHelpView
-    extends BaseLanguageServerView
-    implements PluginValue
-  {
-    constructor(view: EditorView, private automatic: boolean) {
-      super(view);
-    }
+  class SignatureHelpView implements PluginValue {
+    constructor(protected view: EditorView, private automatic: boolean) {}
     update({ docChanged, selectionSet, transactions }: ViewUpdate) {
       if (
         (docChanged || selectionSet) &&
