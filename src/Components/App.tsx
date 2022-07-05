@@ -22,6 +22,10 @@ import LZString from "lz-string";
 import * as React from "react";
 import { createRoot } from "react-dom/client";
 
+// Load Editor component dynamically and lazily because it's large and not
+// needed for all configurations.
+const Editor = React.lazy(() => import("./Editor"));
+
 const terminalInterface: TerminalInterface = (() => {
   let _exec = async (x: string) => console.log("preload exec:" + x);
   let _echo = async (x: string) => console.log("preload echo:" + x);
@@ -233,9 +237,7 @@ export function App({
     });
     if (currentFiles.some((file) => file.name === "app.py")) return;
   }, [pyodideProxyHandle.ready, currentFiles]);
-
   if (appMode === "examples-editor-terminal-viewer") {
-    const Editor = React.lazy(() => import("./Editor"));
     return (
       <ResizableGrid
         className="App--container"
@@ -276,7 +278,6 @@ export function App({
       </ResizableGrid>
     );
   } else if (appMode === "editor-terminal-viewer") {
-    const Editor = React.lazy(() => import("./Editor"));
     return (
       <ResizableGrid
         className="App--container"
@@ -312,7 +313,6 @@ export function App({
       </ResizableGrid>
     );
   } else if (appMode === "editor-terminal") {
-    const Editor = React.lazy(() => import("./Editor"));
     return (
       <ResizableGrid
         className="App--container"
@@ -340,8 +340,6 @@ export function App({
       </ResizableGrid>
     );
   } else if (appMode === "editor-cell") {
-    const Editor = React.lazy(() => import("./Editor"));
-
     return (
       <div className="App--container editor-cell">
         <React.Suspense fallback={<div>Loading...</div>}>
@@ -366,8 +364,6 @@ export function App({
       </div>
     );
   } else if (appMode === "editor-viewer") {
-    const Editor = React.lazy(() => import("./Editor"));
-
     const layout = appOptions.layout ?? "horizontal";
     const viewerHeight = Number(appOptions.viewerHeight ?? 200);
 

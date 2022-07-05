@@ -335,8 +335,8 @@ export default function Editor({
         file.ref.editorState = transaction.state;
       });
 
-      // Trigger updates
-      setFiles([...files]);
+      // Notably, we do not call `setFiles` because we're only modifying the
+      // `file.ref` part, and  we dont' want to trigger a re-render.
     },
     [files, lspPathPrefix, setFiles, syncFileState]
   );
