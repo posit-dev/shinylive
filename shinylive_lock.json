@@ -53,19 +53,18 @@
   },
   "plotnine": {
     "name": "plotnine",
-    "version": "0.8.0",
-    "filename": "plotnine-0.8.0-py3-none-any.whl",
-    "sha256": "3c938093e20c6e68d1ee4591967a2e5093d185046bad88af00af81bf14215549",
-    "url": "https://files.pythonhosted.org/packages/e1/cf/e895bd6aea6c12b97fb9e014657aaa8a886b9fd6fc1eb3e90f9f55ddf71a/plotnine-0.8.0-py3-none-any.whl",
+    "version": "0.9.0",
+    "filename": "plotnine-0.9.0-py3-none-any.whl",
+    "sha256": "340ff64601cddb78ccbca9d4a5dd1a7c56d89cd88c0729d065c30bcb1382cb36",
+    "url": "https://files.pythonhosted.org/packages/6f/c9/009dc392e404fbe1ae929c631460e11a27d22b53de76dc71b6aa4f34d13b/plotnine-0.9.0-py3-none-any.whl",
     "depends": [
+      {"name": "matplotlib", "specs": [[">=", "3.5.0"]]},
       {"name": "mizani", "specs": [[">=", "0.7.3"]]},
-      {"name": "matplotlib", "specs": [[">=", "3.1.1"]]},
       {"name": "numpy", "specs": [[">=", "1.19.0"]]},
-      {"name": "scipy", "specs": [[">=", "1.5.0"]]},
+      {"name": "pandas", "specs": [[">=", "1.3.5"]]},
       {"name": "patsy", "specs": [[">=", "0.5.1"]]},
-      {"name": "statsmodels", "specs": [[">=", "0.12.1"]]},
-      {"name": "pandas", "specs": [[">=", "1.1.0"]]},
-      {"name": "descartes", "specs": [[">=", "1.1.0"]]}
+      {"name": "scipy", "specs": [[">=", "1.5.0"]]},
+      {"name": "statsmodels", "specs": [[">=", "0.13.2"]]}
     ],
     "imports": [
       "plotnine"
@@ -73,10 +72,10 @@
   },
   "plotly": {
     "name": "plotly",
-    "version": "5.8.2",
-    "filename": "plotly-5.8.2-py2.py3-none-any.whl",
-    "sha256": "bd5376ac8cc06e195e3d397da089f3189243b61b27b6c837c1930edbf75fb8f3",
-    "url": "https://files.pythonhosted.org/packages/d6/9c/1eb76aec4a307e2a13ade069065e524d1106ce03168ea2952322365830db/plotly-5.8.2-py2.py3-none-any.whl",
+    "version": "5.9.0",
+    "filename": "plotly-5.9.0-py2.py3-none-any.whl",
+    "sha256": "9acf168915101caac82ed6da3390840c622d9d4e4a78cbe1260f52501efc3117",
+    "url": "https://files.pythonhosted.org/packages/2d/6a/2c2e9ed190066646bbf1620c0b67f8e363e0024ee7bf0d3ea1fdcc9af3ae/plotly-5.9.0-py2.py3-none-any.whl",
     "depends": [
       {"name": "tenacity", "specs": [[">=", "6.2.0"]]}
     ],
@@ -131,12 +130,26 @@
       "siuba"
     ]
   },
+  "palmerpenguins": {
+    "name": "palmerpenguins",
+    "version": "0.1.4",
+    "filename": "palmerpenguins-0.1.4-py3-none-any.whl",
+    "sha256": "63c904db3dcef10e4ff1372f9b7f50a8f44c7364cc03f27f9a487fe5762d159c",
+    "url": "https://files.pythonhosted.org/packages/23/78/d81191d1faf9c41e8707eb0c08dc6d489157bfa42faad62e0ab90c37ebbc/palmerpenguins-0.1.4-py3-none-any.whl",
+    "depends": [
+      {"name": "pandas", "specs": []},
+      {"name": "numpy", "specs": []}
+    ],
+    "imports": [
+      "palmerpenguins"
+    ]
+  },
   "black": {
     "name": "black",
-    "version": "22.3.0",
-    "filename": "black-22.3.0-py3-none-any.whl",
-    "sha256": "bc58025940a896d7e5356952228b68f793cf5fcb342be703c3a2669a1488cb72",
-    "url": "https://files.pythonhosted.org/packages/2e/ef/a38a2189959246543e60859fb65bd3143129f6d18dfc7bcdd79217f81ca2/black-22.3.0-py3-none-any.whl",
+    "version": "22.6.0",
+    "filename": "black-22.6.0-py3-none-any.whl",
+    "sha256": "ac609cf8ef5e7115ddd07d85d988d074ed00e10fbc3445aee393e70164a2219c",
+    "url": "https://files.pythonhosted.org/packages/2b/70/1d0e33a4df4ed73e9f02f698a29b5d94ff58e39f029c939ecf96a10fb1f3/black-22.6.0-py3-none-any.whl",
     "depends": [
       {"name": "click", "specs": [[">=", "8.0.0"]]},
       {"name": "platformdirs", "specs": [[">=", "2"]]},
@@ -160,12 +173,11 @@
   },
   "uvicorn": {
     "name": "uvicorn",
-    "version": "0.17.6",
-    "filename": "uvicorn-0.17.6-py3-none-any.whl",
-    "sha256": "19e2a0e96c9ac5581c01eb1a79a7d2f72bb479691acd2b8921fce48ed5b961a6",
-    "url": "https://files.pythonhosted.org/packages/36/ab/c13847c53d0624ee5a2e19c9c8d19a8cea5f865b95d08b839fac375a9e83/uvicorn-0.17.6-py3-none-any.whl",
+    "version": "0.18.2",
+    "filename": "uvicorn-0.18.2-py3-none-any.whl",
+    "sha256": "c19a057deb1c5bb060946e2e5c262fc01590c6529c0af2c3d9ce941e89bc30e0",
+    "url": "https://files.pythonhosted.org/packages/12/d0/d998e0b558fd5808a4fdb48e906e6f57a4fda2177fa11ba2a9d16248ce92/uvicorn-0.18.2-py3-none-any.whl",
     "depends": [
-      {"name": "asgiref", "specs": [[">=", "3.4.0"]]},
       {"name": "click", "specs": [[">=", "7.0"]]},
       {"name": "h11", "specs": [[">=", "0.8"]]}
     ],
@@ -175,10 +187,10 @@
   },
   "starlette": {
     "name": "starlette",
-    "version": "0.20.3",
-    "filename": "starlette-0.20.3-py3-none-any.whl",
-    "sha256": "4d39be143dffde65782865ce40f86e5a8986400c5be0217b3cda3e732bfd7233",
-    "url": "https://files.pythonhosted.org/packages/d5/b1/1fc2c004e40abf9f23b6169c762065d10051fba51465104c2841e7938f41/starlette-0.20.3-py3-none-any.whl",
+    "version": "0.20.4",
+    "filename": "starlette-0.20.4-py3-none-any.whl",
+    "sha256": "c0414d5a56297d37f3db96a84034d61ce29889b9eaccf65eb98a0b39441fcaa3",
+    "url": "https://files.pythonhosted.org/packages/51/37/8ac52116984d6a0d8502ec2c7e4a4a78f862b76410cdb1a4bcb384c91cb3/starlette-0.20.4-py3-none-any.whl",
     "depends": [
       {"name": "anyio", "specs": [["<", "5"], [">=", "3.4.0"]]}
     ],
@@ -247,16 +259,26 @@
       "appdirs"
     ]
   },
+  "asgiref": {
+    "name": "asgiref",
+    "version": "3.5.2",
+    "filename": "asgiref-3.5.2-py3-none-any.whl",
+    "sha256": "1d2880b792ae8757289136f1db2b7b99100ce959b2aa57fd69dab783d05afac4",
+    "url": "https://files.pythonhosted.org/packages/af/6d/ea3a5c3027c3f14b0321cd4f7e594c776ebe64e4b927432ca6917512a4f7/asgiref-3.5.2-py3-none-any.whl",
+    "depends": [],
+    "imports": [
+      "asgiref"
+    ]
+  },
   "ipywidgets": {
     "name": "ipywidgets",
-    "version": "7.7.0",
-    "filename": "ipywidgets-7.7.0-py2.py3-none-any.whl",
-    "sha256": "e58ff58bc94d481e91ecb6e13a5cb96a87b6b8ade135e055603d0ca24593df38",
-    "url": "https://files.pythonhosted.org/packages/86/7d/06b48ec5fd605775c7e85b3ea397d8f0294f66d570bcee59496eb5195fc5/ipywidgets-7.7.0-py2.py3-none-any.whl",
+    "version": "7.7.1",
+    "filename": "ipywidgets-7.7.1-py2.py3-none-any.whl",
+    "sha256": "aa1076ab7102b2486ae2607c43c243200a07c17d6093676c419d4b6762489a50",
+    "url": "https://files.pythonhosted.org/packages/fa/b2/4af75a543f6c3475a982e814fecd9bf13ba06210c64a6da85475a39bd16b/ipywidgets-7.7.1-py2.py3-none-any.whl",
     "depends": [
       {"name": "ipython-genutils", "specs": [["~=", "0.2.0"]]},
-      {"name": "traitlets", "specs": [[">=", "4.3.1"]]},
-      {"name": "nbformat", "specs": [[">=", "4.2.0"]]}
+      {"name": "traitlets", "specs": [[">=", "4.3.1"]]}
     ],
     "imports": [
       "ipywidgets"
@@ -292,19 +314,6 @@
       "mizani"
     ]
   },
-  "descartes": {
-    "name": "descartes",
-    "version": "1.1.0",
-    "filename": "descartes-1.1.0-py3-none-any.whl",
-    "sha256": "4c62dc41109689d03e4b35de0a2bcbdeeb81047badc607c4415d5c753bd683af",
-    "url": "https://files.pythonhosted.org/packages/e5/b6/1ed2eb03989ae574584664985367ba70cd9cf8b32ee8cad0e8aaeac819f3/descartes-1.1.0-py3-none-any.whl",
-    "depends": [
-      {"name": "matplotlib", "specs": []}
-    ],
-    "imports": [
-      "descartes"
-    ]
-  },
   "tenacity": {
     "name": "tenacity",
     "version": "8.0.1",
@@ -331,10 +340,10 @@
   },
   "xyzservices": {
     "name": "xyzservices",
-    "version": "2022.4.0",
-    "filename": "xyzservices-2022.4.0-py3-none-any.whl",
-    "sha256": "070d055857cb16fa9e3b53a7b948fc09ba5b2b34a6cf91ee4eed7ffca9321e76",
-    "url": "https://files.pythonhosted.org/packages/16/5d/b29f6f8aab6fae9d1f8c5079399603410c98afa06b39a445345cb8141873/xyzservices-2022.4.0-py3-none-any.whl",
+    "version": "2022.6.0",
+    "filename": "xyzservices-2022.6.0-py3-none-any.whl",
+    "sha256": "eb493eb69bde966788f482e1c3608af99ff18fea8885d795ed1ca3b1a8d2e0ec",
+    "url": "https://files.pythonhosted.org/packages/14/13/c36ba2c63f3b04ccc7877dafa176638d483ac9c7520f8523a2b9f7ff2fcc/xyzservices-2022.6.0-py3-none-any.whl",
     "depends": [],
     "imports": [
       "xyzservices"
@@ -371,17 +380,6 @@
     "depends": [],
     "imports": [
       "mypy_extensions"
-    ]
-  },
-  "asgiref": {
-    "name": "asgiref",
-    "version": "3.5.2",
-    "filename": "asgiref-3.5.2-py3-none-any.whl",
-    "sha256": "1d2880b792ae8757289136f1db2b7b99100ce959b2aa57fd69dab783d05afac4",
-    "url": "https://files.pythonhosted.org/packages/af/6d/ea3a5c3027c3f14b0321cd4f7e594c776ebe64e4b927432ca6917512a4f7/asgiref-3.5.2-py3-none-any.whl",
-    "depends": [],
-    "imports": [
-      "asgiref"
     ]
   },
   "h11": {
@@ -453,22 +451,6 @@
       "traitlets"
     ]
   },
-  "nbformat": {
-    "name": "nbformat",
-    "version": "5.4.0",
-    "filename": "nbformat-5.4.0-py3-none-any.whl",
-    "sha256": "0d6072aaec95dddc39735c144ee8bbc6589c383fb462e4058abc855348152dad",
-    "url": "https://files.pythonhosted.org/packages/2f/9a/97151abb954af0cc5d0e3ff2eb7b6d96704a317ac2c0ce0cc76cef003991/nbformat-5.4.0-py3-none-any.whl",
-    "depends": [
-      {"name": "traitlets", "specs": [[">=", "5.1"]]},
-      {"name": "jsonschema", "specs": [[">=", "2.6"]]},
-      {"name": "jupyter-core", "specs": []},
-      {"name": "fastjsonschema", "specs": []}
-    ],
-    "imports": [
-      "nbformat"
-    ]
-  },
   "palettable": {
     "name": "palettable",
     "version": "3.3.0",
@@ -500,31 +482,6 @@
     "depends": [],
     "imports": [
       "sniffio"
-    ]
-  },
-  "jsonschema": {
-    "name": "jsonschema",
-    "version": "4.6.0",
-    "filename": "jsonschema-4.6.0-py3-none-any.whl",
-    "sha256": "1c92d2db1900b668201f1797887d66453ab1fbfea51df8e4b46236689c427baf",
-    "url": "https://files.pythonhosted.org/packages/aa/13/0063ea808b6a1bee57e0780d83bf0c57f0ed25a1b5ed3685524359c485fd/jsonschema-4.6.0-py3-none-any.whl",
-    "depends": [
-      {"name": "attrs", "specs": [[">=", "17.4.0"]]},
-      {"name": "pyrsistent", "specs": [["!=", "0.17.0"], ["!=", "0.17.1"], ["!=", "0.17.2"], [">=", "0.14.0"]]}
-    ],
-    "imports": [
-      "jsonschema"
-    ]
-  },
-  "fastjsonschema": {
-    "name": "fastjsonschema",
-    "version": "2.15.3",
-    "filename": "fastjsonschema-2.15.3-py3-none-any.whl",
-    "sha256": "ddb0b1d8243e6e3abb822bd14e447a89f4ab7439342912d590444831fa00b6a0",
-    "url": "https://files.pythonhosted.org/packages/e6/0b/24795939622d60f4b453aa7040f23c6a6f8b44c7c026c3b42d9842e6cc31/fastjsonschema-2.15.3-py3-none-any.whl",
-    "depends": [],
-    "imports": [
-      "fastjsonschema"
     ]
   }
 }

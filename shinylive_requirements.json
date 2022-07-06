@@ -7,6 +7,7 @@
   { "name": "seaborn", "source": "pypi", "version": "latest" },
   { "name": "ipyleaflet", "source": "pypi", "version": "latest" },
   { "name": "siuba", "source": "pypi", "version": "latest" },
+  { "name": "palmerpenguins", "source": "pypi", "version": "latest" },
   { "name": "black", "source": "pypi", "version": "latest" },
   {
     "name": "tomli",
