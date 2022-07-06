@@ -72,7 +72,7 @@ export function useTabbedCodeMirror({
     const fileContent: FileContent = {
       name: `file${newFileCounter}.py`,
       type: "text",
-      content: `def add(x, y):\n  return x + y\n`,
+      content: "",
     };
     const newFile: EditorFile = fileContentToEditorFile(
       fileContent,
