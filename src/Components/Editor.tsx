@@ -37,8 +37,13 @@ export type EditorFile =
   | {
       name: string;
       type: "text";
+      // This `ref` field is used to store the editor state, along with other
+      // relevant bits like the scroll position. These pieces of information are
+      // used to restore the editor state when switching between tabs.
       ref: {
         editorState: EditorState;
+        scrollTop?: number;
+        scrollLeft?: number;
       };
     }
   | {
@@ -49,6 +54,8 @@ export type EditorFile =
       content: Uint8Array;
       ref: {
         editorState: EditorState;
+        scrollTop?: number;
+        scrollLeft?: number;
       };
     };
 
@@ -155,9 +162,11 @@ export default function Editor({
    * to be mutable. This should be called just before doing operations on
    * `files` or `activeFile`.
    */
-  const syncFileState = React.useCallback(() => {
+  const syncActiveFileState = React.useCallback(() => {
     if (!cmViewRef.current) return;
     activeFile.ref.editorState = cmViewRef.current.state;
+    activeFile.ref.scrollTop = cmViewRef.current.scrollDOM.scrollTop;
+    activeFile.ref.scrollLeft = cmViewRef.current.scrollDOM.scrollLeft;
   }, [activeFile]);
 
   // ===========================================================================
@@ -175,19 +184,19 @@ export default function Editor({
   const runAllApp = React.useCallback(() => {
     if (!viewerMethods || !viewerMethods.ready) return;
 
-    syncFileState();
+    syncActiveFileState();
     (async () => {
       await viewerMethods.stopApp();
       await viewerMethods.runApp(editorFilesToFileContents(files));
     })();
-  }, [viewerMethods, syncFileState, files]);
+  }, [viewerMethods, syncActiveFileState, files]);
 
   // Run the entire current file in the terminal.
   const runAllCode = React.useCallback(() => {
     if (!cmViewRef.current) return;
-    syncFileState();
+    syncActiveFileState();
     runCodeInTerminal(cmViewRef.current.state.doc.toString());
-  }, [runCodeInTerminal, syncFileState]);
+  }, [runCodeInTerminal, syncActiveFileState]);
 
   // ===========================================================================
   // Running app/code when the page loads
@@ -270,12 +279,20 @@ export default function Editor({
   React.useEffect(() => {
     if (!cmViewRef.current || files.length === 0) return;
 
+    // Restore CM state object.
     cmViewRef.current.setState(activeFile.ref.editorState);
 
+    // Restore scroll position, if it's available. Otherwise default to top.
+    cmViewRef.current.scrollDOM.scrollTop = activeFile.ref.scrollTop ?? 0;
+    cmViewRef.current.scrollDOM.scrollLeft = activeFile.ref.scrollLeft ?? 0;
+
+    cmViewRef.current.focus();
+
     return function cleanup() {
-      syncFileState();
+      console.log("syncing state for ", activeFile.name);
+      syncActiveFileState();
     };
-  }, [files, syncFileState, activeFile]);
+  }, [files, syncActiveFileState, activeFile]);
 
   // Referentially stable function, called when the user presses Mod-Enter.
   const runSelectedTextOrCurrentLine = React.useRef((): void => {});
@@ -316,7 +333,7 @@ export default function Editor({
       if (!cmViewRef.current) return;
       // console.log("diagnosticsListener", params);
 
-      syncFileState();
+      syncActiveFileState();
 
       files.map((file) => {
         if (createUri(lspPathPrefix + file.name) !== params.uri) return;
@@ -338,7 +355,7 @@ export default function Editor({
       // Notably, we do not call `setFiles` because we're only modifying the
       // `file.ref` part, and  we dont' want to trigger a re-render.
     },
-    [files, lspPathPrefix, setFiles, syncFileState]
+    [files, lspPathPrefix, setFiles, syncActiveFileState]
   );
 
   React.useEffect(() => {
@@ -397,11 +414,11 @@ export default function Editor({
       setLocalDirHandle(dirHandle);
     }
 
-    syncFileState();
+    syncActiveFileState();
     const fileContents = editorFilesToFileContents(files);
 
     await fileio.saveFileContentsToDirectory(fileContents, dirHandle);
-  }, [files, syncFileState, localDirHandle]);
+  }, [files, syncActiveFileState, localDirHandle]);
 
   const saveButton = (
     <button
@@ -417,7 +434,7 @@ export default function Editor({
   const downloadFiles = React.useCallback(async () => {
     if (!window.confirm("Downlad all project files?")) return;
 
-    syncFileState();
+    syncActiveFileState();
     const fileContents = editorFilesToFileContents(files);
 
     if (fileContents.length == 1) {
@@ -432,7 +449,7 @@ export default function Editor({
       const zipBuffer = zipSync(zippableContents);
       await fileio.downloadFile("app.zip", zipBuffer, "application/zip");
     }
-  }, [files, syncFileState]);
+  }, [files, syncActiveFileState]);
 
   const formatCodeButton = (
     <button
@@ -448,7 +465,7 @@ export default function Editor({
   const formatCode = React.useCallback(async () => {
     if (!cmViewRef.current) return;
     if (!utilityMethods) return;
-    syncFileState();
+    syncActiveFileState();
 
     if (activeFile.type !== "text") return;
     const content = editorFileToFileContent(activeFile).content as string;
@@ -472,7 +489,7 @@ export default function Editor({
     });
 
     cmViewRef.current.dispatch(transaction);
-  }, [utilityMethods, syncFileState, activeFile]);
+  }, [utilityMethods, syncActiveFileState, activeFile]);
 
   const downloadButton = (
     <button
@@ -486,7 +503,7 @@ export default function Editor({
   );
 
   const openEditorWindow = React.useCallback(async () => {
-    syncFileState();
+    syncActiveFileState();
     const fileContents = editorFilesToFileContents(files);
 
     const editorWindow = window.open(
@@ -497,7 +514,7 @@ export default function Editor({
     );
     // @ts-ignore: .fileContents is a custom field we're adding to the window.
     editorWindow.fileContents = fileContents;
-  }, [files, syncFileState]);
+  }, [files, syncActiveFileState]);
 
   // Run button either gets placed in the header or floating over the editor but
   // it's the same button either way
@@ -527,7 +544,7 @@ export default function Editor({
   if (showShareModal) {
     // If the user clicks the share button, we need to sync the files before
     // showing the
-    syncFileState();
+    syncActiveFileState();
     shareModal = (
       <ShareModal
         fileContents={editorFilesToFileContents(files)}
