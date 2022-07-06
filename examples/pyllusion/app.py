@@ -64,14 +64,17 @@ def server(input: Inputs, output: Outputs, session: Session):
                 ui.input_slider("diff", "Difference", -1, 1, 0, step=0.2),
             )
         elif illusion in ["Autostereogram"]:
-            return ui.TagList(ui.input_text("stimulus", "Stimulus", value="Hello"))
+            return ui.TagList(
+                ui.input_file("image", "Choose an image to upload:", multiple=True),
+                ui.input_select("pattern", "Background pattern", ["Noise", "Circles"]),
+            )
         elif illusion in ["Pareidolia"]:
             return ui.TagList(ui.input_text("stimulus", "Stimulus", value="Hello"))
 
         # if (input.illusion() == "Delboeuf"):
 
     @output
-    @render.plot(alt="A histogram")
+    @render.plot
     def plot():
         if input.strength() is None or input.diff() is None:
             return None
@@ -100,9 +103,26 @@ def server(input: Inputs, output: Outputs, session: Session):
         elif input.illusion() == "White":
             img = pyllusion.White(strength, diff)
         elif input.illusion() == "Autostereogram":
-            if input["stimulus"] is None:
+            stimulus = input.image()
+            if not stimulus:
                 return None
-            img = pyllusion.Autostereogram(input.stimulus(), width, height)
+
+            if input.pattern() == "Circles":
+                kwargs = {
+                    "pattern": pyllusion.image_circles,
+                    "color": "blackwhite",
+                    "alpha": 0.75,
+                    "size_min": 0.01,
+                    "size_max": 0.04,
+                    "n": 600,
+                }
+            else:
+                kwargs = {
+                    "pattern": pyllusion.image_noise,
+                    "blackwhite": True,
+                }
+
+            img = pyllusion.Autostereogram(stimulus=stimulus[0]["datapath"], **kwargs)
             return img.draw(guide=True)
         else:
             return None
@@ -110,4 +130,4 @@ def server(input: Inputs, output: Outputs, session: Session):
         return img.to_image(width=width, height=height)
 
 
-app = App(app_ui, server, debug=True)
+app = App(app_ui, server)
