@@ -10,6 +10,13 @@ export type ExampleItemJson = {
   files: FileContentJson[];
 };
 
+// For examples/index.json
+export type ExampleCategoryIndexJson = {
+  category: string;
+  apps: string[];
+};
+
+// For examples.json
 export type ExampleCategoryJson = {
   category: string;
   apps: ExampleItemJson[];

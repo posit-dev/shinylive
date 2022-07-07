@@ -168,23 +168,23 @@ $(BUILD_DIR)/shinylive/shiny_static/edit/index.html: shiny_static/edit/index.htm
 
 ## Build JS resources from src/ dir
 buildjs:
-	node scripts/build.mjs
+	ts-node scripts/build.ts
 
 ## Build JS resources for production (with minification)
 buildjs-prod:
-	node scripts/build.mjs --prod
+	ts-node scripts/build.ts --prod
 
 ## Build JS resources and watch for changes
 watch:
-	node scripts/build.mjs --watch
+	ts-node scripts/build.ts --watch
 
 ## Build JS resources, watch for changes, and serve site
 serve:
-	node scripts/build.mjs --serve
+	ts-node scripts/build.ts --serve
 
 ## Build JS resources for production, watch for changes, and serve site
 serve-prod:
-	node scripts/build.mjs --serve --prod
+	ts-node scripts/build.ts --serve --prod
 
 
 # Build htmltools, shiny, and ipyshiny. This target must be run manually after

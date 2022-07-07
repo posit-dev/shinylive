@@ -1,5 +1,5 @@
 // Live-reload script taken from https://github.com/evanw/esbuild/issues/802#issuecomment-819578182
-import buildExamples from "./build_examples_json.mjs";
+import buildExamples from "./build_examples_json";
 import { spawn } from "child_process";
 import esbuild from "esbuild";
 import * as fs from "fs";
@@ -9,7 +9,7 @@ import process from "process";
 const EXAMPLES_SOURCE_DIR = "./examples";
 const BUILD_DIR = "./build";
 
-const clients = [];
+const clients: http.ServerResponse[] = [];
 
 let watch = false;
 let serve = false;
@@ -17,7 +17,7 @@ let minify = false;
 let reactProductionMode = false;
 // Set this to true to generate a metadata file that can be analyzed for size of
 // modules in the bundle, like with Bundle-Buddy.
-let metafile = false;
+const metafile = false;
 
 if (process.argv.some((x) => x === "--watch")) {
   watch = true;
@@ -31,7 +31,10 @@ if (process.argv.some((x) => x === "--prod")) {
   reactProductionMode = true;
 }
 
-const onRebuild = (error, result) => {
+const onRebuild = (
+  error: esbuild.BuildFailure | null,
+  result: esbuild.BuildResult | null
+): void => {
   clients.forEach((res) => res.write("data: update\n\n"));
   clients.length = 0;
 
@@ -176,14 +179,14 @@ if (serve) {
                 const newHeaders = {
                   ...proxyRes.headers,
                   "content-length":
-                    parseInt(proxyRes.headers["content-length"], 10) +
+                    parseInt(proxyRes.headers["content-length"]!, 10) +
                     jsReloadCode.length,
                 };
 
-                res.writeHead(proxyRes.statusCode, newHeaders);
+                res.writeHead(proxyRes.statusCode!, newHeaders);
                 res.write(jsReloadCode);
               } else {
-                res.writeHead(proxyRes.statusCode, proxyRes.headers);
+                res.writeHead(proxyRes.statusCode!, proxyRes.headers);
               }
               proxyRes.pipe(res, { end: true });
             }
@@ -199,9 +202,11 @@ if (serve) {
         linux: ["xdg-open"],
         win32: ["cmd", "/c", "start"],
       };
-      const platform = process.platform;
-      if (clients.length === 0)
-        spawn(op[platform][0], [`http://localhost:3000/examples`]);
+      if (clients.length === 0) {
+        // @ts-expect-error: `process.platform` could have many other values,
+        //like aix, android, haiku, openbsd, freebsd, etc.
+        spawn(op[process.platform][0], [`http://localhost:3000/examples`]);
+      }
     }, 1000); //open the default browser only if it is not opened yet
   });
 }

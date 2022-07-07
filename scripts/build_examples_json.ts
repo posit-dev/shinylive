@@ -1,9 +1,10 @@
+import type { ExampleCategoryIndexJson } from "../src/examples";
 import * as fs from "fs";
-import * as path from "path";
 import glob from "glob";
 import { isBinary } from "istextorbinary";
+import * as path from "path";
 
-export default function buildExamples(examplesDir, buildDir) {
+export default function buildExamples(examplesDir: string, buildDir: string) {
   const orderingFile = `${examplesDir}/index.json`;
   const outputFile = `${buildDir}/shinylive/examples.json`;
 
@@ -20,9 +21,11 @@ export default function buildExamples(examplesDir, buildDir) {
 
   console.log("Regenerating examples.json");
 
-  const ordering = JSON.parse(fs.readFileSync(orderingFile));
+  const ordering: ExampleCategoryIndexJson[] = JSON.parse(
+    fs.readFileSync(orderingFile).toString()
+  );
 
-  function parseApp(exampleDir) {
+  function parseApp(exampleDir: string) {
     const appPath = `${examplesDir}/${exampleDir}`;
 
     if (!fs.existsSync(appPath)) {
@@ -56,17 +59,18 @@ export default function buildExamples(examplesDir, buildDir) {
         })
         .map((f) => {
           const type = isBinary(f) ? "binary" : "text";
-          let content = fs.readFileSync(`${appPath}/${f}`);
+          const contentBuffer = fs.readFileSync(`${appPath}/${f}`);
+          let contentString: string;
 
           if (type === "binary") {
-            content = content.toString("base64");
+            contentString = contentBuffer.toString("base64");
           } else {
-            content = content.toString();
+            contentString = contentBuffer.toString();
           }
 
           return {
             name: f,
-            content: content,
+            content: contentString,
             type: type,
           };
         }),
@@ -90,7 +94,7 @@ export default function buildExamples(examplesDir, buildDir) {
 //   - If it's a file, return the mtime of the file.
 //   - If it's a directory, return the most recent mtime of all the files in the
 //     the directory, including the directory itself, and recurse into subdirs.
-function latestMtime(path) {
+function latestMtime(path: string): number {
   const info = fs.statSync(path);
   if (info.isDirectory()) {
     const files = fs.readdirSync(path);

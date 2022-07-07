@@ -1,4 +1,12 @@
 {
+  "ts-node": {
+    // ts-node is unsed only to run the build.ts script. It needs this option,
+    // otherwise it complains about "Cannot use import statement outside a
+    // module".
+    "compilerOptions": {
+      "module": "commonjs"
+    }
+  },
   "compilerOptions": {
     "jsx": "react-jsx",
     "target": "es2020",
