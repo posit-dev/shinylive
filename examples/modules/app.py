@@ -1,4 +1,4 @@
-from shiny import module, ui, render, reactive, Inputs, Outputs, Session, event, App
+from shiny import module, ui, render, reactive, Inputs, Outputs, Session, App
 
 # ============================================================
 # Counter module
@@ -20,7 +20,7 @@ def counter_server(
     count: reactive.Value[int] = reactive.Value(starting_value)
 
     @reactive.Effect
-    @event(input.button)
+    @reactive.event(input.button)
     def _():
         count.set(count() + 1)
 

@@ -15,10 +15,10 @@ app_ui = ui.page_fluid(
 
 def server(input: Inputs, output: Outputs, session: Session):
 
-    # The @event() causes the function to run only when input.btn is
+    # The @reactive.event() causes the function to run only when input.btn is
     # invalidated.
     @reactive.Effect
-    @event(input.btn)
+    @reactive.event(input.btn)
     def _():
         print(f"You clicked the button!")
         # You can do other things here, like write data to disk.
@@ -26,7 +26,7 @@ def server(input: Inputs, output: Outputs, session: Session):
     # This output updates only when input.btn is invalidated.
     @output
     @render.text
-    @event(input.btn)
+    @reactive.event(input.btn)
     def txt():
         return f"Last value: {input.n()}"
 

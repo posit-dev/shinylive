@@ -35,7 +35,7 @@ def server(input: Inputs, output: Outputs, session: Session):
     # because we don't want to modify the original, then appends the new timestamp,
     # then sets last_vals() to the new, longer array.
     @reactive.Effect
-    @event(input.btn)
+    @reactive.event(input.btn)
     def _():
         x = all_times().copy()
         x.append(datetime.now().timestamp())

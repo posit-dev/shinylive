@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import cast
 
 from htmltools import TagList, div, h3, head_content, tags
-from shiny import App, Inputs, Outputs, Session, event, reactive, render, ui
+from shiny import App, Inputs, Outputs, Session, reactive, render, ui
 from typing_extensions import Literal
 
 import words
@@ -141,7 +141,7 @@ def server(input: Inputs, output: Outputs, session: Session):
 
     @output
     @render.ui
-    @event(current_guess_letters, game_has_ended)
+    @reactive.event(current_guess_letters, game_has_ended)
     def current_guess():
         if game_has_ended():
             return
@@ -222,7 +222,7 @@ def server(input: Inputs, output: Outputs, session: Session):
         return keyboard_div
 
     @reactive.Effect
-    @event(input.Back)  # Take a dependency on the Back button
+    @reactive.event(input.Back)  # Take a dependency on the Back button
     def _():
         if game_has_ended():
             return
@@ -232,7 +232,7 @@ def server(input: Inputs, output: Outputs, session: Session):
             current_guess_letters.set(current_letters)
 
     @reactive.Effect
-    @event(input.Enter)  # Take a dependency on the Enter button
+    @reactive.event(input.Enter)  # Take a dependency on the Enter button
     def _():
         if game_has_ended():
             return
@@ -268,7 +268,7 @@ def server(input: Inputs, output: Outputs, session: Session):
     # ==========================================================================
     def make_key_listener(key: str):
         @reactive.Effect
-        @event(input[key])
+        @reactive.event(input[key])
         def _():
             if game_has_ended():
                 return
@@ -291,7 +291,7 @@ def server(input: Inputs, output: Outputs, session: Session):
     # ==========================================================================
     @output
     @render.ui
-    @event(game_has_ended)
+    @reactive.event(game_has_ended)
     def endgame():
         if not game_has_ended():
             return tags.script(
@@ -331,7 +331,7 @@ def server(input: Inputs, output: Outputs, session: Session):
             return ui.input_action_button("new_game", "New Game")
 
     @reactive.Effect
-    @event(input.new_game)
+    @reactive.event(input.new_game)
     def _():
         reset_game()
 
