@@ -89,9 +89,9 @@ export class LanguageServerClient extends EventEmitter {
       return this.initializePromise;
     }
     this.initializePromise = (async () => {
-      this.connection.onNotification(LogMessageNotification.type, (params) =>
-        console.log("[LS]", params.message)
-      );
+      // this.connection.onNotification(LogMessageNotification.type, (params) =>
+      //   console.log("[LS]", params.message)
+      // );
 
       this.connection.onNotification(
         PublishDiagnosticsNotification.type,
