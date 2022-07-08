@@ -49,7 +49,7 @@ def server(input: Inputs, output: Outputs, session: Session):
     def txt():
         x = all_times()
         x = [round(j - i, 2) for i, j in zip(x[:-1], x[1:])]
-        return "\n".join(textwrap.wrap(str(x)))
+        return "\n".join(textwrap.wrap(str(x), width=45))
 
 
 app = App(app_ui, server)
