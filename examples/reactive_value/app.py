@@ -15,7 +15,6 @@
 # return a new string.
 
 from datetime import datetime
-from math import inf
 import textwrap
 from shiny import *
 
@@ -29,7 +28,7 @@ app_ui = ui.page_fluid(
 
 def server(input: Inputs, output: Outputs, session: Session):
     # A reactive.Value with an array tracking timestamps of all button presses.
-    all_times = reactive.Value([-inf])
+    all_times = reactive.Value([datetime.now().timestamp()])
 
     # This Effect is triggered by pressing the button. It makes a copy of last_vals(),
     # because we don't want to modify the original, then appends the new timestamp,
