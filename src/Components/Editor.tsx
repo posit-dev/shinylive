@@ -102,23 +102,6 @@ export default function Editor({
   // the Viewer component.
   const lspPathPrefix = `editor${editorInstanceId}/`;
 
-  const [keyBindings] = React.useState<KeyBinding[]>([
-    {
-      key: "Mod-Enter",
-      run: (view: EditorView) => {
-        runSelectedTextOrCurrentLine.current();
-        return true;
-      },
-    },
-    {
-      key: "Mod-Shift-Enter",
-      run: (view: EditorView) => {
-        runAllAuto.current();
-        return true;
-      },
-    },
-  ]);
-
   // Given a FileContent object, figure out which editor extensions to use.
   // Use a memoized function to maintain referentially stablity.
   const inferEditorExtensions = React.useCallback(
@@ -138,10 +121,12 @@ export default function Editor({
           }
         }),
         languageServerExtensions(lspClient, lspPathPrefix + file.name),
-        Prec.high(keymap.of(keyBindings)),
+        Prec.high(
+          keymap.of(keyBindings({ runSelectedTextOrCurrentLine, runAllAuto }))
+        ),
       ];
     },
-    [keyBindings, lineNumbers, setFilesHaveChanged, lspClient, lspPathPrefix]
+    [lineNumbers, setFilesHaveChanged, lspClient, lspPathPrefix]
   );
 
   const tabbedFiles = useTabbedCodeMirror({
@@ -713,4 +698,34 @@ function useInstanceCounter() {
   }, []);
 
   return id;
+}
+
+/**
+ * Create CodeMirror key bindings to run code from the editor.
+ */
+function keyBindings({
+  runSelectedTextOrCurrentLine,
+  runAllAuto,
+}: {
+  runSelectedTextOrCurrentLine: React.RefObject<() => void>;
+  runAllAuto: React.RefObject<() => void>;
+}): KeyBinding[] {
+  return [
+    {
+      key: "Mod-Enter",
+      run: (view: EditorView) => {
+        if (!runSelectedTextOrCurrentLine.current) return false;
+        runSelectedTextOrCurrentLine.current();
+        return true;
+      },
+    },
+    {
+      key: "Mod-Shift-Enter",
+      run: (view: EditorView) => {
+        if (!runAllAuto.current) return false;
+        runAllAuto.current();
+        return true;
+      },
+    },
+  ];
 }
