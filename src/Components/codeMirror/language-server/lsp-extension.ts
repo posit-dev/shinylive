@@ -1,4 +1,5 @@
 import { LSPClient } from "../../../language-server/lsp-client";
+import { inferFiletype } from "../../../utils";
 import { autocompletion } from "./autocompletion";
 import { hover } from "./hover";
 import { offsetToPosition } from "./positions";
@@ -11,6 +12,10 @@ export function languageServerExtensions(
   lspClient: LSPClient,
   filename: string
 ): Extension[] {
+  if (inferFiletype(filename) !== "python") {
+    return [];
+  }
+
   return [
     EditorView.updateListener.of((u: ViewUpdate) => {
       if (u.docChanged) {

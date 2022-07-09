@@ -90,6 +90,12 @@ export default function Editor({
   showShareButton?: boolean;
   floatingButtons?: boolean;
 }) {
+  // In the future, instead of directly instantiating the PyrightClient, it
+  // would make sense to abstract it out to a class which in turn can run
+  // multiple language server clients behind the scenes. In this file,
+  // lsp-extensions.ts, and useTabbedCodeMirror.tsx, there are explicit checks
+  // that files are python files in order to enable LS features, and they should
+  // not be necessary at this level.
   const lspClient: LSPClient = ensurePyrightClient();
 
   // A unique ID for this instance of the Editor. At some point it might make
@@ -132,8 +138,8 @@ export default function Editor({
   const tabbedFiles = useTabbedCodeMirror({
     currentFilesFromApp,
     inferEditorExtensions,
-    lspClient: lspClient,
-    lspPathPrefix: lspPathPrefix,
+    lspClient,
+    lspPathPrefix,
   });
   const { files, setFiles, activeFile } = tabbedFiles;
 
@@ -273,10 +279,7 @@ export default function Editor({
     cmViewRef.current.scrollDOM.scrollTop = activeFile.ref.scrollTop ?? 0;
     cmViewRef.current.scrollDOM.scrollLeft = activeFile.ref.scrollLeft ?? 0;
 
-    cmViewRef.current.focus();
-
     return function cleanup() {
-      console.log("syncing state for ", activeFile.name);
       syncActiveFileState();
     };
   }, [files, syncActiveFileState, activeFile]);

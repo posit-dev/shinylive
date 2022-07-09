@@ -132,7 +132,7 @@ const signatureHelpTooltipField = StateField.define<SignatureHelpState>({
     // console.log("signatureHelp update", tr.effects);
     for (const effect of tr.effects) {
       if (effect.is(setSignatureHelpEffect)) {
-        console.log("signatureHelp ", effect);
+        // console.log("signatureHelp ", effect);
         return reduceSignatureHelpState(state, effect.value);
       }
     }
@@ -145,7 +145,7 @@ const reduceSignatureHelpState = (
   state: SignatureHelpState,
   effect: SignatureChangeEffect
 ): SignatureHelpState => {
-  console.log("reduceSignatureHelpState", effect);
+  // console.log("reduceSignatureHelpState", effect);
   if (state.tooltip && !effect.result) {
     return {
       result: null,

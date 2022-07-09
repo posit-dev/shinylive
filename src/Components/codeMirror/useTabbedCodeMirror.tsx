@@ -1,5 +1,6 @@
 import * as fileio from "../../fileio";
 import { LSPClient } from "../../language-server/lsp-client";
+import { inferFiletype } from "../../utils";
 import {
   EditorFile,
   editorFileToFileContent,
@@ -132,11 +133,15 @@ export function useTabbedCodeMirror({
     setEditingFilename(null);
     setActiveFileIdx(fileIndex);
 
-    lspClient.deleteFile(lspPathPrefix + oldFileName);
-    lspClient.createFile(
-      lspPathPrefix + newFileName,
-      updatedFiles[fileIndex].ref.editorState.doc.toString()
-    );
+    if (inferFiletype(oldFileName) === "python") {
+      lspClient.deleteFile(lspPathPrefix + oldFileName);
+    }
+    if (inferFiletype(newFileName) === "python") {
+      lspClient.createFile(
+        lspPathPrefix + newFileName,
+        updatedFiles[fileIndex].ref.editorState.doc.toString()
+      );
+    }
   }
 
   function selectFile(fileName: string) {
