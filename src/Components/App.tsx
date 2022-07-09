@@ -262,8 +262,9 @@ export function App({
             viewerMethods={viewerMethods}
             utilityMethods={utilityMethods}
             runOnLoad={currentFiles.some((file) => file.name === "app.py")}
-            showShareButton={true}
             showLoadSaveButtons={true}
+            showOpenWindowButton={true}
+            showShareButton={true}
           />
         </React.Suspense>
         <Terminal
@@ -297,8 +298,9 @@ export function App({
             viewerMethods={viewerMethods}
             utilityMethods={utilityMethods}
             runOnLoad={currentFiles.some((file) => file.name === "app.py")}
-            showShareButton={true}
             showLoadSaveButtons={true}
+            showOpenWindowButton={true}
+            showShareButton={true}
           />
         </React.Suspense>
         <Terminal
@@ -328,8 +330,9 @@ export function App({
             terminalMethods={terminalMethods}
             utilityMethods={utilityMethods}
             runOnLoad={false}
-            showShareButton={false}
             showLoadSaveButtons={false}
+            showOpenWindowButton={true}
+            showShareButton={false}
           />
         </React.Suspense>
         <Terminal
@@ -390,8 +393,9 @@ export function App({
             terminalMethods={terminalMethods}
             utilityMethods={utilityMethods}
             viewerMethods={viewerMethods}
-            showShareButton={false}
             showLoadSaveButtons={false}
+            showOpenWindowButton={true}
+            showShareButton={false}
           />
         </React.Suspense>
         <Viewer

@@ -71,6 +71,7 @@ export default function Editor({
   lineNumbers = true,
   showHeaderBar = true,
   showLoadSaveButtons = true,
+  showOpenWindowButton = true,
   showShareButton = true,
   floatingButtons = false,
 }: {
@@ -85,6 +86,7 @@ export default function Editor({
   lineNumbers?: boolean;
   showHeaderBar?: boolean;
   showLoadSaveButtons?: boolean;
+  showOpenWindowButton?: boolean;
   showShareButton?: boolean;
   floatingButtons?: boolean;
 }) {
@@ -578,7 +580,7 @@ export default function Editor({
             {showLoadSaveButtons ? loadButton : null}
             {showLoadSaveButtons ? saveButton : null}
             {showLoadSaveButtons ? downloadButton : null}
-            {showShareButton ? openWindowButton : null}
+            {showOpenWindowButton ? openWindowButton : null}
             {showShareButton ? shareButton : null}
             {formatCodeButton}
             {runButton}

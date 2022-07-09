@@ -24,11 +24,11 @@ export function makeRandomKey(length = 5): string {
 // "ab/cd"   -> "ab"
 // "ab/"     -> ""
 // "ab"      -> ""
-// "/"       -> Error
-// ""        -> Error
+// "/"       -> ""
+// ""        -> ""
 export function dirname(path: string) {
   if (path === "/" || path === "") {
-    throw new Error("Cannot get dirname() of root directory.");
+    return "";
   }
   return path.replace(/[/]?[^/]+[/]?$/, "");
 }
