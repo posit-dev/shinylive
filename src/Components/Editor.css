@@ -1,4 +1,5 @@
 .Editor {
+  --bg-light-shade-color: #f6f6f6;
   --button-gray-color: #999;
   --button-hover-color: #hsl(207, 69%, 25%);
   --border-color: #aaa;
@@ -45,9 +46,9 @@ the size bigger.  */
   font-size: 14px;
   font-family: var(--font-face);
   height: 26px;
-  background-color: var(--colors-bg);
+  background-color: var(--bg-light-shade-color);
   color: #444;
-  border: 1px solid var(--border-color);
+  border: 1px solid #ddd;
   border-top-left-radius: 3px;
   border-top-right-radius: 3px;
   border-bottom: none;
@@ -68,6 +69,8 @@ the size bigger.  */
 
 .Editor--header--files > button.selected {
   color: black;
+  background-color: var(--colors-bg);
+  border-color: var(--border-color);
   position: relative;
   cursor: text;
 }
