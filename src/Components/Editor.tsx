@@ -141,7 +141,7 @@ export default function Editor({
     lspClient,
     lspPathPrefix,
   });
-  const { files, setFiles, activeFile } = tabbedFiles;
+  const { files, activeFile } = tabbedFiles;
 
   // If there's a file named app.py, assume we have a Shiny app.
   const [isShinyApp, setIsShinyApp] = React.useState(false);
@@ -156,10 +156,10 @@ export default function Editor({
    * `files` or `activeFile`.
    */
   const syncActiveFileState = React.useCallback(() => {
-    if (!cmViewRef.current) return;
-    activeFile.ref.editorState = cmViewRef.current.state;
-    activeFile.ref.scrollTop = cmViewRef.current.scrollDOM.scrollTop;
-    activeFile.ref.scrollLeft = cmViewRef.current.scrollDOM.scrollLeft;
+    if (!cmView) return;
+    activeFile.ref.editorState = cmView.state;
+    activeFile.ref.scrollTop = cmView.scrollDOM.scrollTop;
+    activeFile.ref.scrollLeft = cmView.scrollDOM.scrollLeft;
   }, [activeFile]);
 
   // ===========================================================================
@@ -186,9 +186,9 @@ export default function Editor({
 
   // Run the entire current file in the terminal.
   const runAllCode = React.useCallback(() => {
-    if (!cmViewRef.current) return;
+    if (!cmView) return;
     syncActiveFileState();
-    runCodeInTerminal(cmViewRef.current.state.doc.toString());
+    runCodeInTerminal(cmView.state.doc.toString());
   }, [runCodeInTerminal, syncActiveFileState]);
 
   // ===========================================================================
@@ -251,53 +251,54 @@ export default function Editor({
   // CodeMirror setup
   // ===========================================================================
   const cmDivRef = React.useRef<HTMLDivElement>(null);
-  const cmViewRef = React.useRef<EditorView>();
+  const [cmView, setCmView] = React.useState<EditorView>();
 
   // Populate the cmViewRef object.
   React.useEffect(() => {
     if (!cmDivRef.current) {
       throw new Error("Target div ref for CodeMirror is null.");
     }
-    cmViewRef.current = new EditorView({
+    const cmViewLocal = new EditorView({
       parent: cmDivRef.current,
     });
 
+    setCmView(cmViewLocal);
+
     return function cleanup() {
-      if (!cmViewRef.current) return;
-      cmViewRef.current.destroy();
+      cmViewLocal.destroy();
     };
   }, []);
 
   // This is run when switching tabs, and when receiving new files from the app.
   React.useEffect(() => {
-    if (!cmViewRef.current || files.length === 0) return;
+    if (!cmView || files.length === 0) return;
 
     // Restore CM state object.
-    cmViewRef.current.setState(activeFile.ref.editorState);
+    cmView.setState(activeFile.ref.editorState);
 
     // Restore scroll position, if it's available. Otherwise default to top.
-    cmViewRef.current.scrollDOM.scrollTop = activeFile.ref.scrollTop ?? 0;
-    cmViewRef.current.scrollDOM.scrollLeft = activeFile.ref.scrollLeft ?? 0;
+    cmView.scrollDOM.scrollTop = activeFile.ref.scrollTop ?? 0;
+    cmView.scrollDOM.scrollLeft = activeFile.ref.scrollLeft ?? 0;
 
     return function cleanup() {
       syncActiveFileState();
     };
-  }, [files, syncActiveFileState, activeFile]);
+  }, [files, syncActiveFileState, activeFile, cmView]);
 
   // Referentially stable function, called when the user presses Mod-Enter.
   const runSelectedTextOrCurrentLine = React.useRef((): void => {});
   React.useEffect(() => {
     runSelectedTextOrCurrentLine.current = (): void => {
-      if (!cmViewRef.current) return;
+      if (!cmView) return;
       // Get selected text, or if no selection, current line
-      let code = cmUtils.getSelectedText(cmViewRef.current);
+      let code = cmUtils.getSelectedText(cmView);
       if (code == "") {
-        code = cmUtils.getCurrentLineText(cmViewRef.current);
-        cmUtils.moveCursorToNextLine(cmViewRef.current);
+        code = cmUtils.getCurrentLineText(cmView);
+        cmUtils.moveCursorToNextLine(cmView);
       }
       runCodeInTerminal(code);
     };
-  }, [runCodeInTerminal]);
+  }, [runCodeInTerminal, cmView]);
 
   // Referentially stable function, called when the user presses
   // Mod-Shift-Enter. If the code is a Shiny app, it runs all the files as an
@@ -320,7 +321,7 @@ export default function Editor({
 
   const diagnosticsListener = React.useCallback(
     (params: LSP.PublishDiagnosticsParams) => {
-      if (!cmViewRef.current) return;
+      if (!cmView) return;
       // console.log("diagnosticsListener", params);
 
       syncActiveFileState();
@@ -335,8 +336,8 @@ export default function Editor({
 
         // In the case where the View's state is the same as the file we're
         // iterating over, dispatch the transaction so the View gets updated.
-        if (cmViewRef.current?.state === file.ref.editorState) {
-          cmViewRef.current.dispatch(transaction);
+        if (cmView.state === file.ref.editorState) {
+          cmView.dispatch(transaction);
         }
 
         file.ref.editorState = transaction.state;
@@ -345,7 +346,7 @@ export default function Editor({
       // Notably, we do not call `setFiles` because we're only modifying the
       // `file.ref` part, and  we dont' want to trigger a re-render.
     },
-    [files, lspPathPrefix, setFiles, syncActiveFileState]
+    [files, lspPathPrefix, syncActiveFileState, cmView]
   );
 
   React.useEffect(() => {
@@ -453,7 +454,7 @@ export default function Editor({
   );
 
   const formatCode = React.useCallback(async () => {
-    if (!cmViewRef.current) return;
+    if (!cmView) return;
     if (!utilityMethods) return;
     syncActiveFileState();
 
@@ -466,20 +467,20 @@ export default function Editor({
     // Make sure the cursor stays within the document.
     const cursorPos = Math.min(
       formatted.length,
-      cmViewRef.current.state.selection.main.anchor
+      cmView.state.selection.main.anchor
     );
     // Replace the old code with the new formatted code.
-    const transaction = cmViewRef.current.state.update({
+    const transaction = cmView.state.update({
       changes: {
         from: 0,
-        to: cmViewRef.current.state.doc.length,
+        to: cmView.state.doc.length,
         insert: formatted,
       },
       selection: { anchor: cursorPos },
     });
 
-    cmViewRef.current.dispatch(transaction);
-  }, [utilityMethods, syncActiveFileState, activeFile]);
+    cmView.dispatch(transaction);
+  }, [utilityMethods, syncActiveFileState, activeFile, cmView]);
 
   const downloadButton = (
     <button
