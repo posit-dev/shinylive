@@ -3,22 +3,27 @@ import { LSPClient } from "../../language-server/lsp-client";
 import { inferFiletype } from "../../utils";
 import {
   EditorFile,
-  editorFileToFileContent,
   fileContentsToEditorFiles,
   fileContentToEditorFile,
 } from "../Editor";
 import type { FileContent } from "../filecontent";
-import { Extension } from "@codemirror/state";
+import { getMinimalExtensions } from "./extensions";
+import { Extension, StateEffect } from "@codemirror/state";
+import { EditorView } from "@codemirror/view";
 import * as React from "react";
 
 export function useTabbedCodeMirror({
   currentFilesFromApp,
+  cmView,
   inferEditorExtensions,
+  setFilesHaveChanged,
   lspClient,
   lspPathPrefix = "",
 }: {
   currentFilesFromApp: FileContent[];
-  inferEditorExtensions: (f: FileContent) => Extension;
+  cmView: EditorView | undefined;
+  inferEditorExtensions: (f: FileContent | EditorFile) => Extension;
+  setFilesHaveChanged: (value: boolean) => void;
   lspClient: LSPClient;
   lspPathPrefix: string;
 }) {
@@ -66,6 +71,8 @@ export function useTabbedCodeMirror({
       setActiveFileIdx(updatedFiles.length - 1);
     }
 
+    setFilesHaveChanged(true);
+
     lspClient.deleteFile(lspPathPrefix + filename);
   }
 
@@ -84,6 +91,7 @@ export function useTabbedCodeMirror({
     setNewFileCounter(newFileCounter + 1);
     setFiles([...files, newFile]);
     setActiveFileIdx(files.length);
+    setFilesHaveChanged(true);
 
     lspClient.createFile(lspPathPrefix + fileContent.name, fileContent.content);
   }
@@ -112,7 +120,8 @@ export function useTabbedCodeMirror({
     }
 
     setFiles(updatedFiles);
-  }, [files, inferEditorExtensions]);
+    setFilesHaveChanged(true);
+  }, [files, inferEditorExtensions, setFilesHaveChanged]);
 
   function renameFile(oldFileName: string, newFileName: string) {
     const updatedFiles = [...files];
@@ -120,18 +129,24 @@ export function useTabbedCodeMirror({
 
     updatedFiles[fileIndex].name = newFileName;
 
-    // This is a little inefficient, but it does the job: convert to FileContent
-    // so that we can infer the new editor extensions (which can depend on file
-    // type), and then convert back to EditorFile, and save it back in the
-    // original slot.
-    updatedFiles[fileIndex] = fileContentToEditorFile(
-      editorFileToFileContent(updatedFiles[fileIndex]),
-      inferEditorExtensions
-    );
+    if (cmView) {
+      // Unset extensions, then set them, using the updated file information.
+      // The unsetting is necessary to clear out previous extensions that
+      cmView.dispatch({
+        effects: StateEffect.reconfigure.of(getMinimalExtensions()),
+      });
+      cmView.dispatch({
+        effects: StateEffect.reconfigure.of(
+          inferEditorExtensions(updatedFiles[fileIndex])
+        ),
+      });
+    }
+    syncActiveFileState();
+
     setFiles(updatedFiles);
 
     setEditingFilename(null);
-    setActiveFileIdx(fileIndex);
+    setFilesHaveChanged(true);
 
     if (inferFiletype(oldFileName) === "python") {
       lspClient.deleteFile(lspPathPrefix + oldFileName);
@@ -167,10 +182,24 @@ export function useTabbedCodeMirror({
 
   const activeFile = files[activeFileIdx];
 
+  /**
+   * Store the currently active file's CodeMirror state (from the EditorView) in
+   * the corresponding entry in `files`, but in the `ref` property, which is
+   * meant to be mutable. This should be called just before doing operations on
+   * `files` or `activeFile`.
+   */
+  const syncActiveFileState = React.useCallback(() => {
+    if (!cmView) return;
+    activeFile.ref.editorState = cmView.state;
+    activeFile.ref.scrollTop = cmView.scrollDOM.scrollTop;
+    activeFile.ref.scrollLeft = cmView.scrollDOM.scrollLeft;
+  }, [activeFile, cmView]);
+
   return {
     files,
     setFiles,
     activeFile,
+    syncActiveFileState,
     editingFilename,
     addFile,
     uploadFile,

@@ -86,6 +86,28 @@ export function getBinaryFileExtensions(): Extension {
   return [EditorView.editable.of(false)];
 }
 
+/**
+ * A minimal set of extensions. The purpose of this is when switching sets of
+ * extensions (when a file type is changed from python to css, for example), it
+ * switches to this set of extensions, then to the final set of extensions.
+ *
+ * In the transition, there are the start, middle, and end extension sets. If
+ * they all have history(), then undo history is preserved across all the
+ * states. If the middle set doesn't have history(), then undo history is lost.
+ *
+ * The reason that a middle set is needed is because the start and end sets have
+ * lintGutter(), but when changing file types it's necessary to drop the linter
+ * diagnostics. In order to do this, the middle set has no lintGutter().
+ *
+ * Also note that the calls StateEffect.reconfigure.of() must be applied in two
+ * separate transaction updates (or dispatches, instead of putting them in an
+ * array of transactions and passing the array to a single update() or
+ * dispatch().
+ */
+export function getMinimalExtensions(): Extension {
+  return [history()];
+}
+
 const LANG_EXTENSIONS: Record<string, () => Extension> = {
   python: python,
   javascript: javascript,

@@ -111,7 +111,7 @@ export default function Editor({
   // Given a FileContent object, figure out which editor extensions to use.
   // Use a memoized function to maintain referentially stablity.
   const inferEditorExtensions = React.useCallback(
-    (file: FileContent) => {
+    (file: FileContent | EditorFile) => {
       if (file.type === "binary") {
         return getBinaryFileExtensions();
       }
@@ -139,30 +139,19 @@ export default function Editor({
 
   const tabbedFiles = useTabbedCodeMirror({
     currentFilesFromApp,
+    cmView,
     inferEditorExtensions,
+    setFilesHaveChanged,
     lspClient,
     lspPathPrefix,
   });
-  const { files, activeFile } = tabbedFiles;
+  const { files, activeFile, syncActiveFileState } = tabbedFiles;
 
   // If there's a file named app.py, assume we have a Shiny app.
   const [isShinyApp, setIsShinyApp] = React.useState(false);
   React.useEffect(() => {
     setIsShinyApp(files.some((file) => file.name === "app.py"));
   }, [files]);
-
-  /**
-   * Store the currently active file's CodeMirror editor state in the
-   * corresponding entry in `files`, but in the `ref` property, which is meant
-   * to be mutable. This should be called just before doing operations on
-   * `files` or `activeFile`.
-   */
-  const syncActiveFileState = React.useCallback(() => {
-    if (!cmView) return;
-    activeFile.ref.editorState = cmView.state;
-    activeFile.ref.scrollTop = cmView.scrollDOM.scrollTop;
-    activeFile.ref.scrollLeft = cmView.scrollDOM.scrollLeft;
-  }, [activeFile, cmView]);
 
   // ===========================================================================
   // Callbacks for running app/code
