@@ -135,6 +135,8 @@ export default function Editor({
     [lineNumbers, setFilesHaveChanged, lspClient, lspPathPrefix]
   );
 
+  const [cmView, setCmView] = React.useState<EditorView>();
+
   const tabbedFiles = useTabbedCodeMirror({
     currentFilesFromApp,
     inferEditorExtensions,
@@ -160,7 +162,7 @@ export default function Editor({
     activeFile.ref.editorState = cmView.state;
     activeFile.ref.scrollTop = cmView.scrollDOM.scrollTop;
     activeFile.ref.scrollLeft = cmView.scrollDOM.scrollLeft;
-  }, [activeFile]);
+  }, [activeFile, cmView]);
 
   // ===========================================================================
   // Callbacks for running app/code
@@ -189,7 +191,7 @@ export default function Editor({
     if (!cmView) return;
     syncActiveFileState();
     runCodeInTerminal(cmView.state.doc.toString());
-  }, [runCodeInTerminal, syncActiveFileState]);
+  }, [runCodeInTerminal, syncActiveFileState, cmView]);
 
   // ===========================================================================
   // Running app/code when the page loads
@@ -251,7 +253,6 @@ export default function Editor({
   // CodeMirror setup
   // ===========================================================================
   const cmDivRef = React.useRef<HTMLDivElement>(null);
-  const [cmView, setCmView] = React.useState<EditorView>();
 
   // Populate the cmViewRef object.
   React.useEffect(() => {
