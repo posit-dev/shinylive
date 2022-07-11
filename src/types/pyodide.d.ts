@@ -245,6 +245,10 @@ declare class PyProxyCallableMethods {
 	 * The last argument must be an object with the keyword arguments.
 	 */
 	callKwargs(...jsargs: any): any;
+	/**
+	 * No-op bind function for compatibility with existing libraries
+	 */
+	bind(placeholder: any): this;
 }
 export declare type PyProxyBuffer = PyProxy & PyProxyBufferMethods;
 declare class PyProxyBufferMethods {
@@ -467,14 +471,16 @@ declare function toPy(obj: any, { depth, defaultConverter, }?: {
 	defaultConverter?: (value: any, converter: (value: any) => any, cacheConversion: (input: any, output: any) => any) => any;
 }): any;
 declare function pyimport(mod_name: string): PyProxy;
-declare function unpackArchive(buffer: TypedArray, format: string, options?: {
+declare function unpackArchive(buffer: TypedArray | ArrayBuffer, format: string, options?: {
 	extractDir?: string;
 }): void;
 declare function setInterruptBuffer(interrupt_buffer: TypedArray): void;
 declare function checkInterrupt(): void;
-declare type PyodideInterface = {
+export declare type PyodideInterface = {
 	globals: typeof globals;
 	FS: typeof FS;
+	PATH: typeof PATH;
+	ERRNO_CODES: typeof ERRNO_CODES;
 	pyodide_py: typeof pyodide_py;
 	version: typeof version;
 	loadPackage: typeof loadPackage;
@@ -495,6 +501,8 @@ declare type PyodideInterface = {
 	PyBuffer: typeof PyBuffer;
 };
 declare let FS: any;
+declare let PATH: any;
+declare let ERRNO_CODES: any;
 export declare type Py2JsResult = any;
 /**
  * See documentation for loadPyodide.
@@ -502,6 +510,7 @@ export declare type Py2JsResult = any;
  */
 export declare type ConfigType = {
 	indexURL: string;
+	lockFileURL: string;
 	homedir: string;
 	fullStdLib?: boolean;
 	stdin?: () => string;
@@ -531,6 +540,12 @@ export declare function loadPyodide(options?: {
 	 * behavior.
 	 */
 	indexURL?: string;
+	/**
+	 * The URL from which Pyodide will load the Pyodide "repodata.json" lock
+	 * file. Defaults to ``${indexURL}/repodata.json``. You can produce custom
+	 * lock files with :any:`micropip.freze`
+	 */
+	lockFileURL?: string;
 	/**
 	 * The home directory which Pyodide will use inside virtual file system. Default: "/home/pyodide"
 	 */

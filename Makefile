@@ -1,6 +1,6 @@
 .PHONY: all dist \
 	packages \
-	update_packages_lock retrieve_packages update_pyodide_packages_json \
+	update_packages_lock retrieve_packages update_pyodide_repodata_json \
 	pyodide_packages_local \
 	create_typeshed_json \
 	copy_pyright \
@@ -16,7 +16,7 @@
 
 SHINYLIVE_VERSION = 0.0.1
 
-PYODIDE_VERSION = 0.20.1a1
+PYODIDE_VERSION = 0.21.0a2
 PYODIDE_DIST_FILENAME = pyodide-build-$(PYODIDE_VERSION).tar.bz2
 BUILD_DIR = ./build
 PACKAGE_DIR = ./packages
@@ -93,7 +93,7 @@ all: node_modules \
 	pyodide_packages_local \
 	update_packages_lock_local \
 	retrieve_packages \
-	update_pyodide_packages_json \
+	update_pyodide_repodata_json \
 	create_typeshed_json \
 	copy_pyright \
 	$(BUILD_DIR)/shinylive/shiny_static/index.html \
@@ -236,9 +236,9 @@ retrieve_packages: $(PYBIN) $(BUILD_DIR)/shinylive/pyodide \
 	mkdir -p $(BUILD_DIR)/shinylive/pyodide
 	. $(PYBIN)/activate && scripts/pyodide_packages.py retrieve_packages
 
-## Update pyodide/packages.json to include packages in shinylive_lock.json
-update_pyodide_packages_json: $(PYBIN)
-	. $(PYBIN)/activate && scripts/pyodide_packages.py update_pyodide_packages_json
+## Update pyodide/repodata.json to include packages in shinylive_lock.json
+update_pyodide_repodata_json: $(PYBIN)
+	. $(PYBIN)/activate && scripts/pyodide_packages.py update_pyodide_repodata_json
 
 ## Create the typeshed.json file which will be used by the shinylive type checker
 create_typeshed_json: $(PYBIN)
