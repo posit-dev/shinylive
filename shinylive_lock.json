@@ -35,10 +35,10 @@
       "shiny"
     ]
   },
-  "ipyshiny": {
-    "name": "ipyshiny",
+  "shinywidgets": {
+    "name": "shinywidgets",
     "version": "0.1.0.9002",
-    "filename": "ipyshiny-0.1.0.9002-py3-none-any.whl",
+    "filename": "shinywidgets-0.1.0.9002-py3-none-any.whl",
     "sha256": null,
     "url": null,
     "depends": [
@@ -48,7 +48,7 @@
       {"name": "python-dateutil", "specs": [[">=", "2.8.2"]]}
     ],
     "imports": [
-      "ipyshiny"
+      "shinywidgets"
     ]
   },
   "plotnine": {
@@ -101,10 +101,10 @@
   },
   "ipyleaflet": {
     "name": "ipyleaflet",
-    "version": "0.16.0",
-    "filename": "ipyleaflet-0.16.0-py2.py3-none-any.whl",
-    "sha256": "bd5706cf2e550ca63cbb39c35204ec4d345f062ee4728077313a634b5a717894",
-    "url": "https://files.pythonhosted.org/packages/ad/29/29e52b65f1363b195c82c3143eb3b5b1ed4966b967d7c3cf4f2f255bd567/ipyleaflet-0.16.0-py2.py3-none-any.whl",
+    "version": "0.17.0",
+    "filename": "ipyleaflet-0.17.0-py2.py3-none-any.whl",
+    "sha256": "e25a699894b5994f7522e997527fcb679122b06c2b08d1f26327280b4384c2d6",
+    "url": "https://files.pythonhosted.org/packages/01/fd/a8afc46ffcb58e648ba399a9df788e735a0466d16e803e7e0936e4c25a0c/ipyleaflet-0.17.0-py2.py3-none-any.whl",
     "depends": [
       {"name": "ipywidgets", "specs": [["<", "8"], [">=", "7.6.0"]]},
       {"name": "traittypes", "specs": [["<", "3"], [">=", "0.2.1"]]},
@@ -286,10 +286,10 @@
   },
   "jupyter-core": {
     "name": "jupyter-core",
-    "version": "4.10.0",
-    "filename": "jupyter_core-4.10.0-py3-none-any.whl",
-    "sha256": "e7f5212177af7ab34179690140f188aa9bf3d322d8155ed972cbded19f55b6f3",
-    "url": "https://files.pythonhosted.org/packages/34/7d/8e442c0637a648c0136f686e015dc2f547f1a19f2690b183aa340a6762bc/jupyter_core-4.10.0-py3-none-any.whl",
+    "version": "4.11.1",
+    "filename": "jupyter_core-4.11.1-py3-none-any.whl",
+    "sha256": "715e22bb6cc7db3718fddfac1f69f1c7e899ca00e42bdfd4bf3705452b9fd84a",
+    "url": "https://files.pythonhosted.org/packages/66/5f/32ee101e07d5ece26876f13526b16179525e19f4e460f8085e9ef8e54cff/jupyter_core-4.11.1-py3-none-any.whl",
     "depends": [
       {"name": "traitlets", "specs": []}
     ],

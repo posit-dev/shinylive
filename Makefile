@@ -28,11 +28,11 @@ DIST_DIR = ./dist
 # dependencies being installed first.
 HTMLTOOLS_VERSION = $(shell grep '^__version__ = ' $(PACKAGE_DIR)/py-htmltools/htmltools/__init__.py | sed -E -e 's/^__version__ = "(.*)"/\1/')
 SHINY_VERSION = $(shell grep '^__version__ = ' $(PACKAGE_DIR)/py-shiny/shiny/__init__.py | sed -E -e 's/^__version__ = "(.*)"/\1/')
-IPYSHINY_VERSION = $(shell grep '^__version__ = ' $(PACKAGE_DIR)/ipyshiny/ipyshiny/__init__.py | sed -E -e 's/^__version__ = "(.*)"/\1/')
+SHINYWIDGETS_VERSION = $(shell grep '^__version__ = ' $(PACKAGE_DIR)/py-shinywidgets/shinywidgets/__init__.py | sed -E -e 's/^__version__ = "(.*)"/\1/')
 
 HTMLTOOLS_WHEEL = htmltools-$(HTMLTOOLS_VERSION)-py3-none-any.whl
 SHINY_WHEEL = shiny-$(SHINY_VERSION)-py3-none-any.whl
-IPYSHINY_WHEEL = ipyshiny-$(IPYSHINY_VERSION)-py3-none-any.whl
+SHINYWIDGETS_WHEEL = shinywidgets-$(SHINYWIDGETS_VERSION)-py3-none-any.whl
 
 VENV = venv
 PYBIN = $(VENV)/bin
@@ -136,7 +136,7 @@ src/types/pyodide.d.ts: $(BUILD_DIR)/shinylive/pyodide/pyodide.d.ts
 ## Copy local package wheels to the pyodide directory
 pyodide_packages_local: $(BUILD_DIR)/shinylive/pyodide/$(HTMLTOOLS_WHEEL) \
 	$(BUILD_DIR)/shinylive/pyodide/$(SHINY_WHEEL) \
-	$(BUILD_DIR)/shinylive/pyodide/$(IPYSHINY_WHEEL)
+	$(BUILD_DIR)/shinylive/pyodide/$(SHINYWIDGETS_WHEEL)
 
 $(BUILD_DIR)/shinylive/pyodide/$(HTMLTOOLS_WHEEL): $(PACKAGE_DIR)/$(HTMLTOOLS_WHEEL)
 	mkdir -p $(BUILD_DIR)/shinylive/pyodide
@@ -150,11 +150,11 @@ $(BUILD_DIR)/shinylive/pyodide/$(SHINY_WHEEL): $(PACKAGE_DIR)/$(SHINY_WHEEL)
 	rm -f $(BUILD_DIR)/shinylive/pyodide/shiny*.whl
 	cp $(PACKAGE_DIR)/$(SHINY_WHEEL) $(BUILD_DIR)/shinylive/pyodide/$(SHINY_WHEEL)
 
-$(BUILD_DIR)/shinylive/pyodide/$(IPYSHINY_WHEEL): $(PACKAGE_DIR)/$(IPYSHINY_WHEEL)
+$(BUILD_DIR)/shinylive/pyodide/$(SHINYWIDGETS_WHEEL): $(PACKAGE_DIR)/$(SHINYWIDGETS_WHEEL)
 	mkdir -p $(BUILD_DIR)/shinylive/pyodide
-	# Remove any old copies of ipyshiny
-	rm -f $(BUILD_DIR)/shinylive/pyodide/ipyshiny*.whl
-	cp $(PACKAGE_DIR)/$(IPYSHINY_WHEEL) $(BUILD_DIR)/shinylive/pyodide/$(IPYSHINY_WHEEL)
+	# Remove any old copies of shinywidgets
+	rm -f $(BUILD_DIR)/shinylive/pyodide/shinywidgets*.whl
+	cp $(PACKAGE_DIR)/$(SHINYWIDGETS_WHEEL) $(BUILD_DIR)/shinylive/pyodide/$(SHINYWIDGETS_WHEEL)
 
 
 $(BUILD_DIR)/shinylive/shiny_static/index.html: shiny_static/index.html
@@ -187,14 +187,14 @@ serve-prod:
 	node_modules/.bin/ts-node scripts/build.ts --serve --prod
 
 
-# Build htmltools, shiny, and ipyshiny. This target must be run manually after
+# Build htmltools, shiny, and shinywidgets. This target must be run manually after
 # updating the package submodules; it will not run automatically with `make all`
 # because I'm not sure how to set up the dependencies reliably.
-## Build htmltools, shiny, and ipyshiny wheels
+## Build htmltools, shiny, and shinywidgets wheels
 packages: clean-packages \
 	$(PACKAGE_DIR)/$(HTMLTOOLS_WHEEL) \
 	$(PACKAGE_DIR)/$(SHINY_WHEEL) \
-	$(PACKAGE_DIR)/$(IPYSHINY_WHEEL)
+	$(PACKAGE_DIR)/$(SHINYWIDGETS_WHEEL)
 
 $(PACKAGE_DIR)/$(HTMLTOOLS_WHEEL): $(PYBIN) $(PACKAGE_DIR)/py-htmltools
 	# Remove any old copies of the package
@@ -210,12 +210,12 @@ $(PACKAGE_DIR)/$(SHINY_WHEEL): $(PYBIN) $(PACKAGE_DIR)/py-shiny
 	$(PYBIN)/pip install -e $(PACKAGE_DIR)/py-shiny
 	. $(PYBIN)/activate && cd $(PACKAGE_DIR)/py-shiny && make dist && mv dist/*.whl ../
 
-$(PACKAGE_DIR)/$(IPYSHINY_WHEEL): $(PYBIN) $(PACKAGE_DIR)/ipyshiny
+$(PACKAGE_DIR)/$(SHINYWIDGETS_WHEEL): $(PYBIN) $(PACKAGE_DIR)/py-shinywidgets
 	# Remove any old copies of the package
-	rm -f $(PACKAGE_DIR)/ipyshiny*.whl
-	$(PYBIN)/pip install -r $(PACKAGE_DIR)/ipyshiny/requirements-dev.txt
-	$(PYBIN)/pip install -e $(PACKAGE_DIR)/ipyshiny
-	. $(PYBIN)/activate && cd $(PACKAGE_DIR)/ipyshiny && make dist && mv dist/*.whl ../
+	rm -f $(PACKAGE_DIR)/shinywidgets*.whl
+	$(PYBIN)/pip install -r $(PACKAGE_DIR)/py-shinywidgets/requirements-dev.txt
+	$(PYBIN)/pip install -e $(PACKAGE_DIR)/py-shinywidgets
+	. $(PYBIN)/activate && cd $(PACKAGE_DIR)/py-shinywidgets && make dist && mv dist/*.whl ../
 
 ## Update the shinylive_lock.json file, based on shinylive_requirements.json
 update_packages_lock: $(PYBIN) $(BUILD_DIR)/shinylive/pyodide
@@ -231,7 +231,7 @@ update_packages_lock_local: $(PYBIN) $(BUILD_DIR)/shinylive/pyodide
 retrieve_packages: $(PYBIN) $(BUILD_DIR)/shinylive/pyodide \
 		$(BUILD_DIR)/shinylive/pyodide/$(HTMLTOOLS_WHEEL) \
 		$(BUILD_DIR)/shinylive/pyodide/$(SHINY_WHEEL) \
-		$(BUILD_DIR)/shinylive/pyodide/$(IPYSHINY_WHEEL)
+		$(BUILD_DIR)/shinylive/pyodide/$(SHINYWIDGETS_WHEEL)
 	$(PYBIN)/pip install -r requirements-dev.txt
 	mkdir -p $(BUILD_DIR)/shinylive/pyodide
 	. $(PYBIN)/activate && scripts/pyodide_packages.py retrieve_packages

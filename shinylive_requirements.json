@@ -1,7 +1,7 @@
 [
   { "name": "htmltools", "source": "local", "version": "latest" },
   { "name": "shiny", "source": "local", "version": "latest" },
-  { "name": "ipyshiny", "source": "local", "version": "latest" },
+  { "name": "shinywidgets", "source": "local", "version": "latest" },
   { "name": "plotnine", "source": "pypi", "version": "latest" },
   { "name": "plotly", "source": "pypi", "version": "latest" },
   { "name": "seaborn", "source": "pypi", "version": "latest" },

@@ -1,5 +1,5 @@
 from shiny import *
-from ipyshiny import *
+from shinywidgets import *
 import ipywidgets as ipy
 from ipywidgets.widgets.widget import Widget
 

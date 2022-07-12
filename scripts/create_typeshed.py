@@ -27,7 +27,7 @@ shutil.rmtree(topdir / "typings/shiny", ignore_errors=True)
 pyright_args = ("--pythonplatform", "Linux", "--pythonversion", PYODIDE_PYTHON_VERSION)
 pyright.run("--createstub", "htmltools", *pyright_args)
 pyright.run("--createstub", "shiny", *pyright_args)
-pyright.run("--createstub", "ipyshiny", *pyright_args)
+pyright.run("--createstub", "shinywidgets", *pyright_args)
 
 
 TypeshedFileList = dict[str, str]
@@ -116,7 +116,9 @@ all_contents = (
     stdlib
     | dir_to_file_contents("typings/shiny", dir_prefix="/src/typings/shiny/")
     | dir_to_file_contents("typings/htmltools", dir_prefix="/src/typings/htmltools/")
-    | dir_to_file_contents("typings/ipyshiny", dir_prefix="/src/typings/ipyshiny/")
+    | dir_to_file_contents(
+        "typings/shinywidgets", dir_prefix="/src/typings/shinywidgets/"
+    )
     | extra_files
 )
 
