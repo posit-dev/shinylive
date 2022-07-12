@@ -489,7 +489,7 @@ export default function Editor({
 
     const editorWindow = window.open(
       window.location.origin +
-        utils.dirname(window.location.pathname) +
+        utils.dirname(utils.currentScriptDir()) +
         "/editor/",
       "_blank"
     );
