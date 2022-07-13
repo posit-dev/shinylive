@@ -16,6 +16,7 @@ export function FileTabs({
   closeFile,
   selectFile,
   enterNameEditMode,
+  setFocusOnEditor,
 }: ReturnType<typeof useTabbedCodeMirror>) {
   const moreThanOneFile = files.length > 1;
   const inNameEditMode = editingFilename !== null;
@@ -43,7 +44,10 @@ export function FileTabs({
             <button
               key={f.name}
               className={isActiveFile ? "selected" : undefined}
-              onClick={() => selectFile(f.name)}
+              onClick={() => {
+                selectFile(f.name);
+                setFocusOnEditor(true);
+              }}
             >
               <span className="Editor--header--files--filename">
                 {editingCurrentFilename ? editingFilename : f.name}

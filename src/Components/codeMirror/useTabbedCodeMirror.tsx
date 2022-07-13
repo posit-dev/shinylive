@@ -41,6 +41,19 @@ export function useTabbedCodeMirror({
     null
   );
 
+  // This state var is used contorl whether to focus on the editor. We want it
+  // to be focused when the user clicks on a tab, but not:
+  // - When the the app starts, because when one or more editors is embedded in
+  //   a web page (as opposed to the app running in the full window), it can be
+  //   confusing if an editor has focus, because it might be out of view, and
+  //   because pressing Ctrl-F opens a search box in the editor instead of the
+  //   browser's search box.
+  // - When the user adds a new file. In this case, we want the focus to be on
+  //   the tab because it will be in the file-renaming state.
+  // This var starts false, is set to true when clicking on a tab, and set to
+  // false when adding a file.
+  const [focusOnEditor, setFocusOnEditor] = React.useState(false);
+
   // ===========================================================================
   // Callback to run each time we receive a new set of files from the parent
   // App.
@@ -92,6 +105,7 @@ export function useTabbedCodeMirror({
     setFiles([...files, newFile]);
     setActiveFileIdx(files.length);
     setFilesHaveChanged(true);
+    setFocusOnEditor(false);
 
     lspClient.createFile(lspPathPrefix + fileContent.name, fileContent.content);
   }
@@ -131,7 +145,7 @@ export function useTabbedCodeMirror({
 
     if (cmView) {
       // Unset extensions, then set them, using the updated file information.
-      // The unsetting is necessary to clear out previous extensions that
+      // See the comment on `getMinimumExtensions` for info on why.
       cmView.dispatch({
         effects: StateEffect.reconfigure.of(getMinimalExtensions()),
       });
@@ -201,6 +215,8 @@ export function useTabbedCodeMirror({
     activeFile,
     syncActiveFileState,
     editingFilename,
+    focusOnEditor,
+    setFocusOnEditor,
     addFile,
     uploadFile,
     renameFile,

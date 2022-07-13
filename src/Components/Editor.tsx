@@ -145,7 +145,7 @@ export default function Editor({
     lspClient,
     lspPathPrefix,
   });
-  const { files, activeFile, syncActiveFileState } = tabbedFiles;
+  const { files, activeFile, syncActiveFileState, focusOnEditor } = tabbedFiles;
 
   // If there's a file named app.py, assume we have a Shiny app.
   const [isShinyApp, setIsShinyApp] = React.useState(false);
@@ -270,10 +270,14 @@ export default function Editor({
     cmView.scrollDOM.scrollTop = activeFile.ref.scrollTop ?? 0;
     cmView.scrollDOM.scrollLeft = activeFile.ref.scrollLeft ?? 0;
 
+    if (focusOnEditor) {
+      cmView.focus();
+    }
+
     return function cleanup() {
       syncActiveFileState();
     };
-  }, [files, syncActiveFileState, activeFile, cmView]);
+  }, [files, syncActiveFileState, activeFile, focusOnEditor, cmView]);
 
   // Referentially stable function, called when the user presses Mod-Enter.
   const runSelectedTextOrCurrentLine = React.useRef((): void => {});
