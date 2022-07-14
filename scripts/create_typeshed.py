@@ -88,7 +88,6 @@ extra_files = {
 
 
 stdlib_exclude = {
-    "@python2",
     "tkinter",
     "argparse.pyi",
     "macpath.pyi",
