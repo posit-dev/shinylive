@@ -7,7 +7,6 @@ import * as fileio from "../fileio";
 import { createUri } from "../language-server/client";
 import { LSPClient } from "../language-server/lsp-client";
 import { ensurePyrightClient } from "../language-server/pyright-client";
-import * as utils from "../utils";
 import { inferFiletype, modKeySymbol, stringToUint8Array } from "../utils";
 import type { UtilityMethods } from "./App";
 import "./Editor.css";
@@ -18,18 +17,19 @@ import { ViewerMethods } from "./Viewer";
 import { FileTabs } from "./codeMirror/FileTabs";
 import {
   getBinaryFileExtensions,
-  getLanguageExtension,
   getExtensions,
+  getLanguageExtension,
 } from "./codeMirror/extensions";
 import { diagnosticToTransaction } from "./codeMirror/language-server/diagnostics";
 import { languageServerExtensions } from "./codeMirror/language-server/lsp-extension";
 import { useTabbedCodeMirror } from "./codeMirror/useTabbedCodeMirror";
 import * as cmUtils from "./codeMirror/utils";
 import { FileContent } from "./filecontent";
+import { editorUrlPrefix, fileContentsToUrlString } from "./share";
 import { EditorState, Extension, Prec } from "@codemirror/state";
 import { EditorView, KeyBinding, keymap, ViewUpdate } from "@codemirror/view";
 import "balloon-css";
-import { zipSync, Zippable } from "fflate";
+import { Zippable, zipSync } from "fflate";
 import * as React from "react";
 import * as LSP from "vscode-languageserver-protocol";
 
@@ -490,15 +490,10 @@ export default function Editor({
   const openEditorWindow = React.useCallback(async () => {
     syncActiveFileState();
     const fileContents = editorFilesToFileContents(files);
-
-    const editorWindow = window.open(
-      window.location.origin +
-        utils.dirname(utils.currentScriptDir()) +
-        "/editor/",
+    window.open(
+      editorUrlPrefix + fileContentsToUrlString(fileContents),
       "_blank"
     );
-    // @ts-ignore: .fileContents is a custom field we're adding to the window.
-    editorWindow.fileContents = fileContents;
   }, [files, syncActiveFileState]);
 
   // Run button either gets placed in the header or floating over the editor but

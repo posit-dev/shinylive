@@ -59,7 +59,9 @@ export function FCorFCJSONtoFC(x: FileContent | FileContentJson): FileContent {
   }
 }
 
-// Convert FileContent to FileContentJson.
+/**
+ * Convert FileContent to FileContentJson.
+ */
 export function FCtoFCJSON(x: FileContent): FileContentJson {
   if (x.type === "binary") {
     return {

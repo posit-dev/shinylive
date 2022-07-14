@@ -49,11 +49,6 @@
         allowGistUrl: true,
         allowExampleUrl: true,
       };
-      // If this page was opened from the examples page, window.fileContents may
-      // have been set. If so, use that as the initial contents of the editor.
-      if (window.fileContents) {
-        runAppOpts.startFiles = window.fileContents;
-      }
 
       const appRoot = document.getElementById("root");
       runApp(appRoot, "editor-terminal-viewer", runAppOpts);

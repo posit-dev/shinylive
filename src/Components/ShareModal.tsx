@@ -1,7 +1,11 @@
 import { useOnEscOrClickOutside } from "../hooks/useOnEscOrClickOutside";
 import "./ShareModal.css";
-import { FCtoFCJSON, FileContent } from "./filecontent";
-import LZString from "lz-string";
+import { FileContent } from "./filecontent";
+import {
+  appUrlPrefix,
+  editorUrlPrefix,
+  fileContentsToUrlString,
+} from "./share";
 import * as React from "react";
 
 // =============================================================================
@@ -17,29 +21,10 @@ export function ShareModal({
 }) {
   const showModalRef = React.useRef<HTMLDivElement>(null);
 
-  // const editorPrefix =
-  //   window.location.origin + window.location.pathname + "#code=";
+  const encodedCode = fileContentsToUrlString(fileContents);
 
-  // const appPrefix =
-  //   window.location.origin +
-  //   // "foo/editor/index.html" => "foo/app/"
-  //   // "foo/editor/" => "foo/app/"
-  //   // "/editor/" => "/app/"
-  //   window.location.pathname.replace(
-  //     new RegExp("([^/]+)/(index.html)?$"),
-  //     "app/"
-  //   ) +
-  //   "#code=";
-
-  const editorPrefix = "https://pyshiny.netlify.app/editor/#code=";
-  const appPrefix = "https://pyshiny.netlify.app/app/#code=";
-
-  const encodedCode = LZString.compressToEncodedURIComponent(
-    JSON.stringify(fileContents.map(FCtoFCJSON))
-  );
-
-  const editorUrl = editorPrefix + encodedCode;
-  const appUrl = appPrefix + encodedCode;
+  const editorUrl = editorUrlPrefix + encodedCode;
+  const appUrl = appUrlPrefix + encodedCode;
 
   const editorUrlInputRef = React.useRef<HTMLInputElement>(null);
   const appUrlInputRef = React.useRef<HTMLInputElement>(null);
