@@ -36,7 +36,13 @@
   },
   {
     "category": "Outputs",
-    "apps": ["output_text", "output_text_verbatim", "output_ui", "output_plot"]
+    "apps": [
+      "output_text",
+      "output_text_verbatim",
+      "output_ui",
+      "output_plot",
+      "output_table"
+    ]
   },
   {
     "category": "Layout",
