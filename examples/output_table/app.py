@@ -20,8 +20,8 @@ app_ui = ui.page_fluid(
     ui.panel_conditional(
         "input.highlight",
         ui.panel_absolute(
-            ui.span("minimum", style="background-color: yellow;"),
-            ui.span("maximum", style="background-color: silver;"),
+            ui.span("minimum", style="background-color: silver;"),
+            ui.span("maximum", style="background-color: yellow;"),
             top="6px",
             right="6px",
             class_="p-1 bg-light border",
