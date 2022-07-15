@@ -256,7 +256,7 @@ def _save_files(files: list[dict[str, str]], destdir: str, rm_destdir: bool = Tr
     import pyodide
     # If called from JS and passed an Object, we need to convert it to a
     # dict.
-    if isinstance(files, pyodide.JsProxy):
+    if isinstance(files, pyodide.ffi.JsProxy):
         files = files.to_py()
 
     import os
