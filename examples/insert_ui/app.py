@@ -1,14 +1,13 @@
-from shiny import *
-from htmltools import *
+from shiny import App, reactive, render, ui
 
 # For plot rendering
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 
 app_ui = ui.page_fluid(
     ui.layout_sidebar(
         ui.panel_sidebar(
-            h2("Dynamic UI"),
+            ui.h2("Dynamic UI"),
             ui.output_ui("ui"),
             ui.input_action_button("btn", "Trigger insert/remove ui"),
         ),
@@ -20,7 +19,7 @@ app_ui = ui.page_fluid(
 )
 
 
-def server(input: Inputs, output: Outputs, session: Session):
+def server(input, output, session):
     @reactive.Calc
     def r():
         return input.n() * 2
@@ -51,7 +50,7 @@ def server(input: Inputs, output: Outputs, session: Session):
     def _():
         btn = input.btn()
         if btn % 2 == 1:
-            ui.insert_ui(tags.p("Thanks for clicking!", id="thanks"), "body")
+            ui.insert_ui(ui.tags.p("Thanks for clicking!", id="thanks"), "body")
         elif btn > 0:
             ui.remove_ui("#thanks")
 

@@ -25,11 +25,6 @@
         "editor.formatOnSave": true,
         "editor.defaultFormatter": "esbenp.prettier-vscode"
     },
-    "python.analysis.typeCheckingMode": "strict",
-    "python.analysis.diagnosticSeverityOverrides": {
-        "reportUnusedFunction":  "none",
-        "reportWildcardImportFromLibrary": "none"
-    },
     "python.formatting.provider": "black",
     "[python]": {
         "editor.formatOnSave": true,

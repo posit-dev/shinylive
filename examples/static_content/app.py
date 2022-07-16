@@ -1,5 +1,5 @@
 from pathlib import Path
-from shiny import ui, render, App, Inputs, Outputs, Session
+from shiny import App, render, ui
 
 app_ui = ui.page_fluid(
     ui.row(
@@ -19,7 +19,7 @@ def square(x: ui.TagChildArg, n: int) -> ui.Tag:
     return ui.div([row] * n)
 
 
-def server(input: Inputs, output: Outputs, session: Session):
+def server(input, output, session):
     @output
     @render.ui
     def images() -> ui.Tag:

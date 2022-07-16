@@ -15,9 +15,9 @@
 # download.py file for a wrapper function that can be used to make requests in both
 # regular Python and Pyodide. (Note that the function isn't actually used in this app.)
 
-from shiny import *
-import pyodide.http
 from pprint import pformat
+import pyodide.http
+from shiny import App, reactive, render, ui
 
 app_ui = ui.page_fluid(
     ui.input_selectize(
@@ -56,7 +56,7 @@ app_ui = ui.page_fluid(
 )
 
 
-def server(input: Inputs, output: Outputs, session: Session):
+def server(input, output, session):
     # Weather data API: https://github.com/robertoduessmann/weather-api
     @reactive.Calc
     def url():

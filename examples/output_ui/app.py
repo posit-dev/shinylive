@@ -1,4 +1,4 @@
-from shiny import *
+from shiny import App, render, ui
 
 app_ui = ui.page_fluid(
     ui.input_radio_buttons(
@@ -10,7 +10,7 @@ app_ui = ui.page_fluid(
 )
 
 
-def server(input: Inputs, output: Outputs, session: Session):
+def server(input, output, session):
     @output
     @render.ui
     def dyn_ui():

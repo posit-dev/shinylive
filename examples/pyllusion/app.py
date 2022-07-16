@@ -1,7 +1,7 @@
 # Demo app for Pyllusion, from
 # https://realitybending.github.io/Pyllusion/introduction.html
 
-from shiny import *
+from shiny import App, render, ui
 import pyllusion
 
 
@@ -40,7 +40,7 @@ app_ui = ui.page_fluid(
 )
 
 
-def server(input: Inputs, output: Outputs, session: Session):
+def server(input, output, session):
     @output
     @render.ui
     def controls():

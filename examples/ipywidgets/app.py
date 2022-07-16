@@ -1,13 +1,12 @@
-from shiny import *
-from shinywidgets import *
+from shiny import App, render, ui
+from shinywidgets import output_widget, reactive_read, render_widget
 import ipywidgets as ipy
 from ipywidgets.widgets.widget import Widget
-
 
 app_ui = ui.page_fluid(output_widget("slider", height="50px"), ui.output_text("value"))
 
 
-def server(input: Inputs, output: Outputs, session: Session):
+def server(input, output, session):
     s = ipy.IntSlider(
         value=5,
         min=0,

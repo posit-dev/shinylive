@@ -1,4 +1,4 @@
-from shiny import *
+from shiny import App, ui
 
 
 app_ui = app_ui = ui.page_fluid(
@@ -58,7 +58,7 @@ app_ui = app_ui = ui.page_fluid(
 )
 
 
-def server(input: Inputs, output: Outputs, session: Session):
+def server(input, output, session):
     pass
 
 

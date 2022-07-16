@@ -6,12 +6,12 @@
 # it may not work properly on all phones. However, the camera input part should still
 # work on most phones.
 
-from shiny import *
-from shiny.types import FileInfo, SilentException, ImgData
-
-import skimage
 import numpy as np
+import skimage
 from PIL import Image, ImageOps
+
+from shiny import App, render, ui
+from shiny.types import FileInfo, ImgData, SilentException
 
 app_ui = ui.page_fluid(
     ui.input_file(
@@ -27,7 +27,7 @@ app_ui = ui.page_fluid(
 )
 
 
-def server(input: Inputs, output: Outputs, session: Session):
+def server(input, output, session):
     @output
     @render.image
     async def image() -> ImgData:

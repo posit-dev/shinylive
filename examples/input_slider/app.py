@@ -1,4 +1,4 @@
-from shiny import *
+from shiny import App, render, ui
 
 app_ui = ui.page_fluid(
     ui.input_slider("x", "Slider input", min=0, max=20, value=10),
@@ -6,7 +6,7 @@ app_ui = ui.page_fluid(
 )
 
 
-def server(input: Inputs, output: Outputs, session: Session):
+def server(input, output, session):
     @output
     @render.text
     def txt():

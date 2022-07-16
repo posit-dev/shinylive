@@ -1,0 +1,6 @@
+{
+  "typeCheckingMode": "basic",
+  "strict": ["scripts"],
+  "reportUnusedFunction": "none",
+  "reportWildcardImportFromLibrary": "none"
+}

@@ -2,7 +2,7 @@
 # side effects can include printing messages to the console, writing files to
 # disk, or sending messages to a server.
 
-from shiny import *
+from shiny import App, reactive, render, ui
 
 app_ui = ui.page_fluid(
     ui.input_slider("n", "N", 0, 20, 10),
@@ -13,7 +13,7 @@ app_ui = ui.page_fluid(
 )
 
 
-def server(input: Inputs, output: Outputs, session: Session):
+def server(input, output, session):
 
     # The @reactive.event() causes the function to run only when input.btn is
     # invalidated.

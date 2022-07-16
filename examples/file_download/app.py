@@ -1,21 +1,20 @@
 import asyncio
-from pathlib import Path
 import io
 from datetime import date
-
-from shiny import *
-from htmltools import *
+from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
+from shiny import App, ui
+
 
 # A card component wrapper.
 def ui_card(title, *args):
     return (
-        div(
+        ui.div(
             {"class": "card mb-4"},
-            div(title, class_="card-header"),
-            div({"class": "card-body"}, *args),
+            ui.div(title, class_="card-header"),
+            ui.div({"class": "card-body"}, *args),
         ),
     )
 
@@ -38,7 +37,7 @@ app_ui = ui.page_fluid(
 )
 
 
-def server(input: Inputs, output: Outputs, session: Session):
+def server(input, output, session):
     @session.download()
     def download1():
         # This is the simplest case. The implementation simply returns the path to a

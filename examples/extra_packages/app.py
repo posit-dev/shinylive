@@ -1,4 +1,4 @@
-from shiny import *
+from shiny import App, ui
 
 import isodate
 import attrs

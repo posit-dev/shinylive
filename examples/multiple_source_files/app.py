@@ -1,4 +1,4 @@
-from shiny import *
+from shiny import App, render, ui
 from utils import square
 
 app_ui = ui.page_fluid(
@@ -7,7 +7,7 @@ app_ui = ui.page_fluid(
 )
 
 
-def server(input: Inputs, output: Outputs, session: Session):
+def server(input, output, session):
     @output
     @render.text
     def txt():

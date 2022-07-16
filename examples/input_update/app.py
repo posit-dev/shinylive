@@ -1,6 +1,6 @@
 from datetime import date
 
-from shiny import *
+from shiny import App, reactive, ui
 from shiny.ui import tags, h2
 
 app_ui = ui.page_fluid(
@@ -88,7 +88,7 @@ app_ui = ui.page_fluid(
 )
 
 
-def server(input: Inputs, output: Outputs, session: Session):
+def server(input, output, session):
     @reactive.Effect
     def _():
         # We'll use these multiple times, so use short var names for

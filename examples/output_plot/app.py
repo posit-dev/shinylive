@@ -1,4 +1,4 @@
-from shiny import *
+from shiny import App, render, ui
 
 # Import modules for plot rendering
 import numpy as np
@@ -10,7 +10,7 @@ app_ui = ui.page_fluid(
 )
 
 
-def server(input: Inputs, output: Outputs, session: Session):
+def server(input, output, session):
     @output
     @render.plot(alt="A histogram")
     def plot():

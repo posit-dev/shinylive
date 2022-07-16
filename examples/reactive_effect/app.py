@@ -2,14 +2,14 @@
 # side effects can include printing messages to the console, writing files to
 # disk, or sending messages to a server.
 
-from shiny import *
+from shiny import App, reactive, ui
 
 app_ui = ui.page_fluid(
     ui.input_text("x", "Text input", placeholder="Enter text"),
 )
 
 
-def server(input: Inputs, output: Outputs, session: Session):
+def server(input, output, session):
     @reactive.Effect
     def _():
         print(f"x has changed to {input.x()}")

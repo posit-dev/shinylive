@@ -1,6 +1,6 @@
-from math import ceil
-from shiny import *
 import mimetypes
+from math import ceil
+from shiny import App, render, ui
 
 app_ui = ui.page_fluid(
     ui.input_file("file1", "Choose a file to upload:", multiple=True),
@@ -9,7 +9,7 @@ app_ui = ui.page_fluid(
 )
 
 
-def server(input: Inputs, output: Outputs, session: Session):
+def server(input, output, session):
     MAX_SIZE = 50000
 
     @output

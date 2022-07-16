@@ -2,7 +2,7 @@
 # only re-runs after it has been invalidated -- that is, when upstream reactive inputs
 # change.
 
-from shiny import *
+from shiny import App, reactive, render, ui
 
 app_ui = ui.page_fluid(
     ui.input_slider("x", "Choose a number", 1, 100, 50),
@@ -11,7 +11,7 @@ app_ui = ui.page_fluid(
 )
 
 
-def server(input: Inputs, output: Outputs, session: Session):
+def server(input, output, session):
     # Each time input.x() changes, it invalidates this reactive.Calc object. If someone
     # then calls x_times_2(), it will execute the user function and return the value.
     # The value is cached, so if another function calls x_times_2(), it will simply

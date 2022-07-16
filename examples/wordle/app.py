@@ -1,13 +1,14 @@
+# pyright: strict
 # pyright: reportUnusedFunction=false
 
 import random
 from dataclasses import dataclass
 from pathlib import Path
 from typing import cast
-
-from htmltools import TagList, div, h3, head_content, tags
-from shiny import App, Inputs, Outputs, Session, reactive, render, ui
 from typing_extensions import Literal
+
+from shiny import App, Inputs, Outputs, Session, reactive, render, ui
+from shiny.ui import TagList, div, h3, head_content, tags
 
 import words
 

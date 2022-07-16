@@ -16,7 +16,7 @@
 
 from datetime import datetime
 import textwrap
-from shiny import *
+from shiny import App, reactive, render, ui
 
 app_ui = ui.page_fluid(
     ui.h3("Press the button:"),
@@ -26,7 +26,7 @@ app_ui = ui.page_fluid(
 )
 
 
-def server(input: Inputs, output: Outputs, session: Session):
+def server(input, output, session):
     # A reactive.Value with an array tracking timestamps of all button presses.
     all_times = reactive.Value([datetime.now().timestamp()])
 

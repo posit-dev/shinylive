@@ -2,7 +2,7 @@ import pathlib
 
 import palmerpenguins
 import pandas as pd
-from shiny import *
+from shiny import App, render, ui
 
 penguins = palmerpenguins.load_penguins()
 
@@ -31,7 +31,7 @@ app_ui = ui.page_fluid(
 )
 
 
-def server(input: Inputs, output: Outputs, session: Session):
+def server(input, output, session):
     @output
     @render.table
     def result():

@@ -1,13 +1,13 @@
 from pathlib import Path
 import pandas
-from shiny import *
+from shiny import App, render, ui
 
 app_ui = ui.page_fluid(
     ui.output_table("table"),
 )
 
 
-def server(input: Inputs, output: Outputs, session: Session):
+def server(input, output, session):
     @output
     @render.table
     def table():

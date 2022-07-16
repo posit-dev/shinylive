@@ -1,7 +1,8 @@
-import ipyleaflet as L
 from htmltools import css
+from shiny import App, reactive, render, ui
 from shinywidgets import output_widget, reactive_read, register_widget
-from shiny import App, Inputs, Outputs, Session, reactive, render, ui
+
+import ipyleaflet as L
 
 app_ui = ui.page_fluid(
     ui.div(
@@ -15,7 +16,7 @@ app_ui = ui.page_fluid(
 )
 
 
-def server(input: Inputs, output: Outputs, session: Session):
+def server(input, output, session):
     # Initialize and display when the session starts (1)
     map = L.Map(center=(51.476852, -0.000500), zoom=12, scroll_wheel_zoom=True)
     # Add a distance scale
