@@ -1,0 +1,21 @@
+.HeaderBar {
+  height: 30px;
+  padding: 3px 8px;
+  background-color: #5096cf;
+  font-family: var(--font-face);
+  font-size: 1.1rem;
+  color: var(--colors-white);
+  display: flex;
+}
+
+.HeaderBar > a {
+  display: inherit;
+  color: var(--colors-white);
+  text-decoration: none;
+}
+
+.HeaderBar .shiny-logo {
+  height: 40px;
+  display: inline-block;
+  margin-right: 8px;
+}
