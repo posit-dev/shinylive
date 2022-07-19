@@ -1,5 +1,6 @@
 import mimetypes
 from math import ceil
+from typing import List
 from shiny import App, render, ui
 
 app_ui = ui.page_fluid(
@@ -61,7 +62,7 @@ def format_hexdump(data: bytes) -> str:
     return hex_vals
 
 
-def group_into_blocks(x: list[str], blocksize: int):
+def group_into_blocks(x: List[str], blocksize: int):
     """
     Given a list, return a list of lists, where the inner lists each have `blocksize`
     elements.
