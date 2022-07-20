@@ -226,8 +226,9 @@ the size bigger.  */
 
 /* Code run button styles */
 .Editor button.code-run-button {
+  border: none;
   font-size: 0.8rem;
-  padding: 0.2rem 0.4rem;
+  padding: 0.2rem 0.5rem;
   background-color: transparent;
   white-space: nowrap;
 }
