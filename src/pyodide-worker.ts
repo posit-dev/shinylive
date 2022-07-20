@@ -1,5 +1,6 @@
 import { ASGIHTTPRequestScope, makeRequest } from "./messageporthttp";
 import { openChannel } from "./messageportwebsocket-channel";
+import { errorToPostableErrorObject } from "./postable-error";
 import type { LoadPyodideConfig, PyUtils, ResultType } from "./pyodide-proxy";
 import { setupPythonEnv, processReturnValue } from "./pyodide-proxy";
 import type {
@@ -261,13 +262,13 @@ self.onmessage = async function (e: MessageEvent): Promise<void> {
     }
   } catch (e) {
     if (e instanceof pyodide.PythonError) {
-      const shortTraceback = pyUtils.shortFormatLastTraceback();
-      e.message = shortTraceback;
+      e.message = pyUtils.shortFormatLastTraceback();
     }
+
     messagePort.postMessage({
       type: "reply",
       subtype: "done",
-      error: e,
+      error: errorToPostableErrorObject(e),
     });
   }
 };

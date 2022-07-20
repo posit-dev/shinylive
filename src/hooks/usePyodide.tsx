@@ -1,3 +1,7 @@
+import {
+  PostableErrorObject,
+  postableErrorObjectToError,
+} from "../postable-error";
 import { loadPyodideProxy, ProxyType, PyodideProxy } from "../pyodide-proxy";
 import * as utils from "../utils";
 import React, { useEffect } from "react";
@@ -58,13 +62,9 @@ export async function initPyodide({
   async function runCode(command: string) {
     try {
       await pyodideProxy.runPyAsync(command, { printResult: true });
-    } catch (e) {
-      if (e instanceof Error) {
-        // outputCallbacks.stderr(e.message);
-        console.error(e.message);
-      } else {
-        console.error(e);
-      }
+    } catch (e: Error | PostableErrorObject | any) {
+      const err = postableErrorObjectToError(e);
+      console.error(err);
     }
   }
 
