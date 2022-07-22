@@ -29,8 +29,13 @@
   width: 100%;
   top: 0px;
   left: 0px;
-  display: grid;
-  place-content: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.Viewer .loading-wrapper.loading-wrapper-error {
+  justify-content: left;
 }
 
 .Viewer .loading-wrapper .error-alert {

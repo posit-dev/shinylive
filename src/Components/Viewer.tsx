@@ -198,7 +198,7 @@ export function Viewer({
           <LoadingAnimation />
         </div>
       ) : appRunningState === "errored" ? (
-        <div className="loading-wrapper">
+        <div className="loading-wrapper loading-wrapper-error">
           <div className="error-alert">
             <div className="error-icon">
               <img src={skull} alt="skull" />
