@@ -1,5 +1,6 @@
 import { ASGIHTTPRequestScope, makeRequest } from "./messageporthttp.js";
 import { openChannel } from "./messageportwebsocket-channel";
+import { postableErrorObjectToError } from "./postable-error";
 import type * as PyodideWorker from "./pyodide-worker";
 import type {
   loadPyodide as _loadPyodide,
@@ -466,8 +467,9 @@ class WebWorkerPyodideProxy implements PyodideProxy {
     })) as PyodideWorker.ReplyMessageDone;
 
     if (response.error) {
-      this.stderrCallback(response.error.message);
-      throw response.error;
+      const err = postableErrorObjectToError(response.error);
+      this.stderrCallback(err.message);
+      throw err;
     }
 
     return response.value;
@@ -496,8 +498,9 @@ class WebWorkerPyodideProxy implements PyodideProxy {
     })) as PyodideWorker.ReplyMessageDone;
 
     if (response.error) {
-      this.stderrCallback(response.error.message);
-      throw response.error;
+      const err = postableErrorObjectToError(response.error);
+      this.stderrCallback(err.message);
+      throw err;
     }
 
     return response.value;
