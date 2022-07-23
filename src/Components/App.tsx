@@ -539,7 +539,8 @@ const propertyOfAppOptions = function <AppOptions>(name: keyof AppOptions) {
 // Code templates
 // =============================================================================
 
-const shinyAppTemplate = `from shiny import *
+const shinyAppTemplate = `# Basic Shiny app template
+from shiny import App, render, ui
 
 app_ui = ui.page_fluid(
   ui.input_slider("n", "N", 0, 100, 20),
