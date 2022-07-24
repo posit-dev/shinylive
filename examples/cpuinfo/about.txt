@@ -1,0 +1,2 @@
+CPU info
+CPU load monitor

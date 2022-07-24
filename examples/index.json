@@ -4,6 +4,10 @@
     "apps": ["basic_app", "app_with_plot"]
   },
   {
+    "category": "Featured",
+    "apps": ["wordle", "cpuinfo", "pyllusion", "ipyleaflet", "camera"]
+  },
+  {
     "category": "Intermediate",
     "apps": [
       "multiple_source_files",
@@ -15,7 +19,8 @@
       "modules",
       "extra_packages",
       "static_content",
-      "fetch"
+      "fetch",
+      "ipywidgets"
     ]
   },
   {
@@ -56,10 +61,6 @@
       "reactive_calc",
       "reactive_value"
     ]
-  },
-  {
-    "category": "Advanced",
-    "apps": ["wordle", "camera", "pyllusion", "ipywidgets", "ipyleaflet"]
   },
   {
     "category": "Non-Apps",
