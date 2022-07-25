@@ -1,3 +1,5 @@
+## By Chelsea Parlett Pelleriti
+
 from shiny import *
 
 # Import modules for plot rendering
