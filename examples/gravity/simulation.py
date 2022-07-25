@@ -3,8 +3,12 @@ import numpy as np
 import astropy.constants as c
 import time
 
-# Adapted from:
+# Adapted from Python for Astronomers: An Introduction to Scientific Computing
+# by Imad Pasha & Christopher Agostino
 # https://prappleizer.github.io/Tutorials/RK4/RK4_Tutorial.html
+
+# Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License
+# http://creativecommons.org/licenses/by-nc-sa/4.0/
 
 
 class Body:

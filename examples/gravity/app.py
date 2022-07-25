@@ -6,6 +6,9 @@ import numpy as np
 
 from shiny import App, reactive, render, ui
 
+# This application adapted from RK4 Orbit Integrator tutorial in Python for Astronomers
+# https://prappleizer.github.io/
+
 
 def panel_box(*args, **kwargs):
     return ui.div({"class": "panel-box"}, *args, **kwargs)
@@ -15,7 +18,7 @@ app_ui = ui.page_fluid(
     ui.tags.style(
         """
         .panel-box {
-            border: 1px solid black;
+            border: 1px solid #ccc;
             border-radius: 5px;
             padding: 8px;
             margin-top: 5px;
@@ -58,7 +61,7 @@ app_ui = ui.page_fluid(
         ui.column(
             6,
             ui.output_plot("orbits", width="500px", height="500px"),
-            ui.img(src="coords.png", style="max-width: 250px;"),
+            ui.img(src="coords.png", style="width: 100%; max-width: 250px;"),
         ),
     ),
 )
