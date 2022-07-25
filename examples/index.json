@@ -5,7 +5,7 @@
   },
   {
     "category": "Featured",
-    "apps": ["wordle", "cpuinfo", "orbit", "pyllusion", "ipyleaflet", "camera"]
+    "apps": ["cpuinfo", "orbit", "wordle", "pyllusion", "ipyleaflet", "camera"]
   },
   {
     "category": "Intermediate",

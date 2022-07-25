@@ -1,2 +1,2 @@
 Wordle
-A clone of the popular game Wordle
+A clone of Wordle
