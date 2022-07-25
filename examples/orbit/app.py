@@ -11,39 +11,18 @@ from shiny import App, reactive, render, ui
 
 
 def panel_box(*args, **kwargs):
-    return ui.div({"class": "panel-box"}, *args, **kwargs)
+    return ui.div(
+        ui.div(*args, class_="card-body"),
+        **kwargs,
+        class_="card mb-3",
+    )
 
 
 app_ui = ui.page_fluid(
-    ui.tags.style(
-        """
-        .panel-box {
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            padding: 8px;
-            margin-top: 5px;
-            margin-bottom: 5px;
-        }
-        """
-    ),
+    {"class": "p-4"},
     ui.row(
         ui.column(
-            3,
-            panel_box(
-                ui.input_checkbox("earth", "Earth", True),
-                ui.output_ui("earth_controls"),
-            ),
-            panel_box(
-                ui.input_checkbox("planetx", "Planet X", False),
-                ui.output_ui("planetx_controls"),
-            ),
-        ),
-        ui.column(
-            3,
-            panel_box(
-                ui.input_checkbox("moon", "Moon", True),
-                ui.output_ui("moon_controls"),
-            ),
+            4,
             panel_box(
                 ui.input_slider("days", "Simulation duration (days)", 0, 200, value=60),
                 ui.input_slider(
@@ -54,12 +33,30 @@ app_ui = ui.page_fluid(
                     value=4,
                     step=0.5,
                 ),
-                ui.hr(),
-                ui.input_action_button("run", "Run simulation"),
+                ui.input_action_button(
+                    "run", "Run simulation", class_="btn-primary w-100"
+                ),
+            ),
+            ui.navset_tab_card(
+                ui.nav(
+                    "Earth",
+                    ui.input_checkbox("earth", "Enable", True),
+                    ui.output_ui("earth_controls"),
+                ),
+                ui.nav(
+                    "Moon",
+                    ui.input_checkbox("moon", "Enable", True),
+                    ui.output_ui("moon_controls"),
+                ),
+                ui.nav(
+                    "Planet X",
+                    ui.input_checkbox("planetx", "Enable", False),
+                    ui.output_ui("planetx_controls"),
+                ),
             ),
         ),
         ui.column(
-            6,
+            8,
             ui.output_plot("orbits", width="500px", height="500px"),
             ui.img(src="coords.png", style="width: 100%; max-width: 250px;"),
         ),
@@ -68,7 +65,7 @@ app_ui = ui.page_fluid(
 
 
 def server(input, output, session):
-    @output
+    @output(suspend_when_hidden=False)
     @render.ui
     def earth_controls():
         if not input.earth():
@@ -87,7 +84,7 @@ def server(input, output, session):
             ui.input_slider("earth_phi", "𝜙", 0, 180, value=90),
         )
 
-    @output
+    @output(suspend_when_hidden=False)
     @render.ui
     def moon_controls():
         if not input.moon():
@@ -102,7 +99,7 @@ def server(input, output, session):
             ui.input_slider("moon_phi", "𝜙", 0, 180, value=90),
         )
 
-    @output
+    @output(suspend_when_hidden=False)
     @render.ui
     def planetx_controls():
         if not input.planetx():
