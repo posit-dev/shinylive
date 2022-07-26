@@ -41,17 +41,56 @@ app_ui = ui.page_fluid(
                 ui.nav(
                     "Earth",
                     ui.input_checkbox("earth", "Enable", True),
-                    ui.output_ui("earth_controls"),
+                    ui.panel_conditional(
+                        "input.earth",
+                        ui.input_numeric(
+                            "earth_mass",
+                            "Mass (10^22 kg)",
+                            597.216,
+                        ),
+                        ui.input_slider(
+                            "earth_speed",
+                            "Speed (km/s)",
+                            0,
+                            1,
+                            value=0.0126,
+                            step=0.001,
+                        ),
+                        ui.input_slider("earth_theta", "Angle (𝜃)", 0, 360, value=270),
+                        ui.input_slider("earth_phi", "𝜙", 0, 180, value=90),
+                    ),
                 ),
                 ui.nav(
                     "Moon",
                     ui.input_checkbox("moon", "Enable", True),
-                    ui.output_ui("moon_controls"),
+                    ui.panel_conditional(
+                        "input.moon",
+                        ui.input_numeric("moon_mass", "Mass (10^22 kg)", 7.347),
+                        ui.input_slider(
+                            "moon_speed", "Speed (km/s)", 0, 2, value=1.022, step=0.001
+                        ),
+                        ui.input_slider("moon_theta", "Angle (𝜃)", 0, 360, value=90),
+                        ui.input_slider("moon_phi", "𝜙", 0, 180, value=90),
+                    ),
                 ),
                 ui.nav(
                     "Planet X",
                     ui.input_checkbox("planetx", "Enable", False),
                     ui.output_ui("planetx_controls"),
+                    ui.panel_conditional(
+                        "input.planetx",
+                        ui.input_numeric("planetx_mass", "Mass (10^22 kg)", 7.347),
+                        ui.input_slider(
+                            "planetx_speed",
+                            "Speed (km/s)",
+                            0,
+                            2,
+                            value=1.022,
+                            step=0.001,
+                        ),
+                        ui.input_slider("planetx_theta", "Angle (𝜃)", 0, 360, 270),
+                        ui.input_slider("planetx_phi", "𝜙", 0, 180, 90),
+                    ),
                 ),
             ),
         ),
@@ -65,55 +104,6 @@ app_ui = ui.page_fluid(
 
 
 def server(input, output, session):
-    @output(suspend_when_hidden=False)
-    @render.ui
-    def earth_controls():
-        if not input.earth():
-            return None
-
-        return ui.TagList(
-            ui.input_numeric(
-                "earth_mass",
-                "Mass (10^22 kg)",
-                597.216,
-            ),
-            ui.input_slider(
-                "earth_speed", "Speed (km/s)", 0, 1, value=0.0126, step=0.001
-            ),
-            ui.input_slider("earth_theta", "Angle (𝜃)", 0, 360, value=270),
-            ui.input_slider("earth_phi", "𝜙", 0, 180, value=90),
-        )
-
-    @output(suspend_when_hidden=False)
-    @render.ui
-    def moon_controls():
-        if not input.moon():
-            return None
-
-        return ui.TagList(
-            ui.input_numeric("moon_mass", "Mass (10^22 kg)", 7.347),
-            ui.input_slider(
-                "moon_speed", "Speed (km/s)", 0, 2, value=1.022, step=0.001
-            ),
-            ui.input_slider("moon_theta", "Angle (𝜃)", 0, 360, value=90),
-            ui.input_slider("moon_phi", "𝜙", 0, 180, value=90),
-        )
-
-    @output(suspend_when_hidden=False)
-    @render.ui
-    def planetx_controls():
-        if not input.planetx():
-            return None
-
-        return ui.TagList(
-            ui.input_numeric("planetx_mass", "Mass (10^22 kg)", 7.347),
-            ui.input_slider(
-                "planetx_speed", "Speed (km/s)", 0, 2, value=1.022, step=0.001
-            ),
-            ui.input_slider("planetx_theta", "Angle (𝜃)", 0, 360, 270),
-            ui.input_slider("planetx_phi", "𝜙", 0, 180, 90),
-        )
-
     def earth_body():
         v = spherical_to_cartesian(
             input.earth_theta(), input.earth_phi(), input.earth_speed()
@@ -168,18 +158,9 @@ def server(input, output, session):
 
     @output
     @render.plot
+    @reactive.event(input.run, ignore_none=False)
     def orbits():
-        # A little awkwardness to run the plot on load, and then each time the button is
-        # clicked. In the future, slightly different action button behavior will
-        # hopefully make this unnecessary.
-        input.run()
-        nonlocal has_run
-        if has_run == False:
-            has_run = True
-            return make_orbit_plot()
-        else:
-            with reactive.isolate():
-                return make_orbit_plot()
+        return make_orbit_plot()
 
     def make_orbit_plot():
         sim = simulation()
