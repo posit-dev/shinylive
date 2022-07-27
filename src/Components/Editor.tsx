@@ -559,7 +559,7 @@ export default function Editor({
             {showLoadSaveButtons ? saveButton : null}
             {showLoadSaveButtons ? downloadButton : null}
             {showOpenWindowButton ? openWindowButton : null}
-            {showShareButton ? shareButton : null}
+            {/* {showShareButton ? shareButton : null} */}
             {formatCodeButton}
             {runButton}
           </div>
