@@ -413,9 +413,7 @@ export function App({
     );
   } else if (appMode === "viewer") {
     return (
-      // @ts-ignore: --pad is a CSS var we're using, and isn't a known CSS
-      // property. We should find a cleaner way to do this in the future anyway.
-      <div className="App--container viewer" style={{ "--pad": "0" }}>
+      <div className="App--container viewer">
         <Viewer
           pyodideProxyHandle={pyodideProxyHandle}
           setViewerMethods={setViewerMethods}

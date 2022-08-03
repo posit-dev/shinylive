@@ -37,6 +37,11 @@
   background-color: #e6e6e6;
 }
 
+/* Settings for standalone app viewer (with no other components) */
+.App--container.viewer {
+  --pad: 0;
+}
+
 .App--container > div {
   border-radius: var(--panel-roundness);
   background-color: var(--colors-bg);
