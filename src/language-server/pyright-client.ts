@@ -1,3 +1,4 @@
+import { currentScriptDir } from "../utils";
 import { createUri } from "./client";
 import { LSPClient } from "./lsp-client";
 import { pyright } from "./pyright";
@@ -56,7 +57,9 @@ export class PyrightClient extends LSPClient {
  * file in .js bundle. This works because uses fetch() instead of import().
  */
 async function getInitializationOptions(): Promise<any> {
-  const response = await fetch("../shinylive/pyright/typeshed.en.json");
+  const response = await fetch(
+    currentScriptDir() + "/pyright/typeshed.en.json"
+  );
   const typeshed = await response.json();
 
   return {
