@@ -59,7 +59,8 @@ jobs:
           git checkout -B gh-pages
           # Copy site/ to docs/, and turn symlinks into actual files/dirs.
           cp -LR site docs
-          git commit -m"Build docs for $SHA_SHORT"
+          git add docs
+          git commit -m"Build docs/ for $SHA_SHORT"
 
           git log -n 4 --pretty=oneline --simplify-by-decoration
 
