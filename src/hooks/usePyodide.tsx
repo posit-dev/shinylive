@@ -390,10 +390,6 @@ async def _start_app(app_name, scope = _shiny_app_registry):
     app_obj = importlib.import_module(f"{app_name}.app")
     scope[app_name] = app_obj
 
-    lifespan = app_obj.app._lifespan(app_obj.app.starlette_app)
-    scope[f"__{app_name}_lifespan__"] = lifespan
-    await lifespan.__aenter__()
-
     sys.path.remove(app_path)
 
 
@@ -408,11 +404,6 @@ async def _stop_app(app_name, scope = _shiny_app_registry):
         if "app" in dir(app_obj) and isinstance(app_obj.app, shiny.App):
             await app_obj.app.stop()
             _res = True
-
-        if f"__{app_name}_lifespan__" in scope:
-            lifespan = scope[f"__{app_name}_lifespan__"]
-            await lifespan.__aexit__(None, None, None)
-            del scope[f"__{app_name}_lifespan__"]
 
         del scope[app_name]
         # Unload app module and submodules
