@@ -436,6 +436,39 @@ export default function Editor({
     }
   }, [files, syncActiveFileState]);
 
+  const downloadButton = (
+    <button
+      className="code-run-button"
+      aria-label="Download project files"
+      data-balloon-pos="down"
+      onClick={() => downloadFiles()}
+    >
+      <Icon icon="cloud-arrow-down"></Icon>
+    </button>
+  );
+
+  const openEditorWindow = React.useCallback(async () => {
+    syncActiveFileState();
+    const fileContents = editorFilesToFileContents(files);
+    window.open(
+      editorUrlPrefix + fileContentsToUrlString(fileContents),
+      "_blank"
+    );
+  }, [files, syncActiveFileState]);
+
+  // Run button either gets placed in the header or floating over the editor but
+  // it's the same button either way
+  const openWindowButton = (
+    <button
+      className="code-run-button"
+      aria-label="Open project files in new window"
+      data-balloon-pos="down"
+      onClick={() => openEditorWindow()}
+    >
+      <Icon icon="clone"></Icon>
+    </button>
+  );
+
   const formatCodeButton = (
     <button
       className="code-run-button"
@@ -475,39 +508,6 @@ export default function Editor({
 
     cmView.dispatch(transaction);
   }, [utilityMethods, syncActiveFileState, activeFile, cmView]);
-
-  const downloadButton = (
-    <button
-      className="code-run-button"
-      aria-label="Download project files"
-      data-balloon-pos="down"
-      onClick={() => downloadFiles()}
-    >
-      <Icon icon="cloud-arrow-down"></Icon>
-    </button>
-  );
-
-  const openEditorWindow = React.useCallback(async () => {
-    syncActiveFileState();
-    const fileContents = editorFilesToFileContents(files);
-    window.open(
-      editorUrlPrefix + fileContentsToUrlString(fileContents),
-      "_blank"
-    );
-  }, [files, syncActiveFileState]);
-
-  // Run button either gets placed in the header or floating over the editor but
-  // it's the same button either way
-  const openWindowButton = (
-    <button
-      className="code-run-button"
-      aria-label="Open project files in new window"
-      data-balloon-pos="down"
-      onClick={() => openEditorWindow()}
-    >
-      <Icon icon="clone"></Icon>
-    </button>
-  );
 
   const shareButton = (
     <button
