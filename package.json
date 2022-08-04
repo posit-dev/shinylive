@@ -8,6 +8,9 @@
     "url": "https://github.com/rstudio/prism-experiments",
     "type": "git"
   },
+  "scripts": {
+    "cypress:open": "cypress open"
+  },
   "author": "Winston Chang <winston@rstudio.com>",
   "license": "MIT",
   "devDependencies": {
@@ -44,6 +47,7 @@
     "@typescript-eslint/parser": "^5.26.0",
     "balloon-css": "^1.2.0",
     "codemirror": "^6.0.0",
+    "cypress": "^10.4.0",
     "dompurify": "^2.3.8",
     "esbuild": "^0.14.40",
     "eslint": "^8.16.0",

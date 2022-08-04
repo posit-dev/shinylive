@@ -15,8 +15,8 @@
   },
   "shiny": {
     "name": "shiny",
-    "version": "0.2.3",
-    "filename": "shiny-0.2.3-py3-none-any.whl",
+    "version": "0.2.4",
+    "filename": "shiny-0.2.4-py3-none-any.whl",
     "sha256": null,
     "url": null,
     "depends": [
@@ -37,8 +37,8 @@
   },
   "shinywidgets": {
     "name": "shinywidgets",
-    "version": "0.1.0.9003",
-    "filename": "shinywidgets-0.1.0.9003-py3-none-any.whl",
+    "version": "0.1.2",
+    "filename": "shinywidgets-0.1.2-py3-none-any.whl",
     "sha256": null,
     "url": null,
     "depends": [
