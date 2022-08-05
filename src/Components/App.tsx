@@ -498,10 +498,16 @@ export function runApp(
       }
       // Look for URL hash with example name, like "#app-with-plot"
       else if (opts.allowExampleUrl) {
+        let exampleName = "";
+        // For example names, the key-value pair won't have a value.
+        for (const [key, value] of hashParams.entries()) {
+          if (value === "") exampleName = key;
+        }
+
         const exampleCategories = await getExampleCategories();
-        let pos = findExampleByTitle(hashContent, exampleCategories);
+        let pos = findExampleByTitle(exampleName, exampleCategories);
         if (pos) {
-          opts.selectedExample = hashContent;
+          opts.selectedExample = exampleName;
         } else {
           // If we didn't find an example name from the URL hash, we'll just use
           // the first available example.
