@@ -9,6 +9,10 @@ export type HeaderBarCallbacks = {
   downloadFiles?: () => void;
   showShareModal?: () => void;
   openEditorWindow?: () => void;
+  // This is functionally the same as openEditorWindow; the difference is that
+  // the button has a different icon and text; it is meant to be used with the
+  // standalone viewer.
+  openEditorWindowFromViewer?: () => void;
 };
 
 export default function HeaderBar({
@@ -61,6 +65,40 @@ export default function HeaderBar({
     );
   }
 
+  // This button is used with the Editor component.
+  let openEditorButton = null;
+  if (headerBarCallbacks?.openEditorWindow) {
+    const openEditorWindow = headerBarCallbacks.openEditorWindow;
+    openEditorButton = (
+      <button
+        className="code-run-button"
+        aria-label="Open files in editor view"
+        data-balloon-pos="down"
+        onClick={() => openEditorWindow()}
+      >
+        <Icon icon="clone"></Icon>
+      </button>
+    );
+  }
+
+  // This button is functionally the same as openEditorButton, but looks
+  // different and is used with the standalone Viewer component.
+  let openEditorFromViewerButton = null;
+  if (headerBarCallbacks?.openEditorWindowFromViewer) {
+    const viewInEditorWindow = headerBarCallbacks.openEditorWindowFromViewer;
+    openEditorFromViewerButton = (
+      <button
+        className="code-run-button"
+        aria-label="Open a copy in editor view"
+        data-balloon-pos="down-right"
+        onClick={() => viewInEditorWindow()}
+      >
+        <Icon icon="pen-to-square"></Icon>
+        <span className="button-label">Edit</span>
+      </button>
+    );
+  }
+
   let shareButton = null;
   if (headerBarCallbacks?.showShareModal) {
     const showShareModal = headerBarCallbacks.showShareModal;
@@ -68,27 +106,11 @@ export default function HeaderBar({
       <button
         className="code-run-button"
         aria-label="Create share link"
-        data-balloon-pos="down"
+        data-balloon-pos="down-right"
         onClick={() => showShareModal()}
       >
         <Icon icon="share-nodes"></Icon>
         <span className="button-label">Share</span>
-      </button>
-    );
-  }
-
-  let editButton = null;
-  if (headerBarCallbacks?.openEditorWindow) {
-    const openEditorWindow = headerBarCallbacks.openEditorWindow;
-    editButton = (
-      <button
-        className="code-run-button"
-        aria-label="Open in editor view"
-        data-balloon-pos="down-right"
-        onClick={() => openEditorWindow()}
-      >
-        <Icon icon="pen-to-square"></Icon>
-        <span className="button-label">Edit</span>
       </button>
     );
   }
@@ -103,8 +125,9 @@ export default function HeaderBar({
         {loadButton}
         {saveButton}
         {downloadButton}
+        {openEditorButton}
+        {openEditorFromViewerButton}
         {shareButton}
-        {editButton}
       </div>
     </div>
   );

@@ -247,7 +247,7 @@ export function App({
     if (appMode !== "viewer") return;
 
     setHeaderBarCallbacks({
-      openEditorWindow: () => {
+      openEditorWindowFromViewer: () => {
         window.open(
           editorUrlPrefix + fileContentsToUrlString(startFiles),
           "_blank"
