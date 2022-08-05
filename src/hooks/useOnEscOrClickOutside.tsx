@@ -2,15 +2,15 @@ import React from "react";
 
 export function useOnEscOrClickOutside(
   ref: React.RefObject<HTMLElement>,
-  handler: (event: MouseEvent | TouchEvent | KeyboardEvent) => void
+  handler: (event: KeyboardEvent | PointerEvent) => void
 ) {
   React.useEffect(() => {
-    const listener = (event: MouseEvent | TouchEvent | KeyboardEvent) => {
+    const listener = (event: KeyboardEvent | PointerEvent) => {
       if (event instanceof KeyboardEvent) {
         if (event.key === "Escape") {
           handler(event);
         }
-      } else if (event instanceof MouseEvent || event instanceof TouchEvent) {
+      } else if (event instanceof PointerEvent) {
         // Do nothing if clicking ref's element or descendent elements
         if (!ref.current || ref.current.contains(event.target as Node)) {
           return;
@@ -20,13 +20,11 @@ export function useOnEscOrClickOutside(
     };
 
     document.addEventListener("keydown", listener);
-    document.addEventListener("mousedown", listener);
-    document.addEventListener("touchstart", listener);
+    document.addEventListener("pointerdown", listener);
 
     return () => {
       document.removeEventListener("keydown", listener);
-      document.removeEventListener("mousedown", listener);
-      document.removeEventListener("touchstart", listener);
+      document.removeEventListener("pointerdown", listener);
     };
   }, [ref, handler]);
 }
