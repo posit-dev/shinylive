@@ -42,7 +42,7 @@
 
 .HeaderBar button.code-run-button span.button-label {
   vertical-align: 0.15em;
-  margin-left: 0.5em;
+  margin-left: 0.3em;
 }
 
 .HeaderBar .code-run-button:hover {
