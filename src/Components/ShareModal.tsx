@@ -43,75 +43,78 @@ export function ShareModal({
   useOnEscOrClickOutside(showModalRef, () => setShareModalVisible(false));
 
   return (
-    <div className="ShareModal" ref={showModalRef}>
-      <div className="ShareModal--item">
-        <label>Editor URL ({editorUrl.length} bytes)</label>
-        <div className="ShareModal--row">
-          <span className="ShareModal--url">
-            <input
-              value={editorUrl}
-              ref={editorUrlInputRef}
-              className="ShareModal--urlinput"
-              onFocus={(e) => e.target.select()}
-              readOnly
-            ></input>
-          </span>
-          <button
-            style={{ whiteSpace: "nowrap", width: "8em" }}
-            onClick={() => {
-              if (!editorUrlInputRef.current) return;
-              editorUrlInputRef.current.select();
-              navigator.clipboard.writeText(editorUrlInputRef.current.value);
+    <>
+      <div className="ShareModal-overlay"></div>
+      <div className="ShareModal" ref={showModalRef}>
+        <div className="ShareModal--item">
+          <label>Editor URL ({editorUrl.length} bytes)</label>
+          <div className="ShareModal--row">
+            <span className="ShareModal--url">
+              <input
+                value={editorUrl}
+                ref={editorUrlInputRef}
+                className="ShareModal--urlinput"
+                onFocus={(e) => e.target.select()}
+                readOnly
+              ></input>
+            </span>
+            <button
+              style={{ whiteSpace: "nowrap", width: "8em" }}
+              onClick={() => {
+                if (!editorUrlInputRef.current) return;
+                editorUrlInputRef.current.select();
+                navigator.clipboard.writeText(editorUrlInputRef.current.value);
 
-              setEditorButtonText("\u2713");
-              setTimeout(() => setEditorButtonText("Copy URL"), 800);
-            }}
-          >
-            {editorButtonText}
-          </button>
+                setEditorButtonText("\u2713");
+                setTimeout(() => setEditorButtonText("Copy URL"), 800);
+              }}
+            >
+              {editorButtonText}
+            </button>
+          </div>
+        </div>
+        <div className="ShareModal--item">
+          <div className="ShareModal--row">
+            <label>Application URL ({appUrl.length} bytes)</label>
+            <label
+              className="ShareModal--checkbox"
+              aria-label="Don't show the Shiny header with Edit button"
+              data-balloon-pos="up"
+            >
+              <input
+                type="checkbox"
+                checked={hideHeaderChecked}
+                onChange={() => setHideHeaderChecked(!hideHeaderChecked)}
+              />
+              <span>Hide header</span>
+            </label>
+          </div>
+          <div className="ShareModal--row">
+            <span className="ShareModal--url">
+              <input
+                value={appUrl}
+                ref={appUrlInputRef}
+                className="ShareModal--urlinput"
+                onFocus={(e) => e.target.select()}
+                readOnly
+              ></input>
+            </span>
+            <button
+              style={{ whiteSpace: "nowrap", width: "8em" }}
+              onClick={() => {
+                if (!appUrlInputRef.current) return;
+                appUrlInputRef.current.select();
+                navigator.clipboard.writeText(appUrlInputRef.current.value);
+
+                setAppButtonText("\u2713");
+                setTimeout(() => setAppButtonText("Copy URL"), 800);
+              }}
+            >
+              {appButtonText}
+            </button>
+          </div>
         </div>
       </div>
-      <div className="ShareModal--item">
-        <div className="ShareModal--row">
-          <label>Application URL ({appUrl.length} bytes)</label>
-          <label
-            className="ShareModal--checkbox"
-            aria-label="Don't show the Shiny header with Edit button"
-            data-balloon-pos="up"
-          >
-            <input
-              type="checkbox"
-              checked={hideHeaderChecked}
-              onChange={() => setHideHeaderChecked(!hideHeaderChecked)}
-            />
-            <span>Hide header</span>
-          </label>
-        </div>
-        <div className="ShareModal--row">
-          <span className="ShareModal--url">
-            <input
-              value={appUrl}
-              ref={appUrlInputRef}
-              className="ShareModal--urlinput"
-              onFocus={(e) => e.target.select()}
-              readOnly
-            ></input>
-          </span>
-          <button
-            style={{ whiteSpace: "nowrap", width: "8em" }}
-            onClick={() => {
-              if (!appUrlInputRef.current) return;
-              appUrlInputRef.current.select();
-              navigator.clipboard.writeText(appUrlInputRef.current.value);
-
-              setAppButtonText("\u2713");
-              setTimeout(() => setAppButtonText("Copy URL"), 800);
-            }}
-          >
-            {appButtonText}
-          </button>
-        </div>
-      </div>
-    </div>
+    </>
   );
 }

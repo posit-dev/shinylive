@@ -10,7 +10,7 @@
   padding: 8px 14px;
   transition: 0.4s ease-out;
   box-shadow: 0.5rem 0.5rem 2rem rgb(0 0 0 / 30%);
-  z-index: 1;
+  z-index: 10;
 }
 
 .ShareModal .ShareModal--item {
@@ -45,4 +45,15 @@
   font-size: var(--font-mono-size);
   width: 100%;
   margin-right: 12px;
+}
+
+.ShareModal-overlay {
+  opacity: 0.5;
+  background: #000;
+  width: 100%;
+  height: 100%;
+  z-index: 9;
+  top: 0;
+  left: 0;
+  position: fixed;
 }
