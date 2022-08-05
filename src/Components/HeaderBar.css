@@ -8,14 +8,44 @@
   display: flex;
 }
 
-.HeaderBar > a {
+.HeaderBar > a.page-title {
   display: inherit;
   color: var(--colors-white);
   text-decoration: none;
+  flex-direction: row;
+  margin-right: auto;
 }
 
 .HeaderBar .shiny-logo {
   height: 40px;
   display: inline-block;
   margin-right: 6px;
+}
+
+.HeaderBar > div {
+  flex-direction: row;
+  margin-right: 1rem;
+}
+
+.HeaderBar button.code-run-button {
+  border: none;
+  font-size: 0.9rem;
+  padding: 0.2rem 0.5rem;
+  background-color: transparent;
+  white-space: nowrap;
+  fill: rgba(255, 255, 255, 0.8);
+}
+
+.HeaderBar button.code-run-button svg.shinylive-icon {
+  font-size: 1em;
+}
+
+.HeaderBar button.code-run-button span.button-label {
+  vertical-align: 0.15em;
+  margin-left: 0.5em;
+}
+
+.HeaderBar .code-run-button:hover {
+  color: var(--colors-white);
+  fill: var(--colors-white);
 }

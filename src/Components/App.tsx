@@ -12,13 +12,14 @@ import {
 import { ProxyType } from "../pyodide-proxy";
 import "./App.css";
 import { ExampleSelector } from "./ExampleSelector";
-import HeaderBar from "./HeaderBar";
+import HeaderBar, { HeaderBarCallbacks } from "./HeaderBar";
 import { OutputCell } from "./OutputCell";
 import { ResizableGrid } from "./ResizableGrid/ResizableGrid";
 import { Terminal, TerminalInterface, TerminalMethods } from "./Terminal";
 import { Viewer, ViewerMethods } from "./Viewer";
 import { FCorFCJSONtoFC, FileContent, FileContentJson } from "./filecontent";
 import { fetchGist, gistApiResponseToFileContents } from "./gist";
+import { editorUrlPrefix, fileContentsToUrlString } from "./share";
 import LZString from "lz-string";
 import * as React from "react";
 import { createRoot } from "react-dom/client";
@@ -190,6 +191,9 @@ export function App({
   const [filesHaveChanged, setFilesHaveChanged] =
     React.useState<boolean>(false);
 
+  const [headerBarCallbacks, setHeaderBarCallbacks] =
+    React.useState<HeaderBarCallbacks>({});
+
   React.useEffect(() => {
     if (appMode === "viewer" && viewerMethods.ready) {
       viewerMethods.runApp(currentFiles);
@@ -238,10 +242,24 @@ export function App({
     });
     if (currentFiles.some((file) => file.name === "app.py")) return;
   }, [pyodideProxyHandle.ready, currentFiles]);
+
+  React.useEffect(() => {
+    if (appMode !== "viewer") return;
+
+    setHeaderBarCallbacks({
+      openEditorWindow: () => {
+        window.open(
+          editorUrlPrefix + fileContentsToUrlString(startFiles),
+          "_blank"
+        );
+      },
+    });
+  }, [appMode, startFiles]);
+
   if (appMode === "examples-editor-terminal-viewer") {
     return (
       <>
-        <HeaderBar></HeaderBar>
+        <HeaderBar headerBarCallbacks={headerBarCallbacks}></HeaderBar>
         <ResizableGrid
           className="App--container"
           areas={[
@@ -261,13 +279,11 @@ export function App({
               currentFilesFromApp={currentFiles}
               setCurrentFiles={setCurrentFiles}
               setFilesHaveChanged={setFilesHaveChanged}
+              setHeaderBarCallbacks={setHeaderBarCallbacks}
               terminalMethods={terminalMethods}
               viewerMethods={viewerMethods}
               utilityMethods={utilityMethods}
               runOnLoad={currentFiles.some((file) => file.name === "app.py")}
-              showLoadSaveButtons={true}
-              showOpenWindowButton={true}
-              showShareButton={true}
             />
           </React.Suspense>
           <Terminal
@@ -285,7 +301,7 @@ export function App({
   } else if (appMode === "editor-terminal-viewer") {
     return (
       <>
-        <HeaderBar></HeaderBar>
+        <HeaderBar headerBarCallbacks={headerBarCallbacks}></HeaderBar>
         <ResizableGrid
           className="App--container"
           areas={[
@@ -300,13 +316,11 @@ export function App({
               currentFilesFromApp={currentFiles}
               setCurrentFiles={setCurrentFiles}
               setFilesHaveChanged={setFilesHaveChanged}
+              setHeaderBarCallbacks={setHeaderBarCallbacks}
               terminalMethods={terminalMethods}
               viewerMethods={viewerMethods}
               utilityMethods={utilityMethods}
               runOnLoad={currentFiles.some((file) => file.name === "app.py")}
-              showLoadSaveButtons={true}
-              showOpenWindowButton={true}
-              showShareButton={true}
             />
           </React.Suspense>
           <Terminal
@@ -334,12 +348,10 @@ export function App({
             currentFilesFromApp={currentFiles}
             setCurrentFiles={setCurrentFiles}
             setFilesHaveChanged={setFilesHaveChanged}
+            setHeaderBarCallbacks={setHeaderBarCallbacks}
             terminalMethods={terminalMethods}
             utilityMethods={utilityMethods}
             runOnLoad={false}
-            showLoadSaveButtons={false}
-            showOpenWindowButton={true}
-            showShareButton={false}
           />
         </React.Suspense>
         <Terminal
@@ -357,14 +369,13 @@ export function App({
             currentFilesFromApp={currentFiles}
             setCurrentFiles={setCurrentFiles}
             setFilesHaveChanged={setFilesHaveChanged}
+            setHeaderBarCallbacks={setHeaderBarCallbacks}
             terminalMethods={terminalMethods}
             utilityMethods={utilityMethods}
             showFileTabs={false}
             lineNumbers={false}
             showHeaderBar={false}
             floatingButtons={true}
-            showShareButton={false}
-            showLoadSaveButtons={false}
           />
         </React.Suspense>
         <OutputCell
@@ -397,12 +408,10 @@ export function App({
             currentFilesFromApp={currentFiles}
             setCurrentFiles={setCurrentFiles}
             setFilesHaveChanged={setFilesHaveChanged}
+            setHeaderBarCallbacks={setHeaderBarCallbacks}
             terminalMethods={terminalMethods}
             utilityMethods={utilityMethods}
             viewerMethods={viewerMethods}
-            showLoadSaveButtons={false}
-            showOpenWindowButton={true}
-            showShareButton={false}
           />
         </React.Suspense>
         <Viewer
@@ -413,12 +422,15 @@ export function App({
     );
   } else if (appMode === "viewer") {
     return (
-      <div className="App--container viewer">
-        <Viewer
-          pyodideProxyHandle={pyodideProxyHandle}
-          setViewerMethods={setViewerMethods}
-        />
-      </div>
+      <>
+        <HeaderBar headerBarCallbacks={headerBarCallbacks}></HeaderBar>
+        <div className="App--container viewer">
+          <Viewer
+            pyodideProxyHandle={pyodideProxyHandle}
+            setViewerMethods={setViewerMethods}
+          />
+        </div>
+      </>
     );
   } else {
     throw new Error("Have yet to setup this view mode");

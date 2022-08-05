@@ -10,6 +10,7 @@ import { ensurePyrightClient } from "../language-server/pyright-client";
 import { inferFiletype, modKeySymbol, stringToUint8Array } from "../utils";
 import type { UtilityMethods } from "./App";
 import "./Editor.css";
+import { HeaderBarCallbacks } from "./HeaderBar";
 import { Icon } from "./Icons";
 import { ShareModal } from "./ShareModal";
 import { TerminalMethods } from "./Terminal";
@@ -63,6 +64,7 @@ export default function Editor({
   currentFilesFromApp,
   setCurrentFiles,
   setFilesHaveChanged,
+  setHeaderBarCallbacks,
   terminalMethods,
   viewerMethods = null,
   utilityMethods = null,
@@ -70,14 +72,14 @@ export default function Editor({
   runOnLoad = true,
   lineNumbers = true,
   showHeaderBar = true,
-  showLoadSaveButtons = true,
-  showOpenWindowButton = true,
-  showShareButton = true,
   floatingButtons = false,
 }: {
   currentFilesFromApp: FileContent[];
   setCurrentFiles: React.Dispatch<React.SetStateAction<FileContent[]>>;
   setFilesHaveChanged: React.Dispatch<React.SetStateAction<boolean>>;
+  setHeaderBarCallbacks: React.Dispatch<
+    React.SetStateAction<HeaderBarCallbacks>
+  >;
   terminalMethods: TerminalMethods;
   viewerMethods?: ViewerMethods | null;
   utilityMethods?: UtilityMethods | null;
@@ -85,9 +87,6 @@ export default function Editor({
   runOnLoad?: boolean;
   lineNumbers?: boolean;
   showHeaderBar?: boolean;
-  showLoadSaveButtons?: boolean;
-  showOpenWindowButton?: boolean;
-  showShareButton?: boolean;
   floatingButtons?: boolean;
 }) {
   // In the future, instead of directly instantiating the PyrightClient, it
@@ -352,11 +351,8 @@ export default function Editor({
   }, [lspClient, diagnosticsListener]);
 
   // ===========================================================================
-  // React component
+  // Callbacks for the buttons in the HeaderBar component
   // ===========================================================================
-
-  const [showShareModal, setShowShareModal] = React.useState(false);
-
   const [localDirHandle, setLocalDirHandle] =
     React.useState<FileSystemDirectoryHandle | null>(null);
 
@@ -372,17 +368,6 @@ export default function Editor({
     setLocalDirHandle(dirHandle);
     setCurrentFiles(localFiles);
   }, [setCurrentFiles]);
-
-  const loadButton = (
-    <button
-      className="code-run-button"
-      aria-label="Load project from a directory on disk"
-      data-balloon-pos="down"
-      onClick={() => loadLocalFiles()}
-    >
-      <Icon icon="upload"></Icon>
-    </button>
-  );
 
   const saveLocalFiles = React.useCallback(async () => {
     fileio.assertHasFileAccessApiSupport();
@@ -405,17 +390,6 @@ export default function Editor({
     await fileio.saveFileContentsToDirectory(fileContents, dirHandle);
   }, [files, syncActiveFileState, localDirHandle]);
 
-  const saveButton = (
-    <button
-      className="code-run-button"
-      aria-label="Save all project files to disk"
-      data-balloon-pos="down"
-      onClick={() => saveLocalFiles()}
-    >
-      <Icon icon="download"></Icon>
-    </button>
-  );
-
   const downloadFiles = React.useCallback(async () => {
     if (!window.confirm("Downlad all project files?")) return;
 
@@ -436,17 +410,6 @@ export default function Editor({
     }
   }, [files, syncActiveFileState]);
 
-  const downloadButton = (
-    <button
-      className="code-run-button"
-      aria-label="Download project files"
-      data-balloon-pos="down"
-      onClick={() => downloadFiles()}
-    >
-      <Icon icon="cloud-arrow-down"></Icon>
-    </button>
-  );
-
   const openEditorWindow = React.useCallback(async () => {
     syncActiveFileState();
     const fileContents = editorFilesToFileContents(files);
@@ -456,19 +419,45 @@ export default function Editor({
     );
   }, [files, syncActiveFileState]);
 
-  // Run button either gets placed in the header or floating over the editor but
-  // it's the same button either way
-  const openWindowButton = (
-    <button
-      className="code-run-button"
-      aria-label="Open project files in new window"
-      data-balloon-pos="down"
-      onClick={() => openEditorWindow()}
-    >
-      <Icon icon="clone"></Icon>
-    </button>
-  );
+  const [shareModalVisible, setShareModalVisible] = React.useState(false);
 
+  const showShareModal = React.useCallback(() => {
+    // If the user clicks the share button, we need to sync the files before
+    // showing the dialog.
+    syncActiveFileState();
+    setShareModalVisible(true);
+  }, [syncActiveFileState]);
+
+  let shareModal: JSX.Element | null = null;
+  if (shareModalVisible) {
+    shareModal = (
+      <ShareModal
+        fileContents={editorFilesToFileContents(files)}
+        setShareModalVisible={setShareModalVisible}
+      ></ShareModal>
+    );
+  }
+
+  React.useEffect(() => {
+    setHeaderBarCallbacks({
+      loadLocalFiles: loadLocalFiles,
+      saveLocalFiles: saveLocalFiles,
+      downloadFiles: downloadFiles,
+      showShareModal: showShareModal,
+      openEditorWindow: openEditorWindow,
+    });
+  }, [
+    downloadFiles,
+    loadLocalFiles,
+    openEditorWindow,
+    saveLocalFiles,
+    setHeaderBarCallbacks,
+    showShareModal,
+  ]);
+
+  // ===========================================================================
+  // Buttons
+  // ===========================================================================
   const formatCodeButton = (
     <button
       className="code-run-button"
@@ -509,30 +498,6 @@ export default function Editor({
     cmView.dispatch(transaction);
   }, [utilityMethods, syncActiveFileState, activeFile, cmView]);
 
-  const shareButton = (
-    <button
-      className="code-run-button"
-      aria-label="Create share link"
-      data-balloon-pos="down"
-      onClick={() => setShowShareModal(true)}
-    >
-      <Icon icon="share-nodes"></Icon>
-    </button>
-  );
-
-  let shareModal: JSX.Element | null = null;
-  if (showShareModal) {
-    // If the user clicks the share button, we need to sync the files before
-    // showing the
-    syncActiveFileState();
-    shareModal = (
-      <ShareModal
-        fileContents={editorFilesToFileContents(files)}
-        setShowShareModal={setShowShareModal}
-      ></ShareModal>
-    );
-  }
-
   // Run button either gets placed in the header or floating over the editor but
   // it's the same button either way
   const runButton = (
@@ -548,6 +513,10 @@ export default function Editor({
     </button>
   );
 
+  // ===========================================================================
+  // React component
+  // ===========================================================================
+
   return (
     <div className="Editor">
       {shareModal}
@@ -555,11 +524,6 @@ export default function Editor({
         <div className="Editor--header">
           {showFileTabs ? <FileTabs {...tabbedFiles} /> : null}
           <div className="Editor--header--actions">
-            {showLoadSaveButtons ? loadButton : null}
-            {showLoadSaveButtons ? saveButton : null}
-            {showLoadSaveButtons ? downloadButton : null}
-            {showOpenWindowButton ? openWindowButton : null}
-            {showShareButton ? shareButton : null}
             {formatCodeButton}
             {runButton}
           </div>

@@ -14,10 +14,10 @@ import * as React from "react";
 
 export function ShareModal({
   fileContents = [],
-  setShowShareModal,
+  setShareModalVisible,
 }: {
   fileContents: FileContent[];
-  setShowShareModal: React.Dispatch<React.SetStateAction<boolean>>;
+  setShareModalVisible: React.Dispatch<React.SetStateAction<boolean>>;
 }) {
   const showModalRef = React.useRef<HTMLDivElement>(null);
 
@@ -32,7 +32,7 @@ export function ShareModal({
   const [editorButtonText, setEditorButtonText] = React.useState("Copy URL");
   const [appButtonText, setAppButtonText] = React.useState("Copy URL");
 
-  useOnEscOrClickOutside(showModalRef, () => setShowShareModal(false));
+  useOnEscOrClickOutside(showModalRef, () => setShareModalVisible(false));
 
   return (
     <div className="ShareModal" ref={showModalRef}>
