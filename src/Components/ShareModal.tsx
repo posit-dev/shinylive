@@ -23,8 +23,16 @@ export function ShareModal({
 
   const encodedCode = fileContentsToUrlString(fileContents);
 
-  const editorUrl = editorUrlPrefix + encodedCode;
-  const appUrl = appUrlPrefix + encodedCode;
+  const [showHeaderChecked, setShowHeaderChecked] = React.useState(true);
+
+  const editorUrl = editorUrlPrefix + "#code=" + encodedCode;
+
+  const appUrl =
+    appUrlPrefix +
+    "#" +
+    (showHeaderChecked ? "h=1&" : "") +
+    "code=" +
+    encodedCode;
 
   const editorUrlInputRef = React.useRef<HTMLInputElement>(null);
   const appUrlInputRef = React.useRef<HTMLInputElement>(null);
@@ -36,7 +44,7 @@ export function ShareModal({
 
   return (
     <div className="ShareModal" ref={showModalRef}>
-      <div>
+      <div className="ShareModal--item">
         <label>Editor URL ({editorUrl.length} bytes)</label>
         <div className="ShareModal--row">
           <span className="ShareModal--url">
@@ -63,7 +71,7 @@ export function ShareModal({
           </button>
         </div>
       </div>
-      <div>
+      <div className="ShareModal--item">
         <label>Application URL ({appUrl.length} bytes)</label>
         <div className="ShareModal--row">
           <span className="ShareModal--url">
@@ -88,6 +96,16 @@ export function ShareModal({
           >
             {appButtonText}
           </button>
+        </div>
+        <div className="ShareModal--row">
+          <label>
+            <input
+              type="checkbox"
+              checked={showHeaderChecked}
+              onChange={() => setShowHeaderChecked(!showHeaderChecked)}
+            />
+            <span>Show header with Edit button</span>
+          </label>
         </div>
       </div>
     </div>

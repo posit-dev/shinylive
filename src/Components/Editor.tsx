@@ -414,7 +414,7 @@ export default function Editor({
     syncActiveFileState();
     const fileContents = editorFilesToFileContents(files);
     window.open(
-      editorUrlPrefix + fileContentsToUrlString(fileContents),
+      editorUrlPrefix + "#code=" + fileContentsToUrlString(fileContents),
       "_blank"
     );
   }, [files, syncActiveFileState]);

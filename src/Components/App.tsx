@@ -85,6 +85,9 @@ type AppOptions = {
   // If the ExampleSelector component is present, which example, if any, should
   // start selected?
   selectedExample?: string;
+
+  // In Viewer-only mode, should the header bar be shown?
+  showHeaderBar?: boolean;
 };
 
 let pyodideProxyHandlePromise: Promise<PyodideProxyHandle> | null = null;
@@ -249,7 +252,7 @@ export function App({
     setHeaderBarCallbacks({
       openEditorWindowFromViewer: () => {
         window.open(
-          editorUrlPrefix + fileContentsToUrlString(startFiles),
+          editorUrlPrefix + "#code=" + fileContentsToUrlString(startFiles),
           "_blank"
         );
       },
@@ -423,7 +426,9 @@ export function App({
   } else if (appMode === "viewer") {
     return (
       <>
-        <HeaderBar headerBarCallbacks={headerBarCallbacks}></HeaderBar>
+        {appOptions.showHeaderBar ? (
+          <HeaderBar headerBarCallbacks={headerBarCallbacks}></HeaderBar>
+        ) : null}
         <div className="App--container viewer">
           <Viewer
             pyodideProxyHandle={pyodideProxyHandle}
@@ -461,11 +466,12 @@ export function runApp(
     if (startFiles === undefined) {
       // Use the URL hash to determine what files to start with.
       const hashContent = window.location.hash.replace(/^#/, "");
+      const hashParams = new URLSearchParams(hashContent);
 
       // Handle URL hash with "#code="
-      if (opts.allowCodeUrl && hashContent.startsWith("code=")) {
+      if (opts.allowCodeUrl && hashParams.has("code")) {
         try {
-          const codeEncoded = hashContent.replace("code=", "");
+          const codeEncoded = hashParams.get("code") ?? "";
           // Returns null if decoding fails
           const code = LZString.decompressFromEncodedURIComponent(codeEncoded);
           if (code) {
@@ -480,8 +486,8 @@ export function runApp(
         }
       }
       // Handle URL hash with "#gist="
-      else if (opts.allowGistUrl && hashContent.startsWith("gist=")) {
-        const gistId = hashContent.replace("gist=", "");
+      else if (opts.allowGistUrl && hashParams.has("gist")) {
+        const gistId = hashParams.get("gist") ?? "";
         try {
           const gistApiResponse = await fetchGist(gistId);
           startFiles = await gistApiResponseToFileContents(gistApiResponse);
@@ -511,6 +517,10 @@ export function runApp(
       else {
         startFiles = [];
       }
+
+      // Look for "h=1". This value is used only in Viewer-only mode to
+      // determine whether or not to show the header bar.
+      opts.showHeaderBar = hashParams.get("h") === "1";
     }
 
     // At this point we know that startFiles is a FileContentJson[] or

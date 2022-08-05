@@ -13,9 +13,21 @@
   z-index: 1;
 }
 
+.ShareModal .ShareModal--item {
+  padding-bottom: 10px;
+}
+
 .ShareModal .ShareModal--row {
   display: flex;
-  padding-bottom: 10px;
+}
+
+.ShareModal .ShareModal--row label {
+  display: flex;
+  align-items: center;
+}
+
+.ShareModal .ShareModal--row label span {
+  margin-left: 0.3em;
 }
 
 .ShareModal .ShareModal--row .ShareModal--url {
