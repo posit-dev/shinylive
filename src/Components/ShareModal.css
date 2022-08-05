@@ -16,7 +16,10 @@
 .ShareModal .ShareModal--item {
   padding-bottom: 10px;
 }
-
+.ShareModal .ShareModal--item .ShareModal--checkbox {
+  margin-left: 1em;
+  font-size: 0.9em;
+}
 .ShareModal .ShareModal--row {
   display: flex;
 }
@@ -36,6 +39,7 @@
   vertical-align: top;
   width: 100%;
 }
+
 .ShareModal .ShareModal--row .ShareModal--url .ShareModal--urlinput {
   font-family: var(--font-mono-face);
   font-size: var(--font-mono-size);

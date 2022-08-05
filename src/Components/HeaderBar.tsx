@@ -27,7 +27,7 @@ export default function HeaderBar({
       <button
         className="code-run-button"
         aria-label="Load project from a directory on disk"
-        data-balloon-pos="down"
+        data-balloon-pos="down-right"
         onClick={() => loadLocalFiles()}
       >
         <Icon icon="upload"></Icon>
@@ -42,7 +42,7 @@ export default function HeaderBar({
       <button
         className="code-run-button"
         aria-label="Save all project files to disk"
-        data-balloon-pos="down"
+        data-balloon-pos="down-right"
         onClick={() => saveLocalFiles()}
       >
         <Icon icon="download"></Icon>
@@ -57,7 +57,7 @@ export default function HeaderBar({
       <button
         className="code-run-button"
         aria-label="Download project files"
-        data-balloon-pos="down"
+        data-balloon-pos="down-right"
         onClick={() => downloadFiles()}
       >
         <Icon icon="cloud-arrow-down"></Icon>
@@ -72,11 +72,11 @@ export default function HeaderBar({
     openEditorButton = (
       <button
         className="code-run-button"
-        aria-label="Open files in editor view"
-        data-balloon-pos="down"
+        aria-label="Open files in new editor window"
+        data-balloon-pos="down-right"
         onClick={() => openEditorWindow()}
       >
-        <Icon icon="clone"></Icon>
+        <Icon icon="pen-to-square"></Icon>
       </button>
     );
   }

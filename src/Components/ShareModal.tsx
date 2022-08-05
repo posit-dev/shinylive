@@ -23,14 +23,14 @@ export function ShareModal({
 
   const encodedCode = fileContentsToUrlString(fileContents);
 
-  const [showHeaderChecked, setShowHeaderChecked] = React.useState(true);
+  const [hideHeaderChecked, setHideHeaderChecked] = React.useState(false);
 
   const editorUrl = editorUrlPrefix + "#code=" + encodedCode;
 
   const appUrl =
     appUrlPrefix +
     "#" +
-    (showHeaderChecked ? "h=1&" : "") +
+    (hideHeaderChecked ? "h=0&" : "") +
     "code=" +
     encodedCode;
 
@@ -72,7 +72,21 @@ export function ShareModal({
         </div>
       </div>
       <div className="ShareModal--item">
-        <label>Application URL ({appUrl.length} bytes)</label>
+        <div className="ShareModal--row">
+          <label>Application URL ({appUrl.length} bytes)</label>
+          <label
+            className="ShareModal--checkbox"
+            aria-label="Don't show the Shiny header with Edit button"
+            data-balloon-pos="up"
+          >
+            <input
+              type="checkbox"
+              checked={hideHeaderChecked}
+              onChange={() => setHideHeaderChecked(!hideHeaderChecked)}
+            />
+            <span>Hide header</span>
+          </label>
+        </div>
         <div className="ShareModal--row">
           <span className="ShareModal--url">
             <input
@@ -96,16 +110,6 @@ export function ShareModal({
           >
             {appButtonText}
           </button>
-        </div>
-        <div className="ShareModal--row">
-          <label>
-            <input
-              type="checkbox"
-              checked={showHeaderChecked}
-              onChange={() => setShowHeaderChecked(!showHeaderChecked)}
-            />
-            <span>Show header with Edit button</span>
-          </label>
         </div>
       </div>
     </div>

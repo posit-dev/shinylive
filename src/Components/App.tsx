@@ -518,9 +518,9 @@ export function runApp(
         startFiles = [];
       }
 
-      // Look for "h=1". This value is used only in Viewer-only mode to
-      // determine whether or not to show the header bar.
-      opts.showHeaderBar = hashParams.get("h") === "1";
+      // Look for "h=0". This value is used only in Viewer-only mode to
+      // determine whether or not to hide the header bar.
+      opts.showHeaderBar = hashParams.get("h") !== "0";
     }
 
     // At this point we know that startFiles is a FileContentJson[] or
