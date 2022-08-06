@@ -15,8 +15,8 @@
   },
   "shiny": {
     "name": "shiny",
-    "version": "0.2.4",
-    "filename": "shiny-0.2.4-py3-none-any.whl",
+    "version": "0.2.4.9000",
+    "filename": "shiny-0.2.4.9000-py3-none-any.whl",
     "sha256": null,
     "url": null,
     "depends": [
@@ -27,6 +27,7 @@
       {"name": "htmltools", "specs": [[">=", "0.1.0.9001"]]},
       {"name": "click", "specs": [[">=", "8.0.3"]]},
       {"name": "markdown-it-py", "specs": [[">=", "1.1.0"]]},
+      {"name": "mdit-py-plugins", "specs": [[">=", "0.3.0"]]},
       {"name": "linkify-it-py", "specs": [[">=", "1.0"]]},
       {"name": "appdirs", "specs": [[">=", "1.4.4"]]},
       {"name": "asgiref", "specs": [[">=", "3.5.2"]]}
@@ -49,6 +50,19 @@
     ],
     "imports": [
       "shinywidgets"
+    ]
+  },
+  "mdit-py-plugins": {
+    "name": "mdit-py-plugins",
+    "version": "0.3.0",
+    "filename": "mdit_py_plugins-0.3.0-py3-none-any.whl",
+    "sha256": "b1279701cee2dbf50e188d3da5f51fee8d78d038cdf99be57c6b9d1aa93b4073",
+    "url": "https://files.pythonhosted.org/packages/5b/c4/1cf60e11b55197fa2e5e8d2f732a229690f5a08b018ae1cf4c00585ca834/mdit_py_plugins-0.3.0-py3-none-any.whl",
+    "depends": [
+      {"name": "markdown-it-py", "specs": [["<", "3.0.0"], [">=", "1.0.0"]]}
+    ],
+    "imports": [
+      "mdit_py_plugins"
     ]
   },
   "plotnine": {

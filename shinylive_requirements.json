@@ -2,6 +2,12 @@
   { "name": "htmltools", "source": "local", "version": "latest" },
   { "name": "shiny", "source": "local", "version": "latest" },
   { "name": "shinywidgets", "source": "local", "version": "latest" },
+  {
+    "name": "mdit-py-plugins",
+    "source": "pypi",
+    "version": "latest",
+    "comment": "Needed to suppress warning from shiny/ui/_markdown.py."
+  },
   { "name": "plotnine", "source": "pypi", "version": "latest" },
   { "name": "plotly", "source": "pypi", "version": "latest" },
   { "name": "seaborn", "source": "pypi", "version": "latest" },
