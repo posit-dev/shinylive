@@ -58,7 +58,7 @@
     "glob": "^8.0.3",
     "istextorbinary": "^6.0.0",
     "jest": "^27.4.5",
-    "jquery.terminal": "^2.33.3",
+    "jquery.terminal": "^2.34.0",
     "lodash.sortby": "^4.7.0",
     "lz-string": "^1.4.4",
     "marked": "^4.0.17",

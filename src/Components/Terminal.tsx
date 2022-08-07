@@ -1,10 +1,8 @@
 /// <reference types="jquery.terminal" />
 /// <reference types="jquery" />
-
-import * as React from "react";
-
 import { PyodideProxyHandle } from "../hooks/usePyodide";
 import "./Terminal.css";
+import * as React from "react";
 
 declare global {
   interface Window {
@@ -76,9 +74,6 @@ export function Terminal({
     const term = $(containerRef.current).terminal(interpreter, {
       greetings: "Starting Python...",
       prompt: "",
-      // @ts-expect-error: This disables jquery.terminal's customized scroll
-      // handling, which is way too fast.
-      // See https://github.com/jcubic/jquery.terminal/issues/795
       mousewheel: () => true,
       scrollOnEcho: true,
       completionEscape: false,

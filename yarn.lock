@@ -3579,10 +3579,10 @@ jest@^27.4.5:
     import-local "^3.0.2"
     jest-cli "^27.5.1"
 
-jquery.terminal@^2.33.3:
-  version "2.33.3"
-  resolved "https://registry.yarnpkg.com/jquery.terminal/-/jquery.terminal-2.33.3.tgz#ff91e36af55aac4e42094b909b11fb51d6f16e1d"
-  integrity sha512-FlqCWmMaygQZ1BbX3TswsMWH1Zh11o0s9brGG3Kwsc+Hav4KxrHyiZF7QJ2kE48DqTxb6fpdRn9g7olqp1XosQ==
+jquery.terminal@^2.34.0:
+  version "2.34.0"
+  resolved "https://registry.yarnpkg.com/jquery.terminal/-/jquery.terminal-2.34.0.tgz#ae789f72e1ff48561a9a00cc1bd7bf7d2381149f"
+  integrity sha512-sU22Qzb+tkOSwQiHc2fvhgrYE69/0DzGgMgmOgCHMEpTh3MpXENv2j8RWhXd8K+xZG/+Cltst4joGt4MsyT+7g==
   dependencies:
     "@jcubic/lily" "^0.3.0"
     "@types/jquery" "^3.5.14"
