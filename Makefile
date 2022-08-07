@@ -89,7 +89,8 @@ all: node_modules \
 	$(BUILD_DIR)/shinylive/jquery.min.js \
 	$(BUILD_DIR)/shinylive/style-resets.css \
 	$(BUILD_DIR)/shinylive/pyodide \
-	src/types/pyodide.d.ts \
+	src/pyodide/pyodide.js \
+	src/pyodide/pyodide.d.ts \
 	pyodide_packages_local \
 	update_packages_lock_local \
 	retrieve_packages \
@@ -127,11 +128,14 @@ $(BUILD_DIR)/shinylive/pyodide:
 	curl -L https://github.com/pyodide/pyodide/releases/download/$(PYODIDE_VERSION)/$(PYODIDE_DIST_FILENAME) \
 	    | tar --exclude "*test*.tar" --exclude "node_modules" -xvj
 
-# Copy pyodide type file to src/types/. This is a little weird in that in `make
-# all`, it comes after downloading pyodide. In the future we may be able to use
-# a pyodide node module, but the one currently on npm is a bit out of date.
-src/types/pyodide.d.ts: $(BUILD_DIR)/shinylive/pyodide/pyodide.d.ts
-	cp $(BUILD_DIR)/shinylive/pyodide/pyodide.d.ts src/types/
+# Copy pyodide.js and .d.ts to src/pyodide/. This is a little weird in that in
+# `make all`, it comes after downloading pyodide. In the future we may be able
+# to use a pyodide node module, but the one currently on npm is a bit out of
+# date.
+src/pyodide/pyodide.js: $(BUILD_DIR)/shinylive/pyodide/pyodide.mjs
+	cp $(BUILD_DIR)/shinylive/pyodide/pyodide.mjs src/pyodide/pyodide.js
+src/pyodide/pyodide.d.ts: $(BUILD_DIR)/shinylive/pyodide/pyodide.d.ts
+	cp $(BUILD_DIR)/shinylive/pyodide/pyodide.d.ts src/pyodide/
 
 ## Copy local package wheels to the pyodide directory
 pyodide_packages_local: $(BUILD_DIR)/shinylive/pyodide/$(HTMLTOOLS_WHEEL) \

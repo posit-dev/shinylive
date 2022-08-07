@@ -34,17 +34,6 @@ export async function initPyodide({
   if (!stdout) stdout = async (x: string) => console.log("pyodide echo:" + x);
   if (!stderr) stderr = (x: string) => console.error("pyodide error:" + x);
 
-  if (proxyType === "normal") {
-    // This dynamic import has the same effect as having this tag in the html,
-    // except that it is conditional on being in normal (non-webworker) mode:
-    // <script src="./pyodide/pyodide.js"></script>
-    // It will make loadPyodide available at the top level. The reason it's here
-    // is because loading pyodide.js in the main thread is unnecessary when
-    // we're in webworker mode.
-    const pyodide_js_path = "./pyodide/pyodide.js";
-    await import(pyodide_js_path);
-  }
-
   const pyodideProxy = await loadPyodideProxy(
     {
       type: proxyType,

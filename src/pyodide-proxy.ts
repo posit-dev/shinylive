@@ -2,21 +2,11 @@ import { ASGIHTTPRequestScope, makeRequest } from "./messageporthttp.js";
 import { openChannel } from "./messageportwebsocket-channel";
 import { postableErrorObjectToError } from "./postable-error";
 import type * as PyodideWorker from "./pyodide-worker";
-import type {
-  loadPyodide as _loadPyodide,
-  Py2JsResult,
-  PyProxyIterable,
-} from "./types/pyodide";
+import { loadPyodide } from "./pyodide/pyodide";
+import type { Py2JsResult, PyProxyIterable } from "./pyodide/pyodide";
 import * as utils from "./utils";
 
-type Pyodide = Awaited<ReturnType<typeof _loadPyodide>>;
-
-declare global {
-  // Note: the original pyodide.d.ts file seems to be incorrect; loadPyodide is
-  // globally available, but not exported.
-  // eslint-disable-next-line no-var
-  var loadPyodide: typeof _loadPyodide;
-}
+type Pyodide = Awaited<ReturnType<typeof loadPyodide>>;
 
 export type ProxyType = "webworker" | "normal";
 

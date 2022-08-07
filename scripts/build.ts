@@ -57,6 +57,10 @@ esbuild
       Editor: "src/Components/Editor.tsx",
     },
     outdir: `${BUILD_DIR}/shinylive/`,
+    // All of these are dynamic imports in pyodide.mjs (which we copied to
+    // src/pyodide/pyodide.js). It will never actually do these imports, so
+    // we'll mark them as external so esbuild doesn't try to bundle them.
+    external: ["node-fetch", "path", "fs", "vm", "crypto", "child_process"],
     format: "esm",
     target: "es2020",
     splitting: true,
@@ -116,6 +120,8 @@ esbuild
     bundle: true,
     entryPoints: ["src/pyodide-worker.ts", "src/inject-socket.ts"],
     outdir: `${BUILD_DIR}/shinylive`,
+    // See note in esbuild.build() call above about why these are external.
+    external: ["node-fetch", "path", "fs", "vm", "crypto", "child_process"],
     format: "esm",
     target: "es2020",
     minify: minify,

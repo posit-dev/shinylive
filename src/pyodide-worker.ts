@@ -3,24 +3,10 @@ import { openChannel } from "./messageportwebsocket-channel";
 import { errorToPostableErrorObject } from "./postable-error";
 import type { LoadPyodideConfig, PyUtils, ResultType } from "./pyodide-proxy";
 import { setupPythonEnv, processReturnValue } from "./pyodide-proxy";
-import type {
-  loadPyodide as _loadPyodide,
-  Py2JsResult,
-  PyProxyIterable,
-} from "./types/pyodide";
-
-// Location of pyodide.js relative to the output directory for the generated .js
-// file.
-importScripts("./pyodide/pyodide.js");
+import { loadPyodide } from "./pyodide/pyodide";
+import type { Py2JsResult, PyProxyIterable } from "./pyodide/pyodide";
 
 type Pyodide = Awaited<ReturnType<typeof loadPyodide>>;
-
-declare global {
-  // Note: the original pyodide.d.ts file seems to be incorrect; loadPyodide is
-  // globally available, but not exported.
-  // eslint-disable-next-line no-var
-  var loadPyodide: typeof _loadPyodide;
-}
 
 let pyodideStatus: "none" | "loading" | "loaded" = "none";
 let pyodide: Pyodide;
