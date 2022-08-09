@@ -23,18 +23,20 @@ from typing import (
     cast,
 )
 
+from pathlib import Path
 import pkginfo
 import requirements
 from packaging.version import Version
 from typing_extensions import NotRequired
 
-top_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-package_source_dir = os.path.join(top_dir, "packages")
-requirements_file = os.path.join(top_dir, "shinylive_requirements.json")
-package_lock_file = os.path.join(top_dir, "shinylive_lock.json")
+# top_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+top_dir = Path(__file__).resolve().parent.parent
+package_source_dir = top_dir / "packages"
+requirements_file = top_dir / "shinylive_requirements.json"
+package_lock_file = top_dir / "shinylive_lock.json"
 
-pyodide_dir = os.path.join(top_dir, "build", "shinylive", "pyodide")
-repodata_json_file = os.path.join(pyodide_dir, "repodata.json")
+pyodide_dir = top_dir / "build" / "shinylive" / "pyodide"
+repodata_json_file = pyodide_dir / "repodata.json"
 
 usage_info = f"""
 This script is a tool to find the versions of htmltools, shiny, and their dependencies
@@ -560,7 +562,7 @@ def update_pyodide_repodata_json():
         # need to compute the sha256 here.
         if p_pkg_info["sha256"] == "":
             p_pkg_info["sha256"] = _sha256_file(
-                package_source_dir + "/" + p_pkg_info["file_name"]
+                str(package_source_dir / p_pkg_info["file_name"])
             )
         pyodide_packages["packages"][name] = p_pkg_info
 
