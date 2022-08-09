@@ -278,9 +278,9 @@ async def _install_requirements_from_dir(dir: str) -> None:
         reqs = f.readlines()
 
     for req in reqs:
+        req = req.strip()
         if req == "" or req.startswith("#"):
             continue
-        req = req.strip()
         # If it's a URL, then it must be a wheel file.
         if req.startswith("http://") or req.startswith("https://"):
             pkg_name = re.sub(r"^.+/(.*)-\\d.*$", r"\\1", req)
