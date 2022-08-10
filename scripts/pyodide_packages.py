@@ -29,7 +29,6 @@ import requirements
 from packaging.version import Version
 from typing_extensions import NotRequired
 
-# top_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 top_dir = Path(__file__).resolve().parent.parent
 package_source_dir = top_dir / "packages"
 requirements_file = top_dir / "shinylive_requirements.json"
@@ -277,7 +276,7 @@ def _recurse_dependencies_lockfile(
     Recursively find all dependencies of the given packages. This will mutate the object
     passed in.
     """
-    pyodide_packages_info = orig_pyodide_packages()["packages"]
+    pyodide_packages_info = orig_pyodide_repodata()["packages"]
     i = 0
     while i < len(pkgs):
         pkg_info = pkgs[list(pkgs.keys())[i]]
@@ -542,7 +541,7 @@ def _sha256_file(filename: str) -> str:
 # Functions for modifying the pyodide/repodata.json file with the extra packages.
 # =============================================================================
 def update_pyodide_repodata_json():
-    pyodide_packages = orig_pyodide_packages()
+    pyodide_packages = orig_pyodide_repodata()
 
     print(
         f"Adding package information from {package_lock_file} into {repodata_json_file}"
@@ -588,7 +587,7 @@ def _lockfile_to_pyodide_package_info(pkg: LockfilePackageInfo) -> PyodidePackag
     }
 
 
-def orig_pyodide_packages() -> PyodidePackagesFile:
+def orig_pyodide_repodata() -> PyodidePackagesFile:
     """
     Read in the original Pyodide repodata.json from the Pyodide directory. If it doesn't
     already exist, this will make a copy, named repodata.orig.json. Then it will read in
