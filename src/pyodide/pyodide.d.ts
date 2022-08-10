@@ -92,7 +92,7 @@ declare class PyProxyClass {
 		]>) => any;
 		/**
 		 * Optional argument to convert objects with no default conversion. See the
-		 * documentation of :any:`pyodide.to_js`.
+		 * documentation of :any:`pyodide.ffi.to_js`.
 		 */
 		default_converter?: (obj: PyProxy, convert: (obj: PyProxy) => any, cacheConversion: (obj: PyProxy, result: any) => void) => any;
 	}): any;
@@ -543,7 +543,7 @@ export declare function loadPyodide(options?: {
 	/**
 	 * The URL from which Pyodide will load the Pyodide "repodata.json" lock
 	 * file. Defaults to ``${indexURL}/repodata.json``. You can produce custom
-	 * lock files with :any:`micropip.freze`
+	 * lock files with :any:`micropip.freeze`
 	 */
 	lockFileURL?: string;
 	/**
