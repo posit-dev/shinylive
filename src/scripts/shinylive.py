@@ -68,7 +68,7 @@ class AppInfo(TypedDict):
 # Deployment
 # =============================================================================
 def deploy(
-    appdirs: Tuple[Union[str, Path]],
+    appdirs: Tuple[Union[str, Path], ...],
     destdir: Union[str, Path],
     *,
     overwrite: bool = False,
