@@ -6,7 +6,7 @@ import shutil
 import sys
 from pathlib import Path
 from textwrap import dedent
-from typing import Callable, Dict, List, Literal, Set, TypedDict, Union
+from typing import Callable, Dict, List, Literal, Set, Tuple, TypedDict, Union
 
 from typing_extensions import NotRequired
 
@@ -58,15 +58,21 @@ class FileContentJson(TypedDict):
     type: Literal["text", "binary"]
 
 
+class AppInfo(TypedDict):
+    appdir: str
+    subdir: str
+    files: List[FileContentJson]
+
+
 # =============================================================================
 # Deployment
 # =============================================================================
 def deploy(
-    appdir: Union[str, Path],
+    appdirs: Tuple[Union[str, Path]],
     destdir: Union[str, Path],
     *,
     overwrite: bool = False,
-    subdir: Union[str, Path, None] = None,
+    subdirs: Tuple[Union[str, Path], ...] = (),
     verbose: bool = False,
 ):
     if sys.version_info < (3, 8):
@@ -76,21 +82,33 @@ def deploy(
         if verbose:
             print(*args)
 
-    appdir = Path(appdir)
+    appdirs = tuple(Path(x) for x in appdirs)
     destdir = Path(destdir)
 
-    if subdir is None:
-        subdir = ""
-    subdir = Path(subdir)
-    if subdir.is_absolute():
-        raise ValueError("subdir must be a relative path")
+    for appdir in appdirs:
+        if not (appdir / "app.py").exists():
+            raise ValueError(f"Directory {appdir}/ must contain a file named app.py.")
 
-    print(f"Copying {shinylive_dir}/ to {destdir}/")
+    if len(subdirs) == 0:
+        if len(appdirs) == 1:
+            subdirs = (".",)
+        else:
+            raise RuntimeError("Must specify subdirs when deploying multiple apps.")
+    if len(appdirs) != len(subdirs):
+        raise RuntimeError("appdirs and subdirs must be the same length.")
+    if len(subdirs) != len(set(subdirs)):
+        raise RuntimeError("subdirs must be unique.")
+
+    subdirs = tuple(Path(x) for x in subdirs)
+    for subdir in subdirs:
+        if subdir.is_absolute():
+            raise ValueError(
+                f"subdir {subdir} is absolute, but only relative paths are allowed."
+            )
+
     if not destdir.exists():
+        print(f"Creating {destdir}/")
         destdir.mkdir()
-
-    if not (appdir / "app.py").exists():
-        raise ValueError(f"Directory {appdir} must contain a file named app.py.")
 
     # =============================================
     # Copy the shinylive/ distribution _except_ for the shinylive/pyodide/ directory.
@@ -101,6 +119,7 @@ def deploy(
         else:
             return []
 
+    print(f"Copying {shinylive_dir}/ to {destdir}/")
     shutil.copytree(
         shinylive_dir,
         destdir,
@@ -110,8 +129,68 @@ def deploy(
     )
 
     # =============================================
-    # Copy
+    # Load each app's contents into a list[FileContentJson]
     # =============================================
+    all_app_info: List[AppInfo] = []
+    for appdir, subdir in zip(appdirs, subdirs):
+        all_app_info.append(
+            {
+                "appdir": str(appdir),
+                "subdir": str(subdir),
+                "files": _read_app_files(appdir, destdir),
+            }
+        )
+
+    # =============================================
+    # Copy specific files from shinylive/pyodide/
+    # =============================================
+    # Get contents of all files in all apps, and flatten the nested list.
+    all_app_file_contents = sum([app["files"] for app in all_app_info], [])
+    pyodide_files = _find_pyodide_files(all_app_file_contents)
+    print(f"Copying files in shinylive/pyodide/:\n ", ", ".join(pyodide_files))
+
+    for filename in pyodide_files:
+        shutil.copy(
+            shinylive_dir / "shinylive" / "pyodide" / filename,
+            destdir / "shinylive" / "pyodide" / filename,
+        )
+
+    # =============================================
+    # For each app, write the index.html, edit/index.html, and app.json in
+    # destdir/subdir.
+    # =============================================
+
+    for app_info in all_app_info:
+        print(f"\nWriting {str(destdir / app_info['subdir'])}")
+        _write_app_json(
+            app_info,
+            destdir,
+            html_source_dir=shinylive_dir / "shinylive" / "shiny_static",
+        )
+
+    print(
+        f"\nRun the following to serve the app:\n  python3 -m http.server --directory {destdir} 8008"
+    )
+
+
+# =============================================================================
+# Utility functions
+# =============================================================================
+
+
+def _read_app_files(appdir: Path, destdir: Path) -> List[FileContentJson]:
+    """
+    Load files for a Shiny application.
+
+    Parameters
+    ----------
+    appdir : str
+       Directory containing the application.
+
+    destdir : str
+       Destination directory. This is used only to avoid adding deployed shinylive
+       assets when they are in a subdir of the application.
+    """
     app_files: List[FileContentJson] = []
     # Recursively iterate over files in app directory, and collect the files into
     # app_files data structure.
@@ -167,26 +246,17 @@ def deploy(
                 }
             )
 
-    # =============================================
-    # Copy specific files from shinylive/pyodide/
-    # =============================================
-    pyodide_files = _find_pyodide_files(app_files)
-    print(f"Copying files in shinylive/pyodide/:\n ", ", ".join(pyodide_files))
+    return app_files
 
-    for filename in pyodide_files:
-        shutil.copy(
-            shinylive_dir / "shinylive" / "pyodide" / filename,
-            destdir / "shinylive" / "pyodide" / filename,
-        )
 
-    # =============================================
-    # Write the index.html, editor/index.html, and app.json in the destdir.
-    # =============================================
-    html_source_dir = shinylive_dir / "shinylive" / "shiny_static"
-    app_destdir = destdir / subdir
+def _write_app_json(app_info: AppInfo, destdir: Path, html_source_dir: Path) -> None:
+    """
+    Write index.html, edit/index.html, and app.json for an application in the destdir.
+    """
+    app_destdir = destdir / app_info["subdir"]
 
     # For a subdir like a/b/c, this will be ../../../
-    subdir_inverse = "/".join([".."] * _path_length(subdir))
+    subdir_inverse = "/".join([".."] * _path_length(app_info["subdir"]))
     if subdir_inverse != "":
         subdir_inverse += "/"
 
@@ -212,18 +282,11 @@ def deploy(
 
     app_json_output_file = app_destdir / "app.json"
 
-    print("\nWriting to " + str(app_json_output_file), end="")
-    json.dump(app_files, open(app_json_output_file, "w"))
+    print("Writing to " + str(app_json_output_file), end="")
+    json.dump(app_info["files"], open(app_json_output_file, "w"))
     print(":", app_json_output_file.stat().st_size, "bytes")
 
-    print(
-        f"\nRun the following to serve the app:\n  python3 -m http.server --directory {destdir} 8008"
-    )
 
-
-# =============================================================================
-# Utility functions
-# =============================================================================
 def _find_pyodide_files(app_contents: List[FileContentJson]) -> List[str]:
     dep_files = _find_package_deps(app_contents)
     keep_files = list(BASE_PYODIDE_FILES) + dep_files
@@ -250,7 +313,9 @@ def _find_package_deps(app_contents: List[FileContentJson]) -> List[str]:
         if dep not in repodata["packages"]:
             # TODO: Need to distinguish between built-in packages and external ones in
             # requirements.txt.
-            print(f"  {dep} not in repodata.json. Assuming it is in base Pyodide.")
+            print(
+                f"  {dep} not in repodata.json. Assuming it is in base Pyodide or in requirements.txt."
+            )
             deps.remove(dep)
             continue
 
