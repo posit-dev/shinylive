@@ -127,21 +127,20 @@ To upgrade shinylive, run these commands:
     # Copy the shinylive/ distribution _except_ for the shinylive/pyodide/ directory.
     # =============================================
     def ignore_pyodide_dir(path: str, names: List[str]) -> List[str]:
-        if path == str(shinylive_dir / "shinylive" / "pyodide"):
+        if path == str(shinylive_dir):
+            return ["scripts"]
+        if path == str(shinylive_dir / "shinylive"):
+            return ["examples.json", "shiny_static"]
+        elif full_shinylive and path == str(shinylive_dir / "shinylive" / "pyodide"):
             return names
         else:
             return []
-
-    if full_shinylive:
-        ignore_filter = None
-    else:
-        ignore_filter = ignore_pyodide_dir
 
     print(f"Copying {shinylive_dir}/ to {destdir}/")
     shutil.copytree(
         shinylive_dir,
         destdir,
-        ignore=ignore_filter,
+        ignore=ignore_pyodide_dir,
         copy_function=_copy_fn(overwrite, verbose_print=verbose_print),
         dirs_exist_ok=True,
     )
