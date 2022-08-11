@@ -89,7 +89,7 @@ all: node_modules \
 	$(BUILD_DIR)/shinylive/jquery.min.js \
 	$(BUILD_DIR)/shinylive/style-resets.css \
 	$(BUILD_DIR)/shinylive/pyodide \
-	$(BUILD_DIR)/scripts/copy_shinylive_files.py \
+	$(BUILD_DIR)/scripts/shinylive.py \
 	src/pyodide/pyodide.js \
 	src/pyodide/pyodide.d.ts \
 	pyodide_packages_local \
@@ -129,9 +129,9 @@ $(BUILD_DIR)/shinylive/pyodide:
 	curl -L https://github.com/pyodide/pyodide/releases/download/$(PYODIDE_VERSION)/$(PYODIDE_DIST_FILENAME) \
 	    | tar --exclude "*test*.tar" --exclude "node_modules" -xvj
 
-$(BUILD_DIR)/scripts/copy_shinylive_files.py: src/scripts/copy_shinylive_files.py
+$(BUILD_DIR)/scripts/shinylive.py: src/scripts/shinylive.py
 	mkdir -p $(BUILD_DIR)/scripts
-	cp src/scripts/copy_shinylive_files.py $(BUILD_DIR)/scripts/copy_shinylive_files.py
+	cp src/scripts/shinylive.py $(BUILD_DIR)/scripts/shinylive.py
 
 # Copy pyodide.js and .d.ts to src/pyodide/. This is a little weird in that in
 # `make all`, it comes after downloading pyodide. In the future we may be able
