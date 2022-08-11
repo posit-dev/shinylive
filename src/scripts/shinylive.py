@@ -74,9 +74,22 @@ def deploy(
     overwrite: bool = False,
     subdirs: Tuple[Union[str, Path], ...] = (),
     verbose: bool = False,
+    full_shinylive: bool = False,
+    **kwargs,
 ):
     if sys.version_info < (3, 8):
         raise RunTimeError("Shiny static deployment requires Python 3.8 or higher.")
+
+    if len(kwargs) != 0:
+        raise RuntimeError(
+            f"""Shinylive received unexpected arguments: {kwargs}. This is probably because of a version mismatch between shiny and shinylive.
+Perhaps you need to update your version of shiny or shinylive?
+
+To upgrade shinylive, run these commands:
+    shiny static-assets remove
+    shiny static-assets download
+"""
+        )
 
     def verbose_print(*args: object) -> None:
         if verbose:
@@ -119,11 +132,16 @@ def deploy(
         else:
             return []
 
+    if full_shinylive:
+        ignore_filter = None
+    else:
+        ignore_filter = ignore_pyodide_dir
+
     print(f"Copying {shinylive_dir}/ to {destdir}/")
     shutil.copytree(
         shinylive_dir,
         destdir,
-        ignore=ignore_pyodide_dir,
+        ignore=ignore_filter,
         copy_function=_copy_fn(overwrite, verbose_print=verbose_print),
         dirs_exist_ok=True,
     )
@@ -142,18 +160,19 @@ def deploy(
         )
 
     # =============================================
-    # Copy specific files from shinylive/pyodide/
+    # Copy dependencies from shinylive/pyodide/
     # =============================================
-    # Get contents of all files in all apps, and flatten the nested list.
-    all_app_file_contents = sum([app["files"] for app in all_app_info], [])
-    pyodide_files = _find_pyodide_files(all_app_file_contents)
-    print(f"Copying files in shinylive/pyodide/:\n ", ", ".join(pyodide_files))
+    if not full_shinylive:
+        # Get contents of all files in all apps, and flatten the nested list.
+        all_app_file_contents = sum([app["files"] for app in all_app_info], [])
+        pyodide_files = _find_pyodide_files(all_app_file_contents)
+        print(f"Copying files in shinylive/pyodide/:\n ", ", ".join(pyodide_files))
 
-    for filename in pyodide_files:
-        shutil.copy(
-            shinylive_dir / "shinylive" / "pyodide" / filename,
-            destdir / "shinylive" / "pyodide" / filename,
-        )
+        for filename in pyodide_files:
+            shutil.copy(
+                shinylive_dir / "shinylive" / "pyodide" / filename,
+                destdir / "shinylive" / "pyodide" / filename,
+            )
 
     # =============================================
     # For each app, write the index.html, edit/index.html, and app.json in
