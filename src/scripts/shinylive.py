@@ -1,5 +1,6 @@
 import ast
 import base64
+import filecmp
 import json
 import os
 import shutil
@@ -68,11 +69,10 @@ class AppInfo(TypedDict):
 # Deployment
 # =============================================================================
 def deploy(
-    appdirs: Tuple[Union[str, Path], ...],
+    appdir: Union[str, Path],
     destdir: Union[str, Path],
     *,
-    overwrite: bool = False,
-    subdirs: Tuple[Union[str, Path], ...] = (),
+    subdir: Union[str, Path, None] = None,
     verbose: bool = False,
     full_shinylive: bool = False,
     **kwargs,
@@ -95,33 +95,25 @@ To upgrade shinylive, run these commands:
         if verbose:
             print(*args)
 
-    appdirs = tuple(Path(x) for x in appdirs)
+    appdir = Path(appdir)
     destdir = Path(destdir)
 
-    for appdir in appdirs:
-        if not (appdir / "app.py").exists():
-            raise ValueError(f"Directory {appdir}/ must contain a file named app.py.")
+    if not (appdir / "app.py").exists():
+        raise ValueError(f"Directory {appdir}/ must contain a file named app.py.")
 
-    if len(subdirs) == 0:
-        if len(appdirs) == 1:
-            subdirs = (".",)
-        else:
-            raise RuntimeError("Must specify subdirs when deploying multiple apps.")
-    if len(appdirs) != len(subdirs):
-        raise RuntimeError("appdirs and subdirs must be the same length.")
-    if len(subdirs) != len(set(subdirs)):
-        raise RuntimeError("subdirs must be unique.")
-
-    subdirs = tuple(Path(x) for x in subdirs)
-    for subdir in subdirs:
-        if subdir.is_absolute():
-            raise ValueError(
-                f"subdir {subdir} is absolute, but only relative paths are allowed."
-            )
+    if subdir is None:
+        subdir = ""
+    subdir = Path(subdir)
+    if subdir.is_absolute():
+        raise ValueError(
+            f"subdir {subdir} is absolute, but only relative paths are allowed."
+        )
 
     if not destdir.exists():
         print(f"Creating {destdir}/")
         destdir.mkdir()
+
+    copy_fn = _create_copy_fn(overwrite=False, verbose_print=verbose_print)
 
     # =============================================
     # Copy the shinylive/ distribution _except_ for the shinylive/pyodide/ directory.
@@ -129,46 +121,44 @@ To upgrade shinylive, run these commands:
     def ignore_pyodide_dir(path: str, names: List[str]) -> List[str]:
         if path == str(shinylive_dir):
             return ["scripts"]
-        if path == str(shinylive_dir / "shinylive"):
+        elif path == str(shinylive_dir / "shinylive"):
             return ["examples.json", "shiny_static"]
-        elif full_shinylive and path == str(shinylive_dir / "shinylive" / "pyodide"):
+        elif not full_shinylive and path == str(
+            shinylive_dir / "shinylive" / "pyodide"
+        ):
             return names
         else:
             return []
 
-    print(f"Copying {shinylive_dir}/ to {destdir}/")
+    print(f"Copying files from {shinylive_dir}/ to {destdir}/")
     shutil.copytree(
         shinylive_dir,
         destdir,
         ignore=ignore_pyodide_dir,
-        copy_function=_copy_fn(overwrite, verbose_print=verbose_print),
+        copy_function=copy_fn,
         dirs_exist_ok=True,
     )
 
     # =============================================
     # Load each app's contents into a list[FileContentJson]
     # =============================================
-    all_app_info: List[AppInfo] = []
-    for appdir, subdir in zip(appdirs, subdirs):
-        all_app_info.append(
-            {
-                "appdir": str(appdir),
-                "subdir": str(subdir),
-                "files": _read_app_files(appdir, destdir),
-            }
-        )
+    app_info: AppInfo = {
+        "appdir": str(appdir),
+        "subdir": str(subdir),
+        "files": _read_app_files(appdir, destdir),
+    }
 
     # =============================================
     # Copy dependencies from shinylive/pyodide/
     # =============================================
     if not full_shinylive:
-        # Get contents of all files in all apps, and flatten the nested list.
-        all_app_file_contents = sum([app["files"] for app in all_app_info], [])
-        pyodide_files = _find_pyodide_files(all_app_file_contents)
-        print(f"Copying files in shinylive/pyodide/:\n ", ", ".join(pyodide_files))
+        pyodide_files = _find_pyodide_deps(app_info["files"])
+        verbose_print(
+            f"Copying files in shinylive/pyodide/:\n ", ", ".join(pyodide_files)
+        )
 
         for filename in pyodide_files:
-            shutil.copy(
+            copy_fn(
                 shinylive_dir / "shinylive" / "pyodide" / filename,
                 destdir / "shinylive" / "pyodide" / filename,
             )
@@ -178,13 +168,11 @@ To upgrade shinylive, run these commands:
     # destdir/subdir.
     # =============================================
 
-    for app_info in all_app_info:
-        print(f"\nWriting {str(destdir / app_info['subdir'])}")
-        _write_app_json(
-            app_info,
-            destdir,
-            html_source_dir=shinylive_dir / "shinylive" / "shiny_static",
-        )
+    _write_app_json(
+        app_info,
+        destdir,
+        html_source_dir=shinylive_dir / "shinylive" / "shiny_static",
+    )
 
     print(
         f"\nRun the following to serve the app:\n  python3 -m http.server --directory {destdir} 8008"
@@ -300,18 +288,21 @@ def _write_app_json(app_info: AppInfo, destdir: Path, html_source_dir: Path) -> 
 
     app_json_output_file = app_destdir / "app.json"
 
-    print("Writing to " + str(app_json_output_file), end="")
+    print("Writing " + str(app_json_output_file), end="")
     json.dump(app_info["files"], open(app_json_output_file, "w"))
     print(":", app_json_output_file.stat().st_size, "bytes")
 
 
-def _find_pyodide_files(app_contents: List[FileContentJson]) -> List[str]:
+def _find_pyodide_deps(app_contents: List[FileContentJson]) -> List[str]:
     dep_files = _find_package_deps(app_contents)
     keep_files = list(BASE_PYODIDE_FILES) + dep_files
     return keep_files
 
 
-def _find_package_deps(app_contents: List[FileContentJson]) -> List[str]:
+def _find_package_deps(
+    app_contents: List[FileContentJson],
+    verbose_print: Callable[..., None] = lambda *args: None,
+) -> List[str]:
     """
     Find package dependencies from an app.json file.
     """
@@ -321,7 +312,7 @@ def _find_package_deps(app_contents: List[FileContentJson]) -> List[str]:
 
     # TODO: Need to also add in requirements.txt, and find dependencies of those
     # packages, in case any of those dependencies are included as part of pyodide.
-    print("Imports detected in app:\n ", ", ".join(sorted(imports)))
+    verbose_print("Imports detected in app:\n ", ", ".join(sorted(imports)))
 
     repodata = _pyodide_repodata()
     deps = list(imports)
@@ -331,7 +322,7 @@ def _find_package_deps(app_contents: List[FileContentJson]) -> List[str]:
         if dep not in repodata["packages"]:
             # TODO: Need to distinguish between built-in packages and external ones in
             # requirements.txt.
-            print(
+            verbose_print(
                 f"  {dep} not in repodata.json. Assuming it is in base Pyodide or in requirements.txt."
             )
             deps.remove(dep)
@@ -343,7 +334,7 @@ def _find_package_deps(app_contents: List[FileContentJson]) -> List[str]:
         i += 1
 
     deps.sort()
-    print("Imports and dependencies:\n ", ", ".join(deps))
+    verbose_print("Imports and dependencies:\n ", ", ".join(deps))
 
     dep_files = [repodata["packages"][x]["file_name"] for x in deps]
 
@@ -364,8 +355,8 @@ def _find_import_app_contents(app_contents: List[FileContentJson]) -> set[str]:
     return imports
 
 
-def _copy_fn(
-    overwrite: bool, verbose_print: Callable[..., None] = lambda x: None
+def _create_copy_fn(
+    overwrite: bool, verbose_print: Callable[..., None] = lambda *args: None
 ) -> Callable[..., None]:
     """Returns a function that can be used as a copy_function for shutil.copytree.
 
@@ -373,8 +364,15 @@ def _copy_fn(
     If overwrite is False, the copy function will not overwrite files that already exist.
     """
 
-    def mycopy(src: str, dst: str, **kwargs: object) -> None:
+    def copy_fn(src: str, dst: str, **kwargs: object) -> None:
         if os.path.exists(dst):
+            if filecmp.cmp(src, dst) is False:
+                print(
+                    "\nSource and destination copies differ:",
+                    dst,
+                    """\nThis is probably because your shinylive sources have been updated and differ from the copy in the deployed app.""",
+                    """\nYou probably should remove the deployment directory and re-deploy the application.""",
+                )
             if overwrite:
                 verbose_print(f"Overwriting {dst}")
                 os.remove(dst)
@@ -384,7 +382,7 @@ def _copy_fn(
 
         shutil.copy2(src, dst, **kwargs)
 
-    return mycopy
+    return copy_fn
 
 
 def _is_relative_to(path: Path, base: Path) -> bool:
