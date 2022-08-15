@@ -1,3 +1,4 @@
+import { wait_until_initialized } from "./helpers";
 import { test, expect } from "@playwright/test";
 
 test("Open examples page and click to a new example", async ({ page }) => {
@@ -12,7 +13,7 @@ test("Add a new non-app script, type in it, and run code", async ({ page }) => {
   await page.goto("http://localhost:3000/examples/");
 
   // Wait for initialization to complete
-  await page.waitForSelector(`text=">>>"`, { timeout: 10000 });
+  await wait_until_initialized(page);
   await page.locator(`[aria-label="Add a file"]`).click();
   await page.locator('[aria-label="Name current file"]').fill("my_app.py");
 
