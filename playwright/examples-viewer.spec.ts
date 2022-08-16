@@ -1,4 +1,4 @@
-import { wait_until_initialized } from "./helpers";
+import { expect_terminal_has_text, wait_until_initialized } from "./helpers";
 import { test, expect } from "@playwright/test";
 
 test("Open examples page and click to a new example", async ({ page }) => {
@@ -22,5 +22,6 @@ test("Add a new non-app script, type in it, and run code", async ({ page }) => {
   await page.locator(".cm-editor [role=textbox]").press(`Meta+Enter`);
 
   // Make sure that hello world exists in the terminal output
-  await page.locator(`text=hello world >> nth=2`);
+  await expect_terminal_has_text(page, `>>> print("hello world")`);
+  await expect_terminal_has_text(page, "hello world");
 });
