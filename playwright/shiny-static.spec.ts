@@ -22,4 +22,23 @@ test.describe("Shiny-Static deploys", async () => {
       page.frameLocator(".app-frame").locator("text=Hello Shiny-Static!")
     ).toBeVisible();
   });
+
+  test("Doesn't load data from URL", async ({ page }) => {
+    await page.goto(`/edit/#${app_url_encoding}`);
+
+    // Make sure editor is there and has the identifying header
+    await expect(
+      page.locator(`.Editor`, { hasText: `ui.h2("Hello Shiny-Static!")` })
+    ).toBeVisible();
+
+    // Double check that the header from the app from url encoding didnt make it
+    // into the editor
+    await expect(
+      page.locator(`.Editor`, { hasText: 'ui.h1("Code from a url")' })
+    ).not.toBeVisible();
+
+    await expect(
+      page.frameLocator(".app-frame").locator("text=Hello Shiny-Static!")
+    ).toBeVisible();
+  });
 });
