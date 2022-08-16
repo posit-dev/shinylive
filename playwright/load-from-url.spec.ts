@@ -1,20 +1,42 @@
 import {
   expect_app_has_text,
   expect_editor_has_text,
-  wait_until_initialized,
+  makeUrl,
 } from "./helpers";
-import { test } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 
-test("test", async ({ page }) => {
-  await page.goto(
-    "http://localhost:3000/editor/#code=NobwRAdghgtgpmAXGKAHVA6VBPMAaMAYwHsIAXOcpMAMwCdiYACAZwAsBLCbJjmVYnTJMAgujxM6lACZw6EgK4cAOhFVpUAfSVMAvEyVYoAcziaaAGyXSAFKqYODHDGwCMdsAGFispvUZMUAZ0FspgAJSqkWoQsjSscgBucjZcqApkEsQZ6ZkJLCwcpOGI9o6oUAVlDuroeqLoNhraHBIsSXLRYAC+ALpAA"
-  );
+const app_url_encoding =
+  "code=NobwRAdghgtgpmAXGKAHVA6VBPMAaMAYwHsIAXOcpMAMwCdiYACAZwAsBLCbJjmVYnTJMAgujxM6lACZw6EgK4cAOhFVpUAfSVMAvEyVYoAcziaaAGyXSAFKqYODHDGwCMdsAGFispvUZMUAZ0FspgAJSqkWoQsjSscgBucjZcqApkEsQZ6ZkJLCwcpOGI9o6oUAVlDuroeqLoNhraHBIsSXLRYAC+ALpAA";
 
-  // Wait for initialization to complete
-  await wait_until_initialized(page);
+test.describe("The URL can be used to load data", async () => {
+  test("Editor view", async ({ page }) => {
+    await page.goto(makeUrl({ view: "editor", data_param: app_url_encoding }));
 
-  // Make sure the correct text is in the editor
-  await expect_editor_has_text(page, 'ui.h1("Code from a url")');
+    // Make sure the correct text is in the editor
+    await expect_editor_has_text(page, 'ui.h1("Code from a url")');
 
-  await expect_app_has_text(page, "Code from a url", "h1");
+    await expect_app_has_text(page, "Code from a url", "h1");
+  });
+
+  test("Default app view with header bar", async ({ page }) => {
+    await page.goto(makeUrl({ view: "app", data_param: app_url_encoding }));
+
+    await expect_app_has_text(page, "Code from a url", "h1");
+
+    await expect(
+      page.locator('[aria-label="Open a copy in editor view"]')
+    ).toBeVisible();
+  });
+
+  test("App view without header bar", async ({ page }) => {
+    await page.goto(
+      makeUrl({ view: "app", header: false, data_param: app_url_encoding })
+    );
+
+    await expect_app_has_text(page, "Code from a url", "h1");
+
+    await expect(
+      page.locator('[aria-label="Open a copy in editor view"]')
+    ).not.toBeVisible();
+  });
 });

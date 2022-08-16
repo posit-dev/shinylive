@@ -62,3 +62,19 @@ export async function expect_app_has_text(
     page.frameLocator(".app-frame").locator(selector, { hasText: text })
   ).toBeVisible();
 }
+
+/**
+ * Make a url to the test server and control the various parameters in that url
+ */
+export function makeUrl({
+  view,
+  header = true,
+  data_param,
+}: {
+  view: "editor" | "app" | "examples";
+  header?: boolean;
+  data_param: string;
+}) {
+  const header_param = header ? "" : "h=0&";
+  return `http://localhost:3000/${view}/#${header_param}${data_param}`;
+}
