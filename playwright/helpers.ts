@@ -62,3 +62,23 @@ export async function expect_app_has_text(
     page.frameLocator(".app-frame").locator(selector, { hasText: text })
   ).toBeVisible();
 }
+
+/**
+ * A URL data-hash containing the following app:
+ *
+ * ```
+ * from shiny import App, render, ui
+ *
+ * app_ui = ui.page_fluid(
+ *     ui.h1("Code from a url")
+ * )
+ *
+ * def server(input, output, session):
+ *     pass
+ *
+ * app = App(app_ui, server)
+ * ```
+ *
+ */
+export const app_url_encoding =
+  "code=NobwRAdghgtgpmAXGKAHVA6VBPMAaMAYwHsIAXOcpMAMwCdiYACAZwAsBLCbJjmVYnTJMAgujxM6lACZw6EgK4cAOhFVpUAfSVMAvEyVYoAcziaaAGyXSAFKqYODHDGwCMdsAGFispvUZMUAZ0FspgAJSqkWoQsjSscgBucjZcqApkEsQZ6ZkJLCwcpOGI9o6oUAVlDuroeqLoNhraHBIsSXLRYAC+ALpAA";

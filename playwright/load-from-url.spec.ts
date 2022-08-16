@@ -1,8 +1,9 @@
-import { expect_app_has_text, expect_editor_has_text } from "./helpers";
+import {
+  app_url_encoding,
+  expect_app_has_text,
+  expect_editor_has_text,
+} from "./helpers";
 import { expect, test } from "@playwright/test";
-
-const app_url_encoding =
-  "code=NobwRAdghgtgpmAXGKAHVA6VBPMAaMAYwHsIAXOcpMAMwCdiYACAZwAsBLCbJjmVYnTJMAgujxM6lACZw6EgK4cAOhFVpUAfSVMAvEyVYoAcziaaAGyXSAFKqYODHDGwCMdsAGFispvUZMUAZ0FspgAJSqkWoQsjSscgBucjZcqApkEsQZ6ZkJLCwcpOGI9o6oUAVlDuroeqLoNhraHBIsSXLRYAC+ALpAA";
 
 test.describe("The URL can be used to load data", async () => {
   test("Editor view", async ({ page }) => {
