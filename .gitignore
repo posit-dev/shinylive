@@ -10,3 +10,5 @@ __pycache__
 /playwright/.cache/
 
 .vscode/*.log
+
+playwright/static-build/
