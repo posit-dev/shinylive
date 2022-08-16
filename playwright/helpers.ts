@@ -44,3 +44,21 @@ export async function expect_editor_has_text(page: Page, text: string) {
 export async function expect_terminal_has_text(page: Page, text: string) {
   expect_pane_has_text(page, `.Terminal`, text);
 }
+
+/**
+ * Test that some text exists in the app viewer pane
+ * @param page Page object available from inside playwright tests
+ * @param text Text to search for in the terminal panel
+ * @param selector Element to search for text in. Defaults to h1 tag
+ */
+export async function expect_app_has_text(
+  page: Page,
+  text: string,
+  selector: string = "h1"
+) {
+  // For some reason there needs to be an await for the frame locator but not
+  // for the other normal locators
+  await expect(
+    page.frameLocator(".app-frame").locator(selector, { hasText: text })
+  ).toBeVisible();
+}
