@@ -41,4 +41,16 @@ test.describe("Shiny-Static deploys", async () => {
       page.frameLocator(".app-frame").locator("text=Hello Shiny-Static!")
     ).toBeVisible();
   });
+
+  test("App view never shows header bar - no url req", async ({ page }) => {
+    await page.goto(`/`);
+
+    await expect(page.locator('.HeaderBar img[alt="Shiny"]')).not.toBeVisible();
+  });
+
+  test("App view never shows header bar - with url req", async ({ page }) => {
+    await page.goto(`/#h=0`);
+
+    await expect(page.locator('.HeaderBar img[alt="Shiny"]')).not.toBeVisible();
+  });
 });
