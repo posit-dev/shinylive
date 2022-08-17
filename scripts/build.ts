@@ -160,6 +160,18 @@ esbuild
 esbuild
   .build({
     bundle: true,
+    entryPoints: ["src/load-serviceworker.ts"],
+    outdir: `${BUILD_DIR}/shinylive`,
+    format: "esm",
+    target: "es2020",
+    minify: minify,
+    ...watchProp,
+  })
+  .catch(() => process.exit(1));
+
+esbuild
+  .build({
+    bundle: true,
     entryPoints: ["src/serviceworker.ts"],
     outdir: `${BUILD_DIR}`,
     format: "esm",
