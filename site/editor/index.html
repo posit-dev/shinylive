@@ -14,6 +14,12 @@
     <script type="module">
       import { runApp } from "../shinylive/shinylive.js";
 
+      // Note: When `allowCodeUrl`, `allowGistUrl`, and `allowExampleUrl` are
+      // enabled, this page may run Python code provided in the URL (or from a
+      // Gist). The Python code can in turn run JavaScript code. For security
+      // reasons, if you enable any of these, then this site should be hosted on
+      // a separate domain or subdomain from other content. Otherwise the
+      // running of arbitrary code could be used, for example, to steal cookies.
       const runAppOpts = {
         allowCodeUrl: true,
         allowGistUrl: true,
