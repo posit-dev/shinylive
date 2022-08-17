@@ -130,6 +130,7 @@ esbuild
       "src/pyodide-worker.ts",
       "src/inject-socket.ts",
       "src/load-serviceworker.ts",
+      "src/parse-codeblock.ts",
     ],
     outdir: `${BUILD_DIR}/shinylive`,
     // See note in esbuild.build() call above about why these are external.
@@ -151,9 +152,10 @@ esbuild
 
 esbuild
   .build({
-    bundle: false,
+    bundle: true,
     entryPoints: ["src/run-python-blocks.ts"],
     outdir: `${BUILD_DIR}/shinylive`,
+    external: ["./shinylive.js"],
     format: "esm",
     target: "es2020",
     minify: minify,
