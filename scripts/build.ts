@@ -13,6 +13,7 @@ const clients: http.ServerResponse[] = [];
 
 let watch = false;
 let serve = false;
+let openBrowser = true;
 let minify = false;
 let reactProductionMode = false;
 // Set this to true to generate a metadata file that can be analyzed for size of
@@ -29,6 +30,11 @@ if (process.argv.some((x) => x === "--serve")) {
 if (process.argv.some((x) => x === "--prod")) {
   minify = true;
   reactProductionMode = true;
+}
+if (process.argv.some((x) => x === "--test-server")) {
+  serve = true;
+  watch = false;
+  openBrowser = false;
 }
 
 const onRebuild = (
@@ -222,17 +228,19 @@ if (serve) {
       })
       .listen(3000);
 
-    setTimeout(() => {
-      const op = {
-        darwin: ["open"],
-        linux: ["xdg-open"],
-        win32: ["cmd", "/c", "start"],
-      };
-      if (clients.length === 0) {
-        // @ts-expect-error: `process.platform` could have many other values,
-        //like aix, android, haiku, openbsd, freebsd, etc.
-        spawn(op[process.platform][0], [`http://localhost:3000/examples`]);
-      }
-    }, 1000); //open the default browser only if it is not opened yet
+    if (openBrowser) {
+      setTimeout(() => {
+        const op = {
+          darwin: ["open"],
+          linux: ["xdg-open"],
+          win32: ["cmd", "/c", "start"],
+        };
+        if (clients.length === 0) {
+          // @ts-expect-error: `process.platform` could have many other values,
+          //like aix, android, haiku, openbsd, freebsd, etc.
+          spawn(op[process.platform][0], [`http://localhost:3000/examples`]);
+        }
+      }, 1000); //open the default browser only if it is not opened yet
+    }
   });
 }

@@ -72,7 +72,7 @@ const config: PlaywrightTestConfig = {
   /* Run your local dev server before starting the tests */
   webServer: [
     {
-      command: "make serve",
+      command: "yarn test-server",
       port: 3000,
     },
     {
