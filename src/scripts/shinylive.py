@@ -307,7 +307,7 @@ def _find_package_deps(
     Find package dependencies from an app.json file.
     """
 
-    imports: set[str] = BASE_PYODIDE_PACKAGES
+    imports: Set[str] = BASE_PYODIDE_PACKAGES
     imports = imports.union(_find_import_app_contents(app_contents))
 
     # TODO: Need to also add in requirements.txt, and find dependencies of those
@@ -341,11 +341,11 @@ def _find_package_deps(
     return dep_files
 
 
-def _find_import_app_contents(app_contents: List[FileContentJson]) -> set[str]:
+def _find_import_app_contents(app_contents: List[FileContentJson]) -> Set[str]:
     """
     Given an app.json file, find packages that are imported.
     """
-    imports: set[str] = set()
+    imports: Set[str] = set()
     for file_content in app_contents:
         if not file_content["name"].endswith(".py"):
             continue
@@ -467,7 +467,7 @@ def _find_imports(source: str) -> List[str]:
         mod = ast.parse(source)
     except SyntaxError:
         return []
-    imports: set[str] = set()
+    imports: Set[str] = set()
     for node in ast.walk(mod):
         if isinstance(node, ast.Import):
             for name in node.names:
