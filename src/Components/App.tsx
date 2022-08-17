@@ -443,6 +443,13 @@ export function App({
 }
 
 // The exported function that can be used for embedding into a web page.
+//
+// Note: When `allowCodeUrl`, `allowGistUrl`, and `allowExampleUrl` are enabled,
+// this page may run Python code provided in the URL (or from a Gist). The
+// Python code can in turn run JavaScript code. For security reasons, if you
+// enable any of these, then this site should be hosted on a separate domain or
+// subdomain from other content. Otherwise the running of arbitrary code could
+// be used, for example, to steal cookies.
 export function runApp(
   domTarget: HTMLElement,
   mode: AppMode,

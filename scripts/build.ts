@@ -126,7 +126,11 @@ esbuild
 esbuild
   .build({
     bundle: true,
-    entryPoints: ["src/pyodide-worker.ts", "src/inject-socket.ts"],
+    entryPoints: [
+      "src/pyodide-worker.ts",
+      "src/inject-socket.ts",
+      "src/load-serviceworker.ts",
+    ],
     outdir: `${BUILD_DIR}/shinylive`,
     // See note in esbuild.build() call above about why these are external.
     external: [
