@@ -126,7 +126,11 @@ esbuild
 esbuild
   .build({
     bundle: true,
-    entryPoints: ["src/pyodide-worker.ts", "src/inject-socket.ts"],
+    entryPoints: [
+      "src/pyodide-worker.ts",
+      "src/inject-socket.ts",
+      "src/load-serviceworker.ts",
+    ],
     outdir: `${BUILD_DIR}/shinylive`,
     // See note in esbuild.build() call above about why these are external.
     external: [
@@ -149,18 +153,6 @@ esbuild
   .build({
     bundle: false,
     entryPoints: ["src/run-python-blocks.ts"],
-    outdir: `${BUILD_DIR}/shinylive`,
-    format: "esm",
-    target: "es2020",
-    minify: minify,
-    ...watchProp,
-  })
-  .catch(() => process.exit(1));
-
-esbuild
-  .build({
-    bundle: true,
-    entryPoints: ["src/load-serviceworker.ts"],
     outdir: `${BUILD_DIR}/shinylive`,
     format: "esm",
     target: "es2020",
