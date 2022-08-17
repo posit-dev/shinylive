@@ -66,6 +66,7 @@ jobs:
           git log -n 4 --pretty=oneline --simplify-by-decoration
 
           git push -f origin gh-pages:gh-pages
+
       # =====================================================
       # Run playwright tests
       # =====================================================
