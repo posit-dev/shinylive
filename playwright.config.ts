@@ -75,11 +75,11 @@ const config: PlaywrightTestConfig = {
       command: "yarn test-server",
       port: 3000,
     },
-    {
-      command:
-        "source venv/bin/activate && shiny static playwright/static-app-test playwright/static-build && python3 -m http.server --directory playwright/static-build 8008",
-      port: 8008,
-    },
+    // {
+    //   command:
+    //     "source venv/bin/activate && shiny static playwright/static-app-test playwright/static-build && python3 -m http.server --directory playwright/static-build 8008",
+    //   port: 8008,
+    // },
   ],
 };
 
