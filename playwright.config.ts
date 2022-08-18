@@ -39,7 +39,7 @@ const config: PlaywrightTestConfig = {
     baseURL: "http://localhost:3000",
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
-    trace: "on",
+    trace: "on-first-retry",
   },
 
   /* Configure projects for major browsers */
@@ -51,19 +51,19 @@ const config: PlaywrightTestConfig = {
       },
     },
 
-    {
-      name: "firefox",
-      use: {
-        ...devices["Desktop Firefox"],
-      },
-    },
+    // {
+    //   name: "firefox",
+    //   use: {
+    //     ...devices["Desktop Firefox"],
+    //   },
+    // },
 
-    {
-      name: "webkit",
-      use: {
-        ...devices["Desktop Safari"],
-      },
-    },
+    // {
+    //   name: "webkit",
+    //   use: {
+    //     ...devices["Desktop Safari"],
+    //   },
+    // },
   ],
 
   /* Folder for test artifacts such as screenshots, videos, traces, etc. */
@@ -77,7 +77,7 @@ const config: PlaywrightTestConfig = {
     },
     {
       command:
-        ". venv/bin/activate && shiny static playwright/static-app-test playwright/static-build && python3 -m http.server --directory playwright/static-build 8008",
+        ". venv/bin/activate && shiny static playwright/static-app-test playwright/static-build && python3 -u -m http.server --directory playwright/static-build 8008 2> /dev/null",
       port: 8008,
     },
   ],
