@@ -21,7 +21,7 @@ test("Add a new non-app script, type in it, and run code", async ({ page }) => {
   // Running both command enter for mac and control enter for non-macs. Running
   // both just helps avoid looking at running environment
   await page.locator(".cm-editor [role=textbox]").press(`Meta+Enter`);
-  await page.locator(".cm-editor [role=textbox]").press(`Ctrl+Enter`);
+  await page.locator(".cm-editor [role=textbox]").press(`Control+Enter`);
 
   // Make sure that hello world exists in the terminal output
   await expect_terminal_has_text(page, `>>> print("hello world")`);
