@@ -1,5 +1,5 @@
 import { expect_terminal_has_text, wait_until_initialized } from "./helpers";
-import { test, expect } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 
 test("Open examples page and click to a new example", async ({ page }) => {
   await page.goto("/examples/");
@@ -18,7 +18,10 @@ test("Add a new non-app script, type in it, and run code", async ({ page }) => {
 
   await page.locator(".cm-editor [role=textbox]").type(`print("hello world")`);
 
+  // Running both command enter for mac and control enter for non-macs. Running
+  // both just helps avoid looking at running environment
   await page.locator(".cm-editor [role=textbox]").press(`Meta+Enter`);
+  await page.locator(".cm-editor [role=textbox]").press(`Ctrl+Enter`);
 
   // Make sure that hello world exists in the terminal output
   await expect_terminal_has_text(page, `>>> print("hello world")`);

@@ -24,7 +24,7 @@ async function expect_pane_has_text(
   pane_selector: string,
   text: string
 ) {
-  expect(page.locator(pane_selector, { hasText: text })).toBeVisible();
+  await expect(page.locator(pane_selector, { hasText: text })).toBeVisible();
 }
 
 /**
@@ -33,7 +33,7 @@ async function expect_pane_has_text(
  * @param text Text to search for in the editor panel
  */
 export async function expect_editor_has_text(page: Page, text: string) {
-  expect_pane_has_text(page, `.Editor`, text);
+  await expect_pane_has_text(page, `.Editor`, text);
 }
 
 /**
@@ -42,7 +42,7 @@ export async function expect_editor_has_text(page: Page, text: string) {
  * @param text Text to search for in the terminal panel
  */
 export async function expect_terminal_has_text(page: Page, text: string) {
-  expect_pane_has_text(page, `.Terminal`, text);
+  await expect_pane_has_text(page, `.Terminal`, text);
 }
 
 /**
