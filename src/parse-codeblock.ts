@@ -34,13 +34,16 @@ type CommentArgument = {
  * ------------------------------
  */
 export function parseCodeBlock(
-  codeblock: string,
+  codeblock: string | string[],
   defaultFilename: string
 ): {
   files: FileContent[];
   quartoArgs: Record<string, string>;
 } {
-  const { lines, quartoArgs } = processQuartoArgs(codeblock.split("\n"));
+  if (!Array.isArray(codeblock)) {
+    codeblock = codeblock.split("\n");
+  }
+  const { lines, quartoArgs } = processQuartoArgs(codeblock);
   const files = parseFileContents(lines, defaultFilename);
   return { files, quartoArgs };
 }
