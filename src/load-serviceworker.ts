@@ -12,7 +12,22 @@ if (
   throw Error(errorMessage);
 }
 
-const serviceWorkerPath = dirname(currentScriptDir()) + "/serviceworker.js";
+// Figure out path to serviceworker.js. This can be provided with a <meta> tag:
+//   <meta name="shinylive_serviceworker_path" content="./" />
+// In that case, the path is relative to the current _page_, not this script.
+//
+// If that meta tag isn't present, assume serviceworker.js is in the parent of
+// this script's directory.
+let serviceWorkerDir: string;
+const shinyliveMetaTag = document.querySelector(
+  'meta[name="shinylive:serviceworker_dir"]'
+);
+if (shinyliveMetaTag !== null) {
+  serviceWorkerDir = (shinyliveMetaTag as HTMLMetaElement).content;
+} else {
+  serviceWorkerDir = dirname(currentScriptDir());
+}
+const serviceWorkerPath = serviceWorkerDir + "/serviceworker.js";
 
 // Start the service worker as soon as possible, to maximize the
 // resources it will be able to cache on the first run.
