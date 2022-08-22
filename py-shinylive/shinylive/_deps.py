@@ -7,7 +7,7 @@ from typing import Callable, Dict, List, Literal, Set, TypedDict, Union, cast
 
 from typing_extensions import NotRequired
 
-from ._assets import shinylive_assets_dir
+from ._assets import shinylive_assets_dir, repodata_json_file
 from ._app_json import FileContentJson
 
 # Files in Pyodide that should always be included.
@@ -45,10 +45,6 @@ class PyodideRepodataFile(TypedDict):
 
 
 # =============================================================================
-
-
-def repodata_json_file() -> Path:
-    return Path(shinylive_assets_dir()) / "shinylive" / "pyodide" / "repodata.json"
 
 
 def _shinylive_base_deps(path_prefix: str = "shinylive-dist/") -> None:

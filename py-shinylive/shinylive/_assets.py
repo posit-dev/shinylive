@@ -42,10 +42,26 @@ def download_shinylive(
                     os.remove(tmp_name)
 
 
-def shinylive_assets_dir() -> str:
+def shinylive_cache_dir() -> str:
+    """
+    Returns the directory used for caching Shinylive assets. This directory can contain
+    multiple versions of Shinylive assets.
+    """
     import appdirs
 
-    return os.path.join(appdirs.user_cache_dir("shiny"), "shinylive")
+    return appdirs.user_cache_dir("shinylive")
+
+
+def shinylive_assets_dir(version: str = _version.version) -> str:
+    """
+    Returns the directory containing cached Shinylive assets, for a particular version
+    of Shinylive.
+    """
+    return os.path.join(shinylive_cache_dir(), "shinylive-" + version)
+
+
+def repodata_json_file(version: str = _version.version) -> Path:
+    return Path(shinylive_assets_dir()) / "shinylive" / "pyodide" / "repodata.json"
 
 
 def copy_shinylive_local(
@@ -58,7 +74,7 @@ def copy_shinylive_local(
 
     destdir = Path(destdir)
 
-    target_dir = destdir / ("shinylive-" + version)
+    target_dir = destdir
 
     if target_dir.exists():
         shutil.rmtree(target_dir)
@@ -80,7 +96,7 @@ def _ensure_shinylive_local(
         print("Creating directory " + str(destdir))
         destdir.mkdir(parents=True)
 
-    shinylive_bundle_dir = destdir / f"shinylive-{version}"
+    shinylive_bundle_dir = destdir
     if not shinylive_bundle_dir.exists():
         print(f"{shinylive_bundle_dir} does not exist.")
         download_shinylive(url=url, version=version, destdir=destdir)
@@ -122,7 +138,7 @@ def remove_shinylive_local(
 
 def _installed_shinylive_versions(shinylive_dir: Optional[Path] = None) -> List[str]:
     if shinylive_dir is None:
-        shinylive_dir = Path(shinylive_assets_dir())
+        shinylive_dir = Path(shinylive_cache_dir())
 
     shinylive_dir = Path(shinylive_dir)
     subdirs = shinylive_dir.iterdir()
@@ -131,11 +147,17 @@ def _installed_shinylive_versions(shinylive_dir: Optional[Path] = None) -> List[
 
 
 def print_shinylive_local_info() -> None:
-
     print(
-        f"""    Local shinylive dir:
-        {shinylive_assets_dir()}
-
-    Installed versions:
-        {", ".join(_installed_shinylive_versions())}"""
+        f"""    Local cached shinylive asset dir:
+    {shinylive_cache_dir()}
+    """
     )
+    if Path(shinylive_cache_dir()).exists():
+        print("""    Installed versions:""")
+        installed_versions = _installed_shinylive_versions()
+        if len(installed_versions) > 0:
+            print("    " + "\n".join(installed_versions))
+        else:
+            print("    (None)")
+    else:
+        print("    (Cache dir does not exist)")

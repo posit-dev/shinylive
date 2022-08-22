@@ -14,7 +14,8 @@ def main() -> None:
 
 
 @main.command(
-    help="""Turn a Shiny app into a statically deployable bundle.
+    help="""
+Turn a Shiny app into a bundle that can be deployed to a static web host.
 
 APPDIR is the directory containing the Shiny application.
 
@@ -68,7 +69,7 @@ def deploy(
 
 
 @main.command(
-    help="""Manage local copy of assets for static app deployment.
+    help="""Manage local copy of assets for static Shinylive app deployment.
 
     \b
     Commands:
@@ -131,7 +132,7 @@ def assets(
             raise click.UsageError("Must specify --source")
         if version is None:
             version = _version.version
-        print(f"Copying shinylive-{version} from {source} to {dir}/shinylive-{version}")
+        print(f"Copying shinylive-{version} from {source} to {dir}")
         _assets.copy_shinylive_local(source_dir=source, destdir=dir, version=version)
     else:
         raise click.UsageError(f"Unknown command: {command}")
