@@ -270,12 +270,10 @@ def _shinylive_base_deps(path_prefix: str = "shinylive-dist/") -> None:
             indent=2,
         )
     )
-    return
 
 
-def _copy_pyodide_deps(
+def _get_pyodide_deps(
     json_file: Union[str, Path],
-    destdir: Union[str, Path],
     verbose: bool = True,
 ) -> None:
     def verbose_print(*args: object) -> None:
@@ -283,56 +281,15 @@ def _copy_pyodide_deps(
             print(*args)
 
     json_file = Path(json_file)
-    destdir = Path(destdir)
-
-    if not destdir.exists():
-        print(f"Creating {destdir}/")
-        destdir.mkdir()
-
-    copy_fn = _create_copy_fn(overwrite=False, verbose_print=verbose_print)
 
     full_shinylive = False
 
-    # =============================================
-    # Copy the shinylive/ distribution _except_ for the shinylive/pyodide/ directory.
-    # =============================================
-    def ignore_pyodide_dir(path: str, names: List[str]) -> List[str]:
-        if path == str(shinylive_dir):
-            return ["scripts"]
-        elif path == str(shinylive_dir / "shinylive"):
-            return ["examples.json", "shiny_static"]
-        elif not full_shinylive and path == str(
-            shinylive_dir / "shinylive" / "pyodide"
-        ):
-            return names
-        else:
-            return []
-
-    print(f"Copying files from {shinylive_dir}/ to {destdir}/")
-    shutil.copytree(
-        shinylive_dir,
-        destdir,
-        ignore=ignore_pyodide_dir,
-        copy_function=copy_fn,
-        dirs_exist_ok=True,
-    )
     with open(json_file) as f:
-        files: List[FileContentJson] = json.load(f)
+        file_contents: List[FileContentJson] = json.load(f)
 
-    pyodide_files = _find_pyodide_deps(files)
+    pyodide_files = _find_pyodide_deps(file_contents)
 
-    verbose_print(f"Copying files in shinylive/pyodide/:\n ", ", ".join(pyodide_files))
-
-    print(shinylive_dir)
-    print(os.getcwd())
-
-    for filename in pyodide_files:
-        print(shinylive_dir / "shinylive" / "pyodide" / filename)
-        print(destdir.absolute() / "shinylive" / "pyodide" / filename)
-        copy_fn(
-            shinylive_dir / "shinylive" / "pyodide" / filename,
-            destdir / "shinylive" / "pyodide" / filename,
-        )
+    print(json.dumps(pyodide_files, indent=2))
 
 
 def _read_app_files(appdir: Path, destdir: Path) -> List[FileContentJson]:
