@@ -40,11 +40,11 @@ jobs:
           cd py-shinylive
           make install
 
-      # - name: Run unit tests
-      #   if: steps.install.outcome == 'success' && (success() || failure())
-      #   run: |
-      #     cd py-shinylive
-      #     make test
+      - name: Run unit tests
+        if: steps.install.outcome == 'success' && (success() || failure())
+        run: |
+          cd py-shinylive
+          make test
 
       - name: Type check with pyright
         if: steps.install.outcome == 'success' && (success() || failure())
