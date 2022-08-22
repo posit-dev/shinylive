@@ -1,4 +1,4 @@
-name: Run tests
+name: Build and test Python package
 
 on:
   workflow_dispatch:
