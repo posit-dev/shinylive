@@ -1,11 +1,10 @@
+import json
 from pathlib import Path
 from typing import Optional, Union
 
 import click
 
-from . import _assets
-from . import _deploy
-from . import _version
+from . import _assets, _deploy, _deps, _version
 
 
 @click.group()  # pyright: ignore[reportUnknownMemberType]
@@ -76,7 +75,7 @@ def deploy(
         download: Download assets from the remote server.
         remove: Remove local copies of assets.
         info: Print information about the local assets.
-        install_local: Install shinylive assets from a local directory. Must be used with --source.
+        install_from_local: Install shinylive assets from a local directory. Must be used with --source.
 
 """
 )
@@ -136,3 +135,21 @@ def assets(
         _assets.copy_shinylive_local(source_dir=source, destdir=dir, version=version)
     else:
         raise click.UsageError(f"Unknown command: {command}")
+
+
+@main.command(
+    help="""Get a set of base dependencies for a Shinylive deployment.
+
+    This is intended for use by the Shinylive Quarto extension.
+"""
+)
+@click.option(
+    "--path-prefix",
+    type=str,
+    default="shinylive-dist/",
+    help="A prefix to prepend to the `path` for each dependency.",
+    show_default=True,
+)
+def basedeps(path_prefix: str) -> None:
+    base_deps = _deps.shinylive_base_deps(path_prefix)
+    print(json.dumps(base_deps, indent=2))

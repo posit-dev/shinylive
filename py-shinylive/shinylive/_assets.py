@@ -82,7 +82,7 @@ def copy_shinylive_local(
     shutil.copytree(source_dir, target_dir)
 
 
-def _ensure_shinylive_local(
+def ensure_shinylive_assets(
     destdir: Union[Path, None] = None,
     version: str = _version.version,
     url: str = SHINYLIVE_DOWNLOAD_URL,

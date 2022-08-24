@@ -1,13 +1,24 @@
+# Needed for NotRequired with Python 3.7 - 3.9
+# See https://www.python.org/dev/peps/pep-0655/#usage-in-python-3-11
+from __future__ import annotations
+
 import ast
 import json
 import os
+import sys
 from pathlib import Path
 from textwrap import dedent
-from typing import Callable, Dict, List, Literal, Set, TypedDict, Union, cast
+from typing import Callable, Dict, List, Literal, Set, Union
 
-from typing_extensions import NotRequired
+# Even though TypedDict is available in Python 3.8, because it's used with NotRequired,
+# they should both come from the same typing module.
+# https://peps.python.org/pep-0655/#usage-in-python-3-11
+if sys.version_info >= (3, 11):
+    from typing import NotRequired, TypedDict
+else:
+    from typing_extensions import NotRequired, TypedDict
 
-from ._assets import shinylive_assets_dir, repodata_json_file
+from ._assets import shinylive_assets_dir, repodata_json_file, ensure_shinylive_assets
 from ._app_json import FileContentJson
 
 # Files in Pyodide that should always be included.
@@ -45,12 +56,30 @@ class PyodideRepodataFile(TypedDict):
 
 
 # =============================================================================
+# HTML Dependency types
+# =============================================================================
+class HtmlDepItem(TypedDict):
+    name: str
+    path: str
+    attribs: NotRequired[Dict[str, str]]
 
 
-def _shinylive_base_deps(path_prefix: str = "shinylive-dist/") -> None:
+class HtmlDependency(TypedDict):
+    scripts: List[Union[str, HtmlDepItem]]
+    stylesheets: List[Union[str, HtmlDepItem]]
+    resources: List[HtmlDepItem]
+
+
+# =============================================================================
+
+
+def shinylive_base_deps(path_prefix: str = "shinylive-dist/") -> HtmlDependency:
     """
-    Prints out the base dependencies that are always included in a deployment.
+    Return an HTML dependency object consisting of files that are base dependencies; in
+    other words, the files that are always included in a Shinylive deployment.
     """
+
+    ensure_shinylive_assets()
 
     all_files: List[str] = []
     for root, dirs, files in os.walk(shinylive_assets_dir()):
@@ -70,9 +99,9 @@ def _shinylive_base_deps(path_prefix: str = "shinylive-dist/") -> None:
                 continue
             all_files.append(str(rel_root / file))
 
-    scripts: List[Dict[str, Union[str, Dict[str, str]]]] = []
-    stylesheets: List[Dict[str, Union[str, Dict[str, str]]]] = []
-    resources: List[Dict[str, str]] = []
+    scripts: List[Union[str, HtmlDepItem]] = []
+    stylesheets: List[Union[str, HtmlDepItem]] = []
+    resources: List[HtmlDepItem] = []
 
     for file in all_files:
         if os.path.basename(file) in [
@@ -81,7 +110,7 @@ def _shinylive_base_deps(path_prefix: str = "shinylive-dist/") -> None:
             "jquery.terminal.min.js",
             "run-python-blocks.js",
         ]:
-            script_item: Dict[str, Union[str, Dict[str, str]]] = {
+            script_item: HtmlDepItem = {
                 "name": file,
                 "path": os.path.join(path_prefix, file),
             }
@@ -114,8 +143,12 @@ def _shinylive_base_deps(path_prefix: str = "shinylive-dist/") -> None:
 
     # Sort scripts so that load-serviceworker.js is first, and run-python-blocks.js is
     # last.
-    def scripts_sort_fun(x: Dict[str, Union[str, Dict[str, str]]]) -> int:
-        filename = os.path.basename(cast(str, x["name"]))
+    def scripts_sort_fun(x: Union[str, HtmlDepItem]) -> int:
+        if isinstance(x, str):
+            filename = x
+        else:
+            filename = os.path.basename(x["name"])
+
         if filename == "load-serviceworker.js":
             return 0
         elif filename == "run-python-blocks.js":
@@ -125,16 +158,11 @@ def _shinylive_base_deps(path_prefix: str = "shinylive-dist/") -> None:
 
     scripts.sort(key=scripts_sort_fun)
 
-    print(
-        json.dumps(
-            {
-                "scripts": scripts,
-                "stylesheets": stylesheets,
-                "resources": resources,
-            },
-            indent=2,
-        )
-    )
+    return {
+        "scripts": scripts,
+        "stylesheets": stylesheets,
+        "resources": resources,
+    }
 
 
 def _get_pyodide_deps(
