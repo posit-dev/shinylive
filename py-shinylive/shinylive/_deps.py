@@ -3,12 +3,13 @@
 from __future__ import annotations
 
 import ast
+import functools
 import json
 import os
 import sys
 from pathlib import Path
 from textwrap import dedent
-from typing import Callable, Dict, List, Literal, Set, Union
+from typing import Callable, Dict, Iterable, List, Literal, Set, Union
 
 # Even though TypedDict is available in Python 3.8, because it's used with NotRequired,
 # they should both come from the same typing module.
@@ -20,6 +21,7 @@ else:
 
 from ._assets import shinylive_assets_dir, repodata_json_file, ensure_shinylive_assets
 from ._app_json import FileContentJson
+from . import _version
 
 # Files in Pyodide that should always be included.
 BASE_PYODIDE_FILES = {
@@ -165,10 +167,15 @@ def shinylive_base_deps(path_prefix: str = "shinylive-dist/") -> HtmlDependency:
     }
 
 
-def _get_pyodide_deps(
+def package_deps(
     json_file: Union[str, Path],
+    version: str = _version.version,
     verbose: bool = True,
-) -> None:
+) -> List[str]:
+    """
+    Find package dependencies from an app.json file.
+    """
+
     def verbose_print(*args: object) -> None:
         if verbose:
             print(*args)
@@ -178,34 +185,43 @@ def _get_pyodide_deps(
     with open(json_file) as f:
         file_contents: List[FileContentJson] = json.load(f)
 
-    pyodide_files = _find_pyodide_deps(file_contents)
-
-    print(json.dumps(pyodide_files, indent=2))
-
-
-def _find_pyodide_deps(app_contents: List[FileContentJson]) -> List[str]:
-    dep_files = _find_package_deps(app_contents)
-    keep_files = list(BASE_PYODIDE_FILES) + dep_files
-    return keep_files
+    pyodide_files = _find_package_deps(file_contents, version)
+    return pyodide_files
 
 
 def _find_package_deps(
     app_contents: List[FileContentJson],
+    version: str = _version.version,
     verbose_print: Callable[..., None] = lambda *args: None,
 ) -> List[str]:
     """
-    Find package dependencies from an app.json file.
+    Find package dependencies from the contents of an app.json file.
     """
 
-    imports: Set[str] = BASE_PYODIDE_PACKAGES
-    imports = imports.union(_find_import_app_contents(app_contents))
+    imports: Set[str] = _find_import_app_contents(app_contents)
 
     # TODO: Need to also add in requirements.txt, and find dependencies of those
     # packages, in case any of those dependencies are included as part of pyodide.
     verbose_print("Imports detected in app:\n ", ", ".join(sorted(imports)))
 
+    deps = _find_recursive_deps(imports, verbose_print)
+
+    dep_files = _dep_names_to_dep_files(deps)
+
+    return dep_files
+
+
+def _find_recursive_deps(
+    pkgs: Iterable[str],
+    verbose_print: Callable[..., None] = lambda *args: None,
+) -> List[str]:
+    """
+    Given a list of packages, recursively find all dependencies that are contained in
+    repodata.json. This returns a list of all dependencies, including the original
+    packages passed in.
+    """
     repodata = _pyodide_repodata()
-    deps = list(imports)
+    deps = list(pkgs)
     i = 0
     while i < len(deps):
         dep = deps[i]
@@ -223,11 +239,28 @@ def _find_package_deps(
         deps.extend(new_deps)
         i += 1
 
-    deps.sort()
-    verbose_print("Imports and dependencies:\n ", ", ".join(deps))
+    return deps
 
-    dep_files = [repodata["packages"][x]["file_name"] for x in deps]
 
+def _dep_name_to_dep_file(dep_name: str, version: str = _version.version) -> str:
+    """
+    Given the name of a dependency, like "pandas", return the name of the .whl file,
+    like "pandas-1.4.2-cp310-cp310-emscripten_3_1_14_wasm32.whl".
+    """
+    repodata = _pyodide_repodata(version)
+    return repodata["packages"][dep_name]["file_name"]
+
+
+def _dep_names_to_dep_files(
+    dep_names: List[str], version: str = _version.version
+) -> List[str]:
+    """
+    Given a list of dependency names, like ["pandas"], return a list with the names of
+    corresponding .whl files (from data in repodata.json), like
+    ["pandas-1.4.2-cp310-cp310-emscripten_3_1_14_wasm32.whl"].
+    """
+    repodata = _pyodide_repodata(version)
+    dep_files = [repodata["packages"][x]["file_name"] for x in dep_names]
     return dep_files
 
 
@@ -245,9 +278,13 @@ def _find_import_app_contents(app_contents: List[FileContentJson]) -> Set[str]:
     return imports
 
 
-def _pyodide_repodata() -> PyodideRepodataFile:
-    """Read in the Pyodide repodata.json file and return the contents."""
-    with open(repodata_json_file(), "r") as f:
+@functools.cache
+def _pyodide_repodata(version: str = _version.version) -> PyodideRepodataFile:
+    """
+    Read in the Pyodide repodata.json file and return the contents. The result is
+    cached, so if the file changes
+    """
+    with open(repodata_json_file(version), "r") as f:
         return json.load(f)
 
 

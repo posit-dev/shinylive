@@ -61,7 +61,9 @@ def shinylive_assets_dir(version: str = _version.version) -> str:
 
 
 def repodata_json_file(version: str = _version.version) -> Path:
-    return Path(shinylive_assets_dir()) / "shinylive" / "pyodide" / "repodata.json"
+    return (
+        Path(shinylive_assets_dir(version)) / "shinylive" / "pyodide" / "repodata.json"
+    )
 
 
 def copy_shinylive_local(

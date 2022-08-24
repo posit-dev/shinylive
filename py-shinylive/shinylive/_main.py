@@ -150,6 +150,18 @@ def assets(
     help="A prefix to prepend to the `path` for each dependency.",
     show_default=True,
 )
-def basedeps(path_prefix: str) -> None:
-    base_deps = _deps.shinylive_base_deps(path_prefix)
-    print(json.dumps(base_deps, indent=2))
+def base_deps(path_prefix: str) -> None:
+    deps = _deps.shinylive_base_deps(path_prefix)
+    print(json.dumps(deps, indent=2))
+
+
+@main.command(
+    help="""Get a set of dependencies for a set of Python files packaged into a .json file.
+
+    This is intended for use by the Shinylive Quarto extension.
+"""
+)
+@click.argument("json_file", type=str)
+def package_deps(json_file: str) -> None:
+    deps = _deps.package_deps(json_file)
+    print(json.dumps(deps, indent=2))
