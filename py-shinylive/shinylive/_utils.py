@@ -3,7 +3,7 @@ import os
 import shutil
 import sys
 from pathlib import Path
-from typing import Callable, Union
+from typing import Callable, List, Union
 
 
 def is_relative_to(path: Path, base: Path) -> bool:
@@ -40,6 +40,20 @@ def path_length(path: Union[str, Path]) -> int:
         path.replace("\\", "/")
 
     return len(path.split("/"))
+
+
+def listdir_recursive(dir: Union[str, Path]) -> List[str]:
+    dir = Path(dir)
+    all_files: List[str] = []
+
+    for root, _dirs, files in os.walk(dir):
+        root = Path(root)
+        rel_root = root.relative_to(dir)
+
+        for file in files:
+            all_files.append(os.path.join(rel_root / file))
+
+    return all_files
 
 
 def copy_file_and_substitute(
