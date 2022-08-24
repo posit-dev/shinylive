@@ -127,7 +127,7 @@ def assets(
         _assets.remove_shinylive_local(shinylive_dir=dir, version=version)
     elif command == "info":
         _assets.print_shinylive_local_info()
-    elif command == "install_local":
+    elif command == "install_from_local":
         if source is None:
             raise click.UsageError("Must specify --source")
         if version is None:
