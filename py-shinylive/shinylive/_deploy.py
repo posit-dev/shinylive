@@ -1,8 +1,7 @@
 import os
-import shutil
 import sys
 from pathlib import Path
-from typing import List, Union
+from typing import Union
 
 from . import _deps
 from ._assets import shinylive_assets_dir
@@ -48,60 +47,65 @@ def deploy(
 
     copy_fn = _utils.create_copy_fn(overwrite=False, verbose_print=verbose_print)
 
-    # =============================================
-    # Copy the shinylive/ distribution _except_ for the shinylive/pyodide/ directory.
-    # =============================================
-    def ignore_pyodide_dir(path: str, names: List[str]) -> List[str]:
-        if path == shinylive_assets_dir():
-            return ["scripts"]
-        elif path == os.path.join(shinylive_assets_dir(), "shinylive"):
-            return ["examples.json", "shiny_static"]
-        elif not full_shinylive and path == os.path.join(
-            shinylive_assets_dir(), "shinylive", "pyodide"
-        ):
+    assets_dir = Path(shinylive_assets_dir())
 
-            return names
-        else:
-            return []
+    # =========================================================================
+    # Copy the base dependencies for shinylive/ distribution. This does not include the
+    # Python package files.
+    # =========================================================================
+    print(f"Copying base Shinylive files from {assets_dir}/ to {destdir}/")
+    base_files = _deps.shinylive_base_files()
+    for file in base_files:
+        src_path = assets_dir / file
+        dest_path = destdir / Path(file)
 
-    print(f"Copying files from {shinylive_assets_dir()}/ to {destdir}/")
-    shutil.copytree(
-        shinylive_assets_dir(),
-        destdir,
-        ignore=ignore_pyodide_dir,
-        copy_function=copy_fn,
-        dirs_exist_ok=True,
-    )
+        if not dest_path.parent.exists():
+            os.makedirs(dest_path.parent)
 
-    # =============================================
+        copy_fn(src_path, dest_path)
+
+    # =========================================================================
     # Load each app's contents into a list[FileContentJson]
-    # =============================================
+    # =========================================================================
     app_info: AppInfo = {
         "appdir": str(appdir),
         "subdir": str(subdir),
         "files": read_app_files(appdir, destdir),
     }
 
-    # =============================================
+    # =========================================================================
     # Copy dependencies from shinylive/pyodide/
-    # =============================================
-    if not full_shinylive:
-        pyodide_files = _deps._find_pyodide_deps(app_info["files"])
-        verbose_print(
-            "Copying files in shinylive/pyodide/:\n ", ", ".join(pyodide_files)
+    # =========================================================================
+    if full_shinylive:
+        package_files = _utils.listdir_recursive(assets_dir / "shinylive" / "pyodide")
+        # Some of the files in this dir are base files; don't copy them.
+        package_files = [
+            file
+            for file in package_files
+            if os.path.join("shinylive", "pyodide", file) not in base_files
+        ]
+
+    else:
+        package_files = _deps.base_package_deps() + _deps._find_package_deps(
+            app_info["files"]
         )
+        print(
+            f"Copying imported packages from {assets_dir}/shinylive/pyodide/ to {destdir}/shinylive/pyodide/"
+        )
+        verbose_print(" ", ", ".join(package_files))
 
-        for filename in pyodide_files:
-            copy_fn(
-                Path(shinylive_assets_dir()) / "shinylive" / "pyodide" / filename,
-                destdir / "shinylive" / "pyodide" / filename,
-            )
+    for filename in package_files:
+        src_path = assets_dir / "shinylive" / "pyodide" / filename
+        dest_path = destdir / "shinylive" / "pyodide" / filename
+        if not dest_path.parent.exists():
+            os.makedirs(dest_path.parent)
 
-    # =============================================
+        copy_fn(src_path, dest_path)
+
+    # =========================================================================
     # For each app, write the index.html, edit/index.html, and app.json in
     # destdir/subdir.
-    # =============================================
-
+    # =========================================================================
     write_app_json(
         app_info,
         destdir,

@@ -32,7 +32,7 @@ BASE_PYODIDE_FILES = {
     "repodata.json",
 }
 
-# Packages that should always be included in a deployment.
+# Packages that should always be included in a Shinylive deployment.
 BASE_PYODIDE_PACKAGES = {"distutils", "micropip"}
 
 
@@ -81,31 +81,15 @@ def shinylive_base_deps(path_prefix: str = "shinylive-dist/") -> HtmlDependency:
     other words, the files that are always included in a Shinylive deployment.
     """
 
-    ensure_shinylive_assets()
+    # First, get the list of base files.
+    base_files = shinylive_base_files()
 
-    all_files: List[str] = []
-    for root, dirs, files in os.walk(shinylive_assets_dir()):
-        root = Path(root)
-        rel_root = root.relative_to(shinylive_assets_dir())
-        if rel_root == Path("."):
-            dirs.remove("scripts")
-        elif rel_root == Path("shinylive"):
-            dirs.remove("shiny_static")
-            files.remove("examples.json")
-        elif rel_root == Path("shinylive/pyodide"):
-            dirs.remove("fonts")
-            files[:] = BASE_PYODIDE_FILES
-
-        for file in files:
-            if file.startswith("."):
-                continue
-            all_files.append(str(rel_root / file))
-
+    # Next, categorize the base files into scripts, stylesheets, and resources.
     scripts: List[Union[str, HtmlDepItem]] = []
     stylesheets: List[Union[str, HtmlDepItem]] = []
     resources: List[HtmlDepItem] = []
 
-    for file in all_files:
+    for file in base_files:
         if os.path.basename(file) in [
             "load-serviceworker.js",
             "jquery.min.js",
@@ -167,6 +151,35 @@ def shinylive_base_deps(path_prefix: str = "shinylive-dist/") -> HtmlDependency:
     }
 
 
+def shinylive_base_files() -> List[str]:
+    """
+    Return a list of files that are base dependencies; in other words, the files that are
+    always included in a Shinylive deployment.
+    """
+    ensure_shinylive_assets()
+
+    base_files: List[str] = []
+    for root, dirs, files in os.walk(shinylive_assets_dir()):
+        root = Path(root)
+        rel_root = root.relative_to(shinylive_assets_dir())
+        if rel_root == Path("."):
+            dirs.remove("scripts")
+        elif rel_root == Path("shinylive"):
+            dirs.remove("shiny_static")
+            files.remove("examples.json")
+        elif rel_root == Path("shinylive/pyodide"):
+            dirs.remove("fonts")
+            files[:] = BASE_PYODIDE_FILES
+
+        for file in files:
+            if file.startswith("."):
+                continue
+            base_files.append(str(rel_root / file))
+
+    return base_files
+
+
+# =============================================================================
 def package_deps(
     json_file: Union[str, Path],
     version: str = _version.version,
@@ -185,8 +198,17 @@ def package_deps(
     with open(json_file) as f:
         file_contents: List[FileContentJson] = json.load(f)
 
-    pyodide_files = _find_package_deps(file_contents, version)
-    return pyodide_files
+    package_files = _find_package_deps(file_contents, version)
+    return package_files
+
+
+def base_package_deps() -> List[str]:
+    """
+    Return list of package files that should be included in all Shinylive deployments.
+    """
+    deps = _find_recursive_deps(BASE_PYODIDE_PACKAGES)
+    dep_files = _dep_names_to_dep_files(deps)
+    return dep_files
 
 
 def _find_package_deps(
