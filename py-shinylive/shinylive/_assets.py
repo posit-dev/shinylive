@@ -90,13 +90,13 @@ def _ensure_shinylive_local(
     """Ensure that there is a local copy of shinylive."""
 
     if destdir is None:
-        destdir = Path(shinylive_assets_dir())
+        destdir = Path(shinylive_cache_dir())
 
     if not destdir.exists():
         print("Creating directory " + str(destdir))
         destdir.mkdir(parents=True)
 
-    shinylive_bundle_dir = destdir
+    shinylive_bundle_dir = Path(shinylive_assets_dir(version))
     if not shinylive_bundle_dir.exists():
         print(f"{shinylive_bundle_dir} does not exist.")
         download_shinylive(url=url, version=version, destdir=destdir)
