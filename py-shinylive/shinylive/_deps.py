@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import ast
+import copy
 import functools
 import json
 import os
@@ -66,16 +67,60 @@ class HtmlDepItem(TypedDict):
     attribs: NotRequired[Dict[str, str]]
 
 
-class HtmlDependency(TypedDict):
-    scripts: List[Union[str, HtmlDepItem]]
-    stylesheets: List[Union[str, HtmlDepItem]]
-    resources: List[HtmlDepItem]
+class QuartoHtmlDependency(TypedDict):
+    name: str
+    version: NotRequired[str]
+    scripts: NotRequired[List[Union[str, HtmlDepItem]]]
+    stylesheets: NotRequired[List[Union[str, HtmlDepItem]]]
+    resources: NotRequired[List[HtmlDepItem]]
 
 
 # =============================================================================
+# Conversion functions
+# =============================================================================
+def _dep_names_to_pyodide_pkg_infos(
+    dep_names: Iterable[str],
+) -> List[PyodidePackageInfo]:
+    repodata = _pyodide_repodata()
+    pkg_infos: List[PyodidePackageInfo] = [
+        copy.deepcopy(repodata["packages"][dep_name]) for dep_name in dep_names
+    ]
+    return pkg_infos
 
 
-def shinylive_base_deps(path_prefix: str = "shinylive-dist/") -> HtmlDependency:
+def _pyodide_pkg_info_to_quarto_html_dep(
+    pkg: PyodidePackageInfo,
+    path_prefix: str,
+) -> QuartoHtmlDependency:
+    """
+    Convert a PyodidePackageInfo object to a QuartoHtmlDependency object.
+    """
+    dep: QuartoHtmlDependency = {
+        "name": pkg["name"],
+        "resources": [
+            {
+                "name": pkg["file_name"],
+                "path": os.path.join(path_prefix, pkg["file_name"]),
+            }
+        ],
+    }
+
+    return dep
+
+
+def _pyodide_pkg_infos_to_quarto_html_deps(
+    pkgs: List[PyodidePackageInfo],
+    path_prefix: str,
+) -> List[QuartoHtmlDependency]:
+    return [_pyodide_pkg_info_to_quarto_html_dep(pkg, path_prefix) for pkg in pkgs]
+
+
+# =============================================================================
+# Shinylive base dependencies
+# =============================================================================
+def shinylive_base_deps_htmldep(
+    path_prefix: str = "shinylive-dist/",
+) -> QuartoHtmlDependency:
     """
     Return an HTML dependency object consisting of files that are base dependencies; in
     other words, the files that are always included in a Shinylive deployment.
@@ -145,6 +190,7 @@ def shinylive_base_deps(path_prefix: str = "shinylive-dist/") -> HtmlDependency:
     scripts.sort(key=scripts_sort_fun)
 
     return {
+        "name": "shinylive-base",
         "scripts": scripts,
         "stylesheets": stylesheets,
         "resources": resources,
@@ -180,13 +226,17 @@ def shinylive_base_files() -> List[str]:
 
 
 # =============================================================================
-def package_deps(
+# Find which packages are used by a Shiny application
+# =============================================================================
+def package_deps_htmldep(
     json_file: Union[str, Path],
+    path_prefix: str = "shinylive-dist/",
     version: str = _version.version,
     verbose: bool = True,
-) -> List[str]:
+) -> List[QuartoHtmlDependency]:
     """
-    Find package dependencies from an app.json file.
+    Find package dependencies from an app.json file, and return as a list of
+    QuartoHtmlDependency objects.
     """
 
     def verbose_print(*args: object) -> None:
@@ -198,26 +248,30 @@ def package_deps(
     with open(json_file) as f:
         file_contents: List[FileContentJson] = json.load(f)
 
-    package_files = _find_package_deps(file_contents, version)
-    return package_files
+    pkg_infos = find_package_deps(file_contents, path_prefix)
+    deps = _pyodide_pkg_infos_to_quarto_html_deps(pkg_infos, path_prefix)
+    return deps
 
 
-def base_package_deps() -> List[str]:
+def base_package_deps() -> List[PyodidePackageInfo]:
     """
-    Return list of package files that should be included in all Shinylive deployments.
+    Return list of packages that should be included in all Shinylive deployments. The
+    returned data structure is a list of PyodidePackageInfo objects.
     """
-    deps = _find_recursive_deps(BASE_PYODIDE_PACKAGES)
-    dep_files = _dep_names_to_dep_files(deps)
-    return dep_files
+    dep_names = _find_recursive_deps(BASE_PYODIDE_PACKAGES)
+    pkg_infos = _dep_names_to_pyodide_pkg_infos(dep_names)
+
+    return pkg_infos
 
 
-def _find_package_deps(
+def find_package_deps(
     app_contents: List[FileContentJson],
     version: str = _version.version,
     verbose_print: Callable[..., None] = lambda *args: None,
-) -> List[str]:
+) -> List[PyodidePackageInfo]:
     """
-    Find package dependencies from the contents of an app.json file.
+    Find package dependencies from the contents of an app.json file. The returned data
+    structure is a list of PyodidePackageInfo objects.
     """
 
     imports: Set[str] = _find_import_app_contents(app_contents)
@@ -226,13 +280,15 @@ def _find_package_deps(
     # packages, in case any of those dependencies are included as part of pyodide.
     verbose_print("Imports detected in app:\n ", ", ".join(sorted(imports)))
 
-    deps = _find_recursive_deps(imports, verbose_print)
+    dep_names = _find_recursive_deps(imports, verbose_print)
+    pkg_infos = _dep_names_to_pyodide_pkg_infos(dep_names)
 
-    dep_files = _dep_names_to_dep_files(deps)
-
-    return dep_files
+    return pkg_infos
 
 
+# =============================================================================
+# Internal functions
+# =============================================================================
 def _find_recursive_deps(
     pkgs: Iterable[str],
     verbose_print: Callable[..., None] = lambda *args: None,
@@ -300,11 +356,12 @@ def _find_import_app_contents(app_contents: List[FileContentJson]) -> Set[str]:
     return imports
 
 
-@functools.cache
+@functools.lru_cache
 def _pyodide_repodata(version: str = _version.version) -> PyodideRepodataFile:
     """
     Read in the Pyodide repodata.json file and return the contents. The result is
-    cached, so if the file changes
+    cached, so if the file changes, it won't register until the Python session is
+    restarted.
     """
     with open(repodata_json_file(version), "r") as f:
         return json.load(f)
