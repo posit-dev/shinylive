@@ -151,7 +151,7 @@ def assets(
     show_default=True,
 )
 def base_deps(path_prefix: str) -> None:
-    deps = _deps.shinylive_base_deps(path_prefix)
+    deps = _deps.shinylive_base_deps_htmldep(path_prefix)
     print(json.dumps(deps, indent=2))
 
 
@@ -163,5 +163,5 @@ def base_deps(path_prefix: str) -> None:
 )
 @click.argument("json_file", type=str)
 def package_deps(json_file: str) -> None:
-    deps = _deps.package_deps(json_file)
+    deps = _deps.package_deps_htmldep(json_file)
     print(json.dumps(deps, indent=2))

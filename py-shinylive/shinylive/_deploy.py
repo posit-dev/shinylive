@@ -1,7 +1,7 @@
 import os
 import sys
 from pathlib import Path
-from typing import Union
+from typing import List, Union
 
 from . import _deps
 from ._assets import shinylive_assets_dir
@@ -86,9 +86,10 @@ def deploy(
         ]
 
     else:
-        package_files = _deps.base_package_deps() + _deps._find_package_deps(
-            app_info["files"]
-        )
+        deps = _deps.base_package_deps() + _deps.find_package_deps(app_info["files"])
+
+        package_files: List[str] = [dep["file_name"] for dep in deps]
+
         print(
             f"Copying imported packages from {assets_dir}/shinylive/pyodide/ to {destdir}/shinylive/pyodide/"
         )
