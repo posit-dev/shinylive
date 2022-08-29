@@ -210,8 +210,8 @@ def shinylive_base_files() -> List[str]:
         rel_root = root.relative_to(shinylive_assets_dir())
         if rel_root == Path("."):
             dirs.remove("scripts")
+            dirs.remove("deploy_template")
         elif rel_root == Path("shinylive"):
-            dirs.remove("shiny_static")
             files.remove("examples.json")
         elif rel_root == Path("shinylive/pyodide"):
             dirs.remove("fonts")

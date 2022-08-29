@@ -110,7 +110,7 @@ def deploy(
     write_app_json(
         app_info,
         destdir,
-        html_source_dir=Path(shinylive_assets_dir()) / "shinylive" / "shiny_static",
+        html_source_dir=Path(shinylive_assets_dir()) / "deploy_template",
     )
 
     print(

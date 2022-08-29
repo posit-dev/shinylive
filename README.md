@@ -120,7 +120,7 @@ This an overview of some of the important files and directories in this project.
 │   └── ipyshiny
 ├── quarto                 # Sources for an example Quarto site
 │   └── docs               # Generated files for Quarto site
-├── shiny_static           # Files used for deployment via `shiny static`
+├── deploy_template        # Files used for deployment via `shinylive deploy`
 ├── scripts
 │   └── pyodide_packages.py # Script for downloading PyPI packages and inserting
 │                           #   package metadata into pyodide's package.json.
