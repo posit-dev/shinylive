@@ -1,8 +1,0 @@
-{
-  "ignore": ["build", "dist", "typings", "sandbox"],
-  "typeCheckingMode": "strict",
-  "reportImportCycles":  "none",
-  "reportUnusedFunction":  "none",
-  "reportPrivateUsage": "none",
-  "reportUnnecessaryIsInstance": "none",
-}
