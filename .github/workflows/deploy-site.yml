@@ -50,12 +50,13 @@ jobs:
         run: |
           make dist
 
-      - name: Upload the artifacts
-        uses: skx/github-action-publish-binaries@release-2.0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          args: 'dist/*.tar.gz'
+    - name: Upload shinylive bundle to release
+      uses: svenstaro/upload-release-action@v2
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        file: "dist/*.tar.gz"
+        tag: ${{ github.ref }}
+        overwrite: true
 
 
       # =====================================================
