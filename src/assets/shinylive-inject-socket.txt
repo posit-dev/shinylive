@@ -1,0 +1,100 @@
+"use strict";
+
+// src/messageportwebsocket.ts
+var MessagePortWebSocket = class extends EventTarget {
+  constructor(port) {
+    super();
+    this.readyState = 0;
+    this.addEventListener("open", (e) => {
+      if (this.onopen) {
+        this.onopen(e);
+      }
+    });
+    this.addEventListener("message", (e) => {
+      if (this.onmessage) {
+        this.onmessage(e);
+      }
+    });
+    this.addEventListener("error", (e) => {
+      if (this.onerror) {
+        this.onerror(e);
+      }
+    });
+    this.addEventListener("close", (e) => {
+      if (this.onclose) {
+        this.onclose(e);
+      }
+    });
+    this._port = port;
+    port.addEventListener("message", this._onMessage.bind(this));
+    port.start();
+  }
+  accept() {
+    if (this.readyState !== 0) {
+      return;
+    }
+    this.readyState = 1;
+    this._port.postMessage({ type: "open" });
+  }
+  send(data) {
+    if (this.readyState === 0) {
+      throw new DOMException("Can't send messages while WebSocket is in CONNECTING state", "InvalidStateError");
+    }
+    if (this.readyState > 1) {
+      return;
+    }
+    this._port.postMessage({ type: "message", value: { data } });
+  }
+  close(code, reason) {
+    if (this.readyState > 1) {
+      return;
+    }
+    this.readyState = 2;
+    this._port.postMessage({ type: "close", value: { code, reason } });
+    this.readyState = 3;
+    this.dispatchEvent(new CloseEvent("close", { code, reason }));
+  }
+  _onMessage(e) {
+    const event = e.data;
+    switch (event.type) {
+      case "open":
+        if (this.readyState === 0) {
+          this.readyState = 1;
+          this.dispatchEvent(new Event("open"));
+          return;
+        }
+        break;
+      case "message":
+        if (this.readyState === 1) {
+          this.dispatchEvent(new MessageEvent("message", { ...event.value }));
+          return;
+        }
+        break;
+      case "close":
+        if (this.readyState < 3) {
+          this.readyState = 3;
+          this.dispatchEvent(new CloseEvent("close", { ...event.value }));
+          return;
+        }
+        break;
+    }
+    this._reportError(`Unexpected event '${event.type}' while in readyState ${this.readyState}`, 1002);
+  }
+  _reportError(message, code) {
+    this.dispatchEvent(new ErrorEvent("error", { message }));
+    if (typeof code === "number") {
+      this.close(code, message);
+    }
+  }
+};
+
+// src/shinylive-inject-socket.ts
+window.Shiny.createSocket = function() {
+  const channel = new MessageChannel();
+  window.parent.postMessage({
+    type: "openChannel",
+    appName: window.location.pathname.replace(new RegExp(".*/([^/]+)/$"), "$1"),
+    path: "/websocket/"
+  }, "*", [channel.port2]);
+  return new MessagePortWebSocket(channel.port1);
+};

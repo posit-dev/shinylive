@@ -10,3 +10,9 @@ declare module "*.svg" {
   const src: string;
   export default src;
 }
+
+// This is so the TS compiler doesn't complain about importing text files.
+declare module "*.txt" {
+  const content: string;
+  export default content;
+}

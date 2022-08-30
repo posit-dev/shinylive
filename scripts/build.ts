@@ -128,7 +128,6 @@ esbuild
     bundle: true,
     entryPoints: [
       "src/pyodide-worker.ts",
-      "src/inject-socket.ts",
       "src/load-shinylive-sw.ts",
       "src/run-python-blocks.ts",
     ],
@@ -158,6 +157,21 @@ esbuild
     bundle: true,
     entryPoints: ["src/scripts/codeblock-to-json.ts"],
     outdir: `${BUILD_DIR}/scripts`,
+    format: "esm",
+    target: "es2020",
+    minify: minify,
+    ...watchProp,
+  })
+  .catch(() => process.exit(1));
+
+// Compile src/shinylive-inject-socket.ts to
+// src/assets/shinylive-inject-socket.txt. That file is in turn ingested into
+// shinylive-sw.js.
+esbuild
+  .build({
+    bundle: true,
+    entryPoints: ["src/shinylive-inject-socket.ts"],
+    outfile: "src/assets/shinylive-inject-socket.txt",
     format: "esm",
     target: "es2020",
     minify: minify,
