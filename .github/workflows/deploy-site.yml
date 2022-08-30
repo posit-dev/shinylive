@@ -43,6 +43,21 @@ jobs:
           make all
 
       # =====================================================
+      # Upload shinylive bundle on release
+      # =====================================================
+      - name: Build shinylive deployment bundle
+        if: github.event_name == 'release'
+        run: |
+          make dist
+
+      - name: Upload binary artifact for release
+        uses: AButler/upload-release-assets@v2.0
+        with:
+          files: 'dist/*.tar.gz'
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+
+      # =====================================================
       # Commit to gh-pages branch
       # =====================================================
       # Name and email are needed to push.
