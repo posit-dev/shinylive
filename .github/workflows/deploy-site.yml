@@ -52,13 +52,13 @@ jobs:
         run: |
           make dist
 
-    - name: Upload shinylive bundle to release
-      uses: svenstaro/upload-release-action@v2
-      with:
-        repo_token: ${{ secrets.GITHUB_TOKEN }}
-        file: "dist/*.tar.gz"
-        tag: ${{ github.ref }}
-        overwrite: true
+      - name: Upload shinylive bundle to release
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: "dist/*.tar.gz"
+          tag: ${{ github.ref }}
+          overwrite: true
 
 
       # =====================================================
