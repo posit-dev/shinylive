@@ -1,10 +1,12 @@
-name: Build and deploy site
+name: Build shinylive
 
 on:
   push:
     branches: [main]
   pull_request:
     branches: [main]
+  release:
+    types: [published]
 
 jobs:
   build:
@@ -41,6 +43,24 @@ jobs:
       - name: Build shinylive
         run: |
           make all
+
+      # =====================================================
+      # Upload shinylive bundle on release
+      # =====================================================
+      - name: Build shinylive deployment bundle for release
+        if: github.event_name == 'release'
+        run: |
+          make dist
+
+      - name: Upload shinylive bundle to release
+        if: github.event_name == 'release'
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: "dist/*.tar.gz"
+          tag: ${{ github.ref }}
+          file_glob: true
+          overwrite: true
 
       # =====================================================
       # Commit to gh-pages branch
