@@ -129,7 +129,7 @@ esbuild
     entryPoints: [
       "src/pyodide-worker.ts",
       "src/inject-socket.ts",
-      "src/load-serviceworker.ts",
+      "src/load-shinylive-sw.ts",
       "src/run-python-blocks.ts",
     ],
     outdir: `${BUILD_DIR}/shinylive`,
@@ -168,7 +168,7 @@ esbuild
 esbuild
   .build({
     bundle: true,
-    entryPoints: ["src/serviceworker.ts"],
+    entryPoints: ["src/shinylive-sw.ts"],
     outdir: `${BUILD_DIR}`,
     format: "esm",
     target: "es2020",

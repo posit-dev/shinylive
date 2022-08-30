@@ -1,5 +1,5 @@
+// Service Worker for Shinylive
 /// <reference lib="WebWorker" />
-
 import { fetchASGI } from "./messageporthttp";
 import { dirname, sleep, uint8ArrayToString } from "./utils";
 

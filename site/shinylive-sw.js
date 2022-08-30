@@ -1,0 +1,1 @@
+../build/shinylive-sw.js

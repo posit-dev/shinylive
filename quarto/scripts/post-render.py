@@ -21,7 +21,7 @@ open("docs/.nojekyll", "a").close()
 # _quarto.yml, but it doesn't seem to allow choosing the destination directory,
 # so the files would end up on docs/prism-experiments/shinylive/ instead of
 # docs/shinylive/.
-shutil.copyfile(f"../{BUILD_DIR}/serviceworker.js", "docs/serviceworker.js")
+shutil.copyfile(f"../{BUILD_DIR}/shinylive-sw.js", "docs/shinylive-sw.js")
 os.symlink(f"../../{BUILD_DIR}/shinylive", "docs/shinylive")
 shutil.copytree(f"../{SITE_DIR}/examples", "docs/examples")
 shutil.copytree(f"../{SITE_DIR}/editor", "docs/editor")
