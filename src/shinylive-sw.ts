@@ -65,6 +65,7 @@ self.addEventListener("fetch", function (event): void {
         status: 200,
       })
     );
+    return;
   }
 
   // Fetches that are prepended with /app_<id>/ need to be proxied to pyodide.
@@ -156,6 +157,7 @@ self.addEventListener("fetch", function (event): void {
         }
       })()
     );
+    return;
   }
 });
 
