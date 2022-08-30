@@ -174,7 +174,9 @@ esbuild
     outfile: "src/assets/shinylive-inject-socket.txt",
     format: "esm",
     target: "es2020",
-    minify: minify,
+    // Don't minify, because the space savings are minimal, and the it will lead
+    // to spurious diffs when building for dev vs. prod.
+    minify: false,
     ...watchProp,
   })
   .catch(() => process.exit(1));
