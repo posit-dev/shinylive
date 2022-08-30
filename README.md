@@ -1,4 +1,4 @@
-Shiny live
+Shinylive
 ==========
 
 Code for deploying Shiny applications that will run completely in the browser, using Pyodide (Python compiled to WebAssembly).
