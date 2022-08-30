@@ -58,6 +58,7 @@ jobs:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: "dist/*.tar.gz"
           tag: ${{ github.ref }}
+          file_glob: true
           overwrite: true
 
 
