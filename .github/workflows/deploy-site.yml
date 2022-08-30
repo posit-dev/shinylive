@@ -1,4 +1,4 @@
-name: Build and deploy site
+name: Build shinylive
 
 on:
   push:
@@ -47,7 +47,7 @@ jobs:
       # =====================================================
       # Upload shinylive bundle on release
       # =====================================================
-      - name: Build shinylive deployment bundle
+      - name: Build shinylive deployment bundle for release
         if: github.event_name == 'release'
         run: |
           make dist
@@ -60,7 +60,6 @@ jobs:
           tag: ${{ github.ref }}
           file_glob: true
           overwrite: true
-
 
       # =====================================================
       # Commit to gh-pages branch
