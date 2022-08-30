@@ -53,6 +53,7 @@ jobs:
           make dist
 
       - name: Upload shinylive bundle to release
+        if: github.event_name == 'release'
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
