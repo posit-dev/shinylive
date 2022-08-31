@@ -68,6 +68,7 @@ esbuild
       "crypto",
       "child_process",
       "url",
+      "ws",
     ],
     format: "esm",
     target: "es2020",
