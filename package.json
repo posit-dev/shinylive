@@ -1,11 +1,11 @@
 {
   "private": true,
-  "name": "prism-experiments",
-  "version": "0.0.1",
-  "description": "Experiments with Prism",
+  "name": "shinylive",
+  "version": "0.0.4dev",
+  "description": "Run Shiny applications with Python running in the browser.",
   "main": "index.js",
   "repository": {
-    "url": "https://github.com/rstudio/prism-experiments",
+    "url": "https://github.com/rstudio/shinylive",
     "type": "git"
   },
   "author": "Winston Chang <winston@rstudio.com>",

@@ -1,4 +1,6 @@
 "use strict";
+// Shinylive 0.0.4dev
+// Copyright 2022 RStudio, PBC
 
 // src/messageportwebsocket.ts
 var MessagePortWebSocket = class extends EventTarget {

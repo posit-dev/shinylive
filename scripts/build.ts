@@ -1,4 +1,5 @@
 // Live-reload script taken from https://github.com/evanw/esbuild/issues/802#issuecomment-819578182
+import packageJson from "../package.json";
 import buildExamples from "./build_examples_json";
 import { spawn } from "child_process";
 import esbuild from "esbuild";
@@ -8,6 +9,12 @@ import process from "process";
 
 const EXAMPLES_SOURCE_DIR = "./examples";
 const BUILD_DIR = "./build";
+
+const SHINYLIVE_VERSION = packageJson.version;
+const banner = {
+  js: `// Shinylive ${SHINYLIVE_VERSION}\n// Copyright 2022 RStudio, PBC`,
+  css: `/* Shinylive ${SHINYLIVE_VERSION}\n// Copyright 2022 RStudio, PBC */`,
+};
 
 const clients: http.ServerResponse[] = [];
 
@@ -79,6 +86,7 @@ esbuild
     // This probably has something to do with how pyodide.js specifies the path.
     chunkNames: "[name]-[hash]",
     minify: minify,
+    banner: banner,
     metafile: metafile,
     define: {
       "process.env.NODE_ENV": reactProductionMode
@@ -149,6 +157,7 @@ esbuild
     format: "esm",
     target: "es2020",
     minify: minify,
+    banner: banner,
     ...watchProp,
   })
   .catch(() => process.exit(1));
@@ -161,6 +170,7 @@ esbuild
     format: "esm",
     target: "es2020",
     minify: minify,
+    banner: banner,
     ...watchProp,
   })
   .catch(() => process.exit(1));
@@ -178,6 +188,7 @@ esbuild
     // Don't minify, because the space savings are minimal, and the it will lead
     // to spurious diffs when building for dev vs. prod.
     minify: false,
+    banner: banner,
     ...watchProp,
   })
   .catch(() => process.exit(1));
@@ -190,6 +201,7 @@ esbuild
     format: "esm",
     target: "es2020",
     minify: minify,
+    banner: banner,
     ...watchProp,
   })
   .catch(() => process.exit(1));
