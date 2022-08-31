@@ -53,8 +53,8 @@ jobs:
       - name: Check that version number matches release tag
         if: github.event_name == 'release'
         run: |
-          if [ "${{github.ref}}" != v`node -p "require('./package.json').version"` ]; then
-            echo Version in package.json, prepended with \"v\", is \"v`node -p "require('./package.json').version"`\", which does not match git tag \"${{github.ref}}\".
+          if [ "${{github.ref}}" != refs/tags/v`node -p "require('./package.json').version"` ]; then
+            echo Version in package.json, prepended with \"refs/tags/v\", is \"v`node -p "require('./package.json').version"`\", which does not match git tag \"${{github.ref}}\".
             exit 1
           fi
 
