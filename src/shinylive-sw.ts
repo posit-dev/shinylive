@@ -79,9 +79,12 @@ self.addEventListener("fetch", function (event): void {
         let pollCount = 5;
         while (!apps[m_appPath[1]]) {
           if (pollCount == 0) {
-            return new Response(`Couldn't find parent page for ${url}`, {
-              status: 404,
-            });
+            return new Response(
+              `Couldn't find parent page for ${url}. This may be because the Service Worker has updated. Try reloading the page.`,
+              {
+                status: 404,
+              }
+            );
           }
 
           console.log("App URL not registered. Waiting 50ms.");
