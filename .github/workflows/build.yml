@@ -47,6 +47,17 @@ jobs:
       # =====================================================
       # Upload shinylive bundle on release
       # =====================================================
+
+      # Ensure that if the version in package.json is "0.0.5", then release tag
+      # is "v0.0.5".
+      - name: Check that version number matches release tag
+        if: github.event_name == 'release'
+        run: |
+          if [ "${{github.ref}}" != v`node -p "require('./package.json').version"` ]; then
+            echo Version in package.json, prepended with \"v\", is \"v`node -p "require('./package.json').version"`\", which does not match git tag \"${{github.ref}}\".
+            exit 1
+          fi
+
       - name: Build shinylive deployment bundle for release
         if: github.event_name == 'release'
         run: |
