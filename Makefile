@@ -172,23 +172,23 @@ $(BUILD_DIR)/deploy_template/edit/index.html: deploy_template/edit/index.html
 
 ## Build JS resources from src/ dir
 buildjs:
-	node_modules/.bin/ts-node scripts/build.ts
+	node_modules/.bin/tsx scripts/build.ts
 
 ## Build JS resources for production (with minification)
 buildjs-prod:
-	node_modules/.bin/ts-node scripts/build.ts --prod
+	node_modules/.bin/tsx scripts/build.ts --prod
 
 ## Build JS resources and watch for changes
 watch:
-	node_modules/.bin/ts-node scripts/build.ts --watch
+	node_modules/.bin/tsx scripts/build.ts --watch
 
 ## Build JS resources, watch for changes, and serve site
 serve:
-	node_modules/.bin/ts-node scripts/build.ts --serve
+	node_modules/.bin/tsx scripts/build.ts --serve
 
 ## Build JS resources for production, watch for changes, and serve site
 serve-prod:
-	node_modules/.bin/ts-node scripts/build.ts --serve --prod
+	node_modules/.bin/tsx scripts/build.ts --serve --prod
 
 
 # Build htmltools, shiny, and shinywidgets. This target must be run manually after

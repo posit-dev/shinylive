@@ -1,5 +1,4 @@
-"use strict";
-// Shinylive 0.0.4dev
+// Shinylive 0.0.6
 // Copyright 2022 RStudio, PBC
 
 // src/messageportwebsocket.ts
@@ -40,7 +39,10 @@ var MessagePortWebSocket = class extends EventTarget {
   }
   send(data) {
     if (this.readyState === 0) {
-      throw new DOMException("Can't send messages while WebSocket is in CONNECTING state", "InvalidStateError");
+      throw new DOMException(
+        "Can't send messages while WebSocket is in CONNECTING state",
+        "InvalidStateError"
+      );
     }
     if (this.readyState > 1) {
       return;
@@ -80,7 +82,10 @@ var MessagePortWebSocket = class extends EventTarget {
         }
         break;
     }
-    this._reportError(`Unexpected event '${event.type}' while in readyState ${this.readyState}`, 1002);
+    this._reportError(
+      `Unexpected event '${event.type}' while in readyState ${this.readyState}`,
+      1002
+    );
   }
   _reportError(message, code) {
     this.dispatchEvent(new ErrorEvent("error", { message }));
@@ -93,10 +98,17 @@ var MessagePortWebSocket = class extends EventTarget {
 // src/shinylive-inject-socket.ts
 window.Shiny.createSocket = function() {
   const channel = new MessageChannel();
-  window.parent.postMessage({
-    type: "openChannel",
-    appName: window.location.pathname.replace(new RegExp(".*/([^/]+)/$"), "$1"),
-    path: "/websocket/"
-  }, "*", [channel.port2]);
+  window.parent.postMessage(
+    {
+      type: "openChannel",
+      appName: window.location.pathname.replace(
+        new RegExp(".*/([^/]+)/$"),
+        "$1"
+      ),
+      path: "/websocket/"
+    },
+    "*",
+    [channel.port2]
+  );
   return new MessagePortWebSocket(channel.port1);
 };
