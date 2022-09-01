@@ -97,8 +97,8 @@ all: node_modules \
 	update_pyodide_repodata_json \
 	create_typeshed_json \
 	copy_pyright \
-	$(BUILD_DIR)/deploy_template/index.html \
-	$(BUILD_DIR)/deploy_template/edit/index.html \
+	$(BUILD_DIR)/export_template/index.html \
+	$(BUILD_DIR)/export_template/edit/index.html \
 	buildjs
 
 ## Build shinylive distribution .tar.gz file
@@ -161,13 +161,13 @@ $(BUILD_DIR)/shinylive/pyodide/$(SHINYWIDGETS_WHEEL): $(PACKAGE_DIR)/$(SHINYWIDG
 	cp $(PACKAGE_DIR)/$(SHINYWIDGETS_WHEEL) $(BUILD_DIR)/shinylive/pyodide/$(SHINYWIDGETS_WHEEL)
 
 
-$(BUILD_DIR)/deploy_template/index.html: deploy_template/index.html
-	mkdir -p $(BUILD_DIR)/deploy_template
-	cp deploy_template/index.html $(BUILD_DIR)/deploy_template/index.html
+$(BUILD_DIR)/export_template/index.html: export_template/index.html
+	mkdir -p $(BUILD_DIR)/export_template
+	cp export_template/index.html $(BUILD_DIR)/export_template/index.html
 
-$(BUILD_DIR)/deploy_template/edit/index.html: deploy_template/edit/index.html
-	mkdir -p $(BUILD_DIR)/deploy_template/edit
-	cp deploy_template/edit/index.html $(BUILD_DIR)/deploy_template/edit/index.html
+$(BUILD_DIR)/export_template/edit/index.html: export_template/edit/index.html
+	mkdir -p $(BUILD_DIR)/export_template/edit
+	cp export_template/edit/index.html $(BUILD_DIR)/export_template/edit/index.html
 
 
 ## Build JS resources from src/ dir
