@@ -122,5 +122,5 @@
       "react-hooks/exhaustive-deps": "warn"
     }
   },
-  "dependencies": {}
+  "packageManager": "yarn@3.2.3"
 }
