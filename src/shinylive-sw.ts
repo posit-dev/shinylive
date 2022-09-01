@@ -62,6 +62,7 @@ self.addEventListener("fetch", function (event): void {
   if (url.pathname == `${base_path}/shinylive-inject-socket.js`) {
     event.respondWith(
       new Response(shinylive_inject_socket_js, {
+        headers: { "Content-Type": "text/javascript" },
         status: 200,
       })
     );
@@ -207,7 +208,7 @@ function injectSocketFilter(bodyChunk: Uint8Array, response: Response) {
     const base_path = dirname(self.location.pathname);
     const newStr = bodyChunkStr.replace(
       /<\/head>/,
-      `<script src="${base_path}/shinylive-inject-socket.js"></script>\n</head>`
+      `<script src="${base_path}/shinylive-inject-socket.js" type="module"></script>\n</head>`
     );
     const newChunk = Uint8Array.from(
       newStr.split("").map((s) => s.charCodeAt(0))

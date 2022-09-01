@@ -33,7 +33,7 @@ const serviceWorkerPath = serviceWorkerDir + "/shinylive-sw.js";
 // resources it will be able to cache on the first run.
 if ("serviceWorker" in navigator) {
   navigator.serviceWorker
-    .register(serviceWorkerPath)
+    .register(serviceWorkerPath, { type: "module" })
     .then(() => console.log("Service Worker registered"))
     .catch(() => console.log("Service Worker registration failed"));
 
