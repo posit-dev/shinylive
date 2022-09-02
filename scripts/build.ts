@@ -11,9 +11,10 @@ const EXAMPLES_SOURCE_DIR = "./examples";
 const BUILD_DIR = "./build";
 
 const SHINYLIVE_VERSION = packageJson.version;
+const currentYear = new Date().getFullYear();
 const banner = {
-  js: `// Shinylive ${SHINYLIVE_VERSION}\n// Copyright 2022 RStudio, PBC`,
-  css: `/* Shinylive ${SHINYLIVE_VERSION}\n// Copyright 2022 RStudio, PBC */`,
+  js: `// Shinylive ${SHINYLIVE_VERSION}\n// Copyright ${currentYear} RStudio, PBC`,
+  css: `/* Shinylive ${SHINYLIVE_VERSION}\n// Copyright ${currentYear} RStudio, PBC */`,
 };
 
 const clients: http.ServerResponse[] = [];
@@ -188,7 +189,6 @@ esbuild
     // Don't minify, because the space savings are minimal, and the it will lead
     // to spurious diffs when building for dev vs. prod.
     minify: false,
-    banner: banner,
     ...watchProp,
   })
   .catch(() => process.exit(1));
