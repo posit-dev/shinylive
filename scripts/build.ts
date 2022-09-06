@@ -169,7 +169,7 @@ esbuild
     entryPoints: ["src/scripts/codeblock-to-json.ts"],
     outdir: `${BUILD_DIR}/scripts`,
     format: "esm",
-    target: "es2020",
+    target: "es2022",
     minify: minify,
     banner: banner,
     ...watchProp,
