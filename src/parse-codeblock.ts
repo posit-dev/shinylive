@@ -1,6 +1,14 @@
 import type { FileContent } from "./Components/filecontent";
 import { load as yamlLoad } from "js-yaml";
 
+export type Component = "editor" | "terminal" | "viewer" | "examples" | "cell";
+
+export type QuartoArgs = {
+  components?: Component[];
+  standalone?: boolean;
+  [name: string]: any;
+};
+
 /**
  * Given a code block, parse it into a FileContent object and set of Quarto
  * arguments.
@@ -29,17 +37,45 @@ import { load as yamlLoad } from "js-yaml";
  * iVBORw0KGgoAAAANSUhEUgAAACgAAAAuCAYAAABap1twAAAABGdBTUEAALGPC ...
  * ------------------------------
  */
-export function parseCodeBlock(
-  codeblock: string | string[],
-  defaultFilename: string
-): {
+export function parseCodeBlock(codeblock: string | string[]): {
   files: FileContent[];
-  quartoArgs: Record<string, string>;
+  quartoArgs: Required<QuartoArgs>;
 } {
   if (!Array.isArray(codeblock)) {
     codeblock = codeblock.split("\n");
   }
-  const { lines, quartoArgs } = processQuartoArgs(codeblock);
+  const { lines, quartoArgs: quartoArgsParsed } = processQuartoArgs(codeblock);
+
+  if (quartoArgsParsed.components === undefined) {
+    quartoArgsParsed.components = ["editor", "viewer"];
+  }
+  if (quartoArgsParsed.standalone === undefined) {
+    quartoArgsParsed.standalone = false;
+  }
+
+  const quartoArgs = quartoArgsParsed as Required<QuartoArgs>;
+
+  let defaultFilename: string;
+  // If it's a Shinylive app (with a viewer component)...
+  if (quartoArgs.components.includes("viewer")) {
+    // Shinylive app code blocks must have an explicit "#| standalone: true".
+    if (quartoArgs.standalone !== true) {
+      throw new Error(
+        "Shinylive application code blocks must have a '#| standalone: true' argument. In the future other values will be supported."
+      );
+    }
+    // For shiny apps, the default filename is "app.py".
+    defaultFilename = "app.py";
+  } else {
+    // In the case of editor-terminal and editor-cell components...
+    if (quartoArgs.standalone !== false) {
+      throw new Error(
+        "'#| standalone: true' is not valid for editor-terminal and editor-cell code blocks."
+      );
+    }
+    defaultFilename = "code.py";
+  }
+
   const files = parseFileContents(lines, defaultFilename);
   return { files, quartoArgs };
 }
@@ -52,7 +88,7 @@ export function parseCodeBlock(
  */
 export function processQuartoArgs(lines: string[]): {
   lines: string[];
-  quartoArgs: Record<string, string>;
+  quartoArgs: QuartoArgs;
 } {
   let i = 0;
   while (i < lines.length) {
@@ -75,9 +111,9 @@ export function processQuartoArgs(lines: string[]): {
     .map((line) => line.replace(/^#\| /, ""));
 
   // Parse the args as YAML.
-  const quartoArgs: Record<string, string> = yamlLoad(
+  const quartoArgs: QuartoArgs = yamlLoad(
     argCommentLines.join("\n")
-  ) as Record<string, string>;
+  ) as QuartoArgs;
 
   return {
     lines: lines.slice(i),
@@ -138,6 +174,10 @@ export function parseFileContents(
       } else if (line.match(/^##\s?type:/)) {
         const fileType = line.replace(/^##\s?type:/, "").trim();
         if (fileType === "text" || fileType === "binary") {
+          currentFile;
+          // @ts-expect-error: TypeScript isn't smart enough to understand that
+          // the `type: "text"` from the initial assignment can be changed to
+          // `type: "binary"`.
           currentFile.type = fileType;
         } else {
           console.warn(`Invalid type string: "${line}".`);

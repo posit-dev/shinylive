@@ -429,7 +429,14 @@ export function App({
         {appOptions.showHeaderBar ? (
           <HeaderBar headerBarCallbacks={headerBarCallbacks}></HeaderBar>
         ) : null}
-        <div className="App--container viewer">
+        <div
+          className="App--container viewer"
+          style={{
+            height: appOptions.viewerHeight
+              ? `${appOptions.viewerHeight}px`
+              : undefined,
+          }}
+        >
           <Viewer
             pyodideProxyHandle={pyodideProxyHandle}
             setViewerMethods={setViewerMethods}

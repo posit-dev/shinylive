@@ -20,6 +20,6 @@ for await (const line of readLines(Deno.stdin)) {
   lines.push(line)
 }
 
-const content = parseCodeBlock(lines, "app.py");
+const content = parseCodeBlock(lines);
 
 await Deno.stdout.write(new TextEncoder().encode(JSON.stringify(content)));
