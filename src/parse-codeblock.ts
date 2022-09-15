@@ -1,9 +1,5 @@
 import type { FileContent } from "./Components/filecontent";
-
-type CommentArgument = {
-  prop: string;
-  val: string;
-};
+import { load as yamlLoad } from "js-yaml";
 
 /**
  * Given a code block, parse it into a FileContent object and set of Quarto
@@ -50,49 +46,41 @@ export function parseCodeBlock(
 
 /**
  *  Loop through all the lines and extract lines at the beginning which start
- *  with Quarto parameter comments and have the format "#| key: val" as
- *  `quartoArgs`, and strip those lines from the result. Also remove up to one
- *  empty line after any args.
+ *  with Quarto parameter comments and have the format "#| " as `quartoArgs`,
+ *  and strip those lines from the result. Also remove up to one empty line
+ *  after any args.
  */
 export function processQuartoArgs(lines: string[]): {
   lines: string[];
   quartoArgs: Record<string, string>;
 } {
-  const outLines = [...lines];
-  const quartoArgs: Record<string, string> = {};
-  let searchingForArgs = true;
-
-  while (searchingForArgs && outLines.length > 0) {
-    const argsFromLine = outLines[0].match(
-      /^#\|\s(?<prop>\w+):\s*(?<val>\w+)$/
-    );
-
-    if (argsFromLine) {
-      outLines.splice(0, 1);
-      const { prop, val } = argsFromLine.groups as CommentArgument;
-      if (!prop || !val) {
-        console.warn(
-          "Invalid format of layout args. Ignoring...",
-          argsFromLine.groups
-        );
-      } else {
-        quartoArgs[prop] = val;
-      }
-    } else {
-      searchingForArgs = false;
+  let i = 0;
+  while (i < lines.length) {
+    const line = lines[i];
+    if (!line.match(/^#\| /)) {
       // Remove up to one blank line after finding any args.
-      if (
-        Object.keys(quartoArgs).length !== 0 &&
-        outLines.length >= 1 &&
-        outLines[0] === ""
-      ) {
-        outLines.splice(0, 1);
+      if (line === "") {
+        i++;
       }
+      // Stop searching for arg comments.
+      break;
     }
+
+    i++;
   }
 
+  // Extract the lines that start with "#| " and remove that comment prefix.
+  const argCommentLines = lines
+    .slice(0, i)
+    .map((line) => line.replace(/^#\| /, ""));
+
+  // Parse the args as YAML.
+  const quartoArgs: Record<string, string> = yamlLoad(
+    argCommentLines.join("\n")
+  ) as Record<string, string>;
+
   return {
-    lines: outLines,
+    lines: lines.slice(i),
     quartoArgs,
   };
 }
