@@ -146,10 +146,10 @@ export function parseFileContents(
 
   for (const line of lines) {
     if (state === "START") {
-      if (line.match(/^##\s?file:/)) {
+      if (line.match(/^## file:/)) {
         state = "HEADER";
         currentFile = {
-          name: line.replace(/^##\s?file:/, "").trim(),
+          name: line.replace(/^## file:/, "").trim(),
           content: "",
           type: "text",
         };
@@ -161,18 +161,18 @@ export function parseFileContents(
         currentFile.content += line;
       }
     } else if (state === "HEADER") {
-      if (line.match(/^##\s?file:/)) {
+      if (line.match(/^## file:/)) {
         // We've found the start of a new file -- if the previous state was
         // HEADER, the previous file would have been empty.
         state = "HEADER";
         files.push(currentFile);
         currentFile = {
-          name: line.replace(/^##\s?file:/, "").trim(),
+          name: line.replace(/^## file:/, "").trim(),
           content: "",
           type: "text",
         };
-      } else if (line.match(/^##\s?type:/)) {
-        const fileType = line.replace(/^##\s?type:/, "").trim();
+      } else if (line.match(/^## type:/)) {
+        const fileType = line.replace(/^## type:/, "").trim();
         if (fileType === "text" || fileType === "binary") {
           currentFile;
           // @ts-expect-error: TypeScript isn't smart enough to understand that
@@ -188,12 +188,12 @@ export function parseFileContents(
         currentFile.content += line;
       }
     } else if (state === "FILE_CONTENT") {
-      if (line.match(/^##\s?file:/)) {
+      if (line.match(/^## file:/)) {
         // We've found the start of a new file.
         state = "HEADER";
         files.push(currentFile);
         currentFile = {
-          name: line.replace(/^##\s?file:/, "").trim(),
+          name: line.replace(/^## file:/, "").trim(),
           content: "",
           type: "text",
         };
