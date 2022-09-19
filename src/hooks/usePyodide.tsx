@@ -206,8 +206,6 @@ _mock_multiprocessing()
 _mock_ipykernel()
 _mock_ipython()
 
-import asyncio
-
 def _pyodide_env_init():
     import os
     import sys
