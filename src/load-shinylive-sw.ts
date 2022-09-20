@@ -27,6 +27,9 @@ if (shinyliveMetaTag !== null) {
 } else {
   serviceWorkerDir = dirname(currentScriptDir());
 }
+// Remove trailing slash, if present.
+serviceWorkerDir = serviceWorkerDir.replace(/\/$/, "");
+
 const serviceWorkerPath = serviceWorkerDir + "/shinylive-sw.js";
 
 // Start the service worker as soon as possible, to maximize the
