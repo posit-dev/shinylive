@@ -15,7 +15,7 @@ const blocks: NodeListOf<HTMLPreElement> =
 
 blocks.forEach((block) => {
   const container = document.createElement("div");
-  container.className = "pyshiny-container";
+  container.className = "shinylive-wrapper";
 
   // Copy over explicitly-set style properties.
   container.style.cssText = block.style.cssText;
