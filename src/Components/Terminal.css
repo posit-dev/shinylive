@@ -1,7 +1,7 @@
 /*
 This very-specific selector is needed to override some settings from App.css.
 */
-.Terminal.terminal {
+.shinylive-terminal.terminal {
   height: 100%;
   position: relative;
   overflow: hidden;
