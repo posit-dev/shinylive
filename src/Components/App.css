@@ -57,7 +57,7 @@
 .shinylive-terminal {
   grid-area: terminal;
 }
-.Viewer {
+.shinylive-viewer {
   grid-area: viewer;
 }
 
