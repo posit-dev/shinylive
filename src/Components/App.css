@@ -51,7 +51,7 @@
 .ExampleSelector {
   grid-area: exampleselector;
 }
-.Editor {
+.shinylive-editor {
   grid-area: editor;
 }
 .Terminal {

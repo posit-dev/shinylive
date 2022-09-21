@@ -156,7 +156,7 @@ div.pyshiny-container {
   padding: 0;
 }
 
-.shinylive-container.editor-cell .Editor {
+.shinylive-container.editor-cell .shinylive-editor {
   border-bottom-right-radius: 0;
   border-bottom-left-radius: 0;
 }
@@ -179,7 +179,7 @@ div.pyshiny-container {
   color: #666;
 }
 
-.shinylive-container.editor-cell .Editor--container {
+.shinylive-container.editor-cell .editor-container {
   padding: 12px 12px 4px 12px;
 }
 
@@ -188,7 +188,7 @@ div.pyshiny-container {
   border-radius: var(--panel-roundness);
 }
 
-.Editor--container .cm-editor .cm-scroller {
+.editor-container .cm-editor .cm-scroller {
   font-size: 13px;
   line-height: 1.8;
 }

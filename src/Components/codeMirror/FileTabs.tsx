@@ -23,7 +23,7 @@ export function FileTabs({
 
   return (
     <>
-      <div className="Editor--header--files">
+      <div className="editor-files">
         {files.map((f, index) => {
           const isActiveFile = activeFile.name === f.name;
 
@@ -49,13 +49,13 @@ export function FileTabs({
                 setFocusOnEditor(true);
               }}
             >
-              <span className="Editor--header--files--filename">
+              <span className="editor-filename">
                 {editingCurrentFilename ? editingFilename : f.name}
               </span>
 
               {moreThanOneFile ? (
                 <span
-                  className="Editor--header--files--closebutton"
+                  className="editor-closebutton"
                   aria-label="Close file"
                   onClick={(e) => {
                     if (!confirm("Close " + f.name + "?")) {
@@ -110,9 +110,9 @@ export function FileTabs({
           );
         })}
 
-        <span className="Editor--header--files--addtab">
+        <span className="editor-addtab">
           <button
-            className="Editor--header--files--addbutton"
+            className="editor-addbutton"
             aria-label="Add a file"
             data-balloon-pos="down"
             onClick={() => addFile()}
@@ -120,7 +120,7 @@ export function FileTabs({
             +
           </button>
           <button
-            className="Editor--header--files--uploadbutton"
+            className="editor-uploadbutton"
             aria-label="Load a file from disk"
             data-balloon-pos="down"
             onClick={() => uploadFile()}
