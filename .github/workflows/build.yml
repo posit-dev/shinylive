@@ -1,4 +1,4 @@
-name: Build shinylive
+name: Build and deploy shinylive
 
 on:
   push:
@@ -60,7 +60,10 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages publish _shinylive/ --project-name=shinylive --commit-dirty=true
+          # We need to tell that we're deploying on the "main" branch (even
+          # though we're actually on "deploy" branch) so that it is a production
+          # deployment.
+          command: pages publish _shinylive/ --project-name=shinylive --commit-dirty=true --branch=main
 
 
       # =====================================================
