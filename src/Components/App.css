@@ -48,7 +48,7 @@
   /* outline: 1px solid var(--colors-grey); */
 }
 
-.ExampleSelector {
+.shinylive-example-selector {
   grid-area: exampleselector;
 }
 .shinylive-editor {
