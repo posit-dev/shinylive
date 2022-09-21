@@ -1,12 +1,7 @@
-.Viewer {
+.shinylive-viewer {
   height: 100%;
   width: 100%;
   position: relative;
-}
-
-.Viewer--contents {
-  height: 100%;
-  width: 100%;
 }
 
 .app-frame {
@@ -14,14 +9,14 @@
   border: 0;
 }
 
-.Viewer iframe {
+.shinylive-viewer iframe {
   background-color: white;
   width: 100%;
   height: 100%;
   display: block;
 }
 
-.Viewer .loading-wrapper {
+.shinylive-viewer .loading-wrapper {
   overflow: auto;
   background-color: white;
   position: absolute;
@@ -34,11 +29,11 @@
   align-items: center;
 }
 
-.Viewer .loading-wrapper.loading-wrapper-error {
+.shinylive-viewer .loading-wrapper.loading-wrapper-error {
   justify-content: left;
 }
 
-.Viewer .loading-wrapper .error-alert {
+.shinylive-viewer .loading-wrapper .error-alert {
   text-align: center;
   font-size: 1.4rem;
   font-family: var(--font-face);
@@ -46,14 +41,14 @@
   animation: loading-animation-fade-in 0.5s;
 }
 
-.Viewer .loading-wrapper .error-alert .error-icon {
+.shinylive-viewer .loading-wrapper .error-alert .error-icon {
   display: inline-block;
   text-align: center;
   width: 85px;
   margin-bottom: 0.5rem;
 }
 
-.Viewer .loading-wrapper .error-alert .error-log {
+.shinylive-viewer .loading-wrapper .error-alert .error-log {
   font-size: 0.7rem;
   text-align: left;
   padding: 0.3rem;

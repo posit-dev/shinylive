@@ -1,4 +1,4 @@
-.Editor {
+.shinylive-editor {
   --bg-light-shade-color: #f6f6f6;
   --button-gray-color: #999;
   --button-hover-color: #hsl(207, 69%, 25%);
@@ -16,23 +16,23 @@
 
 /* Enforce a max height for the editor-viewer mode unless the user has dragged
 the size bigger.  */
-.ResizableGrid.editor-viewer:not(.been-dragged) > .Editor {
+.ResizableGrid.editor-viewer:not(.been-dragged) > .shinylive-editor {
   max-height: 800px;
 }
 
-.Editor--header {
+.editor-header {
   grid-area: header;
 }
-.Editor--container {
+.editor-container {
   grid-area: editor;
 }
 
-.Editor > div {
+.shinylive-editor > div {
   min-width: 0;
   min-height: 0;
 }
 
-.Editor--header {
+.editor-header {
   display: flex;
   padding-top: var(--pad);
   padding-left: var(--pad);
@@ -42,7 +42,7 @@ the size bigger.  */
   border-bottom: 1px solid var(--border-color);
 }
 
-.Editor--header--files > button {
+.editor-files > button {
   font-size: 14px;
   font-family: var(--font-face);
   height: 26px;
@@ -57,17 +57,17 @@ the size bigger.  */
   padding: 0 2px;
 }
 
-.Editor--header--files button svg {
+.editor-files button svg {
   /* When Bootstrap is used, it sets vertical-align:middle for svg, but that
    * messes up alignment of our svg icons. */
   vertical-align: unset;
 }
 
-.Editor--header--files--filename {
+.editor-filename {
   padding: 0 4px;
 }
 
-.Editor--header--files > button.selected {
+.editor-files > button.selected {
   color: black;
   background-color: var(--colors-bg);
   border-color: var(--border-color);
@@ -75,7 +75,7 @@ the size bigger.  */
   cursor: text;
 }
 
-.Editor--header--files > button.selected::after {
+.editor-files > button.selected::after {
   content: "";
   width: 100%;
   height: 4px;
@@ -86,7 +86,7 @@ the size bigger.  */
   border-bottom-color: var(--colors-bg);
 }
 
-.Editor--header--files > button.selected > input {
+.editor-files > button.selected > input {
   width: 100%;
   font-size: 14px;
   font-family: var(--font-face);
@@ -100,27 +100,24 @@ the size bigger.  */
   background-color: transparent;
 }
 
-.Editor--header--files > button.selected > input.invalid-filename {
+.editor-files > button.selected > input.invalid-filename {
   color: var(--colors-red);
 }
 
-.Editor--header--files > button > .Editor--header--files--closebutton {
+.editor-files > button > .editor-closebutton {
   width: 1.2rem;
   display: inline-block;
   color: var(--button-gray-color);
   font-weight: bold;
 }
 
-.Editor--header--files
-  > button.selected
-  > .Editor--header--files--closebutton
-  + input {
+.editor-files > button.selected > .editor-closebutton + input {
   /* If there's a close button, make the input a bit smaller so it doesn't
   overlap the close button. */
   width: calc(100% - 21px);
 }
 
-.Editor--header--files > .Editor--header--files--addtab {
+.editor-files > .editor-addtab {
   /* Make the border invisible, but keep the inherited thickness. This is to
   keep things aligned properly. */
   border-color: rgba(0, 0, 0, 0);
@@ -130,8 +127,8 @@ the size bigger.  */
   padding: 0;
 }
 
-.Editor--header--files .Editor--header--files--addbutton,
-.Editor--header--files .Editor--header--files--uploadbutton {
+.editor-files .editor-addbutton,
+.editor-files .editor-uploadbutton {
   display: inline-block;
   color: var(--button-gray-color);
   fill: var(--button-gray-color);
@@ -141,39 +138,39 @@ the size bigger.  */
   padding: 0 0.3rem;
 }
 
-.Editor--header--files .Editor--header--files--uploadbutton {
+.editor-files .editor-uploadbutton {
   font-size: 0.7rem;
 }
 
-.Editor--header--files .Editor--header--files--closebutton:hover,
-.Editor--header--files .Editor--header--files--addbutton:hover,
-.Editor--header--files .Editor--header--files--uploadbutton:hover {
+.editor-files .editor-closebutton:hover,
+.editor-files .editor-addbutton:hover,
+.editor-files .editor-uploadbutton:hover {
   color: var(--button-hover-color);
   fill: var(--button-hover-color);
   /* border-radius: 3px; */
   cursor: pointer;
 }
 
-.Editor--container {
+.editor-container {
   padding: var(--pad);
   position: relative;
 }
 
-.Editor--container .cm-editor {
+.editor-container .cm-editor {
   height: 100%;
 }
 
-.Editor--container .cm-editor.cm-focused {
+.editor-container .cm-editor.cm-focused {
   /* Don't show outline on focused editor. (Override CodeMirror default) */
   outline: none;
 }
 
-.Editor--container .cm-editor .cm-scroller {
+.editor-container .cm-editor .cm-scroller {
   font-family: var(--font-mono-face);
   font-size: var(--font-mono-size);
 }
 
-.Editor--container .cm-gutters {
+.editor-container .cm-gutters {
   color: #aaa;
   background-color: var(--colors-bg);
   border-right: 1px solid #eee;
@@ -181,16 +178,16 @@ the size bigger.  */
   padding-right: 4px;
 }
 
-.Editor--container .cm-activeLineGutter {
+.editor-container .cm-activeLineGutter {
   background-color: var(--colors-bg);
 }
 
-.Editor--container .cm-tooltip {
+.editor-container .cm-tooltip {
   font-family: var(--font-face);
   font-size: var(--font-size);
 }
 
-.Editor--container .cm-tooltip code {
+.editor-container .cm-tooltip code {
   font-family: var(--font-mono-face);
   font-size: var(--font-mono-size);
   /* If used with Bootstrap, we need to override Bootstrap's wrapping behavior
@@ -198,34 +195,34 @@ the size bigger.  */
   white-space: pre-wrap;
 }
 
-.Editor--container .cm-diagnostic {
+.editor-container .cm-diagnostic {
   font-family: var(--font-mono-face);
   font-size: var(--font-mono-size);
 }
 
-.Editor--container .cm-signature-signature {
+.editor-container .cm-signature-signature {
   font-family: var(--font-mono-face);
 }
 
 /* The tooltip shown when hovering, with the formatted docstring. */
-.Editor--container .docstring {
+.editor-container .docstring {
   padding: 3px 6px;
   max-width: 650px;
   max-height: 300px;
   overflow-y: auto;
 }
 
-.Editor--container .docstring pre {
+.editor-container .docstring pre {
   white-space: pre-wrap;
 }
 
-.Editor--container .docstring h2 {
+.editor-container .docstring h2 {
   font-size: 1.2em;
   font-weight: 600;
 }
 
 /* Code run button styles */
-.Editor button.code-run-button {
+.shinylive-editor button.code-run-button {
   border: none;
   font-size: 0.8rem;
   padding: 0.2rem 0.5rem;
@@ -233,19 +230,19 @@ the size bigger.  */
   white-space: nowrap;
 }
 
-.Editor .code-run-button:hover {
+.shinylive-editor .code-run-button:hover {
   color: var(--button-hover-color);
   fill: var(--button-hover-color);
 }
 
 /* When in the header of the app next to file tabs */
-.Editor--header .code-run-button {
+.editor-header .code-run-button {
   align-self: center;
   color: var(--button-gray-color);
   fill: var(--button-gray-color);
 }
 
-.Editor .floating-buttons .code-run-button {
+.shinylive-editor .floating-buttons .code-run-button {
   position: absolute;
   top: 0;
   right: 0;
@@ -255,13 +252,13 @@ the size bigger.  */
   opacity: 0;
 }
 
-.Editor:hover .floating-buttons .code-run-button {
+.shinylive-editor:hover .floating-buttons .code-run-button {
   color: var(--button-gray-color);
   fill: var(--button-gray-color);
   opacity: 1;
 }
 
-.Editor .floating-buttons .code-run-button:hover {
+.shinylive-editor .floating-buttons .code-run-button:hover {
   color: var(--button-hover-color);
   fill: var(--button-hover-color);
 }

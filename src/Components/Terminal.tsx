@@ -158,5 +158,5 @@ export function Terminal({
     jqTermRef.current.set_prompt(">>> ");
   }, [pyodideProxyHandle.ready]);
 
-  return <div ref={containerRef} className="Terminal"></div>;
+  return <div ref={containerRef} className="shinylive-terminal"></div>;
 }

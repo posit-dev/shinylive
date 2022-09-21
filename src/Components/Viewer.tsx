@@ -191,7 +191,7 @@ export function Viewer({
   }, [pyodideProxyHandle.shinyReady]);
 
   return (
-    <div className="Viewer">
+    <div className="shinylive-viewer">
       <iframe ref={viewerFrameRef} className="app-frame" />
       {appRunningState === "loading" ? (
         <div className="loading-wrapper">

@@ -264,7 +264,7 @@ export function App({
       <>
         <HeaderBar headerBarCallbacks={headerBarCallbacks}></HeaderBar>
         <ResizableGrid
-          className="App--container"
+          className="shinylive-container"
           areas={[
             ["exampleselector", "editor", "viewer"],
             ["exampleselector", "terminal", "viewer"],
@@ -306,7 +306,7 @@ export function App({
       <>
         <HeaderBar headerBarCallbacks={headerBarCallbacks}></HeaderBar>
         <ResizableGrid
-          className="App--container"
+          className="shinylive-container"
           areas={[
             ["editor", "viewer"],
             ["terminal", "viewer"],
@@ -341,7 +341,7 @@ export function App({
   } else if (appMode === "editor-terminal") {
     return (
       <ResizableGrid
-        className="App--container"
+        className="shinylive-container"
         areas={[["editor", "terminal"]]}
         rowSizes={["1fr"]}
         colSizes={["1fr", "1fr"]}
@@ -366,7 +366,7 @@ export function App({
     );
   } else if (appMode === "editor-cell") {
     return (
-      <div className="App--container editor-cell">
+      <div className="shinylive-container editor-cell">
         <React.Suspense fallback={<div>Loading...</div>}>
           <Editor
             currentFilesFromApp={currentFiles}
@@ -405,7 +405,7 @@ export function App({
           };
 
     return (
-      <ResizableGrid className="App--container editor-viewer" {...gridDef}>
+      <ResizableGrid className="shinylive-container editor-viewer" {...gridDef}>
         <React.Suspense fallback={<div>Loading...</div>}>
           <Editor
             currentFilesFromApp={currentFiles}
@@ -430,7 +430,7 @@ export function App({
           <HeaderBar headerBarCallbacks={headerBarCallbacks}></HeaderBar>
         ) : null}
         <div
-          className="App--container viewer"
+          className="shinylive-container viewer"
           style={{
             height: appOptions.viewerHeight
               ? `${appOptions.viewerHeight}px`

@@ -518,18 +518,18 @@ export default function Editor({
   // ===========================================================================
 
   return (
-    <div className="Editor">
+    <div className="shinylive-editor">
       {shareModal}
       {showHeaderBar ? (
-        <div className="Editor--header">
+        <div className="editor-header">
           {showFileTabs ? <FileTabs {...tabbedFiles} /> : null}
-          <div className="Editor--header--actions">
+          <div className="editor-actions">
             {formatCodeButton}
             {runButton}
           </div>
         </div>
       ) : null}
-      <div className="Editor--container" ref={cmDivRef}></div>
+      <div className="editor-container" ref={cmDivRef}></div>
       {floatingButtons ? (
         <div className="floating-buttons">{runButton}</div>
       ) : null}
