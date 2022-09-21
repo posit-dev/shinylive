@@ -1,4 +1,4 @@
-div.rendered-html table {
+.shinylive-output-cell div.rendered-html table {
   border: none;
   border-collapse: collapse;
   border-spacing: 0;
@@ -7,14 +7,14 @@ div.rendered-html table {
   table-layout: fixed;
 }
 
-div.rendered-html thead {
+.shinylive-output-cell div.rendered-html thead {
   border-bottom: 1px solid black;
   vertical-align: bottom;
 }
 
-div.rendered-html tr,
-div.rendered-html th,
-div.rendered-html td {
+.shinylive-output-cell div.rendered-html tr,
+.shinylive-output-cell div.rendered-html th,
+.shinylive-output-cell div.rendered-html td {
   text-align: right;
   vertical-align: middle;
   padding: 0.5em 0.5em;
@@ -24,14 +24,14 @@ div.rendered-html td {
   border: none;
 }
 
-div.rendered-html th {
+.shinylive-output-cell div.rendered-html th {
   font-weight: bold;
 }
 
-div.rendered-html tbody tr:nth-child(odd) {
+.shinylive-output-cell div.rendered-html tbody tr:nth-child(odd) {
   background: #f5f5f5;
 }
 
-div.rendered-html tbody tr:hover {
+.shinylive-output-cell div.rendered-html tbody tr:hover {
   background: rgba(66, 165, 245, 0.2);
 }
