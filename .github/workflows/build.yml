@@ -2,7 +2,7 @@ name: Build shinylive
 
 on:
   push:
-    branches: [main]
+    branches: [main, deploy]
   pull_request:
     branches: [main]
   release:
@@ -40,11 +40,28 @@ jobs:
         run: |
           make all
 
-      - name: Upload Quarto site artifact
+      - name: Upload site/ artifact
         if: github.ref == 'refs/heads/main'
         uses: actions/upload-pages-artifact@v1
         with:
           path: "site/"
+
+
+      # =====================================================
+      # Publish to shinylive.io
+      # =====================================================
+      # Deploy the _shinylive/ subdirectory to shinylive.io. It might make sense
+      # to do this as a separate job using the uploaded site/ artifact (like
+      # deploy_gh_pages), but this actually deploys a different subdirectory,
+      # _shinylive/, so we'll just do it in line.
+      - name: Publish to shinylive.io
+        if: github.ref == 'refs/heads/deploy'
+        uses: cloudflare/wrangler-action@2.0.0
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages publish _shinylive/ --project-name=shinylive --commit-dirty=true
+
 
       # =====================================================
       # Upload shinylive bundle on release
@@ -76,21 +93,18 @@ jobs:
           overwrite: true
 
 
-  deploy:
+  deploy_gh_pages:
     if: github.ref == 'refs/heads/main'
     needs: build
 
-    # Grant GITHUB_TOKEN the permissions required to make a Pages deployment
     permissions:
-      pages: write      # to deploy to Pages
-      id-token: write   # to verify the deployment originates from an appropriate source
+      pages: write
+      id-token: write
 
-    # Deploy to the github-pages environment
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
 
-    # Specify runner + deployment step
     runs-on: ubuntu-latest
     steps:
       - name: Deploy to GitHub Pages

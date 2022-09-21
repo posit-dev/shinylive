@@ -126,5 +126,6 @@ This an overview of some of the important files and directories in this project.
 │                           #   package metadata into pyodide's package.json.
 │
 ├── src                    # TypeScript source files.
-└── site                   # Example web site with shinylive, served by `make serve`.
+├── site                   # Example web site with shinylive, served by `make serve`.
+└── _shinylive             # Directory containing files that are deployed to shinylive.io.
 ```
