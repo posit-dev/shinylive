@@ -77,3 +77,41 @@ button:disabled {
   cursor: default;
   background-color: #c8c8c8;
 }
+
+/* The following pertain to case where the shinylive-container is in editor-cell
+mode. It doesn't fit exactly into this file, but this seems to be the best place
+for it. */
+
+.shinylive-container.editor-cell {
+  padding: 0;
+}
+
+.shinylive-container.editor-cell .shinylive-editor {
+  border-bottom-right-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+.shinylive-container.editor-cell .shinylive-output-cell {
+  border-top: 2px solid #eeeff2;
+  border-top-right-radius: 0;
+  border-top-left-radius: 0;
+}
+
+.shinylive-container.editor-cell .shinylive-output-cell .rendered-html {
+  padding: 2px 12px 3px 12px;
+}
+
+.shinylive-container.editor-cell .shinylive-output-cell pre.output-content {
+  border-top-right-radius: 0;
+  border-top-left-radius: 0;
+  background-color: #eeeff2;
+  font-size: 13px;
+  line-height: 1.8;
+  padding: 2px 12px 5px 12px;
+  margin-bottom: 0;
+  color: #666;
+}
+
+.shinylive-container.editor-cell .editor-container {
+  padding: 12px 12px 4px 12px;
+}
