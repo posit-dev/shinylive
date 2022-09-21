@@ -161,17 +161,17 @@ div.pyshiny-container {
   border-bottom-left-radius: 0;
 }
 
-.shinylive-container.editor-cell .OutputCell {
+.shinylive-container.editor-cell .shinylive-output-cell {
   border-top: 2px solid #eeeff2;
   border-top-right-radius: 0;
   border-top-left-radius: 0;
 }
 
-.shinylive-container.editor-cell .OutputCell .rendered_html {
+.shinylive-container.editor-cell .shinylive-output-cell .rendered_html {
   padding: 2px 12px 3px 12px;
 }
 
-.shinylive-container.editor-cell .OutputCell pre.sourceCode {
+.shinylive-container.editor-cell .shinylive-output-cell pre.sourceCode {
   border-top-right-radius: 0;
   border-top-left-radius: 0;
   background-color: #eeeff2;

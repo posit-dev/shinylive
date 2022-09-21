@@ -1,9 +1,8 @@
-import * as React from "react";
-
 import { PyodideProxyHandle } from "../hooks/usePyodide";
 import { ToHtmlResult } from "../pyodide-proxy";
 import "./OutputCell.css";
 import { TerminalMethods } from "./Terminal";
+import * as React from "react";
 
 // =============================================================================
 // OutputCell component
@@ -43,7 +42,7 @@ export function OutputCell({
   }, [setTerminalMethods, pyodideProxyHandle]);
 
   return (
-    <div className="OutputCell">
+    <div className="shinylive-output-cell">
       {content.type === "html" ? (
         <div
           className="rendered_html"
