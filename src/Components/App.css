@@ -26,7 +26,7 @@
     6.2px 8.3px 11.7px -2.5px hsl(var(--shadow-color) / 0.36);
 }
 
-.App--container {
+.shinylive-container {
   --pad: 2px;
   height: 100%;
   width: 100%;
@@ -38,11 +38,11 @@
 }
 
 /* Settings for standalone app viewer (with no other components) */
-.App--container.viewer {
+.shinylive-container.viewer {
   --pad: 0;
 }
 
-.App--container > div {
+.shinylive-container > div {
   border-radius: var(--panel-roundness);
   background-color: var(--colors-bg);
   /* outline: 1px solid var(--colors-grey); */

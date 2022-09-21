@@ -141,37 +141,37 @@ div.pyshiny-container {
   border-radius: 8px;
 }
 
-.App--container {
+.shinylive-container {
   background-color: #eeeff2;
   min-height: auto;
 }
 
-.App--container > div {
+.shinylive-container > div {
   border-radius: var(--panel-roundness);
   background-color: var(--colors-bg);
   box-shadow: none;
 }
 
-.App--container.editor-cell {
+.shinylive-container.editor-cell {
   padding: 0;
 }
 
-.App--container.editor-cell .Editor {
+.shinylive-container.editor-cell .Editor {
   border-bottom-right-radius: 0;
   border-bottom-left-radius: 0;
 }
 
-.App--container.editor-cell .OutputCell {
+.shinylive-container.editor-cell .OutputCell {
   border-top: 2px solid #eeeff2;
   border-top-right-radius: 0;
   border-top-left-radius: 0;
 }
 
-.App--container.editor-cell .OutputCell .rendered_html {
+.shinylive-container.editor-cell .OutputCell .rendered_html {
   padding: 2px 12px 3px 12px;
 }
 
-.App--container.editor-cell .OutputCell pre.sourceCode {
+.shinylive-container.editor-cell .OutputCell pre.sourceCode {
   border-top-right-radius: 0;
   border-top-left-radius: 0;
   background-color: #eeeff2;
@@ -179,12 +179,12 @@ div.pyshiny-container {
   color: #666;
 }
 
-.App--container.editor-cell .Editor--container {
+.shinylive-container.editor-cell .Editor--container {
   padding: 12px 12px 4px 12px;
 }
 
-.App--container.viewer > div,
-.App--container.viewer iframe {
+.shinylive-container.viewer > div,
+.shinylive-container.viewer iframe {
   border-radius: var(--panel-roundness);
 }
 
