@@ -45,12 +45,12 @@ export function OutputCell({
     <div className="shinylive-output-cell">
       {content.type === "html" ? (
         <div
-          className="rendered_html"
+          className="rendered-html"
           dangerouslySetInnerHTML={{ __html: content.value }}
         ></div>
       ) : (
-        <pre className="sourceCode">
-          <code className="sourceCode">{content.value}</code>
+        <pre className="output-content">
+          <code className="output-content">{content.value}</code>
         </pre>
       )}
     </div>
