@@ -28,13 +28,15 @@ test.describe("Shiny-Static deploys", async () => {
 
     // Make sure editor is there and has the identifying header
     await expect(
-      page.locator(`.Editor`, { hasText: `ui.h2("Hello Shiny-Static!")` })
+      page.locator(`.shinylive-editor`, {
+        hasText: `ui.h2("Hello Shiny-Static!")`,
+      })
     ).toBeVisible();
 
     // Double check that the header from the app from url encoding didnt make it
     // into the editor
     await expect(
-      page.locator(`.Editor`, { hasText: 'ui.h1("Code from a url")' })
+      page.locator(`.shinylive-editor`, { hasText: 'ui.h1("Code from a url")' })
     ).not.toBeVisible();
 
     await expect(

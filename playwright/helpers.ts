@@ -33,7 +33,7 @@ async function expect_pane_has_text(
  * @param text Text to search for in the editor panel
  */
 export async function expect_editor_has_text(page: Page, text: string) {
-  await expect_pane_has_text(page, `.Editor`, text);
+  await expect_pane_has_text(page, `.shinylive-editor`, text);
 }
 
 /**
@@ -42,7 +42,7 @@ export async function expect_editor_has_text(page: Page, text: string) {
  * @param text Text to search for in the terminal panel
  */
 export async function expect_terminal_has_text(page: Page, text: string) {
-  await expect_pane_has_text(page, `.Terminal`, text);
+  await expect_pane_has_text(page, `.shinylive-terminal`, text);
 }
 
 /**

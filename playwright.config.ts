@@ -77,7 +77,7 @@ const config: PlaywrightTestConfig = {
     },
     {
       command:
-        ". venv/bin/activate && shiny static playwright/static-app-test playwright/static-build && python3 -u -m http.server --directory playwright/static-build 8008 2> /dev/null",
+        ". venv/bin/activate && shinylive export playwright/static-app-test playwright/static-build && python3 -u -m http.server --directory playwright/static-build 8008 2> /dev/null",
       port: 8008,
     },
   ],
