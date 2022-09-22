@@ -9,8 +9,8 @@
     "type": "git"
   },
   "scripts": {
-    "serve": "ts-node scripts/build.ts --serve",
-    "test-server": "ts-node scripts/build.ts --test-server",
+    "serve": "tsx scripts/build.ts --serve",
+    "test-server": "tsx scripts/build.ts --test-server",
     "cypress:open": "cypress open"
   },
   "author": "Winston Chang <winston@rstudio.com>",
