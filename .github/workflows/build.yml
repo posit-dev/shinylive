@@ -43,6 +43,8 @@ jobs:
           node-version: "14.x"
       - name: Install dependencies
         run: yarn
+      - name: Install Shinylive Python pacakge
+        run: pip install shinylive
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps
       - name: Run Playwright tests
