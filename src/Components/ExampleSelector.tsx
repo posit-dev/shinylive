@@ -127,7 +127,7 @@ export function ExampleSelector({
   }
 
   return (
-    <div className="ExampleSelector">
+    <div className="shinylive-example-selector">
       <div className="categories">
         <h2>Examples</h2>
         {exampleCategories?.map(({ category, apps }, categoryIndex) => (

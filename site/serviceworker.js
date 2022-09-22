@@ -1,1 +1,0 @@
-../build/serviceworker.js

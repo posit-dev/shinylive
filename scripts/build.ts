@@ -1,4 +1,5 @@
 // Live-reload script taken from https://github.com/evanw/esbuild/issues/802#issuecomment-819578182
+import packageJson from "../package.json";
 import buildExamples from "./build_examples_json";
 import { spawn } from "child_process";
 import esbuild from "esbuild";
@@ -8,6 +9,13 @@ import process from "process";
 
 const EXAMPLES_SOURCE_DIR = "./examples";
 const BUILD_DIR = "./build";
+
+const SHINYLIVE_VERSION = packageJson.version;
+const currentYear = new Date().getFullYear();
+const banner = {
+  js: `// Shinylive ${SHINYLIVE_VERSION}\n// Copyright ${currentYear} RStudio, PBC`,
+  css: `/* Shinylive ${SHINYLIVE_VERSION}\n// Copyright ${currentYear} RStudio, PBC */`,
+};
 
 const clients: http.ServerResponse[] = [];
 
@@ -74,6 +82,7 @@ esbuild
       "crypto",
       "child_process",
       "url",
+      "ws",
     ],
     format: "esm",
     target: "es2020",
@@ -84,6 +93,7 @@ esbuild
     // This probably has something to do with how pyodide.js specifies the path.
     chunkNames: "[name]-[hash]",
     minify: minify,
+    banner: banner,
     metafile: metafile,
     define: {
       "process.env.NODE_ENV": reactProductionMode
@@ -134,8 +144,8 @@ esbuild
     bundle: true,
     entryPoints: [
       "src/pyodide-worker.ts",
-      "src/inject-socket.ts",
-      "src/load-serviceworker.ts",
+      "src/load-shinylive-sw.ts",
+      "src/run-python-blocks.ts",
     ],
     outdir: `${BUILD_DIR}/shinylive`,
     // See note in esbuild.build() call above about why these are external.
@@ -147,22 +157,14 @@ esbuild
       "crypto",
       "child_process",
       "url",
+      // shinylive.js is used in run-python-blocks.ts, but we don't want to
+      // bundle it.
+      "./shinylive.js",
     ],
     format: "esm",
     target: "es2020",
     minify: minify,
-    ...watchProp,
-  })
-  .catch(() => process.exit(1));
-
-esbuild
-  .build({
-    bundle: false,
-    entryPoints: ["src/run-python-blocks.ts"],
-    outdir: `${BUILD_DIR}/shinylive`,
-    format: "esm",
-    target: "es2020",
-    minify: minify,
+    banner: banner,
     ...watchProp,
   })
   .catch(() => process.exit(1));
@@ -170,11 +172,42 @@ esbuild
 esbuild
   .build({
     bundle: true,
-    entryPoints: ["src/serviceworker.ts"],
+    entryPoints: ["src/scripts/codeblock-to-json.ts"],
+    outdir: `${BUILD_DIR}/scripts`,
+    format: "esm",
+    target: "es2022",
+    minify: minify,
+    banner: banner,
+    ...watchProp,
+  })
+  .catch(() => process.exit(1));
+
+// Compile src/shinylive-inject-socket.ts to
+// src/assets/shinylive-inject-socket.txt. That file is in turn ingested into
+// shinylive-sw.js.
+esbuild
+  .build({
+    bundle: true,
+    entryPoints: ["src/shinylive-inject-socket.ts"],
+    outfile: "src/assets/shinylive-inject-socket.txt",
+    format: "esm",
+    target: "es2020",
+    // Don't minify, because the space savings are minimal, and the it will lead
+    // to spurious diffs when building for dev vs. prod.
+    minify: false,
+    ...watchProp,
+  })
+  .catch(() => process.exit(1));
+
+esbuild
+  .build({
+    bundle: true,
+    entryPoints: ["src/shinylive-sw.ts"],
     outdir: `${BUILD_DIR}`,
     format: "esm",
     target: "es2020",
     minify: minify,
+    banner: banner,
     ...watchProp,
   })
   .catch(() => process.exit(1));

@@ -1,10 +1,10 @@
-Shiny live
+Shinylive
 ==========
 
 Code for deploying Shiny applications that will run completely in the browser, using Pyodide (Python compiled to WebAssembly).
 
 * Current semi-stable version: https://shinylive.io/py/examples/
-* Latest dev version (deployed from main branch of this repo): https://rstudio.github.io/py-shinylive/examples/
+* Latest dev version (deployed from main branch of this repo): https://rstudio.github.io/shinylive/examples/
 
 ## Build instructions
 
@@ -120,11 +120,12 @@ This an overview of some of the important files and directories in this project.
 │   └── ipyshiny
 ├── quarto                 # Sources for an example Quarto site
 │   └── docs               # Generated files for Quarto site
-├── shiny_static           # Files used for deployment via `shiny static`
+├── export_template        # Files used for deployment via `shinylive deploy`
 ├── scripts
 │   └── pyodide_packages.py # Script for downloading PyPI packages and inserting
 │                           #   package metadata into pyodide's package.json.
 │
 ├── src                    # TypeScript source files.
-└── site                   # Example web site with shinylive, served by `make serve`.
+├── site                   # Example web site with shinylive, served by `make serve`.
+└── _shinylive             # Directory containing files that are deployed to shinylive.io.
 ```

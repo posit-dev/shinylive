@@ -22,10 +22,7 @@ def server(input, output, session):
     def plot():
         np.random.seed(19680801)
         x = 100 + 15 * np.random.randn(437)
-
-        fig, ax = plt.subplots()
-        ax.hist(x, input.n(), density=True)
-        return fig
+        plt.hist(x, input.n(), density=True)
 
 
 app = App(app_ui, server, debug=True)

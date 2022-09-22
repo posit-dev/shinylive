@@ -1,5 +1,6 @@
 import { AwaitableQueue } from "./awaitable-queue";
-import type { PyProxyCallable } from "./types/pyodide";
+import { loadPyodide } from "./pyodide/pyodide";
+import type { PyProxyCallable } from "./pyodide/pyodide";
 import { uint8ArrayToString } from "./utils";
 
 type Pyodide = Awaited<ReturnType<typeof loadPyodide>>;

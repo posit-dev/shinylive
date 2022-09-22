@@ -5,6 +5,7 @@
 /build/
 __pycache__
 /typings/
+
 /test-results/
 /playwright-report/
 /playwright/.cache/
@@ -12,3 +13,11 @@ __pycache__
 .vscode/*.log
 
 playwright/static-build/
+
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions

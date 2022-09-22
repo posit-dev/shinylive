@@ -1,5 +1,7 @@
+// Service Worker for Shinylive
 /// <reference lib="WebWorker" />
-
+// Load the content of shinylive-inject-socket.js as a string.
+import shinylive_inject_socket_js from "./assets/shinylive-inject-socket.txt";
 import { fetchASGI } from "./messageporthttp";
 import { dirname, sleep, uint8ArrayToString } from "./utils";
 
@@ -54,6 +56,19 @@ self.addEventListener("fetch", function (event): void {
   // closed properly.
   if (url.pathname == "/esbuild") return;
 
+  // If an app requests shinylive-inject-socket.js, return the string we loaded
+  // at the top.
+  const base_path = dirname(self.location.pathname);
+  if (url.pathname == `${base_path}/shinylive-inject-socket.js`) {
+    event.respondWith(
+      new Response(shinylive_inject_socket_js, {
+        headers: { "Content-Type": "text/javascript" },
+        status: 200,
+      })
+    );
+    return;
+  }
+
   // Fetches that are prepended with /app_<id>/ need to be proxied to pyodide.
   // We use fetchASGI.
   const appPathRegex = /.*\/(app_[^/]+\/)/;
@@ -65,9 +80,12 @@ self.addEventListener("fetch", function (event): void {
         let pollCount = 5;
         while (!apps[m_appPath[1]]) {
           if (pollCount == 0) {
-            return new Response(`Couldn't find parent page for ${url}`, {
-              status: 404,
-            });
+            return new Response(
+              `Couldn't find parent page for ${url}. This may be because the Service Worker has updated. Try reloading the page.`,
+              {
+                status: 404,
+              }
+            );
           }
 
           console.log("App URL not registered. Waiting 50ms.");
@@ -79,7 +97,7 @@ self.addEventListener("fetch", function (event): void {
         url.pathname = url.pathname.replace(appPathRegex, "/");
 
         // If this is the app homepage, we need to mangle the returned HTML to
-        // include <script src="../inject-socket.js"> in the <head>.
+        // include <script src="../shinylive-inject-socket.js"> in the <head>.
         const isAppRoot = url.pathname === "/";
         const filter = isAppRoot ? injectSocketFilter : identityFilter;
 
@@ -143,6 +161,7 @@ self.addEventListener("fetch", function (event): void {
         }
       })()
     );
+    return;
   }
 });
 
@@ -189,7 +208,7 @@ function injectSocketFilter(bodyChunk: Uint8Array, response: Response) {
     const base_path = dirname(self.location.pathname);
     const newStr = bodyChunkStr.replace(
       /<\/head>/,
-      `<script src="${base_path}/shinylive/inject-socket.js"></script>\n</head>`
+      `<script src="${base_path}/shinylive-inject-socket.js" type="module"></script>\n</head>`
     );
     const newChunk = Uint8Array.from(
       newStr.split("").map((s) => s.charCodeAt(0))

@@ -43,6 +43,15 @@ export async function initPyodide({
     stderr
   );
 
+  let initError = false;
+  try {
+    // One-time initialization of Python session
+    await pyodideProxy.runPyAsync(load_python_pre);
+  } catch (e) {
+    initError = true;
+    console.error(e);
+  }
+
   // Public functions
   async function runCode(command: string) {
     try {
@@ -65,7 +74,7 @@ export async function initPyodide({
     ready: true,
     pyodide: pyodideProxy,
     shinyReady: false,
-    initError: false,
+    initError: initError,
     runCode,
     tabComplete,
   };
@@ -88,17 +97,6 @@ export async function initShiny({
 
   const pyodideProxy = pyodideProxyHandle.pyodide;
   ensureOpenChannelListener(pyodideProxy);
-
-  try {
-    // One-time initialization of Python session
-    await pyodideProxy.runPyAsync(load_python_pre);
-  } catch (e) {
-    console.error(e);
-    return {
-      ...pyodideProxyHandle,
-      initError: true,
-    };
-  }
 
   return {
     ...pyodideProxyHandle,
@@ -136,23 +134,6 @@ export function usePyodide({
 // =============================================================================
 const load_python_pre =
   `
-def _mock_ssl():
-    import sys
-    import types
-
-    class SSLContext:
-        pass
-    class SSLObject:
-        pass
-    class MemoryBIO:
-        pass
-
-    m = types.ModuleType("ssl")
-    m.SSLContext = SSLContext
-    m.SSLObject = SSLObject
-    m.MemoryBIO = MemoryBIO
-    sys.modules["ssl"] = m
-
 def _mock_multiprocessing():
     import sys
     sys.modules['_multiprocessing'] = object
@@ -219,16 +200,16 @@ def _mock_ipython():
     m.backend2gui = {}
     mods["IPython.core.pylabtools"] = m
 
-_mock_ssl()
 _mock_multiprocessing()
 _mock_ipykernel()
 _mock_ipython()
 
-import asyncio
-
 def _pyodide_env_init():
     import os
     import sys
+
+    # We don't use ssl in this function, but this is needed for Shiny to load.
+    import ssl
 
     # With a WebWorker, matplotlib needs to use the AGG backend instead of
     # the default Canvas one.

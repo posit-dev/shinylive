@@ -14,9 +14,9 @@
 
 .DEFAULT_GOAL := help
 
-SHINYLIVE_VERSION = 0.0.2dev
+SHINYLIVE_VERSION = $(shell node -p "require('./package.json').version")
 
-PYODIDE_VERSION = 0.21.0
+PYODIDE_VERSION = 0.21.3
 PYODIDE_DIST_FILENAME = pyodide-build-$(PYODIDE_VERSION).tar.bz2
 BUILD_DIR = ./build
 PACKAGE_DIR = ./packages
@@ -89,7 +89,6 @@ all: node_modules \
 	$(BUILD_DIR)/shinylive/jquery.min.js \
 	$(BUILD_DIR)/shinylive/style-resets.css \
 	$(BUILD_DIR)/shinylive/pyodide \
-	$(BUILD_DIR)/scripts/shinylive.py \
 	src/pyodide/pyodide.js \
 	src/pyodide/pyodide.d.ts \
 	pyodide_packages_local \
@@ -98,8 +97,8 @@ all: node_modules \
 	update_pyodide_repodata_json \
 	create_typeshed_json \
 	copy_pyright \
-	$(BUILD_DIR)/shinylive/shiny_static/index.html \
-	$(BUILD_DIR)/shinylive/shiny_static/edit/index.html \
+	$(BUILD_DIR)/export_template/index.html \
+	$(BUILD_DIR)/export_template/edit/index.html \
 	buildjs
 
 ## Build shinylive distribution .tar.gz file
@@ -128,10 +127,6 @@ $(BUILD_DIR)/shinylive/pyodide:
 	cd $(BUILD_DIR)/shinylive && \
 	curl -L https://github.com/pyodide/pyodide/releases/download/$(PYODIDE_VERSION)/$(PYODIDE_DIST_FILENAME) \
 	    | tar --exclude "*test*.tar" --exclude "node_modules" -xvj
-
-$(BUILD_DIR)/scripts/shinylive.py: src/scripts/shinylive.py
-	mkdir -p $(BUILD_DIR)/scripts
-	cp src/scripts/shinylive.py $(BUILD_DIR)/scripts/shinylive.py
 
 # Copy pyodide.js and .d.ts to src/pyodide/. This is a little weird in that in
 # `make all`, it comes after downloading pyodide. In the future we may be able
@@ -166,34 +161,34 @@ $(BUILD_DIR)/shinylive/pyodide/$(SHINYWIDGETS_WHEEL): $(PACKAGE_DIR)/$(SHINYWIDG
 	cp $(PACKAGE_DIR)/$(SHINYWIDGETS_WHEEL) $(BUILD_DIR)/shinylive/pyodide/$(SHINYWIDGETS_WHEEL)
 
 
-$(BUILD_DIR)/shinylive/shiny_static/index.html: shiny_static/index.html
-	mkdir -p $(BUILD_DIR)/shinylive/shiny_static
-	cp shiny_static/index.html $(BUILD_DIR)/shinylive/shiny_static/index.html
+$(BUILD_DIR)/export_template/index.html: export_template/index.html
+	mkdir -p $(BUILD_DIR)/export_template
+	cp export_template/index.html $(BUILD_DIR)/export_template/index.html
 
-$(BUILD_DIR)/shinylive/shiny_static/edit/index.html: shiny_static/edit/index.html
-	mkdir -p $(BUILD_DIR)/shinylive/shiny_static/edit
-	cp shiny_static/edit/index.html $(BUILD_DIR)/shinylive/shiny_static/edit/index.html
+$(BUILD_DIR)/export_template/edit/index.html: export_template/edit/index.html
+	mkdir -p $(BUILD_DIR)/export_template/edit
+	cp export_template/edit/index.html $(BUILD_DIR)/export_template/edit/index.html
 
 
 ## Build JS resources from src/ dir
 buildjs:
-	node_modules/.bin/ts-node scripts/build.ts
+	node_modules/.bin/tsx scripts/build.ts
 
 ## Build JS resources for production (with minification)
 buildjs-prod:
-	node_modules/.bin/ts-node scripts/build.ts --prod
+	node_modules/.bin/tsx scripts/build.ts --prod
 
 ## Build JS resources and watch for changes
 watch:
-	node_modules/.bin/ts-node scripts/build.ts --watch
+	node_modules/.bin/tsx scripts/build.ts --watch
 
 ## Build JS resources, watch for changes, and serve site
 serve:
-	node_modules/.bin/ts-node scripts/build.ts --serve
+	node_modules/.bin/tsx scripts/build.ts --serve
 
 ## Build JS resources for production, watch for changes, and serve site
 serve-prod:
-	node_modules/.bin/ts-node scripts/build.ts --serve --prod
+	node_modules/.bin/tsx scripts/build.ts --serve --prod
 
 
 # Build htmltools, shiny, and shinywidgets. This target must be run manually after

@@ -1,0 +1,115 @@
+name: Build and deploy shinylive
+
+on:
+  push:
+    branches: [main, deploy]
+  pull_request:
+    branches: [main]
+  release:
+    types: [published]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.10"]
+      fail-fast: false
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Upgrade pip
+        run: python -m pip install --upgrade pip
+
+      - name: Check out submodules
+        run: |
+          make submodules
+
+      # =====================================================
+      # Build
+      # =====================================================
+      # - uses: quarto-dev/quarto-actions/setup@v2
+
+      - name: Build shinylive
+        run: |
+          make all
+
+      - name: Upload site/ artifact
+        if: github.ref == 'refs/heads/main'
+        uses: actions/upload-pages-artifact@v1
+        with:
+          path: "site/"
+
+
+      # =====================================================
+      # Publish to shinylive.io
+      # =====================================================
+      # Deploy the _shinylive/ subdirectory to shinylive.io. It might make sense
+      # to do this as a separate job using the uploaded site/ artifact (like
+      # deploy_gh_pages), but this actually deploys a different subdirectory,
+      # _shinylive/, so we'll just do it in line.
+      - name: Publish to shinylive.io
+        if: github.ref == 'refs/heads/deploy'
+        uses: cloudflare/wrangler-action@2.0.0
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          # We need to tell that we're deploying on the "main" branch (even
+          # though we're actually on "deploy" branch) so that it is a production
+          # deployment.
+          command: pages publish _shinylive/ --project-name=shinylive --commit-dirty=true --branch=main
+
+
+      # =====================================================
+      # Upload shinylive bundle on release
+      # =====================================================
+
+      # Ensure that if the version in package.json is "0.0.5", then release tag
+      # is "v0.0.5".
+      - name: Check that version number matches release tag
+        if: github.event_name == 'release'
+        run: |
+          if [ "${{github.ref}}" != refs/tags/v`node -p "require('./package.json').version"` ]; then
+            echo Version in package.json, prepended with \"refs/tags/v\", is \"v`node -p "require('./package.json').version"`\", which does not match git tag \"${{github.ref}}\".
+            exit 1
+          fi
+
+      - name: Build shinylive deployment bundle for release
+        if: github.event_name == 'release'
+        run: |
+          make dist
+
+      - name: Upload shinylive bundle to release
+        if: github.event_name == 'release'
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: "dist/*.tar.gz"
+          tag: ${{ github.ref }}
+          file_glob: true
+          overwrite: true
+
+
+  deploy_gh_pages:
+    if: github.ref == 'refs/heads/main'
+    needs: build
+
+    permissions:
+      pages: write
+      id-token: write
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v1
