@@ -43,6 +43,15 @@ export async function initPyodide({
     stderr
   );
 
+  let initError = false;
+  try {
+    // One-time initialization of Python session
+    await pyodideProxy.runPyAsync(load_python_pre);
+  } catch (e) {
+    initError = true;
+    console.error(e);
+  }
+
   // Public functions
   async function runCode(command: string) {
     try {
@@ -65,7 +74,7 @@ export async function initPyodide({
     ready: true,
     pyodide: pyodideProxy,
     shinyReady: false,
-    initError: false,
+    initError: initError,
     runCode,
     tabComplete,
   };
@@ -88,17 +97,6 @@ export async function initShiny({
 
   const pyodideProxy = pyodideProxyHandle.pyodide;
   ensureOpenChannelListener(pyodideProxy);
-
-  try {
-    // One-time initialization of Python session
-    await pyodideProxy.runPyAsync(load_python_pre);
-  } catch (e) {
-    console.error(e);
-    return {
-      ...pyodideProxyHandle,
-      initError: true,
-    };
-  }
 
   return {
     ...pyodideProxyHandle,
