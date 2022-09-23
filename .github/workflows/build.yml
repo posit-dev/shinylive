@@ -31,15 +31,34 @@ jobs:
         run: |
           make submodules
 
-      # =====================================================
-      # Build
-      # =====================================================
-      # - uses: quarto-dev/quarto-actions/setup@v2
-
       - name: Build shinylive
         run: |
           make all
 
+      # =====================================================
+      # Run playwright tests
+      # =====================================================
+      - uses: actions/setup-node@v2
+        with:
+          node-version: "14.x"
+      - name: Install dependencies
+        run: yarn
+      - name: Install Shinylive Python pacakge
+        run: pip install shinylive
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps
+      - name: Run Playwright tests
+        run: yarn playwright test
+      - uses: actions/upload-artifact@v2
+        if: always()
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 30
+
+      # =====================================================
+      # Upload site/ artifact
+      # =====================================================
       - name: Upload site/ artifact
         if: github.ref == 'refs/heads/main'
         uses: actions/upload-pages-artifact@v1
@@ -69,7 +88,6 @@ jobs:
       # =====================================================
       # Upload shinylive bundle on release
       # =====================================================
-
       # Ensure that if the version in package.json is "0.0.5", then release tag
       # is "v0.0.5".
       - name: Check that version number matches release tag
@@ -96,6 +114,9 @@ jobs:
           overwrite: true
 
 
+  # =====================================================
+  # Deploy GitHub Pages site
+  # =====================================================
   deploy_gh_pages:
     if: github.ref == 'refs/heads/main'
     needs: build
