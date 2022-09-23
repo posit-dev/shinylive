@@ -47,7 +47,7 @@ export function parseCodeBlock(codeblock: string | string[]): {
   const { lines, quartoArgs: quartoArgsParsed } = processQuartoArgs(codeblock);
 
   if (quartoArgsParsed.components === undefined) {
-    quartoArgsParsed.components = ["editor", "viewer"];
+    quartoArgsParsed.components = ["viewer"];
   }
   if (quartoArgsParsed.standalone === undefined) {
     quartoArgsParsed.standalone = false;
