@@ -1,7 +1,7 @@
 from shiny import App, ui
 
 
-app_ui = app_ui = ui.page_fluid(
+app_ui = ui.page_fluid(
     ui.tags.style(
         """
         .app-col {
