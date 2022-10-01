@@ -29,10 +29,12 @@ DIST_DIR = ./dist
 HTMLTOOLS_VERSION = $(shell grep '^__version__ = ' $(PACKAGE_DIR)/py-htmltools/htmltools/__init__.py | sed -E -e 's/^__version__ = "(.*)"/\1/')
 SHINY_VERSION = $(shell grep '^__version__ = ' $(PACKAGE_DIR)/py-shiny/shiny/__init__.py | sed -E -e 's/^__version__ = "(.*)"/\1/')
 SHINYWIDGETS_VERSION = $(shell grep '^__version__ = ' $(PACKAGE_DIR)/py-shinywidgets/shinywidgets/__init__.py | sed -E -e 's/^__version__ = "(.*)"/\1/')
+FAICONS_VERSION = $(shell grep '^__version__ = ' $(PACKAGE_DIR)/py-faicons/faicons/__init__.py | sed -E -e 's/^__version__ = "(.*)"/\1/')
 
 HTMLTOOLS_WHEEL = htmltools-$(HTMLTOOLS_VERSION)-py3-none-any.whl
 SHINY_WHEEL = shiny-$(SHINY_VERSION)-py3-none-any.whl
 SHINYWIDGETS_WHEEL = shinywidgets-$(SHINYWIDGETS_VERSION)-py3-none-any.whl
+FAICONS_WHEEL = faicons-$(FAICONS_VERSION)-py3-none-any.whl
 
 VENV = venv
 PYBIN = $(VENV)/bin
@@ -140,7 +142,8 @@ src/pyodide/pyodide.d.ts: $(BUILD_DIR)/shinylive/pyodide/pyodide.d.ts
 ## Copy local package wheels to the pyodide directory
 pyodide_packages_local: $(BUILD_DIR)/shinylive/pyodide/$(HTMLTOOLS_WHEEL) \
 	$(BUILD_DIR)/shinylive/pyodide/$(SHINY_WHEEL) \
-	$(BUILD_DIR)/shinylive/pyodide/$(SHINYWIDGETS_WHEEL)
+	$(BUILD_DIR)/shinylive/pyodide/$(SHINYWIDGETS_WHEEL) \
+	$(BUILD_DIR)/shinylive/pyodide/$(FAICONS_WHEEL)
 
 $(BUILD_DIR)/shinylive/pyodide/$(HTMLTOOLS_WHEEL): $(PACKAGE_DIR)/$(HTMLTOOLS_WHEEL)
 	mkdir -p $(BUILD_DIR)/shinylive/pyodide
@@ -160,6 +163,11 @@ $(BUILD_DIR)/shinylive/pyodide/$(SHINYWIDGETS_WHEEL): $(PACKAGE_DIR)/$(SHINYWIDG
 	rm -f $(BUILD_DIR)/shinylive/pyodide/shinywidgets*.whl
 	cp $(PACKAGE_DIR)/$(SHINYWIDGETS_WHEEL) $(BUILD_DIR)/shinylive/pyodide/$(SHINYWIDGETS_WHEEL)
 
+$(BUILD_DIR)/shinylive/pyodide/$(FAICONS_WHEEL): $(PACKAGE_DIR)/$(FAICONS_WHEEL)
+	mkdir -p $(BUILD_DIR)/shinylive/pyodide
+	# Remove any old copies of faicons
+	rm -f $(BUILD_DIR)/shinylive/pyodide/faicons*.whl
+	cp $(PACKAGE_DIR)/$(FAICONS_WHEEL) $(BUILD_DIR)/shinylive/pyodide/$(FAICONS_WHEEL)
 
 $(BUILD_DIR)/export_template/index.html: export_template/index.html
 	mkdir -p $(BUILD_DIR)/export_template
@@ -198,7 +206,8 @@ serve-prod:
 packages: clean-packages \
 	$(PACKAGE_DIR)/$(HTMLTOOLS_WHEEL) \
 	$(PACKAGE_DIR)/$(SHINY_WHEEL) \
-	$(PACKAGE_DIR)/$(SHINYWIDGETS_WHEEL)
+	$(PACKAGE_DIR)/$(SHINYWIDGETS_WHEEL) \
+	$(PACKAGE_DIR)/$(FAICONS_WHEEL)
 
 $(PACKAGE_DIR)/$(HTMLTOOLS_WHEEL): $(PYBIN) $(PACKAGE_DIR)/py-htmltools
 	# Remove any old copies of the package
@@ -221,6 +230,13 @@ $(PACKAGE_DIR)/$(SHINYWIDGETS_WHEEL): $(PYBIN) $(PACKAGE_DIR)/py-shinywidgets
 	$(PYBIN)/pip install -e $(PACKAGE_DIR)/py-shinywidgets
 	. $(PYBIN)/activate && cd $(PACKAGE_DIR)/py-shinywidgets && make dist && mv dist/*.whl ../
 
+$(PACKAGE_DIR)/$(FAICONS_WHEEL): $(PYBIN) $(PACKAGE_DIR)/py-faicons
+	# Remove any old copies of the package
+	rm -f $(PACKAGE_DIR)/faicons*.whl
+	$(PYBIN)/pip install -r $(PACKAGE_DIR)/py-faicons/requirements-dev.txt
+	$(PYBIN)/pip install -e $(PACKAGE_DIR)/py-faicons
+	. $(PYBIN)/activate && cd $(PACKAGE_DIR)/py-faicons && make dist && mv dist/*.whl ../
+
 ## Update the shinylive_lock.json file, based on shinylive_requirements.json
 update_packages_lock: $(PYBIN) $(BUILD_DIR)/shinylive/pyodide
 	$(PYBIN)/pip install -r requirements-dev.txt
@@ -235,7 +251,8 @@ update_packages_lock_local: $(PYBIN) $(BUILD_DIR)/shinylive/pyodide
 retrieve_packages: $(PYBIN) $(BUILD_DIR)/shinylive/pyodide \
 		$(BUILD_DIR)/shinylive/pyodide/$(HTMLTOOLS_WHEEL) \
 		$(BUILD_DIR)/shinylive/pyodide/$(SHINY_WHEEL) \
-		$(BUILD_DIR)/shinylive/pyodide/$(SHINYWIDGETS_WHEEL)
+		$(BUILD_DIR)/shinylive/pyodide/$(SHINYWIDGETS_WHEEL) \
+		$(BUILD_DIR)/shinylive/pyodide/$(FAICONS_WHEEL)
 	$(PYBIN)/pip install -r requirements-dev.txt
 	mkdir -p $(BUILD_DIR)/shinylive/pyodide
 	. $(PYBIN)/activate && scripts/pyodide_packages.py retrieve_packages

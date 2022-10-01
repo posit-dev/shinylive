@@ -15,8 +15,8 @@
   },
   "shiny": {
     "name": "shiny",
-    "version": "0.2.6",
-    "filename": "shiny-0.2.6-py3-none-any.whl",
+    "version": "0.2.7.9000",
+    "filename": "shiny-0.2.7.9000-py3-none-any.whl",
     "sha256": null,
     "url": null,
     "depends": [
@@ -640,6 +640,19 @@
     "depends": [],
     "imports": [
       "pure_eval"
+    ]
+  },
+  "faicons": {
+    "name": "faicons",
+    "version": "0.2.1",
+    "filename": "faicons-0.2.1-py3-none-any.whl",
+    "sha256": null,
+    "url": null,
+    "depends": [
+      {"name": "htmltools", "specs": []}
+    ],
+    "imports": [
+      "faicons"
     ]
   }
 }

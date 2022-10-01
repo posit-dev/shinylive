@@ -10,3 +10,6 @@
 [submodule "packages/py-shinywidgets"]
 	path = packages/py-shinywidgets
 	url = https://github.com/rstudio/py-shinywidgets.git
+[submodule "packages/py-faicons"]
+	path = packages/py-faicons
+	url = https://github.com/rstudio/py-faicons.git
