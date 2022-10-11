@@ -1,9 +1,9 @@
-import React from "react";
 import {
   DragState,
   initDragState,
   updateDragState,
 } from "./DragToResizeHelpers";
+import React from "react";
 
 export function useDragToResizeGrid({
   containerRef,
@@ -117,6 +117,7 @@ export function useDragToResizeGrid({
     dragWatcherDiv.style.position = "fixed";
     dragWatcherDiv.style.inset = "0px";
     dragWatcherDiv.style.opacity = "0";
+    dragWatcherDiv.style.zIndex = "9999";
     // Keep the cursor consistant with the appropriate direction resizer to let
     // the user know they're in "drag mode"
     dragWatcherDiv.style.cursor =

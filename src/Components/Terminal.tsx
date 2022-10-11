@@ -1,16 +1,10 @@
-/// <reference types="jquery.terminal" />
-/// <reference types="jquery" />
 import { PyodideProxyHandle } from "../hooks/usePyodide";
 import "./Terminal.css";
 import * as React from "react";
-
-declare global {
-  interface Window {
-    jQuery: typeof jQuery;
-    $: typeof jQuery;
-    term: JQueryTerminal;
-  }
-}
+import { Terminal as XTerminal } from "xterm";
+import { FitAddon } from "xterm-addon-fit";
+import { Readline } from "xterm-readline";
+import "xterm/css/xterm.css";
 
 export interface TerminalInterface {
   // Display code in the terminal as if it were typed, and execute it.
@@ -31,7 +25,6 @@ export type TerminalMethods =
       // Run code, and echo the code in the terminal.
       runCodeInTerminal: (command: string) => Promise<void>;
     };
-
 // =============================================================================
 // Terminal component
 // =============================================================================
@@ -45,7 +38,8 @@ export function Terminal({
   terminalInterface: TerminalInterface;
 }) {
   const containerRef = React.useRef<HTMLDivElement | null>(null);
-  const jqTermRef = React.useRef<JQueryTerminal | null>(null);
+  const xTermRef = React.useRef<XTerminal | null>(null);
+  const [xTermReadline, setXTermReadline] = React.useState<Readline>();
 
   const runCodeRef = React.useRef(async (command: string): Promise<void> => {});
   React.useEffect(() => {
@@ -70,93 +64,173 @@ export function Terminal({
   React.useEffect(() => {
     // Start up the terminal and populate our reference objects.
     if (!containerRef.current) return;
+    // Only initialize once, even if this useEffect is run twice.
+    if (xTermRef.current) return;
 
-    const term = $(containerRef.current).terminal(interpreter, {
-      greetings: "Starting Python...",
-      prompt: "",
-      mousewheel: () => true,
-      scrollOnEcho: true,
-      completionEscape: false,
-      completion: function (command: string, callback: (x: string[]) => void) {
-        (async () => {
-          const completions = await tabCompleteRef.current(command);
-          callback(completions);
-        })();
+    const term = new XTerminal({
+      theme: {
+        background: "#FFFFFF",
+        foreground: "#000000",
+        cursor: "#000000",
+        selection: "#9999CC",
       },
-      keymap: {
-        "CTRL+C": async function (_event: any, _original: any) {
-          // @ts-expect-error: This is a bug in jquery.terminal. echo_command()
-          // exists, but isn't listed in the .d.ts file.
-          term.echo_command();
-          term.echo("KeyboardInterrupt");
-          term.set_command("");
-          term.set_prompt(">>> ");
-        },
-      },
-      // The onInit() and onFocus() callbacks are necessary to prevent the
-      // browser from scrolling to the terminal when the terminal first
-      // initializes and then is unfrozen (after Python loads).
-      onInit: ($terminal) => {
-        $terminal.find("textarea")[0].focus({ preventScroll: true });
-      },
-      onFocus: ($terminal) => {
-        $terminal.find("textarea")[0].focus({ preventScroll: true });
-      },
+      // TODO: Set fonts from CSS?
+      fontFamily: "Menlo, Monaco, Courier New, Monospace",
+      fontSize: 12,
     });
+    const fitAddon = new FitAddon();
+    const readline = new Readline();
+    setXTermReadline(readline);
 
-    term.freeze(true);
+    term.loadAddon(fitAddon);
+    term.loadAddon(readline);
+    term.open(containerRef.current);
 
-    async function interpreter(command: string) {
-      try {
-        term.pause();
-        await runCodeRef.current(command);
-        term.resume();
-      } catch (e) {
-        if (e instanceof Error) {
-          console.error(e.message);
-        } else {
-          console.error(e);
-        }
-      }
+    fitAddon.fit();
+    const resizeObserver = new ResizeObserver(() => fitAddon.fit());
+    resizeObserver.observe(containerRef.current);
+
+    term.focus();
+
+    fitAddon.fit();
+
+    function resizeTerm() {
+      (async () => {
+        // await webR.init();
+        const dims = fitAddon.proposeDimensions();
+        // webR.evalRCode(`options(width=${dims ? dims.cols : 80})`);
+      })();
+      fitAddon.fit();
     }
+    // TODO: Add event listener
+    window.addEventListener("resize", resizeTerm);
 
-    jqTermRef.current = term;
+    term.write("Starting Python...\r\n");
+    // const term = $(containerRef.current).terminal(interpreter, {
+    //   greetings: "Starting Python...",
+    //   prompt: "",
+    //   mousewheel: () => true,
+    //   scrollOnEcho: true,
+    //   completionEscape: false,
+    //   completion: function (command: string, callback: (x: string[]) => void) {
+    //     (async () => {
+    //       const completions = await tabCompleteRef.current(command);
+    //       callback(completions);
+    //     })();
+    //   },
+    //   keymap: {
+    //     "CTRL+C": async function (_event: any, _original: any) {
+    //       // @ts-expect-error: This is a bug in jquery.terminal. echo_command()
+    //       // exists, but isn't listed in the .d.ts file.
+    //       term.echo_command();
+    //       term.echo("KeyboardInterrupt");
+    //       term.set_command("");
+    //       term.set_prompt(">>> ");
+    //     },
+    //   },
+    //   // The onInit() and onFocus() callbacks are necessary to prevent the
+    //   // browser from scrolling to the terminal when the terminal first
+    //   // initializes and then is unfrozen (after Python loads).
+    //   onInit: ($terminal) => {
+    //     $terminal.find("textarea")[0].focus({ preventScroll: true });
+    //   },
+    //   onFocus: ($terminal) => {
+    //     $terminal.find("textarea")[0].focus({ preventScroll: true });
+    //   },
+    // });
+
+    // term.freeze(true);
+
+    // async function interpreter(command: string) {
+    //   try {
+    //     term.pause();
+    //     await runCodeRef.current(command);
+    //     term.resume();
+    //   } catch (e) {
+    //     if (e instanceof Error) {
+    //       console.error(e.message);
+    //     } else {
+    //       console.error(e);
+    //     }
+    //   }
+    // }
+    // console.log("Printing stuff");
+    // term.write("\x1b[2K\r");
+    // term.write("\x1B[1;3;31mxterm.js\x1B[0m");
+
+    resizeTerm();
+    xTermRef.current = term;
+    // jqTermRef.current = term;
   }, []);
 
   React.useEffect(() => {
-    const jqTermRefCurrent = jqTermRef.current;
-    if (!jqTermRefCurrent) return;
+    const xTermRefCurrent = xTermRef.current;
+    if (!xTermRefCurrent) return;
+
+    if (!xTermReadline) return;
 
     terminalInterface.set_exec_fn(async (msg: string) => {
-      await jqTermRefCurrent.exec(msg);
+      // await jqTermRefCurrent.exec(msg);
     });
     terminalInterface.set_echo_fn(async (msg: string) => {
-      await jqTermRefCurrent.echo(msg);
+      console.log("PRINTING STDOUT");
+      xTermReadline.println(msg as string);
+      // await xTermRefCurrent.echo(msg);
     });
     terminalInterface.set_error_fn(async (msg: string) => {
-      jqTermRefCurrent.error(msg);
+      console.log("PRINTING STDERR");
+      xTermReadline.println(msg as string);
+      // jqTermRefCurrent.error(msg);
     });
     terminalInterface.set_clear_fn(() => {
-      jqTermRefCurrent.clear();
+      console.log("CLEAR FUNCTION");
+      xTermRefCurrent.write("\x1b[2K\r");
+      // jqTermRefCurrent.clear();
     });
 
     const runCodeInTerminal = async (command: string): Promise<void> => {
-      await jqTermRefCurrent.exec(command);
+      // if (!xTermReadline) return;
+      xTermReadline.println(command);
+      await runCodeRef.current(command);
+      xTermReadline.print(">>> ");
+      console.log("RUN CODE IN TERMINAL");
+      // await jqTermRefCurrent.exec(command);
     };
 
     setTerminalMethods({
       ready: true,
       runCodeInTerminal,
     });
-  }, [jqTermRef.current]);
+  }, [xTermReadline, terminalInterface, setTerminalMethods]);
 
+  // TODO: Make sure this doesn't run twice
   React.useEffect(() => {
     if (!pyodideProxyHandle.ready) return;
-    if (!jqTermRef.current) return;
+    if (!xTermRef.current) return;
 
-    jqTermRef.current.freeze(false);
-    jqTermRef.current.set_prompt(">>> ");
-  }, [pyodideProxyHandle.ready]);
+    xTermRef.current.write("\x1Bc");
+
+    function readLine() {
+      if (!xTermReadline) return;
+      xTermReadline.read(">>> ").then(processLine);
+    }
+
+    async function processLine(text: string) {
+      if (!xTermReadline) return;
+      await runCodeRef.current(text);
+      setTimeout(readLine);
+    }
+
+    readLine();
+  }, [pyodideProxyHandle.ready, xTermReadline]);
+
+  // React.useEffect(() => {
+  //   if (!pyodideProxyHandle.ready) return;
+  //   if (!jqTermRef.current) return;
+
+  //   jqTermRef.current.freeze(false);
+  //   jqTermRef.current.set_prompt(">>> ");
+  // }, [pyodideProxyHandle.ready]);
 
   return <div ref={containerRef} className="shinylive-terminal"></div>;
 }

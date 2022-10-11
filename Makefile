@@ -87,8 +87,6 @@ submodules-pull:
 
 ## Build everything _except_ the shinylive.tar.gz distribution file
 all: node_modules \
-	$(BUILD_DIR)/shinylive/jquery.terminal \
-	$(BUILD_DIR)/shinylive/jquery.min.js \
 	$(BUILD_DIR)/shinylive/style-resets.css \
 	$(BUILD_DIR)/shinylive/pyodide \
 	src/pyodide/pyodide.js \
@@ -114,14 +112,8 @@ dist:
 node_modules: package.json
 	yarn
 
-$(BUILD_DIR)/shinylive/jquery.terminal: node_modules/jquery.terminal
-	mkdir -p $(BUILD_DIR)/shinylive
-	cp -Rv node_modules/jquery.terminal $(BUILD_DIR)/shinylive
-
-$(BUILD_DIR)/shinylive/jquery.min.js: node_modules/jquery/dist/jquery.min.js
-	cp -Rv node_modules/jquery/dist/jquery.min.js $(BUILD_DIR)/shinylive
-
 $(BUILD_DIR)/shinylive/style-resets.css: src/style-resets.css
+	mkdir -p $(BUILD_DIR)/shinylive
 	cp src/style-resets.css $(BUILD_DIR)/shinylive
 
 $(BUILD_DIR)/shinylive/pyodide:
