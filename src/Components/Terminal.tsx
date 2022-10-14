@@ -158,7 +158,11 @@ export function Terminal({
 
     resizeTerm();
     xTermRef.current = term;
-    // jqTermRef.current = term;
+
+    // @ts-expect-error: Add the terminal object to the div. This is used for
+    // testing so that we can find out when the terminal is ready. It would
+    // be nice to not need to use this.
+    containerRef.current.xterm = term;
   }, []);
 
   React.useEffect(() => {

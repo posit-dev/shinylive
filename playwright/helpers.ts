@@ -1,4 +1,5 @@
 import { Page, expect } from "@playwright/test";
+import type { Terminal, IBufferLine } from "xterm";
 
 /**
  * Wait until shinylive terminal shows the three >>>'s indicating that it's
@@ -6,7 +7,32 @@ import { Page, expect } from "@playwright/test";
  * @param page Page object available from inside playwright tests
  */
 export async function wait_until_initialized(page: Page) {
-  await page.waitForSelector(`text=">>>"`, { timeout: 10000 });
+  await page.waitForFunction(
+    (text: string): boolean => {
+      const div = document.querySelector(".shinylive-terminal");
+      if (!div) return false;
+
+      // @ts-expect-error: xterm is an Terminal object that has been added
+      // to the element.
+      const xterm = div.xterm as Terminal | undefined;
+      if (!xterm) return false;
+
+      for (let i = 0; ; i++) {
+        const buffer: IBufferLine | undefined = xterm.buffer.normal.getLine(i);
+        if (!buffer) {
+          // We've gone past the last line in the buffer.
+          return false;
+        }
+
+        const lineString = buffer.translateToString();
+        if (lineString.includes(text)) {
+          return true;
+        }
+      }
+    },
+    ">>>",
+    { timeout: 10000 }
+  );
 }
 
 /**
@@ -42,7 +68,32 @@ export async function expect_editor_has_text(page: Page, text: string) {
  * @param text Text to search for in the terminal panel
  */
 export async function expect_terminal_has_text(page: Page, text: string) {
-  await expect_pane_has_text(page, `.shinylive-terminal`, text);
+  // Note that the function below is exactly the same as the one defined above,
+  // wait_until_initialized(). This is because it is run in the page context, so
+  // we can't define it like a normal function in this file (outside of the page
+  // context) and call it from different places.
+  return await page.evaluate((text: string): boolean => {
+    const div = document.querySelector(".shinylive-terminal");
+    if (!div) return false;
+
+    // @ts-expect-error: xterm is an Terminal object that has been added
+    // to the element.
+    const xterm = div.xterm as Terminal | undefined;
+    if (!xterm) return false;
+
+    for (let i = 0; ; i++) {
+      const buffer: IBufferLine | undefined = xterm.buffer.normal.getLine(i);
+      if (!buffer) {
+        // We've gone past the last line in the buffer.
+        return false;
+      }
+
+      const lineString = buffer.translateToString();
+      if (lineString.includes(text)) {
+        return true;
+      }
+    }
+  }, text);
 }
 
 /**
