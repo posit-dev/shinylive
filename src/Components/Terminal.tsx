@@ -96,9 +96,7 @@ export function Terminal({
 
     function resizeTerm() {
       (async () => {
-        // await webR.init();
         const dims = fitAddon.proposeDimensions();
-        // webR.evalRCode(`options(width=${dims ? dims.cols : 80})`);
       })();
       fitAddon.fit();
     }
