@@ -293,8 +293,4 @@ distclean: clean
 
 ## Run tests
 test:
-	jest
-
-## Run tests and watch
-test-watch:
-	jest --watch
+	yarn playwright test
