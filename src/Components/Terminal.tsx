@@ -86,22 +86,10 @@ export function Terminal({
     term.loadAddon(readline);
     term.open(containerRef.current);
 
-    fitAddon.fit();
     const resizeObserver = new ResizeObserver(() => fitAddon.fit());
     resizeObserver.observe(containerRef.current);
 
-    term.focus();
-
     fitAddon.fit();
-
-    function resizeTerm() {
-      (async () => {
-        const dims = fitAddon.proposeDimensions();
-      })();
-      fitAddon.fit();
-    }
-    // TODO: Add event listener
-    window.addEventListener("resize", resizeTerm);
 
     term.write("Starting Python...\r\n");
     // const term = $(containerRef.current).terminal(interpreter, {
@@ -137,26 +125,6 @@ export function Terminal({
     //   },
     // });
 
-    // term.freeze(true);
-
-    // async function interpreter(command: string) {
-    //   try {
-    //     term.pause();
-    //     await runCodeRef.current(command);
-    //     term.resume();
-    //   } catch (e) {
-    //     if (e instanceof Error) {
-    //       console.error(e.message);
-    //     } else {
-    //       console.error(e);
-    //     }
-    //   }
-    // }
-    // console.log("Printing stuff");
-    // term.write("\x1b[2K\r");
-    // term.write("\x1B[1;3;31mxterm.js\x1B[0m");
-
-    resizeTerm();
     xTermRef.current = term;
 
     // @ts-expect-error: Add the terminal object to the div. This is used for
@@ -216,14 +184,6 @@ export function Terminal({
 
     readLine();
   }, [pyodideProxyHandle.ready, xTermReadline]);
-
-  // React.useEffect(() => {
-  //   if (!pyodideProxyHandle.ready) return;
-  //   if (!jqTermRef.current) return;
-
-  //   jqTermRef.current.freeze(false);
-  //   jqTermRef.current.set_prompt(">>> ");
-  // }, [pyodideProxyHandle.ready]);
 
   return <div ref={containerRef} className="shinylive-terminal"></div>;
 }
