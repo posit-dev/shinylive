@@ -175,28 +175,19 @@ export function Terminal({
       // await jqTermRefCurrent.exec(msg);
     });
     terminalInterface.set_echo_fn(async (msg: string) => {
-      console.log("PRINTING STDOUT");
-      xTermReadline.println(msg as string);
-      // await xTermRefCurrent.echo(msg);
+      xTermReadline.println(msg);
     });
     terminalInterface.set_error_fn(async (msg: string) => {
-      console.log("PRINTING STDERR");
-      xTermReadline.println(msg as string);
-      // jqTermRefCurrent.error(msg);
+      xTermReadline.println("\x1b[31m" + msg + "\x1b[m");
     });
     terminalInterface.set_clear_fn(() => {
-      console.log("CLEAR FUNCTION");
       xTermRefCurrent.write("\x1b[2K\r");
-      // jqTermRefCurrent.clear();
     });
 
     const runCodeInTerminal = async (command: string): Promise<void> => {
-      // if (!xTermReadline) return;
       xTermReadline.println(command);
       await runCodeRef.current(command);
       xTermReadline.print(">>> ");
-      console.log("RUN CODE IN TERMINAL");
-      // await jqTermRefCurrent.exec(command);
     };
 
     setTerminalMethods({
