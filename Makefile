@@ -211,8 +211,7 @@ $(PACKAGE_DIR)/$(HTMLTOOLS_WHEEL): $(PYBIN) $(PACKAGE_DIR)/py-htmltools
 $(PACKAGE_DIR)/$(SHINY_WHEEL): $(PYBIN) $(PACKAGE_DIR)/py-shiny
 	# Remove any old copies of the package
 	rm -f $(PACKAGE_DIR)/shiny*.whl
-	$(PYBIN)/pip install -r $(PACKAGE_DIR)/py-shiny/requirements-dev.txt
-	$(PYBIN)/pip install -e $(PACKAGE_DIR)/py-shiny
+	$(PYBIN)/pip install -e $(PACKAGE_DIR)/py-shiny[dev,docs,test]
 	. $(PYBIN)/activate && cd $(PACKAGE_DIR)/py-shiny && make dist && mv dist/*.whl ../
 
 $(PACKAGE_DIR)/$(SHINYWIDGETS_WHEEL): $(PYBIN) $(PACKAGE_DIR)/py-shinywidgets
