@@ -5614,7 +5614,7 @@ __metadata:
     vscode-languageserver-protocol: ^3.17.1
     xterm: ^4.19.0
     xterm-addon-fit: ^0.5.0
-    xterm-readline: ^1.0.7
+    xterm-readline: ^1.1.0
   languageName: unknown
   linkType: soft
 
@@ -6388,14 +6388,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"xterm-readline@npm:^1.0.7":
-  version: 1.0.7
-  resolution: "xterm-readline@npm:1.0.7"
+"xterm-readline@npm:^1.1.0":
+  version: 1.1.0
+  resolution: "xterm-readline@npm:1.1.0"
   dependencies:
     string-width: ^4.0.0
   peerDependencies:
     xterm: ^4.0.0
-  checksum: f84e4085634f40ecaa901054881e16b31092c18f4dcfad160dfcb95b96004ecdcfecf8e16a4f77de16c28128bb0ab27eeec76ebbf4a526ee41df3f9bed9f4717
+  checksum: 7fa24d0fdf6698343954c50e3ad3db677b8ef970321ecf580c0209700495db62c89a334d44709134514f6f48a5a481705c327a3e13dad90d2f68169a881ea276
   languageName: node
   linkType: hard
 
