@@ -11,3 +11,7 @@ This very-specific selector is needed to override some settings from App.css.
   --size: 1;
   --font: Menlo, Monaco, "Courier New", monospace;
 }
+
+.xterm {
+  padding: 8px;
+}
