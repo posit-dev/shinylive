@@ -1,0 +1,2 @@
+Plotly
+Plotly via ipywidgets

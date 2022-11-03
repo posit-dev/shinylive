@@ -10,7 +10,7 @@
       "orbit",
       "regularization",
       "wordle",
-      "pyllusion",
+      "plotly",
       "ipyleaflet",
       "camera"
     ]
@@ -28,7 +28,8 @@
       "extra_packages",
       "static_content",
       "fetch",
-      "ipywidgets"
+      "ipywidgets",
+      "pyllusion"
     ]
   },
   {
