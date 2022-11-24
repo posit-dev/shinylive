@@ -1,0 +1,1 @@
+Retrieve the search property of the location interface.
