@@ -18,7 +18,7 @@ app_ui = ui.page_fluid(
         }); 
        """
     ),
-    ui.h2("Window Location Search String"),
+    ui.h2("Window Location Search / Query String"),
     ui.output_text_verbatim("search"),
 )
 
