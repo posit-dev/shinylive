@@ -21,3 +21,5 @@ playwright/static-build/
 !.yarn/releases
 !.yarn/sdks
 !.yarn/versions
+
+/.luarc.json
