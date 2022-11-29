@@ -10,7 +10,7 @@ app_ui = ui.page_fluid(
             ui.input_slider("n", "N", 0, 100, 20),
         ),
         ui.panel_main(
-            ui.output_plot("plot"),
+            ui.output_plot("plot1"),
         ),
     ),
 )
@@ -19,7 +19,7 @@ app_ui = ui.page_fluid(
 def server(input, output, session):
     @output
     @render.plot(alt="A histogram")
-    def plot():
+    def plot1():
         np.random.seed(19680801)
         x = 100 + 15 * np.random.randn(437)
         plt.hist(x, input.n(), density=True)
