@@ -5612,9 +5612,9 @@ __metadata:
     tsx: ^3.9.0
     typescript: ^4.7.2
     vscode-languageserver-protocol: ^3.17.1
-    xterm: ^4.19.0
-    xterm-addon-fit: ^0.5.0
-    xterm-readline: ^1.1.0
+    xterm: ^5.1.0
+    xterm-addon-fit: ^0.7.0
+    xterm-readline: ^1.1.1
   languageName: unknown
   linkType: soft
 
@@ -6379,30 +6379,30 @@ __metadata:
   languageName: node
   linkType: hard
 
-"xterm-addon-fit@npm:^0.5.0":
-  version: 0.5.0
-  resolution: "xterm-addon-fit@npm:0.5.0"
+"xterm-addon-fit@npm:^0.7.0":
+  version: 0.7.0
+  resolution: "xterm-addon-fit@npm:0.7.0"
   peerDependencies:
-    xterm: ^4.0.0
-  checksum: 884d9f360893335c87e4514beeda2af6dbebf38a89b8518f1126d9c4611aefc1598b750bb43a953b79fdf1179c40d70c77a9169ae10f07e0abbbdb39b919b33f
+    xterm: ^5.0.0
+  checksum: 512d41f80d6f9427ba02dab4e6fd642e94775a9cf7ef72ae4b55eab2a36856b5c67069bfc66b4af412fdce29a0842f9c6382af3672f0b514c4352dfd47defe8f
   languageName: node
   linkType: hard
 
-"xterm-readline@npm:^1.1.0":
-  version: 1.1.0
-  resolution: "xterm-readline@npm:1.1.0"
+"xterm-readline@npm:^1.1.1":
+  version: 1.1.1
+  resolution: "xterm-readline@npm:1.1.1"
   dependencies:
     string-width: ^4.0.0
   peerDependencies:
-    xterm: ^4.0.0
-  checksum: 7fa24d0fdf6698343954c50e3ad3db677b8ef970321ecf580c0209700495db62c89a334d44709134514f6f48a5a481705c327a3e13dad90d2f68169a881ea276
+    xterm: ^5.0.0
+  checksum: 0c68f55c7f06d601df03425015a497a16d5699714e07d4789c24ef3406c10dab6ab6bf9dfa5380c8b47d31e5e1ad3a4eef21b44f8df13e94b0fdb0ceb9e463ca
   languageName: node
   linkType: hard
 
-"xterm@npm:^4.19.0":
-  version: 4.19.0
-  resolution: "xterm@npm:4.19.0"
-  checksum: 4385e08d6f1e26d0db295ba55f0ed9c304686a72c2cfdd32502cf59de23ae9c93434d469fc3735f44375602f209f767a1ba643a86be6f8e0f1cf7e5bfdccde87
+"xterm@npm:^5.1.0":
+  version: 5.1.0
+  resolution: "xterm@npm:5.1.0"
+  checksum: cbacbc9dc1bbcf21dabecff46856b43f2d5854b42c1bec4ea03a5720000f2a88d79b0da45b6c38213d6607474a1fbe66d5ff25fa120b7e9e60eeed964dd840a1
   languageName: node
   linkType: hard
 

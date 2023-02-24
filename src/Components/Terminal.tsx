@@ -72,7 +72,7 @@ export function Terminal({
         background: "#FFFFFF",
         foreground: "#000000",
         cursor: "#000000",
-        selection: "#9999CC",
+        selectionBackground: "#9999CC",
       },
       // TODO: Set fonts from CSS?
       fontFamily: "Menlo, Monaco, Courier New, Monospace",
