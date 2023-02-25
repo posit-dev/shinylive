@@ -51,7 +51,7 @@
     "balloon-css": "^1.2.0",
     "codemirror": "^6.0.1",
     "dompurify": "^3.0.0",
-    "esbuild": "^0.17.10",
+    "esbuild": "^0.16.17",
     "eslint": "^8.34.0",
     "eslint-plugin-react": "^7.32.2",
     "eslint-plugin-react-hooks": "^4.6.0",

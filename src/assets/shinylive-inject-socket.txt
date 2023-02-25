@@ -27,6 +27,8 @@ var MessagePortWebSocket = class extends EventTarget {
     port.addEventListener("message", this._onMessage.bind(this));
     port.start();
   }
+  // Call on the server side of the connection, to tell the client that
+  // the connection has been established.
   accept() {
     if (this.readyState !== 0) {
       return;
@@ -98,6 +100,7 @@ window.Shiny.createSocket = function() {
   window.parent.postMessage(
     {
       type: "openChannel",
+      // Infer app name from path: "/foo/app_abc123/"" => "app_abc123"
       appName: window.location.pathname.replace(
         new RegExp(".*/([^/]+)/$"),
         "$1"
