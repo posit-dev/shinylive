@@ -31,5 +31,8 @@
         "editor.tabSize": 4,
         "editor.rulers": [88]
     },
-    "prettier.prettierPath": "./node_modules/prettier"
+    "prettier.prettierPath": "./node_modules/prettier",
+    "flake8.args": [
+        "--ignore=E501"
+    ]
 }
