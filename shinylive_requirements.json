@@ -9,7 +9,18 @@
     "version": "latest",
     "comment": "Needed to suppress warning from shiny/ui/_markdown.py."
   },
-  { "name": "plotnine", "source": "pypi", "version": "latest" },
+  {
+    "name": "mizani",
+    "source": "pypi",
+    "version": "0.7.4",
+    "comment": "Needed to avoid problem with zoneinfo.ZoneInfo('UTC') in plotnine."
+  },
+  {
+    "name": "plotnine",
+    "source": "pypi",
+    "version": "0.9.0",
+    "comment": "Fixed version needed to avoid problem with mizani calling zoneinfo.ZoneInfo('UTC')."
+  },
   { "name": "plotly", "source": "pypi", "version": "latest" },
   { "name": "seaborn", "source": "pypi", "version": "latest" },
   { "name": "ipyleaflet", "source": "pypi", "version": "latest" },

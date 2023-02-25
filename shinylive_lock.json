@@ -78,15 +78,32 @@
       "mdit_py_plugins"
     ]
   },
+  "mizani": {
+    "name": "mizani",
+    "version": "0.7.4",
+    "filename": "mizani-0.7.4-py3-none-any.whl",
+    "sha256": "f8cd18a4e761846d948ee87429cc84730277d128a46861c719eb6997e6c538a1",
+    "url": "https://files.pythonhosted.org/packages/6a/10/999db77b9ce38adc22eb51a869b8c29b6b6fbd9c3b71a627bfee15b8f4d5/mizani-0.7.4-py3-none-any.whl",
+    "depends": [
+      {"name": "numpy", "specs": [[">=", "1.19.0"]]},
+      {"name": "scipy", "specs": [[">=", "1.5.0"]]},
+      {"name": "pandas", "specs": [[">=", "1.3.5"]]},
+      {"name": "matplotlib", "specs": [[">=", "3.5.0"]]},
+      {"name": "palettable", "specs": []}
+    ],
+    "imports": [
+      "mizani"
+    ]
+  },
   "plotnine": {
     "name": "plotnine",
-    "version": "0.10.1",
-    "filename": "plotnine-0.10.1-py3-none-any.whl",
-    "sha256": "bac216d71b04ea4e084a529c08716a981fe073c8fcdafa7643043935d7b7fa9d",
-    "url": "https://files.pythonhosted.org/packages/7f/db/3bee59d51790f8ed8fa1a22df5fd2fe1cf15ffab47f4f5fb5f8bb9fb7557/plotnine-0.10.1-py3-none-any.whl",
+    "version": "0.9.0",
+    "filename": "plotnine-0.9.0-py3-none-any.whl",
+    "sha256": "340ff64601cddb78ccbca9d4a5dd1a7c56d89cd88c0729d065c30bcb1382cb36",
+    "url": "https://files.pythonhosted.org/packages/6f/c9/009dc392e404fbe1ae929c631460e11a27d22b53de76dc71b6aa4f34d13b/plotnine-0.9.0-py3-none-any.whl",
     "depends": [
       {"name": "matplotlib", "specs": [[">=", "3.5.0"]]},
-      {"name": "mizani", "specs": [[">=", "0.8.1"]]},
+      {"name": "mizani", "specs": [[">=", "0.7.3"]]},
       {"name": "numpy", "specs": [[">=", "1.19.0"]]},
       {"name": "pandas", "specs": [[">=", "1.3.5"]]},
       {"name": "patsy", "specs": [[">=", "0.5.1"]]},
@@ -316,21 +333,15 @@
       "jupyter_core"
     ]
   },
-  "mizani": {
-    "name": "mizani",
-    "version": "0.8.1",
-    "filename": "mizani-0.8.1-py3-none-any.whl",
-    "sha256": "a45f16d1bb420bd92361284252fd29c5e52a20662ad96dfe7a15141a4ca4c287",
-    "url": "https://files.pythonhosted.org/packages/a5/6a/738cec3b98020b9cf27bdbfe7c1f385a102300a3d06b2a8ad95f31923dfe/mizani-0.8.1-py3-none-any.whl",
-    "depends": [
-      {"name": "numpy", "specs": [[">=", "1.19.0"]]},
-      {"name": "scipy", "specs": [[">=", "1.5.0"]]},
-      {"name": "pandas", "specs": [[">=", "1.3.5"]]},
-      {"name": "matplotlib", "specs": [[">=", "3.5.0"]]},
-      {"name": "palettable", "specs": []}
-    ],
+  "palettable": {
+    "name": "palettable",
+    "version": "3.3.0",
+    "filename": "palettable-3.3.0-py2.py3-none-any.whl",
+    "sha256": "c3bf3f548fc228e86bd3d16928bbf8d621c1d1098791ceab446d0e3a5e1298d1",
+    "url": "https://files.pythonhosted.org/packages/ca/46/5198aa24e61bb7eef28d06cb69e56bfa1942f4b6807d95a0b5ce361fe09b/palettable-3.3.0-py2.py3-none-any.whl",
+    "depends": [],
     "imports": [
-      "mizani"
+      "palettable"
     ]
   },
   "tenacity": {
@@ -502,17 +513,6 @@
     "depends": [],
     "imports": [
       "jupyterlab_widgets"
-    ]
-  },
-  "palettable": {
-    "name": "palettable",
-    "version": "3.3.0",
-    "filename": "palettable-3.3.0-py2.py3-none-any.whl",
-    "sha256": "c3bf3f548fc228e86bd3d16928bbf8d621c1d1098791ceab446d0e3a5e1298d1",
-    "url": "https://files.pythonhosted.org/packages/ca/46/5198aa24e61bb7eef28d06cb69e56bfa1942f4b6807d95a0b5ce361fe09b/palettable-3.3.0-py2.py3-none-any.whl",
-    "depends": [],
-    "imports": [
-      "palettable"
     ]
   },
   "idna": {
