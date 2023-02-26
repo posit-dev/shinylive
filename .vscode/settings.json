@@ -33,6 +33,6 @@
     },
     "prettier.prettierPath": "./node_modules/prettier",
     "flake8.args": [
-        "--ignore=E501"
+        "--ignore=E501,W503"
     ]
 }
