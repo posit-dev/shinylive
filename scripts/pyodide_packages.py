@@ -1,8 +1,5 @@
 #!/usr/bin/env python3
 
-
-BUILD_DIR = "build"
-
 import functools
 import hashlib
 import json
@@ -28,6 +25,9 @@ import pkginfo
 import requirements
 from packaging.version import Version
 from typing_extensions import NotRequired
+
+BUILD_DIR = "build"
+
 
 top_dir = Path(__file__).resolve().parent.parent
 package_source_dir = top_dir / "packages"
@@ -473,14 +473,26 @@ def _filter_requires(requires: Union[list[str], None]) -> list[LockfileDependenc
             raise Exception(f"More than one requirement in {dep_str}")
 
         return {
-            "name": req.name,
+            "name": req.name,  # type: ignore
             # req.specs will be something [["!=", "0.17.2"], [">=", "0.17.1"]], but the
             # order is not consistent between runs. Sort it to make it consistent.
             "specs": sorted(req.specs),  # type: ignore - Due to a type bug in requirements package.
         }
 
+    # Given a dependency string, return whether or not is should be used. This is a bit
+    # crude, but it works for our purposes. This drops package descriptions with extras,
+    # like "scikit-learn ; extra == 'all'" -- it actually drops any string with a
+    # semicolon, _except_ if it contains 'platform_system == "Emscripten"'. (This is a
+    # special case to work with mizani, which requires tzdata on Emscripten.)
+    def _dep_filter(dep_str: str) -> bool:
+        if re.search(";.*platform_system *== *['\"]Emscripten['\"]", dep_str):
+            return True
+        if re.search(";", dep_str):
+            return False
+        return True
+
     # Remove package descriptions with extras, like "scikit-learn ; extra == 'all'"
-    res = filter(lambda x: ";" not in x, requires)
+    res = filter(_dep_filter, requires)
     # Strip off version numbers: "python-dateutil (>=2.8.2)" => "python-dateutil"
     res = map(_get_dep_info, res)
     # Filter out packages that cause problems.
@@ -688,12 +700,16 @@ class NoIndentEncoder(json.JSONEncoder):
         else:
             return super(NoIndentEncoder, self).default(o)
 
-    def iterencode(self, o: object, **kwargs: object) -> Iterator[str]:
+    def iterencode(
+        self, o: object, _one_shot: bool = False, **kwargs: object
+    ) -> Iterator[str]:
         regex = re.compile("@@(\\d+)@@")
 
         # Replace any marked-up NoIndent wrapped values in the JSON repr
         # with the json.dumps() of the corresponding wrapped Python object.
-        for encoded in super(NoIndentEncoder, self).iterencode(o, **kwargs):
+        for encoded in super(NoIndentEncoder, self).iterencode(
+            o, _one_shot=_one_shot, **kwargs
+        ):
             match = regex.search(encoded)
             if match:
                 obj_id = match.group(1)
@@ -708,7 +724,6 @@ class NoIndentEncoder(json.JSONEncoder):
 
 
 if __name__ == "__main__":
-
     if len(sys.argv) < 2:
         print(usage_info)
         sys.exit(1)
