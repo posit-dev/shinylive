@@ -1,58 +1,40 @@
 from shiny import App, reactive, render, ui
 
-# For plot rendering
-import matplotlib.pyplot as plt
-import numpy as np
 
 app_ui = ui.page_fluid(
-    ui.layout_sidebar(
-        ui.panel_sidebar(
-            ui.h2("Dynamic UI"),
-            ui.output_ui("ui"),
-            ui.input_action_button("btn", "Trigger insert/remove ui"),
-        ),
-        ui.panel_main(
-            ui.output_text_verbatim("txt"),
-            ui.output_plot("plot"),
-        ),
-    ),
+    {"id": "main-content"},
+    ui.h2("Dynamic UI"),
+    ui.input_action_button("btn", "Trigger insert/remove ui"),
+    ui.output_ui("dyn_ui"),
 )
 
 
 def server(input, output, session):
-    @reactive.Calc
-    def r():
-        return input.n() * 2
-
+    # One way of adding dynamic content is with @render.ui.
     @output
-    @render.text
-    def txt():
-        return f"n*2 is {r()}, session id is {session.id}"
-
-    @output
-    @render.plot(alt="A histogram")
-    def plot():
-        np.random.seed(19680801)
-        x = 100 + 15 * np.random.randn(437)
-
-        fig, ax = plt.subplots()
-        ax.hist(x, input.n(), density=True)
-        return fig
-
-    @output(id="ui")
     @render.ui
-    def _():
+    def dyn_ui():
         return ui.input_slider(
-            "N", "This slider is rendered via @render.ui", 0, 100, 20
+            "n1", "This slider is rendered via @render.ui", 0, 100, 20
         )
 
+    # Another way of adding dynamic content is with ui.insert_ui() and ui.remove_ui().
+    # The insertion is imperative, so, compared to @render.ui, more care is needed to
+    # make sure you don't add multiple copies of the content.
     @reactive.Effect
     def _():
         btn = input.btn()
         if btn % 2 == 1:
-            ui.insert_ui(ui.tags.p("Thanks for clicking!", id="thanks"), "body")
+            slider = ui.input_slider(
+                "n2", "This slider is inserted with ui.insert_ui()", 0, 100, 20
+            )
+            ui.insert_ui(
+                ui.div({"id": "inserted-slider"}, slider),
+                selector="#main-content",
+                where="beforeEnd",
+            )
         elif btn > 0:
-            ui.remove_ui("#thanks")
+            ui.remove_ui("#inserted-slider")
 
 
-app = App(app_ui, server, debug=True)
+app = App(app_ui, server)
