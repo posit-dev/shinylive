@@ -1,8 +1,8 @@
 {
   "htmltools": {
     "name": "htmltools",
-    "version": "0.1.2",
-    "filename": "htmltools-0.1.2-py3-none-any.whl",
+    "version": "0.1.3",
+    "filename": "htmltools-0.1.3-py3-none-any.whl",
     "sha256": null,
     "url": null,
     "depends": [
