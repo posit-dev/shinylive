@@ -245,13 +245,11 @@
   },
   "python-multipart": {
     "name": "python-multipart",
-    "version": "0.0.4",
-    "filename": "python_multipart-0.0.4-py3-none-any.whl",
-    "sha256": "eba19f9aa5a2a1ee5c9402a11edd8480926934c8ee7d66de7c8444f78af9be74",
-    "url": "https://files.pythonhosted.org/packages/4b/5b/6fc4a322c8ae1349d3cecf83f8412ec10a67b06b7518dea686cfef594b07/python_multipart-0.0.4-py3-none-any.whl",
-    "depends": [
-      {"name": "six", "specs": [[">=", "1.4.0"]]}
-    ],
+    "version": "0.0.6",
+    "filename": "python_multipart-0.0.6-py3-none-any.whl",
+    "sha256": "ee698bab5ef148b0a760751c261902cd096e57e10558e11aca17646b74ee1c18",
+    "url": "https://files.pythonhosted.org/packages/b4/ff/b1e11d8bffb5e0e1b6d27f402eeedbeb9be6df2cdbc09356a1ae49806dbf/python_multipart-0.0.6-py3-none-any.whl",
+    "depends": [],
     "imports": [
       "multipart"
     ]
@@ -346,10 +344,10 @@
   },
   "tenacity": {
     "name": "tenacity",
-    "version": "8.2.1",
-    "filename": "tenacity-8.2.1-py3-none-any.whl",
-    "sha256": "dd1b769ca7002fda992322939feca5bee4fa11f39146b0af14e0b8d9f27ea854",
-    "url": "https://files.pythonhosted.org/packages/f9/ea/c8e727fc85a098d77462dbf124650d58290ce227d141ed86285648c894e6/tenacity-8.2.1-py3-none-any.whl",
+    "version": "8.2.2",
+    "filename": "tenacity-8.2.2-py3-none-any.whl",
+    "sha256": "2f277afb21b851637e8f52e6a613ff08734c347dc19ade928e519d7d2d8569b0",
+    "url": "https://files.pythonhosted.org/packages/e7/b0/c23bd61e1b32c9b96fbca996c87784e196a812da8d621d8d04851f6c8181/tenacity-8.2.2-py3-none-any.whl",
     "depends": [],
     "imports": [
       "tenacity"
@@ -474,17 +472,17 @@
   },
   "ipython": {
     "name": "ipython",
-    "version": "8.10.0",
-    "filename": "ipython-8.10.0-py3-none-any.whl",
-    "sha256": "b38c31e8fc7eff642fc7c597061fff462537cf2314e3225a19c906b7b0d8a345",
-    "url": "https://files.pythonhosted.org/packages/09/db/d641ee07f319002393524b6c5a8b47370520dcb2b6166a0972cfe9398c60/ipython-8.10.0-py3-none-any.whl",
+    "version": "8.11.0",
+    "filename": "ipython-8.11.0-py3-none-any.whl",
+    "sha256": "5b54478e459155a326bf5f42ee4f29df76258c0279c36f21d71ddb560f88b156",
+    "url": "https://files.pythonhosted.org/packages/ac/91/23e08c442657cf493598b0222008437c9e0aef0709a8fd65a5d5d68ffa21/ipython-8.11.0-py3-none-any.whl",
     "depends": [
       {"name": "backcall", "specs": []},
       {"name": "decorator", "specs": []},
       {"name": "jedi", "specs": [[">=", "0.16"]]},
       {"name": "matplotlib-inline", "specs": []},
       {"name": "pickleshare", "specs": []},
-      {"name": "prompt-toolkit", "specs": [["<", "3.1.0"], [">=", "3.0.30"]]},
+      {"name": "prompt-toolkit", "specs": [["!=", "3.0.37"], ["<", "3.1.0"], [">=", "3.0.30"]]},
       {"name": "pygments", "specs": [[">=", "2.4.0"]]},
       {"name": "stack-data", "specs": []},
       {"name": "traitlets", "specs": [[">=", "5"]]}
@@ -574,10 +572,10 @@
   },
   "prompt-toolkit": {
     "name": "prompt-toolkit",
-    "version": "3.0.37",
-    "filename": "prompt_toolkit-3.0.37-py3-none-any.whl",
-    "sha256": "6a2948ec427dfcc7c983027b1044b355db6aaa8be374f54ad2015471f7d81c5b",
-    "url": "https://files.pythonhosted.org/packages/6b/f8/1bb04f1ed50ceffa077ad762911c10aa27defdea6094e1f78ed5cbae1d81/prompt_toolkit-3.0.37-py3-none-any.whl",
+    "version": "3.0.38",
+    "filename": "prompt_toolkit-3.0.38-py3-none-any.whl",
+    "sha256": "45ea77a2f7c60418850331366c81cf6b5b9cf4c7fd34616f733c5427e6abbb1f",
+    "url": "https://files.pythonhosted.org/packages/87/3f/1f5a0ff475ae6481f4b0d45d4d911824d3218b94ee2a97a8cb84e5569836/prompt_toolkit-3.0.38-py3-none-any.whl",
     "depends": [
       {"name": "wcwidth", "specs": []}
     ],
