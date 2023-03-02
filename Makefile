@@ -204,8 +204,7 @@ packages: clean-packages \
 $(PACKAGE_DIR)/$(HTMLTOOLS_WHEEL): $(PYBIN) $(PACKAGE_DIR)/py-htmltools
 	# Remove any old copies of the package
 	rm -f $(PACKAGE_DIR)/htmltools*.whl
-	$(PYBIN)/pip install -r $(PACKAGE_DIR)/py-htmltools/requirements-dev.txt
-	$(PYBIN)/pip install -e $(PACKAGE_DIR)/py-htmltools
+	$(PYBIN)/pip install -e $(PACKAGE_DIR)/py-htmltools[dev,test]
 	. $(PYBIN)/activate && cd $(PACKAGE_DIR)/py-htmltools && make dist && mv dist/*.whl ../
 
 $(PACKAGE_DIR)/$(SHINY_WHEEL): $(PYBIN) $(PACKAGE_DIR)/py-shiny
@@ -217,8 +216,7 @@ $(PACKAGE_DIR)/$(SHINY_WHEEL): $(PYBIN) $(PACKAGE_DIR)/py-shiny
 $(PACKAGE_DIR)/$(SHINYWIDGETS_WHEEL): $(PYBIN) $(PACKAGE_DIR)/py-shinywidgets
 	# Remove any old copies of the package
 	rm -f $(PACKAGE_DIR)/shinywidgets*.whl
-	$(PYBIN)/pip install -r $(PACKAGE_DIR)/py-shinywidgets/requirements-dev.txt
-	$(PYBIN)/pip install -e $(PACKAGE_DIR)/py-shinywidgets
+	$(PYBIN)/pip install -e $(PACKAGE_DIR)/py-shinywidgets[dev,test]
 	. $(PYBIN)/activate && cd $(PACKAGE_DIR)/py-shinywidgets && make dist && mv dist/*.whl ../
 
 $(PACKAGE_DIR)/$(FAICONS_WHEEL): $(PYBIN) $(PACKAGE_DIR)/py-faicons
