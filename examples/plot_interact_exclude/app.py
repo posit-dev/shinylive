@@ -21,9 +21,9 @@ app_ui = ui.page_fluid(
         )
     ),
     ui.row(
-        ui.column(3),
+        ui.column(2),
         ui.column(
-            6,
+            8,
             ui.output_plot("plot1", click=True, brush=True),
             ui.div(
                 {"style": "text-align: center"},
