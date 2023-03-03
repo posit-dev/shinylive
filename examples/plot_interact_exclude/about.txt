@@ -1,1 +1,1 @@
-Selecting data
+Interactively excluding data
