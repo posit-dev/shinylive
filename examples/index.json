@@ -74,5 +74,13 @@
   {
     "category": "Non-Apps",
     "apps": ["hello_world"]
+  },
+  {
+    "category": "Interactive plots",
+    "apps": [
+      "plot_interact_basic",
+      "plot_interact_select",
+      "plot_interact_exclude"
+    ]
   }
 ]
