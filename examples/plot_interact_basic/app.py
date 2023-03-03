@@ -1,17 +1,14 @@
 # Note: This app uses a development version of plotnine.
 
 import json
+from pathlib import Path
 
 import matplotlib.pyplot as plt
-from plotnine import (
-    aes,
-    geom_point,
-    ggplot,
-    ggtitle,
-)
-from plotnine.data import mtcars
-
+import pandas as pd
 from shiny import App, Inputs, Outputs, Session, render, ui
+
+mtcars = pd.read_csv(Path(__file__).parent / "mtcars.csv")
+mtcars.drop(["disp", "hp", "drat", "qsec", "vs", "gear", "carb"], axis=1, inplace=True)
 
 
 app_ui = ui.page_fluid(
@@ -63,6 +60,8 @@ def server(input: Inputs, output: Outputs, session: Session):
             return fig
 
         elif input.plot_type() == "plotnine":
+            from plotnine import aes, geom_point, ggplot, ggtitle
+
             p = (
                 ggplot(mtcars, aes("wt", "mpg"))
                 + geom_point()

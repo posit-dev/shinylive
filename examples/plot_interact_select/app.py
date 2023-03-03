@@ -1,13 +1,13 @@
 # Note: This app uses a development version of plotnine.
+from pathlib import Path
 
 import pandas as pd
 from plotnine import aes, facet_grid, geom_point, ggplot
-from plotnine.data import mtcars as mtcars_orig
-
 from shiny import App, Inputs, Outputs, Session, render, ui
 from shiny.plotutils import brushed_points, near_points
 
-mtcars = mtcars_orig.drop(["disp", "hp", "drat", "qsec", "vs", "gear", "carb"], axis=1)
+mtcars = pd.read_csv(Path(__file__).parent / "mtcars.csv")
+mtcars.drop(["disp", "hp", "drat", "qsec", "vs", "gear", "carb"], axis=1, inplace=True)
 
 # In fast mode, throttle interval in ms.
 FAST_INTERACT_INTERVAL = 60

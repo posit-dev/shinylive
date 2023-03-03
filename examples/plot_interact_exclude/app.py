@@ -1,13 +1,14 @@
 # Note: This app uses a development version of plotnine.
+from pathlib import Path
 
 import numpy as np
 import statsmodels.api as sm
 from plotnine import aes, geom_point, geom_smooth, ggplot
-from plotnine.data import mtcars as mtcars_orig
 from shiny import App, Inputs, Outputs, Session, reactive, render, ui
 from shiny.plotutils import brushed_points, near_points
 
-mtcars = mtcars_orig.drop(["disp", "hp", "drat", "qsec", "vs", "gear", "carb"], axis=1)
+mtcars = pd.read_csv(Path(__file__).parent / "mtcars.csv")
+mtcars.drop(["disp", "hp", "drat", "qsec", "vs", "gear", "carb"], axis=1, inplace=True)
 
 
 app_ui = ui.page_fluid(
