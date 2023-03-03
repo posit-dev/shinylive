@@ -2,6 +2,7 @@
 from pathlib import Path
 
 import numpy as np
+import pandas as pd
 import statsmodels.api as sm
 from plotnine import aes, geom_point, geom_smooth, ggplot
 from shiny import App, Inputs, Outputs, Session, reactive, render, ui
