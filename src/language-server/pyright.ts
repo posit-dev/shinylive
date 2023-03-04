@@ -12,7 +12,7 @@ import {
 } from "vscode-jsonrpc/browser";
 
 // This is modified by bin/update-pyright.sh
-const workerScriptName = "pyright-main-8fe8afc1823da211c82b.worker.js";
+const workerScriptName = "pyright-main-9de05813f9fe07eabc93.worker.js";
 
 /**
  * Creates Pyright workers and corresponding client.
