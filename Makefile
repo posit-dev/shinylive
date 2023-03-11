@@ -242,8 +242,7 @@ $(PACKAGE_DIR)/$(SHINYWIDGETS_WHEEL): $(PYBIN) $(PACKAGE_DIR)/py-shinywidgets
 $(PACKAGE_DIR)/$(FAICONS_WHEEL): $(PYBIN) $(PACKAGE_DIR)/py-faicons
 	# Remove any old copies of the package
 	rm -f $(PACKAGE_DIR)/faicons*.whl
-	$(PYBIN)/pip install -r $(PACKAGE_DIR)/py-faicons/requirements-dev.txt
-	$(PYBIN)/pip install -e $(PACKAGE_DIR)/py-faicons
+	$(PYBIN)/pip install -e $(PACKAGE_DIR)/py-faicons[dev,test]
 	. $(PYBIN)/activate && cd $(PACKAGE_DIR)/py-faicons && make dist && mv dist/*.whl ../
 
 $(PACKAGE_DIR)/$(MIZANI_WHEEL): $(PYBIN) $(PACKAGE_DIR)/mizani

@@ -1,8 +1,8 @@
 {
   "htmltools": {
     "name": "htmltools",
-    "version": "0.1.4.9000",
-    "filename": "htmltools-0.1.4.9000-py3-none-any.whl",
+    "version": "0.1.4.9002",
+    "filename": "htmltools-0.1.4.9002-py3-none-any.whl",
     "sha256": null,
     "url": null,
     "depends": [
@@ -15,8 +15,8 @@
   },
   "shiny": {
     "name": "shiny",
-    "version": "0.2.9.9000",
-    "filename": "shiny-0.2.9.9000-py3-none-any.whl",
+    "version": "0.2.9.9001",
+    "filename": "shiny-0.2.9.9001-py3-none-any.whl",
     "sha256": null,
     "url": null,
     "depends": [
@@ -24,7 +24,7 @@
       {"name": "uvicorn", "specs": [[">=", "0.16.0"]]},
       {"name": "starlette", "specs": [[">=", "0.17.1"]]},
       {"name": "python-multipart", "specs": []},
-      {"name": "htmltools", "specs": [[">=", "0.1.0.9001"]]},
+      {"name": "htmltools", "specs": [[">=", "0.1.4.9001"]]},
       {"name": "click", "specs": [[">=", "8.0.3"]]},
       {"name": "markdown-it-py", "specs": [[">=", "1.1.0"]]},
       {"name": "mdit-py-plugins", "specs": [[">=", "0.3.0"]]},
@@ -38,8 +38,8 @@
   },
   "shinywidgets": {
     "name": "shinywidgets",
-    "version": "0.1.4.9000",
-    "filename": "shinywidgets-0.1.4.9000-py3-none-any.whl",
+    "version": "0.1.5",
+    "filename": "shinywidgets-0.1.5-py3-none-any.whl",
     "sha256": null,
     "url": null,
     "depends": [
@@ -54,12 +54,12 @@
   },
   "faicons": {
     "name": "faicons",
-    "version": "0.2.1",
-    "filename": "faicons-0.2.1-py3-none-any.whl",
+    "version": "0.2.1.9000",
+    "filename": "faicons-0.2.1.9000-py3-none-any.whl",
     "sha256": null,
     "url": null,
     "depends": [
-      {"name": "htmltools", "specs": []}
+      {"name": "htmltools", "specs": [[">=", "0.1.4.9002"]]}
     ],
     "imports": [
       "faicons"
