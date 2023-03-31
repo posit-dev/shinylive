@@ -14,7 +14,7 @@ app_ui = ui.page_fluid(
 )
 
 
-def square(x: ui.TagChildArg, n: int) -> ui.Tag:
+def square(x: ui.TagChild, n: int) -> ui.Tag:
     row = ui.div([x] * n)
     return ui.div([row] * n)
 
