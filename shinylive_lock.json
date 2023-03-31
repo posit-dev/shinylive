@@ -1,8 +1,8 @@
 {
   "htmltools": {
     "name": "htmltools",
-    "version": "0.1.4.9002",
-    "filename": "htmltools-0.1.4.9002-py3-none-any.whl",
+    "version": "0.1.5.9001",
+    "filename": "htmltools-0.1.5.9001-py3-none-any.whl",
     "sha256": null,
     "url": null,
     "depends": [
@@ -15,8 +15,8 @@
   },
   "shiny": {
     "name": "shiny",
-    "version": "0.2.9.9001",
-    "filename": "shiny-0.2.9.9001-py3-none-any.whl",
+    "version": "0.2.10.9001",
+    "filename": "shiny-0.2.10.9001-py3-none-any.whl",
     "sha256": null,
     "url": null,
     "depends": [
@@ -38,14 +38,14 @@
   },
   "shinywidgets": {
     "name": "shinywidgets",
-    "version": "0.1.5",
-    "filename": "shinywidgets-0.1.5-py3-none-any.whl",
+    "version": "0.1.6.9000",
+    "filename": "shinywidgets-0.1.6.9000-py3-none-any.whl",
     "sha256": null,
     "url": null,
     "depends": [
       {"name": "ipywidgets", "specs": [[">=", "7.6.5"]]},
       {"name": "jupyter-core", "specs": []},
-      {"name": "shiny", "specs": [[">=", "0.2.0.9007"]]},
+      {"name": "shiny", "specs": [[">=", "0.2.10"]]},
       {"name": "python-dateutil", "specs": [[">=", "2.8.2"]]}
     ],
     "imports": [
