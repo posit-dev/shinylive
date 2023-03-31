@@ -39,6 +39,7 @@
       "input_numeric",
       "input_slider",
       "input_checkbox",
+      "input_switch",
       "input_checkbox_group",
       "input_select",
       "input_radio",
