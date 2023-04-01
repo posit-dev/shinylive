@@ -15,6 +15,7 @@ import words
 # The state of each key on the keyboard.
 LetterMatch = Literal["correct", "in-word", "not-in-word"]
 
+
 # Information about each guess made by the player.
 @dataclass(init=True)
 class GuessInfo:
@@ -216,7 +217,7 @@ def server(input: Inputs, output: Outputs, session: Session):
 
                 key_button = ui.input_action_button(key, key)
                 key_button.attrs.update(class_=key_button.attrs["class"] + " " + class_)
-                row_div.children.append(key_button)
+                row_div.children.append(key_button, " ")
 
             keyboard_div.children.append(row_div)
 
