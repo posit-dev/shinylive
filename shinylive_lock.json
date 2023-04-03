@@ -1,8 +1,8 @@
 {
   "htmltools": {
     "name": "htmltools",
-    "version": "0.1.5.9001",
-    "filename": "htmltools-0.1.5.9001-py3-none-any.whl",
+    "version": "0.2.1",
+    "filename": "htmltools-0.2.1-py3-none-any.whl",
     "sha256": null,
     "url": null,
     "depends": [
@@ -15,8 +15,8 @@
   },
   "shiny": {
     "name": "shiny",
-    "version": "0.2.10.9001",
-    "filename": "shiny-0.2.10.9001-py3-none-any.whl",
+    "version": "0.3.0",
+    "filename": "shiny-0.3.0-py3-none-any.whl",
     "sha256": null,
     "url": null,
     "depends": [
@@ -24,7 +24,7 @@
       {"name": "uvicorn", "specs": [[">=", "0.16.0"]]},
       {"name": "starlette", "specs": [[">=", "0.17.1"]]},
       {"name": "python-multipart", "specs": []},
-      {"name": "htmltools", "specs": [[">=", "0.1.4.9001"]]},
+      {"name": "htmltools", "specs": [[">=", "0.2.1"]]},
       {"name": "click", "specs": [[">=", "8.0.3"]]},
       {"name": "markdown-it-py", "specs": [[">=", "1.1.0"]]},
       {"name": "mdit-py-plugins", "specs": [[">=", "0.3.0"]]},
@@ -45,7 +45,7 @@
     "depends": [
       {"name": "ipywidgets", "specs": [[">=", "7.6.5"]]},
       {"name": "jupyter-core", "specs": []},
-      {"name": "shiny", "specs": [[">=", "0.2.10"]]},
+      {"name": "shiny", "specs": [[">=", "0.2.10.9001"]]},
       {"name": "python-dateutil", "specs": [[">=", "2.8.2"]]}
     ],
     "imports": [
@@ -80,10 +80,10 @@
   },
   "tzdata": {
     "name": "tzdata",
-    "version": "2022.7",
-    "filename": "tzdata-2022.7-py2.py3-none-any.whl",
-    "sha256": "2b88858b0e3120792a3c0635c23daf36a7d7eeeca657c323da299d2094402a0d",
-    "url": "https://files.pythonhosted.org/packages/fa/5e/f99a7df3ae2079211d31ec23b1d34380c7870c26e99159f6e422dcbab538/tzdata-2022.7-py2.py3-none-any.whl",
+    "version": "2023.3",
+    "filename": "tzdata-2023.3-py2.py3-none-any.whl",
+    "sha256": "7e65763eef3120314099b6939b5546db7adce1e7d6f2e179e3df563c70511eda",
+    "url": "https://files.pythonhosted.org/packages/d5/fb/a79efcab32b8a1f1ddca7f35109a50e4a80d42ac1c9187ab46522b2407d7/tzdata-2023.3-py2.py3-none-any.whl",
     "depends": [],
     "imports": [
       "tzdata"
@@ -128,12 +128,13 @@
   },
   "plotly": {
     "name": "plotly",
-    "version": "5.13.1",
-    "filename": "plotly-5.13.1-py2.py3-none-any.whl",
-    "sha256": "f776a5c664908450c6c1727f61e8e2e22798d9c6c69d37a9057735365084a2fa",
-    "url": "https://files.pythonhosted.org/packages/f7/f5/c5b30c0a6639f076615d56f628f507ae20388e8f8769aef99ce5ea2033c8/plotly-5.13.1-py2.py3-none-any.whl",
+    "version": "5.14.0",
+    "filename": "plotly-5.14.0-py2.py3-none-any.whl",
+    "sha256": "2e3407d93a9700beebbef66d11f63992c58e058dd808442ee54af40f98fb4940",
+    "url": "https://files.pythonhosted.org/packages/78/06/716dfc518422911c6c8863d4008b30401bb0c2cb20c7a2e5f910f25d3d1b/plotly-5.14.0-py2.py3-none-any.whl",
     "depends": [
-      {"name": "tenacity", "specs": [[">=", "6.2.0"]]}
+      {"name": "tenacity", "specs": [[">=", "6.2.0"]]},
+      {"name": "packaging", "specs": []}
     ],
     "imports": [
       "plotly"
@@ -202,10 +203,10 @@
   },
   "black": {
     "name": "black",
-    "version": "23.1.0",
-    "filename": "black-23.1.0-py3-none-any.whl",
-    "sha256": "7a0f701d314cfa0896b9001df70a530eb2472babb76086344e688829efd97d32",
-    "url": "https://files.pythonhosted.org/packages/18/99/bb1be0ff3a7e912679ad234a3c4884fa7689dfcc4eae85bddb6c04feaa62/black-23.1.0-py3-none-any.whl",
+    "version": "23.3.0",
+    "filename": "black-23.3.0-py3-none-any.whl",
+    "sha256": "ec751418022185b0c1bb7d7736e6933d40bbb14c14a0abcf9123d1b159f98dd4",
+    "url": "https://files.pythonhosted.org/packages/ad/e7/4642b7f462381799393fbad894ba4b32db00870a797f0616c197b07129a9/black-23.3.0-py3-none-any.whl",
     "depends": [
       {"name": "click", "specs": [[">=", "8.0.0"]]},
       {"name": "mypy-extensions", "specs": [[">=", "0.4.3"]]},
@@ -230,10 +231,10 @@
   },
   "uvicorn": {
     "name": "uvicorn",
-    "version": "0.20.0",
-    "filename": "uvicorn-0.20.0-py3-none-any.whl",
-    "sha256": "c3ed1598a5668208723f2bb49336f4509424ad198d6ab2615b7783db58d919fd",
-    "url": "https://files.pythonhosted.org/packages/96/f3/f39ac8ac3bdf356b4934b8f7e56173e96681f67ef0cd92bd33a5059fae9e/uvicorn-0.20.0-py3-none-any.whl",
+    "version": "0.21.1",
+    "filename": "uvicorn-0.21.1-py3-none-any.whl",
+    "sha256": "e47cac98a6da10cd41e6fd036d472c6f58ede6c5dbee3dbee3ef7a100ed97742",
+    "url": "https://files.pythonhosted.org/packages/8c/f1/7c45fe2a09133e103dcf0621831545c268cd3f7a5d58dc7e470be91b2cd0/uvicorn-0.21.1-py3-none-any.whl",
     "depends": [
       {"name": "click", "specs": [[">=", "7.0"]]},
       {"name": "h11", "specs": [[">=", "0.8"]]}
@@ -244,10 +245,10 @@
   },
   "starlette": {
     "name": "starlette",
-    "version": "0.25.0",
-    "filename": "starlette-0.25.0-py3-none-any.whl",
-    "sha256": "774f1df1983fd594b9b6fb3ded39c2aa1979d10ac45caac0f4255cbe2acb8628",
-    "url": "https://files.pythonhosted.org/packages/b0/56/e7e16e133428ce19ff429d3d71aa7114048730385eea7d0985df5cf9aed6/starlette-0.25.0-py3-none-any.whl",
+    "version": "0.26.1",
+    "filename": "starlette-0.26.1-py3-none-any.whl",
+    "sha256": "e87fce5d7cbdde34b76f0ac69013fd9d190d581d80681493016666e6f96c6d5e",
+    "url": "https://files.pythonhosted.org/packages/12/48/f9c1ec6bee313aba264fbc2483d9070f4e4526f2538e2b55b1e4a391d938/starlette-0.26.1-py3-none-any.whl",
     "depends": [
       {"name": "anyio", "specs": [["<", "5"], [">=", "3.4.0"]]}
     ],
@@ -316,14 +317,14 @@
   },
   "ipywidgets": {
     "name": "ipywidgets",
-    "version": "8.0.4",
-    "filename": "ipywidgets-8.0.4-py3-none-any.whl",
-    "sha256": "ebb195e743b16c3947fe8827190fb87b4d00979c0fbf685afe4d2c4927059fa1",
-    "url": "https://files.pythonhosted.org/packages/f3/fc/bd076538811d63babf8ceea0ff3d8d024171569a47f5dba7757c5fd0462c/ipywidgets-8.0.4-py3-none-any.whl",
+    "version": "8.0.6",
+    "filename": "ipywidgets-8.0.6-py3-none-any.whl",
+    "sha256": "a60bf8d2528997e05ac83fd19ea2fbe65f2e79fbe1b2b35779bdfc46c2941dcc",
+    "url": "https://files.pythonhosted.org/packages/50/7d/2c8b7bba2b1c2b5d1299f22fa7853f09b573c84e63b62870c13a6ec11990/ipywidgets-8.0.6-py3-none-any.whl",
     "depends": [
       {"name": "ipython", "specs": [[">=", "6.1.0"]]},
       {"name": "traitlets", "specs": [[">=", "4.3.1"]]},
-      {"name": "jupyterlab-widgets", "specs": [["~=", "3.0"]]}
+      {"name": "jupyterlab-widgets", "specs": [["~=", "3.0.7"]]}
     ],
     "imports": [
       "ipywidgets"
@@ -331,10 +332,10 @@
   },
   "jupyter-core": {
     "name": "jupyter-core",
-    "version": "5.2.0",
-    "filename": "jupyter_core-5.2.0-py3-none-any.whl",
-    "sha256": "4bdc2928c37f6917130c667d8b8708f20aee539d8283c6be72aabd2a4b4c83b0",
-    "url": "https://files.pythonhosted.org/packages/c2/63/86691c2c6014b034c7eccc3000512c58532b4a11343e01faddd74c80a9de/jupyter_core-5.2.0-py3-none-any.whl",
+    "version": "5.3.0",
+    "filename": "jupyter_core-5.3.0-py3-none-any.whl",
+    "sha256": "d4201af84559bc8c70cead287e1ab94aeef3c512848dde077b7684b54d67730d",
+    "url": "https://files.pythonhosted.org/packages/41/1e/92a67f333b9335f04ce409799c030dcfb291712658b9d9d13997f7c91e5a/jupyter_core-5.3.0-py3-none-any.whl",
     "depends": [
       {"name": "platformdirs", "specs": [[">=", "2.5"]]},
       {"name": "traitlets", "specs": [[">=", "5.3"]]}
@@ -415,10 +416,10 @@
   },
   "pathspec": {
     "name": "pathspec",
-    "version": "0.11.0",
-    "filename": "pathspec-0.11.0-py3-none-any.whl",
-    "sha256": "3a66eb970cbac598f9e5ccb5b2cf58930cd8e3ed86d393d541eaf2d8b1705229",
-    "url": "https://files.pythonhosted.org/packages/e6/be/1a973593d7ce7ac9d1a793b81eb265c152a62f34825169fbd7c4e4548e34/pathspec-0.11.0-py3-none-any.whl",
+    "version": "0.11.1",
+    "filename": "pathspec-0.11.1-py3-none-any.whl",
+    "sha256": "d8af70af76652554bd134c22b3e8a1cc46ed7d91edcdd721ef1a0c51a84a5293",
+    "url": "https://files.pythonhosted.org/packages/be/c8/551a803a6ebb174ec1c124e68b449b98a0961f0b737def601e3c1fbb4cfd/pathspec-0.11.1-py3-none-any.whl",
     "depends": [],
     "imports": [
       "pathspec"
@@ -426,10 +427,10 @@
   },
   "platformdirs": {
     "name": "platformdirs",
-    "version": "3.0.0",
-    "filename": "platformdirs-3.0.0-py3-none-any.whl",
-    "sha256": "b1d5eb14f221506f50d6604a561f4c5786d9e80355219694a1b244bcd96f4567",
-    "url": "https://files.pythonhosted.org/packages/ba/24/a83a900a90105f8ad3f20df5bb5a2cde886df7125c7827e196e4ed4fa8a7/platformdirs-3.0.0-py3-none-any.whl",
+    "version": "3.2.0",
+    "filename": "platformdirs-3.2.0-py3-none-any.whl",
+    "sha256": "ebe11c0d7a805086e99506aa331612429a72ca7cd52a1f0d277dc4adc20cb10e",
+    "url": "https://files.pythonhosted.org/packages/b2/f3/4fb5fae710fc9f22a42cd90dc0547da18ec83e2e139294ab94f04c449cf5/platformdirs-3.2.0-py3-none-any.whl",
     "depends": [],
     "imports": [
       "platformdirs"
@@ -484,10 +485,10 @@
   },
   "ipython": {
     "name": "ipython",
-    "version": "8.11.0",
-    "filename": "ipython-8.11.0-py3-none-any.whl",
-    "sha256": "5b54478e459155a326bf5f42ee4f29df76258c0279c36f21d71ddb560f88b156",
-    "url": "https://files.pythonhosted.org/packages/ac/91/23e08c442657cf493598b0222008437c9e0aef0709a8fd65a5d5d68ffa21/ipython-8.11.0-py3-none-any.whl",
+    "version": "8.12.0",
+    "filename": "ipython-8.12.0-py3-none-any.whl",
+    "sha256": "1c183bf61b148b00bcebfa5d9b39312733ae97f6dad90d7e9b4d86c8647f498c",
+    "url": "https://files.pythonhosted.org/packages/9d/1c/6001840eceb489e4a3e6ae9b012cb56b109dd6b8ee286d7771166b83d111/ipython-8.12.0-py3-none-any.whl",
     "depends": [
       {"name": "backcall", "specs": []},
       {"name": "decorator", "specs": []},
@@ -516,24 +517,13 @@
   },
   "jupyterlab-widgets": {
     "name": "jupyterlab-widgets",
-    "version": "3.0.5",
-    "filename": "jupyterlab_widgets-3.0.5-py3-none-any.whl",
-    "sha256": "a04a42e50231b355b7087e16a818f541e53589f7647144ea0344c4bf16f300e5",
-    "url": "https://files.pythonhosted.org/packages/df/82/4576cbc07ebace8c7734fe08b2c2f9123b7ebecd29e932a3b839b6bee2cb/jupyterlab_widgets-3.0.5-py3-none-any.whl",
+    "version": "3.0.7",
+    "filename": "jupyterlab_widgets-3.0.7-py3-none-any.whl",
+    "sha256": "c73f8370338ec19f1bec47254752d6505b03601cbd5a67e6a0b184532f73a459",
+    "url": "https://files.pythonhosted.org/packages/46/98/e7ce879b7b5d4871b80e291be967d22e5e66fa43474c476a95fe6231f50d/jupyterlab_widgets-3.0.7-py3-none-any.whl",
     "depends": [],
     "imports": [
       "jupyterlab_widgets"
-    ]
-  },
-  "idna": {
-    "name": "idna",
-    "version": "3.4",
-    "filename": "idna-3.4-py3-none-any.whl",
-    "sha256": "90b77e79eaa3eba6de819a0c442c0b4ceefc341a7a2ab77d7562bf49f425c5c2",
-    "url": "https://files.pythonhosted.org/packages/fc/34/3030de6f1370931b9dbb4dad48f6ab1015ab1d32447850b9fc94e60097be/idna-3.4-py3-none-any.whl",
-    "depends": [],
-    "imports": [
-      "idna"
     ]
   },
   "sniffio": {
