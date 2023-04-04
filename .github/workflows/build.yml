@@ -38,23 +38,31 @@ jobs:
       # =====================================================
       # Run playwright tests
       # =====================================================
-      - uses: actions/setup-node@v3
-        with:
-          node-version: "14.x"
-      - name: Install dependencies
-        run: yarn
-      - name: Install Shinylive Python pacakge
-        run: pip install shinylive
-      - name: Install Playwright Browsers
-        run: npx playwright install --with-deps
-      - name: Run Playwright tests
-        run: make test
-      - uses: actions/upload-artifact@v3
-        if: always()
-        with:
-          name: playwright-report
-          path: playwright-report/
-          retention-days: 30
+      # Note: These are disabled because of a circular dependency between this
+      # repository and Python shinylive package (which is in the py-shinylive
+      # repository). This set of tests does a `pip install shinylive`, but that
+      # package depends on this repo, and can only be updated after a release is
+      # made from this repo. But if these tests fail, it will block this repo
+      # from making a release. To fix this, we will probably need to avoid
+      # installing the Python package.
+
+      # - uses: actions/setup-node@v3
+      #   with:
+      #     node-version: "14.x"
+      # - name: Install dependencies
+      #   run: yarn
+      # - name: Install Shinylive Python pacakge
+      #   run: pip install shinylive
+      # - name: Install Playwright Browsers
+      #   run: npx playwright install --with-deps
+      # - name: Run Playwright tests
+      #   run: make test
+      # - uses: actions/upload-artifact@v3
+      #   if: always()
+      #   with:
+      #     name: playwright-report
+      #     path: playwright-report/
+      #     retention-days: 30
 
       # =====================================================
       # Upload site/ artifact
