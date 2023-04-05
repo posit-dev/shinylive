@@ -9,7 +9,7 @@
 
   --font-face: "Source Sans Pro", Arial, Helvetica, sans-serif;
   --font-size: 14px;
-  --font-mono-face: Menlo, Monaco, "Courier New", monospace;
+  --font-mono-face: Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
   --font-mono-size: 12px;
 
   --panel-roundness: 5px;
