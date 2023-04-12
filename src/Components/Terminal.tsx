@@ -75,7 +75,7 @@ export function Terminal({
         selectionBackground: "#9999CC",
       },
       // TODO: Set fonts from CSS?
-      fontFamily: "Menlo, Monaco, Courier New, Monospace",
+      fontFamily: "Menlo, Monaco, Consolas, Liberation Mono, Courier New, Monospace",
       fontSize: 12,
     });
     const fitAddon = new FitAddon();

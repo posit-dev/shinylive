@@ -9,7 +9,7 @@ This very-specific selector is needed to override some settings from App.css.
   --color: #333;
   --background: white;
   --size: 1;
-  --font: Menlo, Monaco, "Courier New", monospace;
+  --font: Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 }
 
 .xterm {
