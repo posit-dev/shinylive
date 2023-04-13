@@ -7,7 +7,6 @@
 	submodules submodules-pull \
 	buildjs watch serve \
 	packages \
-	api-docs \
 	quarto quartoserve \
 	clean-packages clean distclean \
 	test test-watch
@@ -230,7 +229,7 @@ $(PACKAGE_DIR)/$(HTMLTOOLS_WHEEL): $(PYBIN) $(PACKAGE_DIR)/py-htmltools
 $(PACKAGE_DIR)/$(SHINY_WHEEL): $(PYBIN) $(PACKAGE_DIR)/py-shiny
 	# Remove any old copies of the package
 	rm -f $(PACKAGE_DIR)/shiny*.whl
-	$(PYBIN)/pip install -e $(PACKAGE_DIR)/py-shiny[dev,docs,test]
+	$(PYBIN)/pip install -e $(PACKAGE_DIR)/py-shiny[dev,test]
 	. $(PYBIN)/activate && cd $(PACKAGE_DIR)/py-shiny && make dist && mv dist/*.whl ../
 
 $(PACKAGE_DIR)/$(SHINYWIDGETS_WHEEL): $(PYBIN) $(PACKAGE_DIR)/py-shinywidgets
@@ -289,12 +288,6 @@ copy_pyright:
 	cp -r src/pyright/* $(BUILD_DIR)/shinylive/pyright
 
 
-## Build Shiny API docs
-api-docs: $(PYBIN)
-	mkdir -p $(BUILD_DIR)/shinylive
-	export SHINYLIVE_SRC=$(realpath $(BUILD_DIR)/shinylive) && \
-		. $(PYBIN)/activate && cd packages/py-shiny/docs && make html
-
 ## Build Quarto example site in quarto/
 quarto:
 	cd quarto && quarto render
@@ -311,7 +304,6 @@ clean-packages:
 ## Remove all build files
 clean:
 	rm -rf $(PACKAGE_DIR)/*.whl $(BUILD_DIR) $(DIST_DIR) quarto/docs/
-	cd $(PACKAGE_DIR)/py-shiny/docs && make clean
 
 ## Remove all build files and venv/
 distclean: clean
