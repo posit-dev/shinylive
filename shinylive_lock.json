@@ -1,8 +1,8 @@
 {
   "htmltools": {
     "name": "htmltools",
-    "version": "0.2.1",
-    "filename": "htmltools-0.2.1-py3-none-any.whl",
+    "version": "0.2.1.9000",
+    "filename": "htmltools-0.2.1.9000-py3-none-any.whl",
     "sha256": null,
     "url": null,
     "depends": [
@@ -15,8 +15,8 @@
   },
   "shiny": {
     "name": "shiny",
-    "version": "0.3.0",
-    "filename": "shiny-0.3.0-py3-none-any.whl",
+    "version": "0.3.0.9000",
+    "filename": "shiny-0.3.0.9000-py3-none-any.whl",
     "sha256": null,
     "url": null,
     "depends": [
@@ -38,14 +38,14 @@
   },
   "shinywidgets": {
     "name": "shinywidgets",
-    "version": "0.1.6.9000",
-    "filename": "shinywidgets-0.1.6.9000-py3-none-any.whl",
+    "version": "0.2.0",
+    "filename": "shinywidgets-0.2.0-py3-none-any.whl",
     "sha256": null,
     "url": null,
     "depends": [
       {"name": "ipywidgets", "specs": [[">=", "7.6.5"]]},
       {"name": "jupyter-core", "specs": []},
-      {"name": "shiny", "specs": [[">=", "0.2.10.9001"]]},
+      {"name": "shiny", "specs": [[">=", "0.3.0"]]},
       {"name": "python-dateutil", "specs": [[">=", "2.8.2"]]}
     ],
     "imports": [
@@ -78,20 +78,9 @@
       "mdit_py_plugins"
     ]
   },
-  "tzdata": {
-    "name": "tzdata",
-    "version": "2023.3",
-    "filename": "tzdata-2023.3-py2.py3-none-any.whl",
-    "sha256": "7e65763eef3120314099b6939b5546db7adce1e7d6f2e179e3df563c70511eda",
-    "url": "https://files.pythonhosted.org/packages/d5/fb/a79efcab32b8a1f1ddca7f35109a50e4a80d42ac1c9187ab46522b2407d7/tzdata-2023.3-py2.py3-none-any.whl",
-    "depends": [],
-    "imports": [
-      "tzdata"
-    ]
-  },
   "mizani": {
     "name": "mizani",
-    "version": "0.0.0",
+    "version": "0.8.1.post24+g57f00ad",
     "filename": "mizani-0.0.0-py3-none-any.whl",
     "sha256": null,
     "url": null,
@@ -100,7 +89,6 @@
       {"name": "scipy", "specs": [[">=", "1.5.0"]]},
       {"name": "pandas", "specs": [[">=", "1.3.5"]]},
       {"name": "matplotlib", "specs": [[">=", "3.5.0"]]},
-      {"name": "palettable", "specs": []},
       {"name": "tzdata", "specs": []}
     ],
     "imports": [
@@ -109,14 +97,14 @@
   },
   "plotnine": {
     "name": "plotnine",
-    "version": "0.0.0",
+    "version": "0.10.1.post98+g64295e1a",
     "filename": "plotnine-0.0.0-py3-none-any.whl",
     "sha256": null,
     "url": null,
     "depends": [
       {"name": "matplotlib", "specs": [[">=", "3.5.0"]]},
       {"name": "mizani", "specs": [[">=", "0.8.1"]]},
-      {"name": "numpy", "specs": [[">=", "1.19.0"]]},
+      {"name": "numpy", "specs": [[">=", "1.23.0"]]},
       {"name": "pandas", "specs": [[">=", "1.3.5"]]},
       {"name": "patsy", "specs": [[">=", "0.5.1"]]},
       {"name": "scipy", "specs": [[">=", "1.5.0"]]},
@@ -128,10 +116,10 @@
   },
   "plotly": {
     "name": "plotly",
-    "version": "5.14.0",
-    "filename": "plotly-5.14.0-py2.py3-none-any.whl",
-    "sha256": "2e3407d93a9700beebbef66d11f63992c58e058dd808442ee54af40f98fb4940",
-    "url": "https://files.pythonhosted.org/packages/78/06/716dfc518422911c6c8863d4008b30401bb0c2cb20c7a2e5f910f25d3d1b/plotly-5.14.0-py2.py3-none-any.whl",
+    "version": "5.14.1",
+    "filename": "plotly-5.14.1-py2.py3-none-any.whl",
+    "sha256": "a63f3ad9e4cc2e02902a738e5e3e7f3d1307f2732ac71a6c28f1238ed3052826",
+    "url": "https://files.pythonhosted.org/packages/15/5c/786e4572cf3217ba1707eeb99fe4bdb8fb138237690fa21641e341b1970c/plotly-5.14.1-py2.py3-none-any.whl",
     "depends": [
       {"name": "tenacity", "specs": [[">=", "6.2.0"]]},
       {"name": "packaging", "specs": []}
@@ -344,15 +332,15 @@
       "jupyter_core"
     ]
   },
-  "palettable": {
-    "name": "palettable",
-    "version": "3.3.0",
-    "filename": "palettable-3.3.0-py2.py3-none-any.whl",
-    "sha256": "c3bf3f548fc228e86bd3d16928bbf8d621c1d1098791ceab446d0e3a5e1298d1",
-    "url": "https://files.pythonhosted.org/packages/ca/46/5198aa24e61bb7eef28d06cb69e56bfa1942f4b6807d95a0b5ce361fe09b/palettable-3.3.0-py2.py3-none-any.whl",
+  "tzdata": {
+    "name": "tzdata",
+    "version": "2023.3",
+    "filename": "tzdata-2023.3-py2.py3-none-any.whl",
+    "sha256": "7e65763eef3120314099b6939b5546db7adce1e7d6f2e179e3df563c70511eda",
+    "url": "https://files.pythonhosted.org/packages/d5/fb/a79efcab32b8a1f1ddca7f35109a50e4a80d42ac1c9187ab46522b2407d7/tzdata-2023.3-py2.py3-none-any.whl",
     "depends": [],
     "imports": [
-      "palettable"
+      "tzdata"
     ]
   },
   "tenacity": {
