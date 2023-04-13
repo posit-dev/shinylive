@@ -246,13 +246,13 @@ $(PACKAGE_DIR)/$(FAICONS_WHEEL): $(PYBIN) $(PACKAGE_DIR)/py-faicons
 
 $(PACKAGE_DIR)/$(MIZANI_WHEEL): $(PYBIN) $(PACKAGE_DIR)/mizani
 	rm -f $(PACKAGE_DIR)/mizani*.whl
-	$(PYBIN)/pip install -e $(PACKAGE_DIR)/mizani[dev,test]
-	. $(PYBIN)/activate && cd $(PACKAGE_DIR)/mizani && make dist && mv dist/*.whl ../
+	$(PYBIN)/pip install -e $(PACKAGE_DIR)/mizani[build]
+	. $(PYBIN)/activate && cd $(PACKAGE_DIR)/mizani && make dist && mv dist/*.whl ../$(MIZANI_WHEEL)
 
 $(PACKAGE_DIR)/$(PLOTNINE_WHEEL): $(PYBIN) $(PACKAGE_DIR)/plotnine
 	rm -f $(PACKAGE_DIR)/plotnine*.whl
-	$(PYBIN)/pip install -e $(PACKAGE_DIR)/plotnine[dev,test]
-	. $(PYBIN)/activate && cd $(PACKAGE_DIR)/plotnine && make dist && mv dist/*.whl ../
+	$(PYBIN)/pip install -e $(PACKAGE_DIR)/plotnine[build]
+	. $(PYBIN)/activate && cd $(PACKAGE_DIR)/plotnine && make dist && mv dist/*.whl ../$(PLOTNINE_WHEEL)
 
 ## Update the shinylive_lock.json file, based on shinylive_requirements.json
 update_packages_lock: $(PYBIN) $(BUILD_DIR)/shinylive/pyodide

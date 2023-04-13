@@ -10,16 +10,10 @@
     "comment": "Needed to suppress warning from shiny/ui/_markdown.py."
   },
   {
-    "name": "tzdata",
-    "source": "pypi",
-    "version": "latest",
-    "comment": "Needed to avoid problem with zoneinfo.ZoneInfo('UTC') in plotnine."
-  },
-  {
     "name": "mizani",
     "source": "local",
     "version": "latest",
-    "comment": "Needed to avoid problem with zoneinfo.ZoneInfo('UTC') in plotnine."
+    "comment": "Needed to avoid problem with zoneinfo.ZoneInfo('UTC') in plotnine, and avoid loading broken version of palettable."
   },
   {
     "name": "plotnine",
