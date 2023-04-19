@@ -5,6 +5,7 @@ import os
 import shutil
 import sys
 from pathlib import Path
+from typing import Optional
 
 import pyright
 
@@ -34,8 +35,11 @@ TypeshedFileList = dict[str, str]
 
 
 def dir_to_file_contents(
-    dir: str, dir_prefix: str = "", exclude: set[str] = set()
+    dir: str, dir_prefix: str = "", exclude: Optional[set[str]] = None
 ) -> TypeshedFileList:
+    if exclude is None:
+        exclude = set()
+
     file_data: TypeshedFileList = {}
 
     exclude_names = {"__pycache__"} | exclude
