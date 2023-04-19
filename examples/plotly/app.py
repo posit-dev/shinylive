@@ -1,11 +1,10 @@
 # Example of using plotly via shinywidgets
 
 import numpy as np
-from sklearn.linear_model import LinearRegression
-
-from shiny import *
-from shinywidgets import output_widget, register_widget
 import plotly.graph_objs as go
+from shiny import App, reactive, ui
+from shinywidgets import output_widget, register_widget
+from sklearn.linear_model import LinearRegression
 
 # Generate some data and fit a linear regression
 n = 10000
@@ -22,7 +21,6 @@ app_ui = ui.page_fluid(
 
 
 def server(input, output, session):
-
     scatterplot = go.FigureWidget(
         data=[
             go.Scattergl(

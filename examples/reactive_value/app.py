@@ -14,8 +14,9 @@
 # reactive Value changes, it invalidates this output, causing it to re-execute and
 # return a new string.
 
-from datetime import datetime
 import textwrap
+from datetime import datetime
+
 from shiny import App, reactive, render, ui
 
 app_ui = ui.page_fluid(

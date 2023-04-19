@@ -1,20 +1,14 @@
-## By Chelsea Parlett Pelleriti
+# By Chelsea Parlett Pelleriti
 
-from shiny import *
-
-# Import modules for plot rendering
-import numpy as np
 import matplotlib.pyplot as plt
-import seaborn as sns
-
 
 # Import modules for modeling
 import pandas as pd
-from sklearn.linear_model import LinearRegression, Ridge, Lasso, ElasticNet
+import seaborn as sns
 
 # Import custom Python Functions from local file
 from compare import compare, sim_data
-
+from shiny import App, Inputs, Outputs, Session, reactive, render, ui
 
 # data
 nsims = 100
@@ -166,7 +160,6 @@ app_ui = ui.page_fluid(
 
 
 def server(input: Inputs, output: Outputs, session: Session):
-
     # reactive Calc that runs LASSO, Ridge, and Linear models on generated data
     @reactive.Calc
     def models():

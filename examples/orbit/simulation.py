@@ -1,7 +1,8 @@
-from typing import Any
-import numpy as np
-import astropy.constants as c
 import time
+from typing import Any
+
+import astropy.constants as c
+import numpy as np
 
 # Adapted from Python for Astronomers: An Introduction to Scientific Computing
 # by Imad Pasha & Christopher Agostino
@@ -135,7 +136,7 @@ class Simulation:
         if self.has_units:
             try:
                 _ = t0.unit
-            except:
+            except Exception:
                 t0 = (t0 * T.unit).cgs.value
             T = T.cgs.value
             dt = dt.cgs.value
@@ -143,7 +144,6 @@ class Simulation:
         self.history: Any = [self.quant_vec]
         clock_time = t0
         nsteps = int((T - t0) / dt)
-        start_time = time.time()
         for step in range(nsteps):
             if progress is not None and step % 5 == 0:
                 progress.set(
@@ -155,7 +155,6 @@ class Simulation:
             self.history.append(y_new)
             self.quant_vec = y_new
             clock_time += dt
-        runtime = time.time() - start_time
         self.history = np.array(self.history)
 
 

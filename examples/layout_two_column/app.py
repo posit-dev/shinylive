@@ -1,6 +1,5 @@
 from shiny import App, ui
 
-
 app_ui = ui.page_fluid(
     ui.tags.style(
         """

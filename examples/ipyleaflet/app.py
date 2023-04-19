@@ -1,8 +1,7 @@
+import ipyleaflet as L
 from htmltools import css
 from shiny import App, reactive, render, ui
 from shinywidgets import output_widget, reactive_read, register_widget
-
-import ipyleaflet as L
 
 app_ui = ui.page_fluid(
     ui.div(

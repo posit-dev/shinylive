@@ -1,6 +1,5 @@
 from shiny import App, reactive, render, ui
 
-
 app_ui = ui.page_fluid(
     {"id": "main-content"},
     ui.h2("Dynamic UI"),

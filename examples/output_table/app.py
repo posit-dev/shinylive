@@ -1,7 +1,4 @@
-import pathlib
-
 import palmerpenguins
-import pandas as pd
 from shiny import App, render, ui
 
 penguins = palmerpenguins.load_penguins()

@@ -1,10 +1,10 @@
 from pathlib import Path
-from simulation import Body, Simulation, nbody_solve, spherical_to_cartesian
-import matplotlib.pyplot as plt
-import astropy.units as u
-import numpy as np
 
+import astropy.units as u
+import matplotlib.pyplot as plt
+import numpy as np
 from shiny import App, reactive, render, ui
+from simulation import Body, Simulation, nbody_solve, spherical_to_cartesian
 
 # This application adapted from RK4 Orbit Integrator tutorial in Python for Astronomers
 # https://prappleizer.github.io/
@@ -153,8 +153,6 @@ def server(input, output, session):
         simulation_.set_diff_eq(nbody_solve)
 
         return simulation_
-
-    has_run = False
 
     @output
     @render.plot

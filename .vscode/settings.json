@@ -29,8 +29,11 @@
     "[python]": {
         "editor.formatOnSave": true,
         "editor.tabSize": 4,
-        "editor.rulers": [88]
+        "editor.codeActionsOnSave": {
+            "source.organizeImports": true
+        },
     },
+    "isort.args":["--profile", "black"],
     "prettier.prettierPath": "./node_modules/prettier",
     "flake8.args": [
         "--ignore=E501,W503"

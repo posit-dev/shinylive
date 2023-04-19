@@ -1,8 +1,7 @@
-from shiny import App, ui
-
-import isodate
 import attrs
+import isodate
 import tabulate
+from shiny import App, ui
 
 app_ui = ui.page_fluid(
     ui.markdown(

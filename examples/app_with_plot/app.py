@@ -1,8 +1,6 @@
-from shiny import App, render, ui
-
-# Import modules for plot rendering
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
+from shiny import App, render, ui
 
 app_ui = ui.page_fluid(
     ui.layout_sidebar(

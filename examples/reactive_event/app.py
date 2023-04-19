@@ -14,13 +14,12 @@ app_ui = ui.page_fluid(
 
 
 def server(input, output, session):
-
     # The @reactive.event() causes the function to run only when input.btn is
     # invalidated.
     @reactive.Effect
     @reactive.event(input.btn)
     def _():
-        print(f"You clicked the button!")
+        print("You clicked the button!")
         # You can do other things here, like write data to disk.
 
     # This output updates only when input.btn is invalidated.

@@ -9,7 +9,6 @@
 import numpy as np
 import skimage
 from PIL import Image, ImageOps
-
 from shiny import App, render, ui
 from shiny.types import FileInfo, ImgData, SilentException
 

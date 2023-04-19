@@ -5,12 +5,11 @@ import random
 from dataclasses import dataclass
 from pathlib import Path
 from typing import cast
-from typing_extensions import Literal
-
-from shiny import App, Inputs, Outputs, Session, reactive, render, ui
-from shiny.ui import TagList, div, h3, head_content, tags
 
 import words
+from shiny import App, Inputs, Outputs, Session, reactive, render, ui
+from shiny.ui import TagList, div, h3, head_content, tags
+from typing_extensions import Literal
 
 # The state of each key on the keyboard.
 LetterMatch = Literal["correct", "in-word", "not-in-word"]

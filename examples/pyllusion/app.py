@@ -1,9 +1,8 @@
 # Demo app for Pyllusion, from
 # https://realitybending.github.io/Pyllusion/introduction.html
 
-from shiny import App, render, ui
 import pyllusion
-
+from shiny import App, render, ui
 
 app_ui = ui.page_fluid(
     ui.layout_sidebar(

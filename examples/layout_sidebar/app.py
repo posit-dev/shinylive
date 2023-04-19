@@ -1,6 +1,6 @@
-from shiny import App, render, ui
 import matplotlib.pyplot as plt
 import numpy as np
+from shiny import App, render, ui
 
 # Note that if the window is narrow, then the sidebar will be shown above the
 # main content, instead of being on the left.

@@ -16,6 +16,7 @@
 # regular Python and Pyodide. (Note that the function isn't actually used in this app.)
 
 from pprint import pformat
+
 import pyodide.http
 from shiny import App, reactive, render, ui
 
