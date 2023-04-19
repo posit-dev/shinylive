@@ -1,4 +1,4 @@
-# The shinyswatch package provides themes from Bootswatch.
+# The shinyswatch package provides themes from https://bootswatch.com/
 
 import shinyswatch
 from shiny import App, Inputs, Outputs, Session, render, ui
