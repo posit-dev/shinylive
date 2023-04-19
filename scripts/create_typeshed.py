@@ -15,6 +15,9 @@ PYODIDE_PYTHON_VERSION = "3.10"
 if sys.version_info < (3, 9):
     raise RuntimeError("This script requires Python 3.9+")
 
+# Packages that we'll create type stubs for.
+PACKAGES = ("htmltools", "shiny", "shinywidgets", "shinyswatch")
+
 # The top-level directory of this repository.
 topdir = Path(__file__).parent.parent
 
@@ -22,14 +25,12 @@ destdir = topdir / "build" / "shinylive" / "pyright"
 destfile = destdir / "typeshed.en.json"
 
 
-shutil.rmtree(topdir / "typings/htmltools", ignore_errors=True)
-shutil.rmtree(topdir / "typings/shiny", ignore_errors=True)
+for package in PACKAGES:
+    shutil.rmtree(topdir / "typings" / package, ignore_errors=True)
 
 pyright_args = ("--pythonplatform", "Linux", "--pythonversion", PYODIDE_PYTHON_VERSION)
-pyright.run("--createstub", "htmltools", *pyright_args)
-pyright.run("--createstub", "shiny", *pyright_args)
-pyright.run("--createstub", "shinywidgets", *pyright_args)
-pyright.run("--createstub", "shinyswatch", *pyright_args)
+for package in PACKAGES:
+    pyright.run("--createstub", package, *pyright_args)
 
 
 TypeshedFileList = dict[str, str]
@@ -116,16 +117,12 @@ stdlib = dir_to_file_contents(
 )
 
 
-all_contents = (
-    stdlib
-    | dir_to_file_contents("typings/shiny", dir_prefix="/src/typings/shiny/")
-    | dir_to_file_contents("typings/htmltools", dir_prefix="/src/typings/htmltools/")
-    | dir_to_file_contents(
-        "typings/shinywidgets", dir_prefix="/src/typings/shinywidgets/"
-    )
-    | extra_files
-)
+all_contents = stdlib | extra_files
 
+for package in PACKAGES:
+    all_contents |= dir_to_file_contents(
+        f"typings/{package}", dir_prefix=f"/src/typings/{package}/"
+    )
 
 print(f"Writing to {destfile}")
 if not destdir.exists():

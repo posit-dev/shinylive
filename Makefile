@@ -303,7 +303,7 @@ clean-packages:
 
 ## Remove all build files
 clean:
-	rm -rf $(PACKAGE_DIR)/*.whl $(BUILD_DIR) $(DIST_DIR) quarto/docs/
+	rm -rf $(PACKAGE_DIR)/*.whl $(BUILD_DIR) $(DIST_DIR) quarto/docs/ typings/
 
 ## Remove all build files and venv/
 distclean: clean
