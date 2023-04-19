@@ -61,7 +61,7 @@
   },
   {
     "category": "Layout",
-    "apps": ["layout_sidebar", "layout_two_column"]
+    "apps": ["shinyswatch", "layout_sidebar", "layout_two_column"]
   },
   {
     "category": "Reactivity",
