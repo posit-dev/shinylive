@@ -29,6 +29,7 @@ pyright_args = ("--pythonplatform", "Linux", "--pythonversion", PYODIDE_PYTHON_V
 pyright.run("--createstub", "htmltools", *pyright_args)
 pyright.run("--createstub", "shiny", *pyright_args)
 pyright.run("--createstub", "shinywidgets", *pyright_args)
+pyright.run("--createstub", "shinyswatch", *pyright_args)
 
 
 TypeshedFileList = dict[str, str]
