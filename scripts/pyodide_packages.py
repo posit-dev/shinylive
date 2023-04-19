@@ -9,18 +9,9 @@ import shutil
 import sys
 import urllib.error
 import urllib.request
-from typing import (
-    Any,
-    Callable,
-    Iterator,
-    Literal,
-    Optional,
-    TypedDict,
-    Union,
-    cast,
-)
-
 from pathlib import Path
+from typing import Any, Callable, Iterator, Literal, Optional, TypedDict, Union, cast
+
 import pkginfo
 import requirements
 from packaging.version import Version
@@ -93,6 +84,17 @@ AVOID_DEPEND_PACKAGES = [
     # This brings in IPython and a lot of unneeded dependencies with compiled code.
     "widgetsnbextension",
 ]
+
+# Some packages need extra dependencies to be installed or loaded. We'll specify
+# these extra dependencies here so that users don't have to put them in
+# requirements.txt.
+EXTRA_DEPENDENCIES = {
+    "pandas": [
+        # Pandas doesn't list jinja2 as a hard depedency, but it is needed when
+        # doing table styling.
+        "jinja2",
+    ]
+}
 
 
 # =============================================
@@ -576,6 +578,10 @@ def update_pyodide_repodata_json():
                 str(package_source_dir / p_pkg_info["file_name"])
             )
         pyodide_packages["packages"][name] = p_pkg_info
+
+    print("Injecting extra dependencies")
+    for name in EXTRA_DEPENDENCIES:
+        pyodide_packages["packages"][name]["depends"].extend(EXTRA_DEPENDENCIES[name])
 
     print("Writing pyodide/repodata.json")
     with open(repodata_json_file, "w") as f:
