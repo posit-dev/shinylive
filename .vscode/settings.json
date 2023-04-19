@@ -27,6 +27,7 @@
     },
     "python.formatting.provider": "black",
     "[python]": {
+        "editor.rulers": [88],
         "editor.formatOnSave": true,
         "editor.tabSize": 4,
         "editor.codeActionsOnSave": {
