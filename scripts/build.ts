@@ -45,6 +45,15 @@ if (process.argv.some((x) => x === "--test-server")) {
   openBrowser = false;
 }
 
+const rebuildLoggerPlugin = {
+  name: "rebuild-logger",
+  setup(build: esbuild.PluginBuild) {
+    build.onStart(() => {
+      console.log(`[${new Date().toISOString()}] Rebuilding JS files...`);
+    });
+  }
+}
+
 const buildmap = {
   'app':
     esbuild.context({
@@ -87,6 +96,7 @@ const buildmap = {
         ".svg": "dataurl",
       },
       plugins: [
+        rebuildLoggerPlugin,
         {
           // This removes previously-built chunk-[hash].js files so that they
           // don't clutter up the build directory.
@@ -140,6 +150,7 @@ const buildmap = {
       target: "es2020",
       minify: minify,
       banner: banner,
+      plugins: [ rebuildLoggerPlugin ],
     }),
   'codeblock-to-json':
     esbuild.context({
@@ -150,6 +161,7 @@ const buildmap = {
       target: "es2022",
       minify: minify,
       banner: banner,
+      plugins: [ rebuildLoggerPlugin ],
     }),
   // Compile src/shinylive-inject-socket.ts to
   // src/assets/shinylive-inject-socket.txt. That file is in turn ingested into
@@ -164,6 +176,7 @@ const buildmap = {
       // Don't minify, because the space savings are minimal, and the it will lead
       // to spurious diffs when building for dev vs. prod.
       minify: false,
+      plugins: [ rebuildLoggerPlugin ],
     }),
   'shinylive-sw':
     esbuild.context({
@@ -174,6 +187,7 @@ const buildmap = {
       target: "es2020",
       minify: minify,
       banner: banner,
+      plugins: [ rebuildLoggerPlugin ],
     })
 };
 
