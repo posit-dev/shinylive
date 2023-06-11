@@ -26,7 +26,7 @@ let minify = false;
 let reactProductionMode = false;
 // Set this to true to generate a metadata file that can be analyzed for size of
 // modules in the bundle, like with Bundle-Buddy.
-const metafile = false;
+const metafile = process.argv.includes("--metafile");
 
 if (process.argv.includes("--watch")) {
   watch = true;
