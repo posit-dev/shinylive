@@ -28,28 +28,47 @@ let reactProductionMode = false;
 // modules in the bundle, like with Bundle-Buddy.
 const metafile = false;
 
-if (process.argv.some((x) => x === "--watch")) {
+if (process.argv.includes("--watch")) {
   watch = true;
 }
-if (process.argv.some((x) => x === "--serve")) {
+if (process.argv.includes("--serve")) {
   watch = true;
   serve = true;
 }
-if (process.argv.some((x) => x === "--prod")) {
+if (process.argv.includes("--prod")) {
   minify = true;
   reactProductionMode = true;
 }
-if (process.argv.some((x) => x === "--test-server")) {
+if (process.argv.includes("--test-server")) {
   serve = true;
   watch = false;
   openBrowser = false;
 }
 
-const rebuildLoggerPlugin = {
-  name: "rebuild-logger",
+function createRebuildLoggerPlugin(label: string) {
+  return {
+    name: "rebuild-logger",
+    setup(build: esbuild.PluginBuild) {
+      build.onStart(() => {
+        console.log(
+          `[${new Date().toISOString()}] Rebuilding JS files for ${label}...`
+        );
+      });
+    },
+  };
+}
+
+const metafilePlugin = {
+  name: "metafile",
   setup(build: esbuild.PluginBuild) {
-    build.onStart(() => {
-      console.log(`[${new Date().toISOString()}] Rebuilding JS files...`);
+    build.onEnd((result) => {
+      if (metafile) {
+        console.log("metafile");
+        fs.writeFileSync(
+          "esbuild-metadata.json",
+          JSON.stringify(result.metafile)
+        );
+      }
     });
   },
 };
@@ -95,7 +114,8 @@ const buildmap = {
       ".svg": "dataurl",
     },
     plugins: [
-      rebuildLoggerPlugin,
+      createRebuildLoggerPlugin("shinylive and Editor"),
+      metafilePlugin,
       {
         // This removes previously-built chunk-[hash].js files so that they
         // don't clutter up the build directory.
@@ -148,7 +168,7 @@ const buildmap = {
     target: "es2020",
     minify: minify,
     banner: banner,
-    plugins: [rebuildLoggerPlugin],
+    plugins: [createRebuildLoggerPlugin("worker")],
   }),
   "codeblock-to-json": esbuild.context({
     bundle: true,
@@ -158,7 +178,7 @@ const buildmap = {
     target: "es2022",
     minify: minify,
     banner: banner,
-    plugins: [rebuildLoggerPlugin],
+    plugins: [createRebuildLoggerPlugin("codeblock-to-json")],
   }),
   // Compile src/shinylive-inject-socket.ts to
   // src/assets/shinylive-inject-socket.txt. That file is in turn ingested into
@@ -172,7 +192,7 @@ const buildmap = {
     // Don't minify, because the space savings are minimal, and the it will lead
     // to spurious diffs when building for dev vs. prod.
     minify: false,
-    plugins: [rebuildLoggerPlugin],
+    plugins: [createRebuildLoggerPlugin("shinylive-inject-socket")],
   }),
   "shinylive-sw": esbuild.context({
     bundle: true,
@@ -182,30 +202,22 @@ const buildmap = {
     target: "es2020",
     minify: minify,
     banner: banner,
-    plugins: [rebuildLoggerPlugin],
+    plugins: [createRebuildLoggerPlugin("shinylive-sw")],
   }),
 };
 
 Object.values(buildmap).forEach((build) =>
   build
     .then((context) => {
-      context.rebuild();
-      return context;
-    })
-    .then((context) => {
-      if (watch) context.watch();
+      if (watch) {
+        context.watch();
+      } else {
+        context.rebuild();
+        context.dispose();
+      }
     })
     .catch(() => process.exit(1))
 );
-
-if (metafile) {
-  buildmap["app"]
-    .then((context) => context.rebuild())
-    .then((result) => {
-      fs.writeFileSync("esbuild-meta.json", JSON.stringify(result.metafile));
-    })
-    .catch(() => process.exit(1));
-}
 
 if (serve) {
   buildmap["app"]
@@ -271,12 +283,4 @@ if (serve) {
       });
     })
     .catch(() => process.exit(1));
-}
-
-if (!watch && !serve) {
-  Object.values(buildmap).forEach((build) => {
-    build.then((context) => {
-      context.dispose();
-    });
-  });
 }
