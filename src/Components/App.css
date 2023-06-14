@@ -1,8 +1,8 @@
 :root {
   --colors-grey: grey;
-  --colors-blue: rgb(58, 147, 219);
+  --colors-blue: #007BC2;
   --colors-blue-dark: hsl(207, 69%, 35%);
-  --colors-red: rgb(245, 62, 78);
+  --colors-red: #C10000;
   --colors-white: white;
   --colors-bg: white;
   --colors-fg: #333;

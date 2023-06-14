@@ -1,4 +1,4 @@
-import shinyLogo from "../assets/shiny-logo.svg";
+import shinyLogo from "../assets/shiny-for-python.svg";
 import "./HeaderBar.css";
 import { Icon } from "./Icons";
 import * as React from "react";
@@ -119,7 +119,6 @@ export default function HeaderBar({
     <div className="HeaderBar">
       <a className="page-title" href="https://shiny.rstudio.com/py/">
         <img className="shiny-logo" src={shinyLogo} alt="Shiny" />
-        <span>for Python</span>
       </a>
       <div>
         {loadButton}
