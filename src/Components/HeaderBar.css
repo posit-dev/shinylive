@@ -1,7 +1,7 @@
 .HeaderBar {
   height: 30px;
   padding: 3px 8px;
-  background-color: #5096cf;
+  background-color: #007BC2;
   font-family: var(--font-face);
   font-size: 1.1rem;
   color: var(--colors-white);
@@ -17,9 +17,11 @@
 }
 
 .HeaderBar .shiny-logo {
-  height: 40px;
+  height: 22px;
   display: inline-block;
   margin-right: 6px;
+  margin-left: 4px;
+  margin-top: 1px;
 }
 
 .HeaderBar > div {
