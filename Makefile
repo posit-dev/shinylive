@@ -44,6 +44,12 @@ MIZANI_WHEEL=mizani-$(MIZANI_VERSION)-py3-none-any.whl
 VENV = venv
 PYBIN = $(VENV)/bin
 
+# Install Yarn if not already installed
+YARN_INSTALLED := $(shell \
+	yarn -v 2> /dev/null || \
+	(echo >&2 "Yarn is not installed. Installing..."; npm install -g yarn;) \
+)
+
 
 # Any targets that depend on $(VENV) or $(PYBIN) will cause the venv to be
 # created. To use the ven, python scripts should run with the prefix $(PYBIN),
