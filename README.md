@@ -8,7 +8,7 @@ Code for deploying Shiny applications that will run completely in the browser, u
 
 ## Prerequisites
 
-`Shinylive` leverages `yarn` for dependency management. If you running `yarn --version` on the machine throws `command not found` error,
+`Shinylive` leverages `yarn` for dependency management. If running `yarn --version` on the machine throws `command not found` error,
 install `yarn` on the machine by following the yarn installation documentation [here](https://classic.yarnpkg.com/lang/en/docs/install)
 
 
