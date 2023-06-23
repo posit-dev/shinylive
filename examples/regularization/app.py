@@ -16,7 +16,7 @@ sim = [sim_data(n=1000) for i in range(0, nsims)]
 
 
 # app
-app_ui = ui.page_fluid(
+app_ui = ui.page_fixed(
     # add head that allows LaTeX to be displayed via MathJax
     ui.head_content(
         ui.tags.script(
@@ -26,19 +26,42 @@ app_ui = ui.page_fluid(
             "if (window.MathJax) MathJax.Hub.Queue(['Typeset', MathJax.Hub]);"
         ),
     ),
-    # Title
-    ui.h1("How Does Regularization Strength Affect Coefficient Estimates?"),
-    # input slider
-    ui.input_slider("a", "Regularization Strength", 0.000000001, 1, 0.1, step=0.01),
-    ui.p(
-        "Warning: each time you change the slider input, the simulation will take some time to run."
+    ui.column(
+        10,
+        {"class": "col-md-10 col-lg-8 py-5 mx-auto text-lg-center text-left"},
+        # Title
+        ui.h1("How Does Regularization Strength Affect Coefficient Estimates?"),
+        # input slider
     ),
-    # output plot
-    ui.output_plot("plot"),
+    ui.column(
+        10,
+        {"class": "col-md-78 col-lg-5 py-4 mx-auto"},
+        # Title
+        ui.input_slider(
+            "a",
+            "Select a Regularization Strength:",
+            0.000000001,
+            1,
+            0.1,
+            step=0.01,
+            width="100%",
+        ),
+        ui.p(
+            {"class": "pt-4 small"},
+            "(Each time you change the slider input, the simulation will take some time to run.)",
+        ),
+    ),
+    ui.column(
+        12,
+        {"class": "col-lg-11 py-5 mx-auto"},
+        # output plot
+        ui.output_plot("plot"),
+    ),
     # Explanation and Explore text row with two equal-width columns
     ui.row(
         ui.column(
-            6,
+            10,
+            {"class": "col-lg-6 py-5 mx-auto"},
             ui.h4("Explanation"),
             ui.p(
                 """
@@ -86,8 +109,11 @@ app_ui = ui.page_fluid(
             ),
             ui.p("$$\\lambda \\text{ is the regularization strength.}$$"),
         ),
+    ),
+    ui.row(
         ui.column(
-            6,
+            10,
+            {"class": "col-lg-6 py-5 mx-auto"},
             ui.h4("Explore"),
             ui.h5("Comparing LASSO, Ridge, and Linear Regression"),
             ui.p(
@@ -153,9 +179,17 @@ app_ui = ui.page_fluid(
         ),
     ),
     # output plots separated by real effects (vowels), and zero-effects (consonants)
-    ui.h3("Plots Separated by Vowels and Consonants"),
-    ui.output_plot("plotVOWELS"),
-    ui.output_plot("plotCONSONANTS"),
+    ui.column(
+        12,
+        {"class": "col-lg-11 py-5 mx-auto text-center"},
+        ui.h2("Plots Separated by Vowels and Consonants"),
+    ),
+    ui.column(
+        12,
+        {"class": "col-lg-11 mb-5 pb-5 mx-auto"},
+        ui.output_plot("plotVOWELS"),
+        ui.output_plot("plotCONSONANTS"),
+    ),
 )
 
 
