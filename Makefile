@@ -44,7 +44,6 @@ MIZANI_WHEEL=mizani-$(MIZANI_VERSION)-py3-none-any.whl
 VENV = venv
 PYBIN = $(VENV)/bin
 
-
 # Any targets that depend on $(VENV) or $(PYBIN) will cause the venv to be
 # created. To use the ven, python scripts should run with the prefix $(PYBIN),
 # as in `$(PYBIN)/pip`.

@@ -6,6 +6,12 @@ Code for deploying Shiny applications that will run completely in the browser, u
 * Current semi-stable version (deployed from `deploy` branch of this repo): https://shinylive.io/py/examples/
 * Latest dev version (deployed from `main` branch of this repo): https://rstudio.github.io/shinylive/examples/
 
+## Prerequisites
+
+`Shinylive` leverages `yarn` for dependency management. If running `yarn --version` on the machine throws `command not found` error,
+install `yarn` on the machine by following the yarn installation documentation [here](https://classic.yarnpkg.com/lang/en/docs/install)
+
+
 ## Build instructions
 
 You must first initialize the git submodules. This only needs to be done once:
