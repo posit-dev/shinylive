@@ -28,8 +28,7 @@
       "extra_packages",
       "static_content",
       "fetch",
-      "ipywidgets",
-      "pyllusion"
+      "ipywidgets"
     ]
   },
   {
