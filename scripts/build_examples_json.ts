@@ -58,6 +58,7 @@ export default function buildExamples(examplesDir: string, buildDir: string) {
           }
           return true;
         })
+        .sort() // Put app.py first
         .map((f) => {
           const type = isBinary(f) ? "binary" : "text";
           const contentBuffer = fs.readFileSync(`${appPath}/${f}`);
