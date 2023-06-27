@@ -55,7 +55,8 @@
       "output_text_verbatim",
       "output_ui",
       "output_plot",
-      "output_table"
+      "output_table",
+      "output_data_frame_grid"
     ]
   },
   {
