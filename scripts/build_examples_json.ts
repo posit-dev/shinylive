@@ -1,8 +1,8 @@
-import type { ExampleCategoryIndexJson } from "../src/examples";
 import * as fs from "fs";
-import glob from "glob";
+import { globSync } from "glob";
 import { isBinary } from "istextorbinary";
 import * as path from "path";
+import type { ExampleCategoryIndexJson } from "../src/examples";
 
 export default function buildExamples(examplesDir: string, buildDir: string) {
   const orderingFile = `${examplesDir}/index.json`;
@@ -39,9 +39,10 @@ export default function buildExamples(examplesDir: string, buildDir: string) {
       .toString()
       .split("\n");
 
-    const files = glob
-      .sync(`${appPath}/**`, { nodir: true })
-      .map((f) => f.replace(`${appPath}/`, "")); // Strip off leading path
+    const files = globSync(`${appPath}/**`, {
+      nodir: true,
+      dotRelative: true,
+    }).map((f) => f.replace(`${appPath}/`, "")); // Strip off leading path
 
     return {
       title,
