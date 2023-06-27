@@ -58,7 +58,16 @@ export default function buildExamples(examplesDir: string, buildDir: string) {
           }
           return true;
         })
-        .sort() // Put app.py first
+        .sort((a: string, b: string) => {
+          // Sort files, with "app.py" first, and other files in normal sorted
+          // order.
+          if (a === "app.py") return -1;
+          if (b === "app.py") return 1;
+
+          if (a < b) return -1;
+          if (a > b) return 1;
+          return 0;
+        })
         .map((f) => {
           const type = isBinary(f) ? "binary" : "text";
           const contentBuffer = fs.readFileSync(`${appPath}/${f}`);
