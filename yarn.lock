@@ -425,6 +425,23 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@codemirror/autocomplete@npm:^6.8.1":
+  version: 6.9.0
+  resolution: "@codemirror/autocomplete@npm:6.9.0"
+  dependencies:
+    "@codemirror/language": ^6.0.0
+    "@codemirror/state": ^6.0.0
+    "@codemirror/view": ^6.6.0
+    "@lezer/common": ^1.0.0
+  peerDependencies:
+    "@codemirror/language": ^6.0.0
+    "@codemirror/state": ^6.0.0
+    "@codemirror/view": ^6.0.0
+    "@lezer/common": ^1.0.0
+  checksum: a5f661944c75f40b02c90a193c9a459c0fd7e335c0ac5973420c19157dfb46010f573c2b70731591fe477e7a2ad10121ff3ae394a72d450946d7b886c28b0368
+  languageName: node
+  linkType: hard
+
 "@codemirror/commands@npm:6.2.1, @codemirror/commands@npm:^6.0.0":
   version: 6.2.1
   resolution: "@codemirror/commands@npm:6.2.1"
@@ -434,6 +451,18 @@ __metadata:
     "@codemirror/view": ^6.0.0
     "@lezer/common": ^1.0.0
   checksum: 216308c57745e86bdd9cbbecc8fa6d8302c340674c3f1837894f1eeb12a91d47adeb24a1d1d76faf05f7630f6dd80b9dad974ff23f017370ebdc5329b2204262
+  languageName: node
+  linkType: hard
+
+"@codemirror/commands@npm:^6.2.4":
+  version: 6.2.4
+  resolution: "@codemirror/commands@npm:6.2.4"
+  dependencies:
+    "@codemirror/language": ^6.0.0
+    "@codemirror/state": ^6.2.0
+    "@codemirror/view": ^6.0.0
+    "@lezer/common": ^1.0.0
+  checksum: 468895fa19ff0554181b698c81f850820de5c0289cab92c44392fb127286f09ca72b921d6ea4353b70b616a4fd0c3667d86b6f917202a3ad2e196eb7b581f7b6
   languageName: node
   linkType: hard
 
@@ -544,6 +573,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@codemirror/state@npm:^6.2.1":
+  version: 6.2.1
+  resolution: "@codemirror/state@npm:6.2.1"
+  checksum: d12a321d0471b264b9d3259042bff913a8b939e8d28d408ff452004538a71ca9d5329df3f8a1d8a9183f5b42a7ef5b200737bcab1065714f5ae8e0a5ba9d59d3
+  languageName: node
+  linkType: hard
+
 "@codemirror/view@npm:^6.0.0, @codemirror/view@npm:^6.2.2, @codemirror/view@npm:^6.6.0, @codemirror/view@npm:^6.9.1":
   version: 6.9.1
   resolution: "@codemirror/view@npm:6.9.1"
@@ -552,6 +588,17 @@ __metadata:
     style-mod: ^4.0.0
     w3c-keyname: ^2.2.4
   checksum: 485d54d338a27ebde6bec489e3008db80a2a801fe27db0d4a3c70181c8739f806f035855ba13d5b311d186ad2b130db07196e8b465ec102b0142df0689bff2f8
+  languageName: node
+  linkType: hard
+
+"@codemirror/view@npm:^6.15.0":
+  version: 6.15.3
+  resolution: "@codemirror/view@npm:6.15.3"
+  dependencies:
+    "@codemirror/state": ^6.1.4
+    style-mod: ^4.0.0
+    w3c-keyname: ^2.2.4
+  checksum: 048949b1b493a962904a7f77661a939f7c1893a7381022756a135f5dd8daf667f498be1b81da9c37c0e8de85b078ad987c2f75318385c520ed83c95da6313e95
   languageName: node
   linkType: hard
 
@@ -1356,6 +1403,13 @@ __metadata:
     "@lezer/highlight": ^1.0.0
     "@lezer/lr": ^1.0.0
   checksum: e4f49beeba4c1afb24546448a93b2b2814e88cc0e9c216e9cfd47945743c28859899c38c1b78dbca3e2c12a15fc689e32bd1045d0be1a3f8ecc6ec1b0993d891
+  languageName: node
+  linkType: hard
+
+"@msgpack/msgpack@npm:^2.8.0":
+  version: 2.8.0
+  resolution: "@msgpack/msgpack@npm:2.8.0"
+  checksum: bead9393f57239007a2fe455df5277cbc03b125f14f310162a652b81471dcf3ab6780eaa24b36e20aa742998910a6840147d08b7267063b8e2de5d40c624360e
   languageName: node
   linkType: hard
 
@@ -2503,6 +2557,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"codemirror-lang-r@npm:^0.1.0-2":
+  version: 0.1.0-2
+  resolution: "codemirror-lang-r@npm:0.1.0-2"
+  dependencies:
+    "@codemirror/language": ^6.0.0
+    lezer-r: ^0.1.0-5
+  checksum: 81f83dd525196b666663b5430e1015f347d7405cc34c79f94ca86838568d9ac22a902e3a42ac0f03f575cc38aca2962f8a1846a3c39d4543b32fbeccb316ce49
+  languageName: node
+  linkType: hard
+
 "codemirror@npm:^6.0.1":
   version: 6.0.1
   resolution: "codemirror@npm:6.0.1"
@@ -2748,6 +2812,15 @@ __metadata:
   version: 1.1.2
   resolution: "depd@npm:1.1.2"
   checksum: 6b406620d269619852885ce15965272b829df6f409724415e0002c8632ab6a8c0a08ec1f0bd2add05dc7bd7507606f7e2cc034fa24224ab829580040b835ecd9
+  languageName: node
+  linkType: hard
+
+"detect-libc@npm:^1.0.3":
+  version: 1.0.3
+  resolution: "detect-libc@npm:1.0.3"
+  bin:
+    detect-libc: ./bin/detect-libc.js
+  checksum: daaaed925ffa7889bd91d56e9624e6c8033911bb60f3a50a74a87500680652969dbaab9526d1e200a4c94acf80fc862a22131841145a0a8482d60a99c24f4a3e
   languageName: node
   linkType: hard
 
@@ -5137,6 +5210,106 @@ __metadata:
   languageName: node
   linkType: hard
 
+"lezer-r@npm:^0.1.0-5":
+  version: 0.1.0-5
+  resolution: "lezer-r@npm:0.1.0-5"
+  dependencies:
+    "@lezer/highlight": ^1.0.0
+    "@lezer/lr": ^1.0.0
+  checksum: b597aa0add8fb4b7afd88c11766b2100ad52992beb0cebac844949974c18c2b97d5a7c0c6ecd6d464a71d692a94e17d8a7a744252166c2366fd8718b5ef510fc
+  languageName: node
+  linkType: hard
+
+"lightningcss-darwin-arm64@npm:1.21.5":
+  version: 1.21.5
+  resolution: "lightningcss-darwin-arm64@npm:1.21.5"
+  conditions: os=darwin & cpu=arm64
+  languageName: node
+  linkType: hard
+
+"lightningcss-darwin-x64@npm:1.21.5":
+  version: 1.21.5
+  resolution: "lightningcss-darwin-x64@npm:1.21.5"
+  conditions: os=darwin & cpu=x64
+  languageName: node
+  linkType: hard
+
+"lightningcss-linux-arm-gnueabihf@npm:1.21.5":
+  version: 1.21.5
+  resolution: "lightningcss-linux-arm-gnueabihf@npm:1.21.5"
+  conditions: os=linux & cpu=arm
+  languageName: node
+  linkType: hard
+
+"lightningcss-linux-arm64-gnu@npm:1.21.5":
+  version: 1.21.5
+  resolution: "lightningcss-linux-arm64-gnu@npm:1.21.5"
+  conditions: os=linux & cpu=arm64 & libc=glibc
+  languageName: node
+  linkType: hard
+
+"lightningcss-linux-arm64-musl@npm:1.21.5":
+  version: 1.21.5
+  resolution: "lightningcss-linux-arm64-musl@npm:1.21.5"
+  conditions: os=linux & cpu=arm64 & libc=musl
+  languageName: node
+  linkType: hard
+
+"lightningcss-linux-x64-gnu@npm:1.21.5":
+  version: 1.21.5
+  resolution: "lightningcss-linux-x64-gnu@npm:1.21.5"
+  conditions: os=linux & cpu=x64 & libc=glibc
+  languageName: node
+  linkType: hard
+
+"lightningcss-linux-x64-musl@npm:1.21.5":
+  version: 1.21.5
+  resolution: "lightningcss-linux-x64-musl@npm:1.21.5"
+  conditions: os=linux & cpu=x64 & libc=musl
+  languageName: node
+  linkType: hard
+
+"lightningcss-win32-x64-msvc@npm:1.21.5":
+  version: 1.21.5
+  resolution: "lightningcss-win32-x64-msvc@npm:1.21.5"
+  conditions: os=win32 & cpu=x64
+  languageName: node
+  linkType: hard
+
+"lightningcss@npm:^1.21.5":
+  version: 1.21.5
+  resolution: "lightningcss@npm:1.21.5"
+  dependencies:
+    detect-libc: ^1.0.3
+    lightningcss-darwin-arm64: 1.21.5
+    lightningcss-darwin-x64: 1.21.5
+    lightningcss-linux-arm-gnueabihf: 1.21.5
+    lightningcss-linux-arm64-gnu: 1.21.5
+    lightningcss-linux-arm64-musl: 1.21.5
+    lightningcss-linux-x64-gnu: 1.21.5
+    lightningcss-linux-x64-musl: 1.21.5
+    lightningcss-win32-x64-msvc: 1.21.5
+  dependenciesMeta:
+    lightningcss-darwin-arm64:
+      optional: true
+    lightningcss-darwin-x64:
+      optional: true
+    lightningcss-linux-arm-gnueabihf:
+      optional: true
+    lightningcss-linux-arm64-gnu:
+      optional: true
+    lightningcss-linux-arm64-musl:
+      optional: true
+    lightningcss-linux-x64-gnu:
+      optional: true
+    lightningcss-linux-x64-musl:
+      optional: true
+    lightningcss-win32-x64-msvc:
+      optional: true
+  checksum: fcfb80302740c275fea8dc6ebc1a31da681321d92f0ddb33deb71037bb3dee08b8143ee03ddad8cef39c7ba4000447b362c9295d264deec124c9a206a848fef4
+  languageName: node
+  linkType: hard
+
 "lines-and-columns@npm:^1.1.6":
   version: 1.2.4
   resolution: "lines-and-columns@npm:1.2.4"
@@ -6001,6 +6174,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"react-accessible-treeview@npm:^2.6.1":
+  version: 2.6.3
+  resolution: "react-accessible-treeview@npm:2.6.3"
+  peerDependencies:
+    classnames: ^2.2.6
+    prop-types: ^15.7.2
+    react: ^16.8.0 || ^17.0.0 || ^18.0.0
+    react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0
+  checksum: 7dbca4fc7cfa94ae451212e283bd474a319a1dcd01ef64d65362c738edf4b0773c74da85cd2350bb407b599220d99ee7e84c64ea9e169840ffd088490202ce1b
+  languageName: node
+  linkType: hard
+
 "react-dom@npm:^18.2.0":
   version: 18.2.0
   resolution: "react-dom@npm:18.2.0"
@@ -6010,6 +6195,15 @@ __metadata:
   peerDependencies:
     react: ^18.2.0
   checksum: 7d323310bea3a91be2965f9468d552f201b1c27891e45ddc2d6b8f717680c95a75ae0bc1e3f5cf41472446a2589a75aed4483aee8169287909fcd59ad149e8cc
+  languageName: node
+  linkType: hard
+
+"react-icons@npm:^4.10.1":
+  version: 4.10.1
+  resolution: "react-icons@npm:4.10.1"
+  peerDependencies:
+    react: "*"
+  checksum: b6c8d4fe482b112e1041515d93ef7670a0af128855c926052a076b64d0b991cdd4391394b26467100f8da3859db1ebd8f9c6b7614fa5969fde83de45c71031a3
   languageName: node
   linkType: hard
 
@@ -6348,6 +6542,7 @@ __metadata:
     tsx: ^3.12.7
     typescript: ^5.1.3
     vscode-languageserver-protocol: ^3.17.3
+    webr: 0.2.0-rc.0
     xterm: ^5.2.1
     xterm-addon-fit: ^0.7.0
     xterm-readline: ^1.1.1
@@ -7029,6 +7224,31 @@ __metadata:
   languageName: node
   linkType: hard
 
+"webr@npm:0.2.0-rc.0":
+  version: 0.2.0-rc.0
+  resolution: "webr@npm:0.2.0-rc.0"
+  dependencies:
+    "@codemirror/autocomplete": ^6.8.1
+    "@codemirror/commands": ^6.2.4
+    "@codemirror/state": ^6.2.1
+    "@codemirror/view": ^6.15.0
+    "@msgpack/msgpack": ^2.8.0
+    codemirror: ^6.0.1
+    codemirror-lang-r: ^0.1.0-2
+    lightningcss: ^1.21.5
+    react: ^18.2.0
+    react-accessible-treeview: ^2.6.1
+    react-dom: ^18.2.0
+    react-icons: ^4.10.1
+    tsx: ^3.12.7
+    xmlhttprequest-ssl: ^2.1.0
+    xterm: ^5.1.0
+    xterm-addon-fit: ^0.7.0
+    xterm-readline: ^1.1.1
+  checksum: 51cdc7d75256845415eb41672329531e74efa37ee6d016a1bc3b6a4dba1897c7a0eafa0b89655450adc88986d8f3c64be18b547a1d2532f184348591c7607df2
+  languageName: node
+  linkType: hard
+
 "whatwg-encoding@npm:^1.0.5":
   version: 1.0.5
   resolution: "whatwg-encoding@npm:1.0.5"
@@ -7192,6 +7412,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"xmlhttprequest-ssl@npm:^2.1.0":
+  version: 2.1.1
+  resolution: "xmlhttprequest-ssl@npm:2.1.1"
+  checksum: f427f17c3692e1832c327a0a19d4dfec5cfcc669b79b26a51ac35fd7a17ab474c3bb7339673b12130b2311ce1b251fe15dfc65aabc1c839862f01f138c71985b
+  languageName: node
+  linkType: hard
+
 "xterm-addon-fit@npm:^0.7.0":
   version: 0.7.0
   resolution: "xterm-addon-fit@npm:0.7.0"
@@ -7212,7 +7439,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"xterm@npm:^5.2.1":
+"xterm@npm:^5.1.0, xterm@npm:^5.2.1":
   version: 5.2.1
   resolution: "xterm@npm:5.2.1"
   checksum: 3a9de30e772c7ae30895ec97fcfb3b0906429c5ea0cddf8948e8e30301385f82e467c6e6aca28ae50a48300ce795381d83fe35b4e17886ab4a1357054a15f68f
