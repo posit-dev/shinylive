@@ -208,7 +208,10 @@ function asgiHeadersToRecord(headers: any): Record<string, string> {
   headers = headers.map(([key, val]: [Uint8Array, Uint8Array]) => {
     return [uint8ArrayToString(key), uint8ArrayToString(val)];
   });
-  return Object.fromEntries(headers);
+  return Object.assign(Object.fromEntries(headers), {
+    "cross-origin-embedder-policy": "require-corp",
+    "cross-origin-resource-policy": "cross-origin",
+  });
 }
 
 function asgiBodyToArray(body: any): Uint8Array {
