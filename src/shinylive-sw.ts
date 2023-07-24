@@ -16,6 +16,20 @@ declare const self: ServiceWorkerGlobalScope;
 const cacheName = "::prismExperimentsServiceworker";
 const version = "v6";
 
+// Modify a response so that the required CORP/COOP/COEP headers are in place
+// for cross-origin isolation. Required when using webR.
+function addCoiHeaders(resp: Response): Response {
+  const headers = new Headers(resp.headers);
+  headers.set("Cross-Origin-Embedder-Policy", "require-corp");
+  headers.set("Cross-Origin-Resource-Policy", "cross-origin");
+  headers.set("Cross-Origin-Opener-Policy", "same-origin");
+  return new Response(resp.body, {
+    status: resp.status,
+    statusText: resp.statusText,
+    headers,
+  });
+}
+
 self.addEventListener("install", (event) => {
   event.waitUntil(
     Promise.all([self.skipWaiting(), caches.open(version + cacheName)])
@@ -140,7 +154,7 @@ self.addEventListener("fetch", function (event): void {
         }
         // If we got here, it wasn't in the cache. Fetch it.
         try {
-          const networkResponse = await fetch(request);
+          const networkResponse = addCoiHeaders(await fetch(request));
 
           // If it's a local URL in shinylive/, cache it.
           const baseUrl =
@@ -163,6 +177,10 @@ self.addEventListener("fetch", function (event): void {
     );
     return;
   }
+
+  event.respondWith((async (): Promise<Response> => {
+    return addCoiHeaders(await fetch(request));
+  })());
 });
 
 // =============================================================================
