@@ -1,9 +1,11 @@
-import { ASGIHTTPRequestScope } from "./messageporthttp.js";
+import { ASGIHTTPRequestScope, makeHttpuvRequest } from "./messageporthttp.js";
+import { openChannelHttpuv } from "./messageportwebsocket-channel.js";
 import { Shelter, WebR, WebROptions } from "webr";
 import type { EvalROptions } from "webr/webr-chan";
 
 export interface WebRProxy {
   webR: WebR;
+  toClientCache: { [key: string]: (event: Record<string, any>) => Promise<void> };
 
   runRAsync(
     code: string,
@@ -32,6 +34,7 @@ class WebRWorkerProxy implements WebRProxy {
     resolve: (prompt: string) => void;
     reject: () => void;
   };
+  toClientCache: WebRProxy['toClientCache'] = {};
 
   constructor(
     config: WebROptions,
@@ -92,6 +95,20 @@ class WebRWorkerProxy implements WebRProxy {
             this.prompt.resolve(output.data);
           }
           break;
+        case '_webR_httpuv_TcpResponse': {
+          const msg = output as {
+              data?: any;
+              type: string;
+              uuid: string;
+          }
+          this.toClientCache[msg.uuid](msg.data);
+          break;
+        }
+        case '_webR_httpuv_WSResponse': {
+          const toClient = this.toClientCache['ws'];
+          if (typeof toClient !== 'undefined') toClient(output.data);
+          break;
+        }
         default:
           break;
       }
@@ -103,7 +120,7 @@ class WebRWorkerProxy implements WebRProxy {
     appName: string,
     clientPort: MessagePort
   ): Promise<void> {
-
+    openChannelHttpuv(path, appName, clientPort, this);
   }
 
   async makeRequest(
@@ -111,7 +128,7 @@ class WebRWorkerProxy implements WebRProxy {
     appName: string,
     clientPort: MessagePort
   ): Promise<void> {
-
+    makeHttpuvRequest(scope, appName, clientPort, this);
   }
 }
 

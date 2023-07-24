@@ -3,6 +3,9 @@ import { MessagePortWebSocket } from "./messageportwebsocket";
 import { loadPyodide } from "./pyodide/pyodide";
 import type { PyProxyCallable } from "./pyodide/pyodide";
 
+// =============================================================================
+// Pyodide
+// =============================================================================
 type Pyodide = Awaited<ReturnType<typeof loadPyodide>>;
 
 /**
@@ -94,4 +97,89 @@ async function connect(
   // Initiate the ASGI WebSocket connection. It's not done awaiting until the
   // connection is closed.
   await asgiFunc(scope, fromClient, toClient);
+}
+
+// =============================================================================
+// webR
+// =============================================================================
+import { WebRProxy } from "./webr-proxy";
+
+export async function openChannelHttpuv(
+  path: string,
+  appName: string,
+  clientPort: MessagePort,
+  webRProxy: WebRProxy,
+): Promise<void> {
+  const conn = new MessagePortWebSocket(clientPort);
+  let connected = false;
+
+  async function toClient(event: Record<string, any>): Promise<void> {
+    if (!connected) {
+      conn.accept();
+      connected = true;
+    }
+    if (event.type === "websocket.send") {
+      conn.send(event.message);
+    } else if (event.type === "websocket.close") {
+      connected = false;
+      conn.close(1000, event.message);
+    } else {
+      connected = false;
+      conn.close(1002, "ASGI protocol error");
+      throw new Error(`Unhandled ASGI event: ${event.type}`);
+    }
+  }
+  webRProxy.toClientCache['ws'] = toClient;
+
+  const fromClientQueue = new AwaitableQueue<Record<string, any>>();
+  fromClientQueue.enqueue({ type: "websocket.connect" });
+
+  conn.addEventListener("message", (e) => {
+    const me = e as MessageEvent;
+    const event: Record<string, any> = { type: "websocket.receive" };
+    event.text = me.data;
+    fromClientQueue.enqueue(event);
+  });
+
+  conn.addEventListener("close", (e) => {
+    const ce = e as CloseEvent;
+    fromClientQueue.enqueue({ type: "websocket.disconnect", code: ce.code });
+  });
+
+  conn.addEventListener("error", (e) => {
+    console.error(e);
+  });
+
+  for(;;){
+    const msg = await fromClientQueue.dequeue();
+    switch(msg.type){
+      case 'websocket.connect':
+        webRProxy.runRAsync(`
+          onWSOpen <- options('webr_httpuv_onWSOpen')[[1]]
+          if (!is.null(onWSOpen)) {
+            onWSOpen(1, list(handle = 1))
+          }
+        `)
+        break;
+      case 'websocket.receive':
+        webRProxy.runRAsync(`
+          onWSMessage <- options('webr_httpuv_onWSMessage')[[1]]
+          if (!is.null(onWSMessage)) {
+            onWSMessage(1, FALSE, '${msg.text}')
+          }
+        `)
+        break;
+      case 'websocket.disconnect':
+        webRProxy.runRAsync(`
+          onWSClose <- options('webr_httpuv_onWSClose')[[1]]
+          if (!is.null(onWSClose)) {
+            onWSClose(1)
+          }
+        `)
+        break;
+      default:
+        console.warn(`Unhandled websocket message of type "${msg.type}".`)
+        return;
+    }
+  }
 }
