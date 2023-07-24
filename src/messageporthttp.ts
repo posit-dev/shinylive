@@ -3,6 +3,9 @@ import { loadPyodide } from "./pyodide/pyodide";
 import type { PyProxyCallable } from "./pyodide/pyodide";
 import { uint8ArrayToString } from "./utils";
 
+// =============================================================================
+// Pyodide
+// =============================================================================
 type Pyodide = Awaited<ReturnType<typeof loadPyodide>>;
 
 export async function fetchASGI(
@@ -218,4 +221,119 @@ function asgiBodyToArray(body: any): Uint8Array {
   // This seems not to be needed
   // return Uint8Array.from(body.toJs());
   return body;
+}
+
+// =============================================================================
+// webR
+// =============================================================================
+import { WebRProxy } from "./webr-proxy";
+import { makeRandomKey } from "./utils";
+
+export async function makeHttpuvRequest(
+  scope: ASGIHTTPRequestScope,
+  appName: string,
+  clientPort: MessagePort,
+  webRProxy: WebRProxy
+){
+  const fromClientQueue = new AwaitableQueue<Record<string, any>>();
+
+  clientPort.addEventListener("message", (event) => {
+    if (event.data.type === "http.request") {
+      fromClientQueue.enqueue({
+        type: "http.request",
+        body: event.data.body,
+        more_body: event.data.more_body,
+      });
+    }
+  });
+  clientPort.start();
+
+  async function fromClient(): Promise<Record<string, any>> {
+    return fromClientQueue.dequeue();
+  }
+
+  async function toClient(event: Record<string, any>): Promise<void> {
+    const status = event.status.values[0];
+    const utf8Encode = new TextEncoder();
+    const body = event.body.type === 'raw'
+      ? new Uint8Array(event.body.values)
+      : utf8Encode.encode(event.body.values[0]);
+
+    const headers = Object.assign(
+      {
+        "cross-origin-embedder-policy": "require-corp",
+        "cross-origin-resource-policy": "cross-origin",
+      },
+      Object.fromEntries(
+        [...Array(event.headers.names.length).keys()].map((i) => {
+          return [event.headers.names[i], event.headers.values[i].values[0]];
+        })
+      )
+    );
+
+    clientPort.postMessage({
+      type: "http.response.start",
+      status: status,
+      headers: headers,
+    });
+
+    clientPort.postMessage({
+      type: "http.response.body",
+      body: body,
+      more_body: false,
+    });
+  }
+  await handleHttpuvRequests(scope, webRProxy, fromClient, toClient);
+}
+
+async function handleHttpuvRequests(
+  scope: ASGIHTTPRequestScope,
+  webRProxy: WebRProxy,
+  fromClient: () => Promise<Record<string, any>>,
+  toClient: (event: Record<string, any>) => Promise<void>
+){
+  const uuid = makeRandomKey(20);
+  webRProxy.toClientCache[uuid] = toClient;
+  let body = new Uint8Array(0);
+  const shelter = await new webRProxy.webR.Shelter();
+  for (;;) {
+    // Get request from client
+    const request = await fromClient();
+
+    // Concatenate body bytes as subsequent requests arrive
+    if (request.body) {
+      const newBody = new Uint8Array(body.length + request.body.length);
+      newBody.set(body);
+      newBody.set(request.body, body.length);
+      body = newBody;
+    }
+
+    // Once we have the entire body, convert it into a rook style request and
+    // send it to httpuv
+    if (!request.more_body) {
+      try {
+        const bytes = await new shelter.RRaw(Array.from(body));
+        const env = await new shelter.REnvironment({ bytes });
+        await webRProxy.runRAsync(`
+          onRequest <- options('webr_httpuv_onRequest')[[1]]
+          if (!is.null(onRequest)) {
+            reader <- .RawReader$new()
+            reader$init(bytes)
+            onRequest(
+              list(
+                PATH_INFO = "${scope.path}",
+                REQUEST_METHOD = "${scope.method}",
+                QUERY_STRING = "${scope.query_string}",
+                UUID = "${uuid}",
+                rook.input = reader
+              )
+            )
+            reader$destroy()
+          }
+        `, { env })
+      } finally {
+        shelter.purge();
+      }
+    }
+  }
 }

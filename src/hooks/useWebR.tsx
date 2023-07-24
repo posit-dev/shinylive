@@ -81,6 +81,7 @@ export async function initRShiny({
   await webRProxyHandle.webRProxy.runRAsync('library(shiny)')
   // Increase webR expressions limit for deep call stack required for Shiny
   await webRProxyHandle.webRProxy.runRAsync('options(expressions=1000)')
+  ensureOpenChannelListener(webRProxyHandle.webRProxy);
 
   return {
     ...webRProxyHandle,
@@ -109,7 +110,56 @@ export function useWebR({
   return webRProxyHandle;
 }
 
+let channelListenerRegistered = false;
+function ensureOpenChannelListener(webRProxy: WebRProxy): void {
+  if (channelListenerRegistered) return;
+
+  window.addEventListener("message", (event) => {
+    const msg = event.data;
+    if (msg.type === "openChannel") {
+      webRProxy.openChannel(msg.path, msg.appName, event.ports[0]);
+    }
+  });
+
+  channelListenerRegistered = true;
+}
+
 const load_r_pre =
 `
+.RawReader <- setRefClass("RawReader", fields = c("con", "length"), methods = list(
+  init = function(bytes) {
+    con <<- rawConnection(bytes, "rb")
+    length <<- length(bytes)
+  },
+  read = function(l = -1L) {
+    if (l < 0) l <- length
+    readBin(con, "raw", size = 1, n = l)
+  },
+  read_lines = function(l = -1L) {
+    readLines(con, n = l)
+  },
+  rewind = function() {
+    seek(con, 0)
+  },
+  destroy = function() {
+    close(con)
+  }
+))
+
+.stop_app <- function() {
+  webr::eval_js("
+    chan.write({
+      type: '_webR_httpuv_WSResponse',
+      data: { handle: '1', binary: false, type: 'websocket.close', message: 'stopped' }
+    });
+  ")
+  shiny::stopApp()
+}
+
+.start_app <- function (appDir) {
+  shiny::runApp(appDir, port=0, host=NULL)
+  invisible(0)
+}
+
 invisible(0)
 `
