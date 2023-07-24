@@ -9,7 +9,7 @@
 	packages \
 	quarto quartoserve \
 	clean-packages clean distclean \
-	test test-watch
+	test test-watch webr
 
 .DEFAULT_GOAL := help
 
@@ -93,6 +93,7 @@ submodules-pull:
 all: node_modules \
 	$(BUILD_DIR)/shinylive/style-resets.css \
 	$(BUILD_DIR)/shinylive/pyodide \
+	$(BUILD_DIR)/shinylive/webr \
 	src/pyodide/pyodide.js \
 	src/pyodide/pyodide.d.ts \
 	pyodide_packages_local \
@@ -125,6 +126,11 @@ $(BUILD_DIR)/shinylive/pyodide:
 	cd $(BUILD_DIR)/shinylive && \
 	curl -L https://github.com/pyodide/pyodide/releases/download/$(PYODIDE_VERSION)/$(PYODIDE_DIST_FILENAME) \
 	    | tar --exclude "*test*.tar" --exclude "node_modules" -xvj
+
+$(BUILD_DIR)/shinylive/webr: webr
+webr:
+	mkdir -p $(BUILD_DIR)/shinylive/webr
+	cp -r node_modules/webr/dist/. $(BUILD_DIR)/shinylive/webr
 
 # Copy pyodide.js and .d.ts to src/pyodide/. This is a little weird in that in
 # `make all`, it comes after downloading pyodide. In the future we may be able
