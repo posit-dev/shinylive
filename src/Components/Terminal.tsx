@@ -1,4 +1,4 @@
-import { PyodideProxyHandle } from "../hooks/usePyodide";
+import { ProxyHandle } from "./App";
 import "./Terminal.css";
 import * as React from "react";
 import { Terminal as XTerminal } from "xterm";
@@ -29,11 +29,11 @@ export type TerminalMethods =
 // Terminal component
 // =============================================================================
 export function Terminal({
-  pyodideProxyHandle,
+  proxyHandle,
   setTerminalMethods,
   terminalInterface,
 }: {
-  pyodideProxyHandle: PyodideProxyHandle;
+  proxyHandle: ProxyHandle;
   setTerminalMethods: React.Dispatch<React.SetStateAction<TerminalMethods>>;
   terminalInterface: TerminalInterface;
 }) {
@@ -41,13 +41,13 @@ export function Terminal({
   const xTermRef = React.useRef<XTerminal | null>(null);
   const [xTermReadline, setXTermReadline] = React.useState<Readline>();
 
-  const runCodeRef = React.useRef(async (command: string): Promise<void> => {});
+  const runCodeRef = React.useRef(async (command: string): Promise<string> => "");
   React.useEffect(() => {
-    runCodeRef.current = async (command: string): Promise<void> => {
-      if (!pyodideProxyHandle.ready) return;
-      await pyodideProxyHandle.runCode(command);
+    runCodeRef.current = async (command: string) => {
+      if (!proxyHandle.ready) return "";
+      return await proxyHandle.runCode(command) ?? ">>> ";
     };
-  }, [pyodideProxyHandle]);
+  }, [proxyHandle]);
 
   const tabCompleteRef = React.useRef(
     async (command: string): Promise<string[]> => {
@@ -56,10 +56,10 @@ export function Terminal({
   );
   React.useEffect(() => {
     tabCompleteRef.current = async (command: string): Promise<string[]> => {
-      if (!pyodideProxyHandle.ready) return [];
-      return await pyodideProxyHandle.tabComplete(command);
+      if (!proxyHandle.ready) return [];
+      return await proxyHandle.tabComplete(command);
     };
-  }, [pyodideProxyHandle]);
+  }, [proxyHandle]);
 
   React.useEffect(() => {
     // Start up the terminal and populate our reference objects.
@@ -91,7 +91,7 @@ export function Terminal({
 
     fitAddon.fit();
 
-    term.write("Starting Python...\r\n");
+    term.write("Starting...\r\n");
     // const term = $(containerRef.current).terminal(interpreter, {
     //   greetings: "Starting Python...",
     //   prompt: "",
@@ -154,8 +154,8 @@ export function Terminal({
 
     const runCodeInTerminal = async (command: string): Promise<void> => {
       xTermReadline.println(command);
-      await runCodeRef.current(command);
-      xTermReadline.print(">>> ");
+      const prompt = await runCodeRef.current(command);
+      xTermReadline.print(prompt);
     };
 
     setTerminalMethods({
@@ -166,24 +166,24 @@ export function Terminal({
 
   // TODO: Make sure this doesn't run twice
   React.useEffect(() => {
-    if (!pyodideProxyHandle.ready) return;
+    if (!proxyHandle.ready) return;
     if (!xTermRef.current) return;
 
     xTermRef.current.write("\x1Bc");
 
-    function readLine() {
+    function readLine(prompt: string) {
       if (!xTermReadline) return;
-      xTermReadline.read(">>> ").then(processLine);
+      xTermReadline.read(prompt).then(processLine);
     }
 
     async function processLine(text: string) {
       if (!xTermReadline) return;
-      await runCodeRef.current(text);
-      setTimeout(readLine);
+      const prompt = await runCodeRef.current(text);
+      setTimeout(() => readLine(prompt));
     }
 
-    readLine();
-  }, [pyodideProxyHandle.ready, xTermReadline]);
+    readLine(proxyHandle.engine === "webr" ? '> ' : ">>> ");
+  }, [proxyHandle, xTermReadline]);
 
   return <div ref={containerRef} className="shinylive-terminal"></div>;
 }
