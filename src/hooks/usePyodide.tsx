@@ -10,6 +10,7 @@ export type PyodideProxyHandle =
     }
   | {
       ready: true;
+      engine: "pyodide";
       pyodide: PyodideProxy;
       shinyReady: boolean;
       initError: boolean;
@@ -72,6 +73,7 @@ export async function initPyodide({
 
   return {
     ready: true,
+    engine: "pyodide",
     pyodide: pyodideProxy,
     shinyReady: false,
     initError: initError,

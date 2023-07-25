@@ -9,6 +9,12 @@ import {
   PyodideProxyHandle,
   usePyodide,
 } from "../hooks/usePyodide";
+import {
+  initWebR,
+  initRShiny,
+  useWebR,
+  WebRProxyHandle
+} from "../hooks/useWebR";
 import { ProxyType } from "../pyodide-proxy";
 import "./App.css";
 import { ExampleSelector } from "./ExampleSelector";
@@ -63,6 +69,7 @@ const pyodideProxyType: ProxyType =
     ? "normal"
     : "webworker";
 
+export type AppEngine = "python" | "r";
 export type AppMode =
   | "examples-editor-terminal-viewer"
   | "editor-terminal-viewer"
@@ -90,7 +97,10 @@ type AppOptions = {
   showHeaderBar?: boolean;
 };
 
+
+type ProxyHandle = PyodideProxyHandle | WebRProxyHandle;
 let pyodideProxyHandlePromise: Promise<PyodideProxyHandle> | null = null;
+let webRProxyHandlePromise: Promise<WebRProxyHandle> | null = null;
 
 function ensurePyodideProxyHandlePromise({
   proxyType,
@@ -132,14 +142,42 @@ function ensurePyodideProxyHandlePromise({
   return pyodideProxyHandlePromise;
 }
 
+function ensureWebRProxyHandlePromise({
+  shiny,
+}: {
+  shiny: boolean;
+}): Promise<WebRProxyHandle> {
+  if (!webRProxyHandlePromise) {
+    webRProxyHandlePromise = (async (): Promise<WebRProxyHandle> => {
+      let webRProxyHandle = await initWebR({
+        stdout: terminalInterface.echo,
+        stderr: terminalInterface.error,
+      });
+
+      if (shiny) {
+        webRProxyHandle = await initRShiny({ webRProxyHandle });
+      }
+
+      if (!webRProxyHandle.initError) {
+        terminalInterface.clear();
+      }
+
+      return webRProxyHandle;
+    })();
+  }
+  return webRProxyHandlePromise as Promise<WebRProxyHandle>;
+}
+
 export function App({
   appMode = "examples-editor-terminal-viewer",
   startFiles = [],
   appOptions = {},
+  appEngine = "python"
 }: {
   appMode: AppMode;
   startFiles: FileContent[];
   appOptions?: AppOptions;
+  appEngine: AppEngine;
 }) {
   if (startFiles.length === 0) {
     if (appMode.includes("viewer")) {
@@ -167,15 +205,33 @@ export function App({
   // For most but not all appMode, set up pyodide for shiny.
   const loadShiny = !["editor-terminal"].includes(appMode);
 
-  // Temporarily disabled
-  // Modes in which _not_ to show Pyodide startup message.
-  // const showStartBanner = !["editor-terminal"].includes(appMode);
-  pyodideProxyHandlePromise = ensurePyodideProxyHandlePromise({
-    proxyType: pyodideProxyType,
-    shiny: loadShiny,
-    showStartBanner: false,
-  });
-  const pyodideProxyHandle = usePyodide({ pyodideProxyHandlePromise });
+  let useWasmEngine: () => ProxyHandle;
+  switch (appEngine) {
+    case "python": {
+      // Temporarily disabled
+      // Modes in which _not_ to show Pyodide startup message.
+      // const showStartBanner = !["editor-terminal"].includes(appMode);
+      const promise = ensurePyodideProxyHandlePromise({
+        proxyType: pyodideProxyType,
+        shiny: loadShiny,
+        showStartBanner: false,
+      });
+      pyodideProxyHandlePromise = promise;
+      useWasmEngine = () => usePyodide({ pyodideProxyHandlePromise: promise });
+      break;
+    }
+    case "r":{
+      const promise = webRProxyHandlePromise = ensureWebRProxyHandlePromise({
+        shiny: loadShiny,
+      });
+      useWasmEngine = () => useWebR({ webRProxyHandlePromise: promise });
+      break;
+    }
+    default:
+      throw new Error(`Unrecognised Wasm engine: "${appEngine}".`);
+  }
+
+  const proxyHandle = useWasmEngine();
 
   const [viewerMethods, setViewerMethods] = React.useState<ViewerMethods>({
     ready: false,
@@ -209,11 +265,12 @@ export function App({
   // editor won't be saved.
   React.useEffect(() => {
     (async () => {
-      if (!pyodideProxyHandle.ready) return;
+      if (!proxyHandle.ready) return;
+      if (proxyHandle.engine !== "pyodide") return;
       if (currentFiles.some((file) => file.name === "app.py")) return;
 
       // Save the code in /home/pyodide
-      await pyodideProxyHandle.pyodide.callPyAsync({
+      await proxyHandle.pyodide.callPyAsync({
         fnName: ["_save_files"],
         kwargs: {
           files: currentFiles,
@@ -222,7 +279,7 @@ export function App({
         },
       });
     })();
-  }, [pyodideProxyHandle.ready, currentFiles]);
+  }, [proxyHandle.ready, currentFiles]);
 
   const [utilityMethods, setUtilityMethods] = React.useState<UtilityMethods>({
     formatCode: async (code: string) => {
@@ -231,11 +288,12 @@ export function App({
   });
 
   React.useEffect(() => {
-    if (!pyodideProxyHandle.ready) return;
+    if (!proxyHandle.ready) return;
+    if (proxyHandle.engine !== "pyodide") return;
 
     setUtilityMethods({
       formatCode: async (code: string) => {
-        const result = await pyodideProxyHandle.pyodide.callPyAsync({
+        const result = await proxyHandle.pyodide.callPyAsync({
           fnName: ["_format_py_code"],
           args: [code],
           returnResult: "value",
@@ -244,7 +302,7 @@ export function App({
       },
     });
     if (currentFiles.some((file) => file.name === "app.py")) return;
-  }, [pyodideProxyHandle.ready, currentFiles]);
+  }, [proxyHandle.ready, currentFiles]);
 
   React.useEffect(() => {
     if (appMode !== "viewer") return;
@@ -290,12 +348,12 @@ export function App({
             />
           </React.Suspense>
           <Terminal
-            pyodideProxyHandle={pyodideProxyHandle}
+            pyodideProxyHandle={proxyHandle}
             setTerminalMethods={setTerminalMethods}
             terminalInterface={terminalInterface}
           />
           <Viewer
-            pyodideProxyHandle={pyodideProxyHandle}
+            pyodideProxyHandle={proxyHandle}
             setViewerMethods={setViewerMethods}
           />
         </ResizableGrid>
@@ -327,12 +385,12 @@ export function App({
             />
           </React.Suspense>
           <Terminal
-            pyodideProxyHandle={pyodideProxyHandle}
+            pyodideProxyHandle={proxyHandle}
             setTerminalMethods={setTerminalMethods}
             terminalInterface={terminalInterface}
           />
           <Viewer
-            pyodideProxyHandle={pyodideProxyHandle}
+            pyodideProxyHandle={proxyHandle}
             setViewerMethods={setViewerMethods}
           />
         </ResizableGrid>
@@ -358,7 +416,7 @@ export function App({
           />
         </React.Suspense>
         <Terminal
-          pyodideProxyHandle={pyodideProxyHandle}
+          pyodideProxyHandle={proxyHandle}
           setTerminalMethods={setTerminalMethods}
           terminalInterface={terminalInterface}
         />
@@ -382,7 +440,7 @@ export function App({
           />
         </React.Suspense>
         <OutputCell
-          pyodideProxyHandle={pyodideProxyHandle}
+          pyodideProxyHandle={proxyHandle}
           setTerminalMethods={setTerminalMethods}
         />
       </div>
@@ -418,7 +476,7 @@ export function App({
           />
         </React.Suspense>
         <Viewer
-          pyodideProxyHandle={pyodideProxyHandle}
+          pyodideProxyHandle={proxyHandle}
           setViewerMethods={setViewerMethods}
         />
       </ResizableGrid>
@@ -438,7 +496,7 @@ export function App({
           }}
         >
           <Viewer
-            pyodideProxyHandle={pyodideProxyHandle}
+            pyodideProxyHandle={proxyHandle}
             setViewerMethods={setViewerMethods}
           />
         </div>
@@ -464,14 +522,14 @@ export function runApp(
     allowCodeUrl?: boolean;
     allowGistUrl?: boolean;
     allowExampleUrl?: boolean;
-  } = {}
+  } = {},
+  appEngine: AppEngine = "python",
 ) {
   const optsDefaults = {
     allowCodeUrl: false,
     allowGistUrl: false,
     allowExampleUrl: false,
   };
-
   opts = { ...optsDefaults, ...opts };
   let startFiles: undefined | FileContentJson[] | FileContent[] =
     opts.startFiles;
@@ -563,7 +621,7 @@ export function runApp(
     const root = createRoot(domTarget);
     root.render(
       <React.StrictMode>
-        <App appMode={mode} startFiles={startFiles} appOptions={appOpts} />
+        <App appMode={mode} startFiles={startFiles} appOptions={appOpts} appEngine={appEngine} />
       </React.StrictMode>
     );
   })();
