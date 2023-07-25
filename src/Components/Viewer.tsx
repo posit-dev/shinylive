@@ -1,5 +1,6 @@
-import { PyodideProxyHandle } from "../hooks/usePyodide";
+import { ProxyHandle } from "./App";
 import { PyodideProxy } from "../pyodide-proxy";
+import { WebRProxy } from "../webr-proxy";
 import * as utils from "../utils";
 import { LoadingAnimation } from "./LoadingAnimation";
 import "./Viewer.css";
@@ -21,8 +22,8 @@ export type ViewerMethods =
 
 // Register a unique app path with the service worker. When fetches in our
 // origin match against the app path, navigation should be proxied through
-// the current window (eventually making its way to pyodide).
-function setupAppProxyPath(pyodide: PyodideProxy): {
+// the current window (eventually making its way to the Wasm engine).
+function setupAppProxyPath(proxy: PyodideProxy | WebRProxy): {
   appName: string;
   urlPath: string;
 } {
@@ -39,12 +40,12 @@ function setupAppProxyPath(pyodide: PyodideProxy): {
   // and will restart as needed. When the service worker shuts down, it will
   // lose the state that tells it how to proxy requests for `urlPath`, so when
   // it restarts, we need to re-register with the service worker.
-  createHttpRequestChannel(pyodide, appName, urlPath);
+  createHttpRequestChannel(proxy, appName, urlPath);
 
   // Listen for the service worker's restart messages and re-register.
   navigator.serviceWorker.addEventListener("message", (event) => {
     if (event.data.type === "serviceworkerStart") {
-      createHttpRequestChannel(pyodide, appName, urlPath);
+      createHttpRequestChannel(proxy, appName, urlPath);
     }
   });
 
@@ -53,7 +54,7 @@ function setupAppProxyPath(pyodide: PyodideProxy): {
 
 // Register the app path with the service worker
 function createHttpRequestChannel(
-  pyodide: PyodideProxy,
+  proxy: PyodideProxy | WebRProxy,
   appName: string,
   urlPath: string
 ): MessageChannel {
@@ -67,7 +68,7 @@ function createHttpRequestChannel(
   httpRequestChannel.port1.addEventListener("message", (event) => {
     const msg = event.data;
     if (msg.type === "makeRequest") {
-      pyodide.makeRequest(msg.scope, appName, event.ports[0]);
+      proxy.makeRequest(msg.scope, appName, event.ports[0]);
     }
   });
   httpRequestChannel.port1.start();
@@ -83,7 +84,7 @@ function createHttpRequestChannel(
   return httpRequestChannel;
 }
 
-async function resetAppFrame(
+async function resetPyAppFrame(
   pyodide: PyodideProxy,
   appName: string,
   appFrame: HTMLIFrameElement
@@ -103,14 +104,29 @@ async function resetAppFrame(
   }
 }
 
+async function resetRAppFrame(
+  webRProxy: WebRProxy,
+  appName: string,
+  appFrame: HTMLIFrameElement
+): Promise<void> {
+  // Reset the app iframe before shutting down the app, so that the user doesn't
+  // see the flash of gray indicating a closed session.
+  appFrame.src = "";
+
+  await webRProxy.runRAsync('.stop_app()');
+
+  // Pause for a bit before continuing.
+  await utils.sleep(200);
+}
+
 // =============================================================================
 // Viewer component
 // =============================================================================
 export function Viewer({
-  pyodideProxyHandle,
+  proxyHandle,
   setViewerMethods,
 }: {
-  pyodideProxyHandle: PyodideProxyHandle;
+  proxyHandle: ProxyHandle;
   setViewerMethods: React.Dispatch<React.SetStateAction<ViewerMethods>>;
 }) {
   const viewerFrameRef = React.useRef<HTMLIFrameElement>(null);
@@ -122,10 +138,81 @@ export function Viewer({
     null
   );
 
+  // Shiny for R
   React.useEffect(() => {
-    if (!pyodideProxyHandle.shinyReady) return;
+    if (!proxyHandle.shinyReady) return;
+    if (proxyHandle.engine !== "webr") return;
 
-    const pyodideproxy = pyodideProxyHandle.pyodide;
+    const webRProxy = proxyHandle.webRProxy;
+    const appInfo = setupAppProxyPath(webRProxy);
+
+    async function runApp(appCode: string | FileContent[]): Promise<void> {
+      try {
+        if (!viewerFrameRef.current)
+          throw new Error("Viewer iframe is not yet initialized");
+
+        setAppRunningState("loading");
+
+        if (typeof appCode === "string") {
+          appCode = [
+            {
+              name: "app.R",
+              content: appCode,
+              type: "text",
+            },
+          ];
+        }
+
+        const appName = appInfo.appName;
+        const appDir = "/home/web_user/" + appName;
+        const shelter = await new webRProxy.webR.Shelter();
+        const files = await new shelter.RList(
+          Object.fromEntries(appCode.map((file) => { return [file.name, file.content] }))
+        )
+        try {
+          await webRProxy.runRAsync('.save_files(files, appDir)', { env: { files, appDir } });
+          // This blocks in Shiny's runApp()
+          webRProxy.runCode(`.start_app("${appDir}")`);
+        } finally {
+          shelter.purge();
+        }
+        viewerFrameRef.current.src = appInfo.urlPath;
+        setAppRunningState("running");
+      } catch (e) {
+        setAppRunningState("errored");
+        if (e instanceof Error) {
+          console.error(e.message);
+          setLastErrorMessage(e.message);
+        } else {
+          console.error(e);
+        }
+      }
+    }
+
+    async function stopApp(): Promise<void> {
+      if (!viewerFrameRef.current) return;
+
+      await resetRAppFrame(
+        webRProxy,
+        appInfo.appName,
+        viewerFrameRef.current
+      );
+      setAppRunningState("empty");
+    }
+
+    setViewerMethods({
+      ready: true,
+      runApp,
+      stopApp,
+    });
+  }, [proxyHandle.shinyReady]);
+
+  // Shiny for Python
+  React.useEffect(() => {
+    if (!proxyHandle.shinyReady) return;
+    if (proxyHandle.engine !== "pyodide") return;
+
+    const pyodideproxy = proxyHandle.pyodide;
     const appInfo = setupAppProxyPath(pyodideproxy);
 
     async function runApp(appCode: string | FileContent[]): Promise<void> {
@@ -175,7 +262,7 @@ export function Viewer({
     async function stopApp(): Promise<void> {
       if (!viewerFrameRef.current) return;
 
-      await resetAppFrame(
+      await resetPyAppFrame(
         pyodideproxy,
         appInfo.appName,
         viewerFrameRef.current
@@ -188,7 +275,7 @@ export function Viewer({
       runApp,
       stopApp,
     });
-  }, [pyodideProxyHandle.shinyReady]);
+  }, [proxyHandle.shinyReady]);
 
   return (
     <div className="shinylive-viewer">
