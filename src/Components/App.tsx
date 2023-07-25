@@ -353,7 +353,7 @@ export function App({
             terminalInterface={terminalInterface}
           />
           <Viewer
-            pyodideProxyHandle={proxyHandle}
+            proxyHandle={proxyHandle}
             setViewerMethods={setViewerMethods}
           />
         </ResizableGrid>
@@ -390,7 +390,7 @@ export function App({
             terminalInterface={terminalInterface}
           />
           <Viewer
-            pyodideProxyHandle={proxyHandle}
+            proxyHandle={proxyHandle}
             setViewerMethods={setViewerMethods}
           />
         </ResizableGrid>
@@ -476,7 +476,7 @@ export function App({
           />
         </React.Suspense>
         <Viewer
-          pyodideProxyHandle={proxyHandle}
+          proxyHandle={proxyHandle}
           setViewerMethods={setViewerMethods}
         />
       </ResizableGrid>
@@ -496,7 +496,7 @@ export function App({
           }}
         >
           <Viewer
-            pyodideProxyHandle={proxyHandle}
+            proxyHandle={proxyHandle}
             setViewerMethods={setViewerMethods}
           />
         </div>

@@ -148,6 +148,15 @@ const load_r_pre =
   }
 ))
 
+.save_files <- function (files, appDir) {
+  for (name in names(files)) {
+    filename <- file.path(appDir, name)
+    path <- dirname(filename)
+    dir.create(path, recursive = TRUE, showWarnings = FALSE)
+    writeLines(files[[name]], filename)
+  }
+}
+
 .stop_app <- function() {
   webr::eval_js("
     chan.write({
