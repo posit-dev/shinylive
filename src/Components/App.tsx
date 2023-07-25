@@ -344,7 +344,9 @@ export function App({
               terminalMethods={terminalMethods}
               viewerMethods={viewerMethods}
               utilityMethods={utilityMethods}
-              runOnLoad={currentFiles.some((file) => file.name === "app.py")}
+              runOnLoad={currentFiles.some((file) =>
+                file.name === "app.py" || file.name === "app.R" || file.name === "server.R"
+              )}
             />
           </React.Suspense>
           <Terminal
@@ -381,7 +383,9 @@ export function App({
               terminalMethods={terminalMethods}
               viewerMethods={viewerMethods}
               utilityMethods={utilityMethods}
-              runOnLoad={currentFiles.some((file) => file.name === "app.py")}
+              runOnLoad={currentFiles.some((file) =>
+                file.name === "app.py" || file.name === "app.R" || file.name === "server.R"
+              )}
             />
           </React.Suspense>
           <Terminal
