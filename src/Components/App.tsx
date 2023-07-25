@@ -444,7 +444,7 @@ export function App({
           />
         </React.Suspense>
         <OutputCell
-          pyodideProxyHandle={proxyHandle}
+          proxyHandle={proxyHandle}
           setTerminalMethods={setTerminalMethods}
         />
       </div>
