@@ -10,6 +10,7 @@ export type WebRProxyHandle =
     }
   | {
       ready: true;
+      engine: "webr";
       webRProxy: WebRProxy;
       shinyReady: boolean;
       initError: boolean;
@@ -59,6 +60,7 @@ export async function initWebR({
 
   return {
     ready: true,
+    engine: "webr",
     webRProxy,
     shinyReady: false,
     initError: initError,
