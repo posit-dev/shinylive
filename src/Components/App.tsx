@@ -98,7 +98,7 @@ type AppOptions = {
 };
 
 
-type ProxyHandle = PyodideProxyHandle | WebRProxyHandle;
+export type ProxyHandle = PyodideProxyHandle | WebRProxyHandle;
 let pyodideProxyHandlePromise: Promise<PyodideProxyHandle> | null = null;
 let webRProxyHandlePromise: Promise<WebRProxyHandle> | null = null;
 
@@ -348,7 +348,7 @@ export function App({
             />
           </React.Suspense>
           <Terminal
-            pyodideProxyHandle={proxyHandle}
+            proxyHandle={proxyHandle}
             setTerminalMethods={setTerminalMethods}
             terminalInterface={terminalInterface}
           />
@@ -385,7 +385,7 @@ export function App({
             />
           </React.Suspense>
           <Terminal
-            pyodideProxyHandle={proxyHandle}
+            proxyHandle={proxyHandle}
             setTerminalMethods={setTerminalMethods}
             terminalInterface={terminalInterface}
           />
@@ -416,7 +416,7 @@ export function App({
           />
         </React.Suspense>
         <Terminal
-          pyodideProxyHandle={proxyHandle}
+          proxyHandle={proxyHandle}
           setTerminalMethods={setTerminalMethods}
           terminalInterface={terminalInterface}
         />
