@@ -1,10 +1,12 @@
 [
   {
     "category": "Basic",
+    "engine": "python",
     "apps": ["basic_app", "app_with_plot"]
   },
   {
     "category": "Featured",
+    "engine": "python",
     "apps": [
       "cpuinfo",
       "orbit",
@@ -17,6 +19,7 @@
   },
   {
     "category": "Intermediate",
+    "engine": "python",
     "apps": [
       "multiple_source_files",
       "read_local_csv_file",
@@ -33,6 +36,7 @@
   },
   {
     "category": "Inputs",
+    "engine": "python",
     "apps": [
       "input_text",
       "input_numeric",
@@ -50,6 +54,7 @@
   },
   {
     "category": "Outputs",
+    "engine": "python",
     "apps": [
       "output_text",
       "output_text_verbatim",
@@ -61,10 +66,12 @@
   },
   {
     "category": "Layout",
+    "engine": "python",
     "apps": ["shinyswatch", "layout_sidebar", "layout_two_column"]
   },
   {
     "category": "Reactivity",
+    "engine": "python",
     "apps": [
       "reactive_event",
       "reactive_effect",
@@ -74,6 +81,7 @@
   },
   {
     "category": "Interactive plots",
+    "engine": "python",
     "apps": [
       "plot_interact_basic",
       "plot_interact_select",
@@ -82,6 +90,24 @@
   },
   {
     "category": "Non-Apps",
+    "engine": "python",
     "apps": ["hello_world"]
+  },
+  {
+    "category": "R examples",
+    "engine": "r",
+    "apps": [
+      "001-hello",
+      "002-text",
+      "003-reactivity",
+      "004-mpg",
+      "005-sliders",
+      "006-tabsets",
+      "007-widgets",
+      "008-html",
+      "009-upload",
+      "010-download",
+      "011-timer"
+    ]
   }
 ]
