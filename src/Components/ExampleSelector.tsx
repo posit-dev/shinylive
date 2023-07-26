@@ -6,6 +6,7 @@ import {
   getExampleCategories,
   sanitizeTitleForUrl,
 } from "../examples";
+import { AppEngine } from "./App";
 import "./ExampleSelector.css";
 import { FileContent } from "./filecontent";
 import * as React from "react";
@@ -14,10 +15,12 @@ export function ExampleSelector({
   setCurrentFiles,
   filesHaveChanged,
   startWithSelectedExample,
+  appEngine,
 }: {
   setCurrentFiles: React.Dispatch<React.SetStateAction<FileContent[]>>;
   filesHaveChanged: boolean;
   startWithSelectedExample?: string;
+  appEngine: AppEngine;
 }) {
   const [currentSelection, setCurrentSelection] =
     React.useState<ExamplePosition | null>(null);
@@ -29,9 +32,10 @@ export function ExampleSelector({
 
   React.useEffect(() => {
     (async () => {
-      setExampleCategories(await getExampleCategories());
+      const categories = await getExampleCategories();
+      setExampleCategories(categories.filter((cat) => cat.engine === appEngine));
     })();
-  }, []);
+  }, [appEngine]);
 
   // If we were told to start with a specific example, find it and select it.
   React.useEffect(() => {
