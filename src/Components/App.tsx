@@ -334,6 +334,7 @@ export function App({
             setCurrentFiles={setCurrentFiles}
             filesHaveChanged={filesHaveChanged}
             startWithSelectedExample={appOptions.selectedExample}
+            appEngine={appEngine}
           />
           <React.Suspense fallback={<div>Loading...</div>}>
             <Editor
@@ -580,7 +581,9 @@ export function runApp(
           if (value === "") exampleName = key;
         }
 
-        const exampleCategories = await getExampleCategories();
+        const exampleCategories = (await getExampleCategories()).filter(
+          (cat) => cat.engine === appEngine
+        );
         let pos = findExampleByTitle(exampleName, exampleCategories);
         if (pos) {
           opts.selectedExample = exampleName;

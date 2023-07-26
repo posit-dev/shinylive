@@ -25,8 +25,8 @@ export default function buildExamples(examplesDir: string, buildDir: string) {
     fs.readFileSync(orderingFile).toString()
   );
 
-  function parseApp(exampleDir: string) {
-    const appPath = `${examplesDir}/${exampleDir}`;
+  function parseApp(exampleDir: string, engine: string) {
+    const appPath = `${examplesDir}/${engine}/${exampleDir}`;
 
     if (!fs.existsSync(appPath)) {
       throw new Error(
@@ -61,8 +61,8 @@ export default function buildExamples(examplesDir: string, buildDir: string) {
         .sort((a: string, b: string) => {
           // Sort files, with "app.py" first, and other files in normal sorted
           // order.
-          if (a === "app.py") return -1;
-          if (b === "app.py") return 1;
+          if (a === "app.py" || a === "app.R" || a === "server.R") return -1;
+          if (b === "app.py" || b === "app.R" || b === "server.R") return 1;
 
           if (a < b) return -1;
           if (a > b) return 1;
@@ -91,9 +91,10 @@ export default function buildExamples(examplesDir: string, buildDir: string) {
   fs.writeFileSync(
     outputFile,
     JSON.stringify(
-      ordering.map(({ category, apps }) => ({
+      ordering.map(({ category, engine, apps }) => ({
         category,
-        apps: apps.map(parseApp),
+        engine,
+        apps: apps.map((app) => parseApp(app, engine)),
       })),
       null,
       2

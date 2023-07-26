@@ -13,12 +13,14 @@ export type ExampleItemJson = {
 // For examples/index.json
 export type ExampleCategoryIndexJson = {
   category: string;
+  engine: string;
   apps: string[];
 };
 
 // For examples.json
 export type ExampleCategoryJson = {
   category: string;
+  engine: string;
   apps: ExampleItemJson[];
 };
 
@@ -30,6 +32,7 @@ export type ExampleItem = {
 
 export type ExampleCategory = {
   category: string;
+  engine: string;
   apps: ExampleItem[];
 };
 
@@ -93,6 +96,7 @@ function exampleCategoryJsonToExampleCategory(
 ): ExampleCategory {
   return {
     category: x.category,
+    engine: x.engine,
     apps: x.apps.map(exampleItemJsonToExampleItem),
   };
 }
