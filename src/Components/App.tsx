@@ -172,7 +172,7 @@ export function App({
   appMode = "examples-editor-terminal-viewer",
   startFiles = [],
   appOptions = {},
-  appEngine = "python"
+  appEngine = process.env.APP_ENGINE as AppEngine,
 }: {
   appMode: AppMode;
   startFiles: FileContent[];
@@ -528,7 +528,7 @@ export function runApp(
     allowGistUrl?: boolean;
     allowExampleUrl?: boolean;
   } = {},
-  appEngine: AppEngine = "python",
+  appEngine: AppEngine = process.env.APP_ENGINE as AppEngine,
 ) {
   const optsDefaults = {
     allowCodeUrl: false,

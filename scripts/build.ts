@@ -5,6 +5,7 @@ import http from "http";
 import process from "process";
 import packageJson from "../package.json";
 import buildExamples from "./build_examples_json";
+import type { AppEngine } from '../src/Components/App';
 
 const EXAMPLES_SOURCE_DIR = "./examples";
 const BUILD_DIR = "./build";
@@ -24,6 +25,7 @@ let serve = false;
 let openBrowser = true;
 let minify = false;
 let reactProductionMode = false;
+let appEngine: AppEngine = "python";
 // Set this to true to generate a metadata file that can be analyzed for size of
 // modules in the bundle, like with Bundle-Buddy.
 const metafile = process.argv.includes("--metafile");
@@ -43,6 +45,9 @@ if (process.argv.includes("--test-server")) {
   serve = true;
   watch = false;
   openBrowser = false;
+}
+if (process.argv.includes("--r")) {
+  appEngine = "r";
 }
 
 function createRebuildLoggerPlugin(label: string) {
@@ -106,6 +111,7 @@ const buildmap = {
     banner: banner,
     metafile: metafile,
     define: {
+      "process.env.APP_ENGINE": `"${appEngine}"`,
       "process.env.NODE_ENV": reactProductionMode
         ? '"production"'
         : '"development"',
