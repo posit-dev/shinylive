@@ -348,6 +348,7 @@ export function App({
               runOnLoad={currentFiles.some((file) =>
                 file.name === "app.py" || file.name === "app.R" || file.name === "server.R"
               )}
+              appEngine={appEngine}
             />
           </React.Suspense>
           <Terminal
@@ -387,6 +388,7 @@ export function App({
               runOnLoad={currentFiles.some((file) =>
                 file.name === "app.py" || file.name === "app.R" || file.name === "server.R"
               )}
+              appEngine={appEngine}
             />
           </React.Suspense>
           <Terminal
@@ -418,6 +420,7 @@ export function App({
             terminalMethods={terminalMethods}
             utilityMethods={utilityMethods}
             runOnLoad={false}
+            appEngine={appEngine}
           />
         </React.Suspense>
         <Terminal
@@ -442,6 +445,7 @@ export function App({
             lineNumbers={false}
             showHeaderBar={false}
             floatingButtons={true}
+            appEngine={appEngine}
           />
         </React.Suspense>
         <OutputCell
@@ -478,6 +482,7 @@ export function App({
             terminalMethods={terminalMethods}
             utilityMethods={utilityMethods}
             viewerMethods={viewerMethods}
+            appEngine={appEngine}
           />
         </React.Suspense>
         <Viewer

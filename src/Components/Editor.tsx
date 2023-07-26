@@ -8,7 +8,7 @@ import { createUri } from "../language-server/client";
 import { LSPClient } from "../language-server/lsp-client";
 import { ensurePyrightClient } from "../language-server/pyright-client";
 import { inferFiletype, modKeySymbol, stringToUint8Array } from "../utils";
-import type { UtilityMethods } from "./App";
+import type { AppEngine, UtilityMethods } from "./App";
 import "./Editor.css";
 import { HeaderBarCallbacks } from "./HeaderBar";
 import { Icon } from "./Icons";
@@ -73,6 +73,7 @@ export default function Editor({
   lineNumbers = true,
   showHeaderBar = true,
   floatingButtons = false,
+  appEngine,
 }: {
   currentFilesFromApp: FileContent[];
   setCurrentFiles: React.Dispatch<React.SetStateAction<FileContent[]>>;
@@ -88,6 +89,7 @@ export default function Editor({
   lineNumbers?: boolean;
   showHeaderBar?: boolean;
   floatingButtons?: boolean;
+  appEngine: AppEngine;
 }) {
   // In the future, instead of directly instantiating the PyrightClient, it
   // would make sense to abstract it out to a class which in turn can run
@@ -464,7 +466,7 @@ export default function Editor({
   // ===========================================================================
   // Buttons
   // ===========================================================================
-  const formatCodeButton = (
+  const formatCodeButton = appEngine === 'python' ? (
     <button
       className="code-run-button"
       aria-label="Reformat code"
@@ -473,7 +475,7 @@ export default function Editor({
     >
       <Icon icon="code"></Icon>
     </button>
-  );
+  ) : null;
 
   const formatCode = React.useCallback(async () => {
     if (!cmView) return;
