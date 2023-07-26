@@ -320,7 +320,10 @@ export function App({
   if (appMode === "examples-editor-terminal-viewer") {
     return (
       <>
-        <HeaderBar headerBarCallbacks={headerBarCallbacks}></HeaderBar>
+        <HeaderBar
+          headerBarCallbacks={headerBarCallbacks}
+          appEngine={appEngine}
+        ></HeaderBar>
         <ResizableGrid
           className="shinylive-container"
           areas={[
@@ -366,7 +369,10 @@ export function App({
   } else if (appMode === "editor-terminal-viewer") {
     return (
       <>
-        <HeaderBar headerBarCallbacks={headerBarCallbacks}></HeaderBar>
+        <HeaderBar
+          headerBarCallbacks={headerBarCallbacks}
+          appEngine={appEngine}
+        ></HeaderBar>
         <ResizableGrid
           className="shinylive-container"
           areas={[
@@ -495,7 +501,10 @@ export function App({
     return (
       <>
         {appOptions.showHeaderBar ? (
-          <HeaderBar headerBarCallbacks={headerBarCallbacks}></HeaderBar>
+          <HeaderBar
+            headerBarCallbacks={headerBarCallbacks}
+            appEngine={appEngine}
+          ></HeaderBar>
         ) : null}
         <div
           className="shinylive-container viewer"

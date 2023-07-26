@@ -1,13 +1,7 @@
 import { FCtoFCJSON, FileContent } from "./filecontent";
 import LZString from "lz-string";
 
-const shinyHome = {
-  py: "https://shiny.posit.co/py/",
-  r: "https://shiny.posit.co/",
-}
-
-export const shortEngine = process.env.APP_ENGINE === "python" ? "py" : "r";
-export const mainUrl = shinyHome[shortEngine];
+const shortEngine = process.env.APP_ENGINE === "python" ? "py" : "r";
 export const editorUrlPrefix = `https://shinylive.io/${shortEngine}/editor/`;
 export const appUrlPrefix = `https://shinylive.io/${shortEngine}/app/`;
 
