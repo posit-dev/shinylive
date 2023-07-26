@@ -182,6 +182,20 @@ export function Terminal({
       setTimeout(() => readLine(prompt));
     }
 
+    // Handle ctrl-c above xterm-readline so that blocking R code or Shiny apps
+    // executed by the Editor can also be interrupted
+    function handleInterrupt(event: KeyboardEvent) {
+      if (!xTermRef.current) return;
+      if (!proxyHandle.ready) return;
+      if (proxyHandle.engine !== "webr") return;
+      if (event.key === 'c' && event.ctrlKey) {
+        xTermRef.current.write("^C");
+        proxyHandle.interrupt();
+        event.stopPropagation();
+      }
+    }
+    containerRef.current!.addEventListener('keydown', handleInterrupt, true);
+
     readLine(proxyHandle.engine === "webr" ? '> ' : ">>> ");
   }, [proxyHandle, xTermReadline]);
 
