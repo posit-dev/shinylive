@@ -2,6 +2,7 @@ import shinyLogo from "../assets/shiny-for-python.svg";
 import "./HeaderBar.css";
 import { Icon } from "./Icons";
 import * as React from "react";
+import { mainUrl } from "./share";
 
 export type HeaderBarCallbacks = {
   loadLocalFiles?: () => void;
@@ -117,7 +118,7 @@ export default function HeaderBar({
 
   return (
     <div className="HeaderBar">
-      <a className="page-title" href="https://shiny.rstudio.com/py/">
+      <a className="page-title" href={mainUrl}>
         <img className="shiny-logo" src={shinyLogo} alt="Shiny" />
       </a>
       <div>
