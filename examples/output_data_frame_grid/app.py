@@ -3,6 +3,11 @@ import pandas as pd
 from shiny import App, Inputs, Outputs, Session, reactive, render, req, ui
 
 penguins = palmerpenguins.load_penguins()
+# Slim down the data frame to a few representative columns
+penguins = penguins.loc[
+    penguins["body_mass_g"].notnull(),
+    ["species", "island", "body_mass_g", "year"],
+]
 
 app_ui = ui.page_fluid(
     ui.input_select(
@@ -14,6 +19,7 @@ app_ui = ui.page_fluid(
     ui.input_switch("gridstyle", "Grid", True),
     ui.input_switch("fullwidth", "Take full width", True),
     ui.input_switch("fixedheight", "Fixed height", True),
+    ui.input_switch("filters", "Filters", True),
     ui.output_data_frame("grid"),
     ui.panel_fixed(
         ui.output_text_verbatim("detail"),
@@ -25,8 +31,6 @@ app_ui = ui.page_fluid(
 
 
 def server(input: Inputs, output: Outputs, session: Session):
-    df: reactive.Value[pd.DataFrame] = reactive.Value(penguins)
-
     @output
     @render.data_frame
     def grid():
@@ -34,26 +38,20 @@ def server(input: Inputs, output: Outputs, session: Session):
         width = "100%" if input.fullwidth() else "fit-content"
         if input.gridstyle():
             return render.DataGrid(
-                df(),
+                penguins,
                 row_selection_mode=input.selection_mode(),
                 height=height,
                 width=width,
+                filters=input.filters(),
             )
         else:
             return render.DataTable(
-                df(),
+                penguins,
                 row_selection_mode=input.selection_mode(),
                 height=height,
                 width=width,
+                filters=input.filters(),
             )
-
-    @reactive.Effect
-    @reactive.event(input.grid_cell_edit)
-    def handle_edit():
-        edit = input.grid_cell_edit()
-        df_copy = df().copy()
-        df_copy.iat[edit["row"], edit["col"]] = edit["new_value"]
-        df.set(df_copy)
 
     @output
     @render.text
@@ -63,7 +61,7 @@ def server(input: Inputs, output: Outputs, session: Session):
             and len(input.grid_selected_rows()) > 0
         ):
             # "split", "records", "index", "columns", "values", "table"
-            return df().iloc[list(input.grid_selected_rows())]
+            return penguins.iloc[list(input.grid_selected_rows())]
 
 
 app = App(app_ui, server)
