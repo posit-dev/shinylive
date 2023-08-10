@@ -62,7 +62,7 @@ export async function gistApiResponseToFileContents(
       // helpful. 'type' can be "text/plain" for some binary files like sqlite
       // .db files.
       binary = isBinary(contentArray);
-      if (binary) {
+      if (!binary) {
         contentString = uint8ArrayToString(contentArray);
       }
     } else {
