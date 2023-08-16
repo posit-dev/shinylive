@@ -59,7 +59,6 @@ app_ui = x.ui.page_sidebar(
         right="1em",
         class_="border d-none d-md-block",
     ),
-    fillable=True,
 )
 
 
