@@ -15,19 +15,22 @@ from simulation import Simulation, nbody_solve
 
 app_ui = x.ui.page_sidebar(
     x.ui.sidebar(
-        ui.input_slider("days", "Simulation duration (days)", 0, 200, value=60),
-        ui.input_slider(
-            "step_size",
-            "Simulation time step (hours)",
-            0,
-            24,
-            value=4,
-            step=0.5,
-        ),
-        ui.input_action_button(
-            "run", "Simulate", icon=icon_svg("play"), class_="btn-primary w-100"
+        ui.img(
+            src="coords.png", style="width: 100%; max-width: 225px;", class_="border"
         ),
         x.ui.accordion(
+            x.ui.accordion_panel(
+                "Settings",
+                ui.input_slider("days", "Simulation duration (days)", 0, 200, value=60),
+                ui.input_slider(
+                    "step_size",
+                    "Simulation time step (hours)",
+                    0,
+                    24,
+                    value=4,
+                    step=0.5,
+                ),
+            ),
             x.ui.accordion_panel(
                 "Earth",
                 body_ui(
@@ -36,12 +39,12 @@ app_ui = x.ui.page_sidebar(
             ),
             x.ui.accordion_panel(
                 "Moon",
-                body_ui("moon", enable=True, mass=7.347, speed=1.022, theta=90, phi=90),
+                body_ui("moon", enable=True, mass=7.347, speed=1.022, theta=60, phi=90),
             ),
             x.ui.accordion_panel(
                 "Planet X",
                 body_ui(
-                    "planetx", enable=False, mass=7.347, speed=1.022, theta=270, phi=90
+                    "planetx", enable=True, mass=7.347, speed=1.022, theta=270, phi=60
                 ),
             ),
             open=False,
@@ -51,14 +54,17 @@ app_ui = x.ui.page_sidebar(
             # Give the accordion the same background color as the sidebar
             style="--bs-accordion-bg: --bslib-sidebar-bg;",
         ),
+        position="right",
+        open="open",
+        # In mobile mode, let the sidebar be as tall as it wants
+        max_height_mobile="auto",
+    ),
+    ui.div(
+        ui.input_action_button(
+            "run", "Run simulation", icon=icon_svg("play"), class_="btn-primary"
+        )
     ),
     x.ui.output_plot("orbits"),
-    ui.panel_absolute(
-        ui.img(src="coords.png", style="width: 100%; max-width: 225px;"),
-        bottom="1em",
-        right="1em",
-        class_="border d-none d-md-block",
-    ),
 )
 
 
@@ -84,28 +90,32 @@ def server(input, output, session):
 
     @output
     @render.plot
+    # ignore_none=False is used to instruct Shiny to render this plot even before the
+    # input.run button is clicked for the first time. We do this because we want to
+    # render the empty 3D space on app startup, to give the user a sense of what's about
+    # to happen when they run the simulation.
     @reactive.event(input.run, ignore_none=False)
     def orbits():
-        sim_hist = simulation()
-        end_idx = len(sim_hist) - 1
-
         fig = plt.figure()
-
         ax = plt.axes(projection="3d")
 
-        n_bodies = int(sim_hist.shape[1] / 6)
-        for i in range(0, n_bodies):
-            ax.scatter3D(
-                sim_hist[end_idx, i * 6],
-                sim_hist[end_idx, i * 6 + 1],
-                sim_hist[end_idx, i * 6 + 2],
-                s=50,
-            )
-            ax.plot3D(
-                sim_hist[:, i * 6],
-                sim_hist[:, i * 6 + 1],
-                sim_hist[:, i * 6 + 2],
-            )
+        if input.run() > 0:
+            sim_hist = simulation()
+            end_idx = len(sim_hist) - 1
+
+            n_bodies = int(sim_hist.shape[1] / 6)
+            for i in range(0, n_bodies):
+                ax.scatter3D(
+                    sim_hist[end_idx, i * 6],
+                    sim_hist[end_idx, i * 6 + 1],
+                    sim_hist[end_idx, i * 6 + 2],
+                    s=50,
+                )
+                ax.plot3D(
+                    sim_hist[:, i * 6],
+                    sim_hist[:, i * 6 + 1],
+                    sim_hist[:, i * 6 + 2],
+                )
 
         ax.view_init(30, 20)
         set_axes_equal(ax)
