@@ -539,6 +539,14 @@ export function runApp(
   let startFiles: undefined | FileContentJson[] | FileContent[] =
     opts.startFiles;
 
+  // If we require webR, but not Cross-Origin Isolated, ask the service worker
+  // to make it so
+  const url = new URL(location.href);
+  if (appEngine == 'r' && !url.searchParams.get('coi') && !crossOriginIsolated) {
+    url.searchParams.set('coi', '1');
+    location.assign(url.search);
+  }
+
   (async () => {
     if (startFiles === undefined) {
       // Use the URL hash to determine what files to start with.
