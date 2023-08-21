@@ -83,6 +83,9 @@ self.addEventListener("fetch", function (event): void {
     return;
   }
 
+  const coiRequested = url.searchParams.get('coi') === '1'
+    || request.referrer.includes('coi=1');
+
   // Fetches that are prepended with /app_<id>/ need to be proxied to pyodide.
   // We use fetchASGI.
   const appPathRegex = /.*\/(app_[^/]+\/)/;
@@ -116,7 +119,7 @@ self.addEventListener("fetch", function (event): void {
         const filter = isAppRoot ? injectSocketFilter : identityFilter;
 
         const blob = await request.blob();
-        return fetchASGI(
+        const resp = await fetchASGI(
           apps[m_appPath[1]],
           new Request(url.toString(), {
             method: request.method,
@@ -133,6 +136,11 @@ self.addEventListener("fetch", function (event): void {
           undefined,
           filter
         );
+        if (coiRequested) {
+          return addCoiHeaders(resp);
+        } else {
+          return resp;
+        }
       })()
     );
     return;
@@ -179,7 +187,12 @@ self.addEventListener("fetch", function (event): void {
   }
 
   event.respondWith((async (): Promise<Response> => {
-    return addCoiHeaders(await fetch(request));
+    const resp = await fetch(request);
+    if (coiRequested) {
+      return addCoiHeaders(resp);
+    } else {
+      return resp;
+    }
   })());
 });
 
