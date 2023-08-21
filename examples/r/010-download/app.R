@@ -2,9 +2,9 @@ library(shiny)
 
 # Workaround for Chromium Issue 468227
 downloadButton <- function(...) {
-    tag <- shiny::downloadButton("downloadData", "Download")
-    tag$attribs$download <- NULL
-    tag
+  tag <- shiny::downloadButton(...)
+  tag$attribs$download <- NULL
+  tag
 }
 
 # Define UI for data download app ----
