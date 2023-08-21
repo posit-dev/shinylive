@@ -1,3 +1,4 @@
+import { RFunction } from "webr";
 import { AwaitableQueue } from "./awaitable-queue";
 import { MessagePortWebSocket } from "./messageportwebsocket";
 import { loadPyodide } from "./pyodide/pyodide";
@@ -69,6 +70,7 @@ async function connect(
       conn.send(event.text ?? event.bytes);
     } else if (event.type === "websocket.close") {
       conn.close(event.code, event.reason);
+      fromClientQueue.enqueue({ type: "websocket.disconnect" });
     } else {
       conn.close(1002, "ASGI protocol error");
       throw new Error(`Unhandled ASGI event: ${event.type}`);
@@ -111,7 +113,10 @@ export async function openChannelHttpuv(
   webRProxy: WebRProxy,
 ): Promise<void> {
   const conn = new MessagePortWebSocket(clientPort);
+  const shelter = await new webRProxy.webR.Shelter();
   let connected = false;
+  let onWSMessage: RFunction | undefined;
+  let onWSClose: RFunction | undefined;
 
   async function toClient(event: Record<string, any>): Promise<void> {
     if (!connected) {
@@ -129,7 +134,7 @@ export async function openChannelHttpuv(
       throw new Error(`Unhandled ASGI event: ${event.type}`);
     }
   }
-  webRProxy.toClientCache['ws'] = toClient;
+  webRProxy.toClientCache[appName] = toClient;
 
   const fromClientQueue = new AwaitableQueue<Record<string, any>>();
   fromClientQueue.enqueue({ type: "websocket.connect" });
@@ -150,33 +155,51 @@ export async function openChannelHttpuv(
     console.error(e);
   });
 
+  // Infinite async loop until connection is closed.
   for(;;){
     const msg = await fromClientQueue.dequeue();
     switch(msg.type){
-      case 'websocket.connect':
-        webRProxy.runRAsync(`
-          onWSOpen <- options('webr_httpuv_onWSOpen')[[1]]
-          if (!is.null(onWSOpen)) {
-            onWSOpen(1, list(handle = 1))
-          }
-        `)
+      case 'websocket.connect': {
+        const callbacks = await webRProxy.webR.evalR(`
+          app <- get(appName, env = .shiny_app_registry)
+          onWSMessage <- NULL
+          onWSClose <- NULL
+          ws <- list(
+            req = list(),
+            onMessage = function(func) {
+              onWSMessage <<- func
+            },
+            onClose = function(func) {
+              onWSClose <<- func
+            },
+            send = function(msg) {
+              .send_ws(c("websocket.send", appName, msg))
+            },
+            close = function(msg) {
+              .send_ws(c("websocket.close", appName, msg))
+            }
+          )
+          app$onWSOpen(ws)
+          list(onWSMessage = onWSMessage, onWSClose = onWSClose)
+        `, { env: { appName } });
+        onWSMessage = await callbacks.get('onWSMessage') as RFunction;
+        onWSClose = await callbacks.get('onWSClose') as RFunction;
         break;
-      case 'websocket.receive':
-        webRProxy.runRAsync(`
-          onWSMessage <- options('webr_httpuv_onWSMessage')[[1]]
-          if (!is.null(onWSMessage)) {
-            onWSMessage(1, FALSE, '${msg.text}')
+      }
+      case 'websocket.receive': {
+        const text = await new shelter.RCharacter(msg.text);
+        try {
+          if (typeof onWSMessage !== 'undefined') {
+            onWSMessage(webRProxy.webR.objs.false, text);
           }
-        `)
+        } finally {
+          shelter.purge();
+        }
         break;
+      }
       case 'websocket.disconnect':
-        webRProxy.runRAsync(`
-          onWSClose <- options('webr_httpuv_onWSClose')[[1]]
-          if (!is.null(onWSClose)) {
-            onWSClose(1)
-          }
-        `)
-        break;
+        if (onWSClose) onWSClose();
+        return;
       default:
         console.warn(`Unhandled websocket message of type "${msg.type}".`)
         return;
