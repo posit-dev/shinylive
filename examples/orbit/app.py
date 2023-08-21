@@ -3,27 +3,24 @@ from pathlib import Path
 import astropy.units as u
 import matplotlib.pyplot as plt
 import numpy as np
+import shiny.experimental as x
+from body import body_server, body_ui
+from faicons import icon_svg
 from shiny import App, reactive, render, ui
-from simulation import Body, Simulation, nbody_solve, spherical_to_cartesian
+from simulation import Simulation, nbody_solve
 
 # This application adapted from RK4 Orbit Integrator tutorial in Python for Astronomers
 # https://prappleizer.github.io/
 
 
-def panel_box(*args, **kwargs):
-    return ui.div(
-        ui.div(*args, class_="card-body"),
-        **kwargs,
-        class_="card mb-3",
-    )
-
-
-app_ui = ui.page_fluid(
-    {"class": "p-4"},
-    ui.row(
-        ui.column(
-            4,
-            panel_box(
+app_ui = x.ui.page_sidebar(
+    x.ui.sidebar(
+        ui.img(
+            src="coords.png", style="width: 100%; max-width: 225px;", class_="border"
+        ),
+        x.ui.accordion(
+            x.ui.accordion_panel(
+                "Settings",
                 ui.input_slider("days", "Simulation duration (days)", 0, 200, value=60),
                 ui.input_slider(
                     "step_size",
@@ -33,159 +30,92 @@ app_ui = ui.page_fluid(
                     value=4,
                     step=0.5,
                 ),
-                ui.input_action_button(
-                    "run", "Run simulation", class_="btn-primary w-100"
+            ),
+            x.ui.accordion_panel(
+                "Earth",
+                body_ui(
+                    "earth", enable=True, mass=597.216, speed=0.0126, theta=270, phi=90
                 ),
             ),
-            ui.navset_tab_card(
-                ui.nav(
-                    "Earth",
-                    ui.input_checkbox("earth", "Enable", True),
-                    ui.panel_conditional(
-                        "input.earth",
-                        ui.input_numeric(
-                            "earth_mass",
-                            "Mass (10^22 kg)",
-                            597.216,
-                        ),
-                        ui.input_slider(
-                            "earth_speed",
-                            "Speed (km/s)",
-                            0,
-                            1,
-                            value=0.0126,
-                            step=0.001,
-                        ),
-                        ui.input_slider("earth_theta", "Angle (𝜃)", 0, 360, value=270),
-                        ui.input_slider("earth_phi", "𝜙", 0, 180, value=90),
-                    ),
-                ),
-                ui.nav(
-                    "Moon",
-                    ui.input_checkbox("moon", "Enable", True),
-                    ui.panel_conditional(
-                        "input.moon",
-                        ui.input_numeric("moon_mass", "Mass (10^22 kg)", 7.347),
-                        ui.input_slider(
-                            "moon_speed", "Speed (km/s)", 0, 2, value=1.022, step=0.001
-                        ),
-                        ui.input_slider("moon_theta", "Angle (𝜃)", 0, 360, value=90),
-                        ui.input_slider("moon_phi", "𝜙", 0, 180, value=90),
-                    ),
-                ),
-                ui.nav(
-                    "Planet X",
-                    ui.input_checkbox("planetx", "Enable", False),
-                    ui.output_ui("planetx_controls"),
-                    ui.panel_conditional(
-                        "input.planetx",
-                        ui.input_numeric("planetx_mass", "Mass (10^22 kg)", 7.347),
-                        ui.input_slider(
-                            "planetx_speed",
-                            "Speed (km/s)",
-                            0,
-                            2,
-                            value=1.022,
-                            step=0.001,
-                        ),
-                        ui.input_slider("planetx_theta", "Angle (𝜃)", 0, 360, 270),
-                        ui.input_slider("planetx_phi", "𝜙", 0, 180, 90),
-                    ),
+            x.ui.accordion_panel(
+                "Moon",
+                body_ui("moon", enable=True, mass=7.347, speed=1.022, theta=60, phi=90),
+            ),
+            x.ui.accordion_panel(
+                "Planet X",
+                body_ui(
+                    "planetx", enable=True, mass=7.347, speed=1.022, theta=270, phi=60
                 ),
             ),
+            open=False,
+            multiple=False,
+            # mt-4: margin top 4; adds a bit of space above the accordion
+            class_="mt-4",
+            # Give the accordion the same background color as the sidebar
+            style="--bs-accordion-bg: --bslib-sidebar-bg;",
         ),
-        ui.column(
-            8,
-            ui.output_plot("orbits", width="500px", height="500px"),
-            ui.img(src="coords.png", style="width: 100%; max-width: 250px;"),
-        ),
+        position="right",
+        open="open",
+        # In mobile mode, let the sidebar be as tall as it wants
+        max_height_mobile="auto",
     ),
+    ui.div(
+        ui.input_action_button(
+            "run", "Run simulation", icon=icon_svg("play"), class_="btn-primary"
+        )
+    ),
+    x.ui.output_plot("orbits"),
 )
 
 
 def server(input, output, session):
-    def earth_body():
-        v = spherical_to_cartesian(
-            input.earth_theta(), input.earth_phi(), input.earth_speed()
-        )
+    earth_body = body_server("earth", "Earth", [0, 0, 0])
+    moon_body = body_server("moon", "Moon", [3.84e5, 0, 0])
+    planetx_body = body_server("planetx", "Planet X", [-3.84e5, 0, 0])
 
-        return Body(
-            mass=input.earth_mass() * 10e21 * u.kg,
-            x_vec=np.array([0, 0, 0]) * u.km,
-            v_vec=np.array(v) * u.km / u.s,
-            name="Earth",
-        )
-
-    def moon_body():
-        v = spherical_to_cartesian(
-            input.moon_theta(), input.moon_phi(), input.moon_speed()
-        )
-
-        return Body(
-            mass=input.moon_mass() * 10e21 * u.kg,
-            x_vec=np.array([3.84e5, 0, 0]) * u.km,
-            v_vec=np.array(v) * u.km / u.s,
-            name="Moon",
-        )
-
-    def planetx_body():
-        v = spherical_to_cartesian(
-            input.planetx_theta(), input.planetx_phi(), input.planetx_speed()
-        )
-
-        return Body(
-            mass=input.planetx_mass() * 10e21 * u.kg,
-            x_vec=np.array([-3.84e5, 0, 0]) * u.km,
-            v_vec=np.array(v) * u.km / u.s,
-            name="Planet X",
-        )
-
+    @reactive.Calc()
     def simulation():
-        bodies = []
-        if input.earth():
-            bodies.append(earth_body())
-        if input.moon():
-            bodies.append(moon_body())
-        if input.planetx():
-            bodies.append(planetx_body())
+        bodies = [
+            x for x in [earth_body(), moon_body(), planetx_body()] if x is not None
+        ]
 
-        simulation_ = Simulation(bodies)
-        simulation_.set_diff_eq(nbody_solve)
+        sim = Simulation(bodies)
+        sim.set_diff_eq(nbody_solve)
 
-        return simulation_
-
-    @output
-    @render.plot
-    @reactive.event(input.run, ignore_none=False)
-    def orbits():
-        return make_orbit_plot()
-
-    def make_orbit_plot():
-        sim = simulation()
         n_steps = input.days() * 24 / input.step_size()
         with ui.Progress(min=1, max=n_steps) as p:
             sim.run(input.days() * u.day, input.step_size() * u.hr, progress=p)
 
-        sim_hist = sim.history
-        end_idx = len(sim_hist) - 1
+        return sim.history
 
+    @output
+    @render.plot
+    # ignore_none=False is used to instruct Shiny to render this plot even before the
+    # input.run button is clicked for the first time. We do this because we want to
+    # render the empty 3D space on app startup, to give the user a sense of what's about
+    # to happen when they run the simulation.
+    @reactive.event(input.run, ignore_none=False)
+    def orbits():
         fig = plt.figure()
-
         ax = plt.axes(projection="3d")
 
-        n_bodies = int(sim_hist.shape[1] / 6)
-        for i in range(0, n_bodies):
-            ax.scatter3D(
-                sim_hist[end_idx, i * 6],
-                sim_hist[end_idx, i * 6 + 1],
-                sim_hist[end_idx, i * 6 + 2],
-                s=50,
-            )
-            ax.plot3D(
-                sim_hist[:, i * 6],
-                sim_hist[:, i * 6 + 1],
-                sim_hist[:, i * 6 + 2],
-            )
+        if input.run() > 0:
+            sim_hist = simulation()
+            end_idx = len(sim_hist) - 1
+
+            n_bodies = int(sim_hist.shape[1] / 6)
+            for i in range(0, n_bodies):
+                ax.scatter3D(
+                    sim_hist[end_idx, i * 6],
+                    sim_hist[end_idx, i * 6 + 1],
+                    sim_hist[end_idx, i * 6 + 2],
+                    s=50,
+                )
+                ax.plot3D(
+                    sim_hist[:, i * 6],
+                    sim_hist[:, i * 6 + 1],
+                    sim_hist[:, i * 6 + 2],
+                )
 
         ax.view_init(30, 20)
         set_axes_equal(ax)
