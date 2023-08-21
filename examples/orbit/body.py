@@ -47,7 +47,7 @@ def body_server(input, output, session, label, start_vec):
         v = spherical_to_cartesian(input.theta(), input.phi(), input.speed())
 
         return Body(
-            mass=input.mass() * 10e21 * u.kg,
+            mass=input.mass() * 1e22 * u.kg,
             x_vec=np.array(start_vec) * u.km,
             v_vec=np.array(v) * u.km / u.s,
             name=label,
