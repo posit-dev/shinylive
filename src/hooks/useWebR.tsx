@@ -128,27 +128,81 @@ function ensureOpenChannelListener(webRProxy: WebRProxy): void {
 
 const load_r_pre =
 `
-.RawReader <- setRefClass("RawReader", fields = c("con", "length"), methods = list(
-  init = function(bytes) {
-    con <<- rawConnection(bytes, "rb")
-    length <<- length(bytes)
-  },
-  read = function(l = -1L) {
-    if (l < 0) l <- length
-    readBin(con, "raw", size = 1, n = l)
-  },
-  read_lines = function(l = -1L) {
-    readLines(con, n = l)
-  },
-  rewind = function() {
-    seek(con, 0)
-  },
-  destroy = function() {
-    close(con)
-  }
-))
+.shiny_app_registry <- new.env()
 
-.save_files <- function (files, appDir) {
+# Create a httpuv app from a Shiny app directory
+.shiny_to_httpuv <- function(appDir) {
+  # Create an appObj from an app directory
+  appObj <- shiny::as.shiny.appobj(appDir)
+
+  # Ensure global.R is sourced when app starts
+  appObj$onStart()
+
+  # Required so that downloadLink and registerDataObj work
+  shiny:::workerId("")
+
+  # Creates http and ws handlers from the app object. However, these are not
+  # Rook handlers, but rather use Shiny's own middleware protocol.
+  # https://github.com/rstudio/shiny/blob/main/R/middleware.R
+  appHandlers <- shiny:::createAppHandlers(
+    appObj$httpHandler,
+    appObj$serverFuncSource
+  )
+
+  # HandlerManager turns Shiny middleware into httpuv apps
+  handlerManager <- shiny:::HandlerManager$new()
+  handlerManager$addHandler(appHandlers$http, "/", tail = TRUE)
+  handlerManager$addWSHandler(appHandlers$ws, "/", tail = TRUE)
+  handlerManager$createHttpuvApp()
+}
+
+# Run Shiny housekeeping tasks
+# https://github.com/rstudio/shiny/blob/b054e45402ee31f1e58cb6e1d1f51f76f98a0aca/R/server.R#L479
+.shiny_tick <- function() {
+  shiny:::timerCallbacks$executeElapsed()
+  shiny:::flushReact()
+  shiny:::flushPendingSessions()
+}
+
+# Serialise WS response and send to main thread for handling
+.send_ws <- function (message) {
+  webr::eval_js(
+    paste0(
+        "chan.write({",
+        "type: '_webR_httpuv_WSResponse', ",
+        "data: ", jsonlite::serializeJSON(message),
+      "});"
+    )
+  )
+}
+
+# Create a rook input stream object with a vector of bytes as its source
+.RawReader <- setRefClass(
+  "RawReader",
+  fields = c("con", "length"),
+  methods = list(
+    init = function(bytes) {
+      con <<- rawConnection(bytes, "rb")
+      length <<- length(bytes)
+    },
+    read = function(l = -1L) {
+      if (l < 0) l <- length
+      readBin(con, "raw", size = 1, n = l)
+    },
+    read_lines = function(l = -1L) {
+      readLines(con, n = l)
+    },
+    rewind = function() {
+      seek(con, 0)
+    },
+    destroy = function() {
+      close(con)
+    }
+  )
+)
+
+# Save a set of Shiny app files from Shinylive to the webR VFS
+.save_files <- function(files, appDir) {
   for (name in names(files)) {
     filename <- file.path(appDir, name)
     path <- dirname(filename)
@@ -157,18 +211,15 @@ const load_r_pre =
   }
 }
 
-.stop_app <- function() {
-  webr::eval_js("
-    chan.write({
-      type: '_webR_httpuv_WSResponse',
-      data: { handle: '1', binary: false, type: 'websocket.close', message: 'stopped' }
-    });
-  ")
-  shiny::stopApp()
+.stop_app <- function(appName) {
+  .send_ws(c("websocket.close", appName, ""))
+  assign(appName, NULL, envir = .shiny_app_registry)
+  invisible(0)
 }
 
-.start_app <- function (appDir) {
-  shiny::runApp(appDir, port=0, host=NULL)
+.start_app <- function(appName, appDir) {
+  app <- .shiny_to_httpuv(appDir)
+  assign(appName, app, envir = .shiny_app_registry)
   invisible(0)
 }
 

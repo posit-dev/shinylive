@@ -95,18 +95,12 @@ class WebRWorkerProxy implements WebRProxy {
             this.prompt.resolve(output.data);
           }
           break;
-        case '_webR_httpuv_TcpResponse': {
-          const msg = output as {
-              data?: any;
-              type: string;
-              uuid: string;
-          }
-          this.toClientCache[msg.uuid](msg.data);
-          break;
-        }
         case '_webR_httpuv_WSResponse': {
-          const toClient = this.toClientCache['ws'];
-          if (typeof toClient !== 'undefined') toClient(output.data);
+          const type = output.data.value[0];
+          const appName = output.data.value[1]
+          const message = output.data.value[2];
+          const toClient = this.toClientCache[appName];
+          if (typeof toClient !== 'undefined') toClient({ type, message });
           break;
         }
         default:

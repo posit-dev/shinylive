@@ -1,3 +1,4 @@
+import { isRList } from "webr";
 import { AwaitableQueue } from "./awaitable-queue";
 import { loadPyodide } from "./pyodide/pyodide";
 import type { PyProxyCallable } from "./pyodide/pyodide";
@@ -227,7 +228,6 @@ function asgiBodyToArray(body: any): Uint8Array {
 // webR
 // =============================================================================
 import { WebRProxy } from "./webr-proxy";
-import { makeRandomKey } from "./utils";
 
 export async function makeHttpuvRequest(
   scope: ASGIHTTPRequestScope,
@@ -283,17 +283,16 @@ export async function makeHttpuvRequest(
       more_body: false,
     });
   }
-  await handleHttpuvRequests(scope, webRProxy, fromClient, toClient);
+  await handleHttpuvRequests(scope, appName, webRProxy, fromClient, toClient);
 }
 
 async function handleHttpuvRequests(
   scope: ASGIHTTPRequestScope,
+  appName: string,
   webRProxy: WebRProxy,
   fromClient: () => Promise<Record<string, any>>,
   toClient: (event: Record<string, any>) => Promise<void>
 ){
-  const uuid = makeRandomKey(20);
-  webRProxy.toClientCache[uuid] = toClient;
   let body = new Uint8Array(0);
   const shelter = await new webRProxy.webR.Shelter();
   for (;;) {
@@ -313,24 +312,36 @@ async function handleHttpuvRequests(
     if (!request.more_body) {
       try {
         const bytes = await new shelter.RRaw(Array.from(body));
-        const env = await new shelter.REnvironment({ bytes });
-        await webRProxy.runRAsync(`
-          onRequest <- options('webr_httpuv_onRequest')[[1]]
-          if (!is.null(onRequest)) {
-            reader <- .RawReader$new()
-            reader$init(bytes)
-            onRequest(
-              list(
-                PATH_INFO = "${scope.path}",
-                REQUEST_METHOD = "${scope.method}",
-                QUERY_STRING = "${scope.query_string}",
-                UUID = "${uuid}",
-                rook.input = reader
+        const env = await new shelter.REnvironment({ bytes, appName });
+        const resp = await webRProxy.webR.evalR(`
+          reader <- .RawReader$new()
+          reader$init(bytes)
+          tryCatch(
+            {
+              app <- get(appName, env = .shiny_app_registry)
+              app$call(
+                list(
+                  PATH_INFO = "${scope.path}",
+                  REQUEST_METHOD = "${scope.method}",
+                  QUERY_STRING = "${scope.query_string}",
+                  rook.input = reader
+                )
               )
-            )
-            reader$destroy()
-          }
-        `, { env })
+            },
+            finally = {
+              reader$destroy()
+            }
+          )
+        `, { env, captureConditions: false, captureStreams: false });
+
+        if (!isRList(resp)) {
+          throw new Error(
+            `Unexpected response type: "${resp.type()}", expected "list".`
+          );
+        }
+
+        const event = await resp.toObject({ depth: 0 });
+        await toClient(event);
       } finally {
         shelter.purge();
       }

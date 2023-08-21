@@ -113,7 +113,7 @@ async function resetRAppFrame(
   // see the flash of gray indicating a closed session.
   appFrame.src = "";
 
-  await webRProxy.runRAsync('.stop_app()');
+  await webRProxy.runRAsync(`.stop_app('${appName}')`);
 
   // Pause for a bit before continuing.
   await utils.sleep(200);
@@ -133,7 +133,7 @@ export function Viewer({
   const [appRunningState, setAppRunningState] = React.useState<
     "loading" | "running" | "errored" | "empty"
   >("loading");
-
+  const shinyIntervalRef = React.useRef<number>(0);
   const [lastErrorMessage, setLastErrorMessage] = React.useState<string | null>(
     null
   );
@@ -167,15 +167,33 @@ export function Viewer({
         const appDir = "/home/web_user/" + appName;
         const shelter = await new webRProxy.webR.Shelter();
         const files = await new shelter.RList(
-          Object.fromEntries(appCode.map((file) => { return [file.name, file.content] }))
+          Object.fromEntries(appCode.map((file) => {
+            return [file.name, file.content]
+          }))
         )
         try {
-          await webRProxy.runRAsync('.save_files(files, appDir)', { env: { files, appDir } });
-          // This blocks in Shiny's runApp()
-          webRProxy.runCode(`.start_app("${appDir}")`);
+          await webRProxy.runRAsync(
+            '.save_files(files, appDir)',
+            { env: { files, appDir }, captureStreams: false }
+          );
+          await webRProxy.runRAsync(
+            '.start_app(appName, appDir)',
+            {
+              env: { appName, appDir },
+              captureConditions: false,
+              captureStreams: false
+            }
+          );
         } finally {
           shelter.purge();
         }
+
+        // Run R Shiny housekeeping every 100ms
+        if (shinyIntervalRef.current) clearTimeout(shinyIntervalRef.current);
+        shinyIntervalRef.current =  window.setInterval(() => {
+          webRProxy.runRAsync('.shiny_tick()')
+        }, 100);
+
         viewerFrameRef.current.src = appInfo.urlPath;
         setAppRunningState("running");
       } catch (e) {
@@ -191,6 +209,9 @@ export function Viewer({
 
     async function stopApp(): Promise<void> {
       if (!viewerFrameRef.current) return;
+
+      // Stop the periodic R Shiny housekeeping
+      if (shinyIntervalRef.current) clearTimeout(shinyIntervalRef.current);
 
       await resetRAppFrame(
         webRProxy,
