@@ -1,4 +1,3 @@
-import { isRList } from "webr";
 import { AwaitableQueue } from "./awaitable-queue";
 import { loadPyodide } from "./pyodide/pyodide";
 import type { PyProxyCallable } from "./pyodide/pyodide";
@@ -224,6 +223,7 @@ function asgiBodyToArray(body: any): Uint8Array {
 // =============================================================================
 // webR
 // =============================================================================
+import { RList, isRList } from "webr";
 import { WebRProxy } from "./webr-proxy";
 
 export async function makeHttpuvRequest(
@@ -310,7 +310,7 @@ async function handleHttpuvRequests(
       try {
         const bytes = await new shelter.RRaw(Array.from(body));
         const env = await new shelter.REnvironment({ bytes, appName });
-        const resp = await webRProxy.webR.evalR(`
+        const httpuvResp = await webRProxy.webR.evalR(`
           reader <- .RawReader$new()
           reader$init(bytes)
           tryCatch(
@@ -331,14 +331,27 @@ async function handleHttpuvRequests(
           )
         `, { env, captureConditions: false, captureStreams: false });
 
-        if (!isRList(resp)) {
+        if (!isRList(httpuvResp)) {
           throw new Error(
-            `Unexpected response type: "${resp.type()}", expected "list".`
+            `Unexpected response type: "${httpuvResp.type()}", expected "list".`
           );
         }
 
-        const event = await resp.toObject({ depth: 0 });
-        await toClient(event);
+        // If the response from httpuv is pointing to a temporary file to serve,
+        // grab that file's content and return it in the actual response.
+        let resp: RList = httpuvResp;
+        const httpuvBody = await httpuvResp.get('body');
+        if (await httpuvBody.type() === 'list') {
+          const file = await httpuvResp.pluck('body', 'file');
+          if (file) {
+            const filename = await file.toString();
+            const content = await webRProxy.webR.FS.readFile(filename);
+            const raw = await new shelter.RRaw(Array.from(content));
+            resp = await httpuvResp.set('body', raw) as RList;
+          }
+        }
+
+        await toClient(await resp.toObject({ depth: 0 }));
       } finally {
         shelter.purge();
       }
