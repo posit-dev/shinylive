@@ -116,10 +116,15 @@ let channelListenerRegistered = false;
 function ensureOpenChannelListener(webRProxy: WebRProxy): void {
   if (channelListenerRegistered) return;
 
-  window.addEventListener("message", (event) => {
+  window.addEventListener("message", async (event) => {
     const msg = event.data;
     if (msg.type === "openChannel") {
-      webRProxy.openChannel(msg.path, msg.appName, event.ports[0]);
+      const appExists = await webRProxy.runRAsync(`
+        exists("${msg.appName}", envir = .shiny_app_registry)
+      `);
+      if (await appExists.toBoolean()) {
+        webRProxy.openChannel(msg.path, msg.appName, event.ports[0]);
+      }
     }
   });
 

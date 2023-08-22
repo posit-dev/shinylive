@@ -1,3 +1,4 @@
+import { AppEngine } from "./Components/App";
 import type { FileContent } from "./Components/filecontent";
 import { load as yamlLoad } from "js-yaml";
 
@@ -37,7 +38,7 @@ export type QuartoArgs = {
  * iVBORw0KGgoAAAANSUhEUgAAACgAAAAuCAYAAABap1twAAAABGdBTUEAALGPC ...
  * ------------------------------
  */
-export function parseCodeBlock(codeblock: string | string[]): {
+export function parseCodeBlock(codeblock: string | string[], engine: AppEngine): {
   files: FileContent[];
   quartoArgs: Required<QuartoArgs>;
 } {
@@ -64,8 +65,8 @@ export function parseCodeBlock(codeblock: string | string[]): {
         "Shinylive application code blocks must have a '#| standalone: true' argument. In the future other values will be supported."
       );
     }
-    // For shiny apps, the default filename is "app.py".
-    defaultFilename = "app.py";
+    // For shiny apps, the default filename is "app.py" or "app.R".
+    defaultFilename = engine === 'python' ? 'app.py' : 'app.R';
   } else {
     // In the case of editor-terminal and editor-cell components...
     if (quartoArgs.standalone !== false) {

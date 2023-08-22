@@ -402,10 +402,15 @@ let channelListenerRegistered = false;
 function ensureOpenChannelListener(pyodideProxy: PyodideProxy): void {
   if (channelListenerRegistered) return;
 
-  window.addEventListener("message", (event) => {
+  window.addEventListener("message", async (event) => {
     const msg = event.data;
     if (msg.type === "openChannel") {
-      pyodideProxy.openChannel(msg.path, msg.appName, event.ports[0]);
+      const appExists = await pyodideProxy.runPyAsync(`
+        "${msg.appName}" in _shiny_app_registry
+      `, { returnResult: "value" });
+      if (appExists) {
+        pyodideProxy.openChannel(msg.path, msg.appName, event.ports[0]);
+      }
     }
   });
 

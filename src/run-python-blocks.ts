@@ -1,4 +1,4 @@
-import type { AppMode } from "./Components/App";
+import type { AppEngine, AppMode } from "./Components/App";
 import { parseCodeBlock } from "./parse-codeblock";
 import type { Component } from "./parse-codeblock";
 // @ts-expect-error: This import is _not_ bundled. It would be nice to be able
@@ -11,23 +11,25 @@ import { runApp } from "./shinylive.js";
 // important that they're selected in the order they appear in the page, so that
 // we execute them in the correct order.
 const blocks: NodeListOf<HTMLPreElement> =
-  document.querySelectorAll(".shinylive-python");
+  document.querySelectorAll(".shinylive-python, .shinylive-r");
 
 blocks.forEach((block) => {
   const container = document.createElement("div");
   container.className = "shinylive-wrapper";
+
+  const engine: AppEngine = block.dataset.engine === 'r' ? 'r' : 'python';
 
   // Copy over explicitly-set style properties.
   container.style.cssText = block.style.cssText;
 
   block.parentNode!.replaceChild(container, block);
 
-  const { files, quartoArgs } = parseCodeBlock(block.innerText);
+  const { files, quartoArgs } = parseCodeBlock(block.innerText, engine);
 
   const appMode = convertComponentArrayToAppMode(quartoArgs.components);
 
   const opts = { startFiles: files, ...quartoArgs };
-  runApp(container, appMode, opts);
+  runApp(container, appMode, opts, engine);
 });
 
 /**
