@@ -10,14 +10,15 @@
 // to generate JS because we want to bundle other files into it. If we didn't
 // bundle the files, we would need to do some weird stuff with paths for the
 // import to work at run time, because the output path structure is different.
+import { readLines } from "https://deno.land/std/io/mod.ts";
+
 import { parseCodeBlock } from "../parse-codeblock";
-import { readLines } from 'https://deno.land/std/io/buffer.ts'
 
 const { args } = Deno;
 
-const lines: string[] = []
+const lines: string[] = [];
 for await (const line of readLines(Deno.stdin)) {
-  lines.push(line)
+  lines.push(line);
 }
 
 const content = parseCodeBlock(lines);
