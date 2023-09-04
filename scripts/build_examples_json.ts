@@ -91,10 +91,14 @@ export default function buildExamples(examplesDir: string, buildDir: string) {
   fs.writeFileSync(
     outputFile,
     JSON.stringify(
-      ordering.map(({ category, engine, apps }) => ({
-        category,
+      ordering.map(({ engine, examples }) => ({
         engine,
-        apps: apps.map((app) => parseApp(app, engine)),
+        examples: examples.map(({ category, apps }) => {
+          return {
+            category,
+            apps: apps.map((app) => parseApp(app, engine)),
+          };
+        }),
       })),
       null,
       2

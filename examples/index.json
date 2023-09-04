@@ -1,113 +1,113 @@
 [
   {
-    "category": "Basic",
     "engine": "python",
-    "apps": ["basic_app", "app_with_plot"]
-  },
-  {
-    "category": "Featured",
-    "engine": "python",
-    "apps": [
-      "cpuinfo",
-      "orbit",
-      "regularization",
-      "wordle",
-      "plotly",
-      "ipyleaflet",
-      "camera"
+    "examples": [
+      {
+        "category": "Basic",
+        "apps": ["basic_app", "app_with_plot"]
+      },
+      {
+        "category": "Featured",
+        "apps": [
+          "cpuinfo",
+          "orbit",
+          "regularization",
+          "wordle",
+          "plotly",
+          "ipyleaflet",
+          "camera"
+        ]
+      },
+      {
+        "category": "Intermediate",
+        "apps": [
+          "multiple_source_files",
+          "read_local_csv_file",
+          "file_upload",
+          "file_download",
+          "insert_ui",
+          "input_update",
+          "modules",
+          "extra_packages",
+          "static_content",
+          "fetch",
+          "ipywidgets"
+        ]
+      },
+      {
+        "category": "Inputs",
+        "apps": [
+          "input_text",
+          "input_numeric",
+          "input_slider",
+          "input_checkbox",
+          "input_switch",
+          "input_checkbox_group",
+          "input_select",
+          "input_radio",
+          "input_text_area",
+          "input_date",
+          "input_date_range",
+          "input_password"
+        ]
+      },
+      {
+        "category": "Outputs",
+        "apps": [
+          "output_text",
+          "output_text_verbatim",
+          "output_ui",
+          "output_plot",
+          "output_table",
+          "output_data_frame_grid"
+        ]
+      },
+      {
+        "category": "Layout",
+        "apps": ["shinyswatch", "layout_sidebar", "layout_two_column"]
+      },
+      {
+        "category": "Reactivity",
+        "apps": [
+          "reactive_event",
+          "reactive_effect",
+          "reactive_calc",
+          "reactive_value"
+        ]
+      },
+      {
+        "category": "Interactive plots",
+        "apps": [
+          "plot_interact_basic",
+          "plot_interact_select",
+          "plot_interact_exclude"
+        ]
+      },
+      {
+        "category": "Non-Apps",
+        "apps": ["hello_world"]
+      }
     ]
   },
   {
-    "category": "Intermediate",
-    "engine": "python",
-    "apps": [
-      "multiple_source_files",
-      "read_local_csv_file",
-      "file_upload",
-      "file_download",
-      "insert_ui",
-      "input_update",
-      "modules",
-      "extra_packages",
-      "static_content",
-      "fetch",
-      "ipywidgets"
-    ]
-  },
-  {
-    "category": "Inputs",
-    "engine": "python",
-    "apps": [
-      "input_text",
-      "input_numeric",
-      "input_slider",
-      "input_checkbox",
-      "input_switch",
-      "input_checkbox_group",
-      "input_select",
-      "input_radio",
-      "input_text_area",
-      "input_date",
-      "input_date_range",
-      "input_password"
-    ]
-  },
-  {
-    "category": "Outputs",
-    "engine": "python",
-    "apps": [
-      "output_text",
-      "output_text_verbatim",
-      "output_ui",
-      "output_plot",
-      "output_table",
-      "output_data_frame_grid"
-    ]
-  },
-  {
-    "category": "Layout",
-    "engine": "python",
-    "apps": ["shinyswatch", "layout_sidebar", "layout_two_column"]
-  },
-  {
-    "category": "Reactivity",
-    "engine": "python",
-    "apps": [
-      "reactive_event",
-      "reactive_effect",
-      "reactive_calc",
-      "reactive_value"
-    ]
-  },
-  {
-    "category": "Interactive plots",
-    "engine": "python",
-    "apps": [
-      "plot_interact_basic",
-      "plot_interact_select",
-      "plot_interact_exclude"
-    ]
-  },
-  {
-    "category": "Non-Apps",
-    "engine": "python",
-    "apps": ["hello_world"]
-  },
-  {
-    "category": "R examples",
     "engine": "r",
-    "apps": [
-      "001-hello",
-      "002-text",
-      "003-reactivity",
-      "004-mpg",
-      "005-sliders",
-      "006-tabsets",
-      "007-widgets",
-      "008-html",
-      "009-upload",
-      "010-download",
-      "011-timer"
+    "examples": [
+      {
+        "category": "R examples",
+        "apps": [
+          "001-hello",
+          "002-text",
+          "003-reactivity",
+          "004-mpg",
+          "005-sliders",
+          "006-tabsets",
+          "007-widgets",
+          "008-html",
+          "009-upload",
+          "010-download",
+          "011-timer"
+        ]
+      }
     ]
   }
 ]

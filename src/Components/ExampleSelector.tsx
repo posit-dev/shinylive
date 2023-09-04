@@ -32,8 +32,7 @@ export function ExampleSelector({
 
   React.useEffect(() => {
     (async () => {
-      const categories = await getExampleCategories();
-      setExampleCategories(categories.filter((cat) => cat.engine === appEngine));
+      setExampleCategories(await getExampleCategories(appEngine));
     })();
   }, [appEngine]);
 

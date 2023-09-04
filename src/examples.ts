@@ -1,3 +1,4 @@
+import { AppEngine } from "./Components/App";
 import {
   FCJSONtoFC,
   FileContent,
@@ -12,15 +13,21 @@ export type ExampleItemJson = {
 
 // For examples/index.json
 export type ExampleCategoryIndexJson = {
-  category: string;
   engine: string;
-  apps: string[];
+  examples: {
+    category: string;
+    apps: string[];
+  }[];
 };
 
 // For examples.json
+export type ExampleIndexJson = {
+  engine: string;
+  examples: ExampleCategoryJson[];
+};
+
 export type ExampleCategoryJson = {
   category: string;
-  engine: string;
   apps: ExampleItemJson[];
 };
 
@@ -32,7 +39,6 @@ export type ExampleItem = {
 
 export type ExampleCategory = {
   category: string;
-  engine: string;
   apps: ExampleItem[];
 };
 
@@ -43,16 +49,26 @@ export type ExamplePosition = {
 
 let exampleCategories: ExampleCategory[] | null = null;
 
-export async function getExampleCategories(): Promise<ExampleCategory[]> {
+export async function getExampleCategories(
+  engine: AppEngine
+): Promise<ExampleCategory[]> {
   if (exampleCategories) {
     return exampleCategories;
   }
 
   const response = await fetch("../shinylive/examples.json");
-  const exampleCategoriesJson =
-    (await response.json()) as ExampleCategoryJson[];
+  const exampleIndexJson =
+    (await response.json()) as ExampleIndexJson[];
 
-  exampleCategories = exampleCategoriesJson.map(
+  const exampleCategoriesJson = exampleIndexJson.find(
+    (value) => value.engine === engine
+  );
+
+  if (!exampleCategoriesJson) {
+    throw new Error(`No examples found for app engine ${engine}`);
+  }
+
+  exampleCategories = exampleCategoriesJson.examples.map(
     exampleCategoryJsonToExampleCategory
   );
 
@@ -96,7 +112,6 @@ function exampleCategoryJsonToExampleCategory(
 ): ExampleCategory {
   return {
     category: x.category,
-    engine: x.engine,
     apps: x.apps.map(exampleItemJsonToExampleItem),
   };
 }
