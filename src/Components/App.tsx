@@ -594,9 +594,7 @@ export function runApp(
           if (value === "") exampleName = key;
         }
 
-        const exampleCategories = (await getExampleCategories()).filter(
-          (cat) => cat.engine === appEngine
-        );
+        const exampleCategories = (await getExampleCategories(appEngine));
         let pos = findExampleByTitle(exampleName, exampleCategories);
         if (pos) {
           opts.selectedExample = exampleName;
