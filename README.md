@@ -4,7 +4,7 @@ Shinylive
 Code for deploying Shiny applications that will run completely in the browser, using Pyodide (Python compiled to WebAssembly).
 
 * Current semi-stable version (deployed from `deploy` branch of this repo): https://shinylive.io/py/examples/
-* Latest dev version (deployed from `main` branch of this repo): https://rstudio.github.io/shinylive/examples/
+* Latest dev version (deployed from `main` branch of this repo): https://posit-dev.github.io/shinylive/examples/
 
 ## Prerequisites
 
