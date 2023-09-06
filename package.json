@@ -5,7 +5,7 @@
   "description": "Run Shiny applications with Python running in the browser.",
   "main": "index.js",
   "repository": {
-    "url": "https://github.com/rstudio/shinylive",
+    "url": "https://github.com/posit-dev/shinylive",
     "type": "git"
   },
   "scripts": {
@@ -13,7 +13,7 @@
     "test-server": "tsx scripts/build.ts --test-server",
     "cypress:open": "cypress open"
   },
-  "author": "Winston Chang <winston@rstudio.com>",
+  "author": "Winston Chang <winston@posit.co>",
   "license": "MIT",
   "devDependencies": {
     "@codemirror/autocomplete": "^6.4.2",
