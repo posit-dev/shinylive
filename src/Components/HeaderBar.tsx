@@ -1,4 +1,6 @@
-import shinyLogo from "../assets/shiny-for-python.svg";
+import shinyPyLogo from "../assets/shiny-for-python.svg";
+import shinyRLogo from "../assets/shiny-logo.svg";
+import { AppEngine } from "./App";
 import "./HeaderBar.css";
 import { Icon } from "./Icons";
 import * as React from "react";
@@ -17,8 +19,10 @@ export type HeaderBarCallbacks = {
 
 export default function HeaderBar({
   headerBarCallbacks = null,
+  appEngine,
 }: {
   headerBarCallbacks: HeaderBarCallbacks | null;
+  appEngine: AppEngine;
 }) {
   let loadButton = null;
   if (headerBarCallbacks?.loadLocalFiles) {
@@ -115,9 +119,15 @@ export default function HeaderBar({
     );
   }
 
+  const mainUrl = {
+    python: "https://shiny.posit.co/py/",
+    r: "https://shiny.posit.co/",
+  }
+  const shinyLogo = appEngine === "python" ? shinyPyLogo : shinyRLogo;
+
   return (
     <div className="HeaderBar">
-      <a className="page-title" href="https://shiny.rstudio.com/py/">
+      <a className="page-title" href={mainUrl[appEngine]}>
         <img className="shiny-logo" src={shinyLogo} alt="Shiny" />
       </a>
       <div>

@@ -1,8 +1,9 @@
 import { FCtoFCJSON, FileContent } from "./filecontent";
 import LZString from "lz-string";
 
-export const editorUrlPrefix = "https://shinylive.io/py/editor/";
-export const appUrlPrefix = "https://shinylive.io/py/app/";
+const shortEngine = process.env.APP_ENGINE === "python" ? "py" : "r";
+export const editorUrlPrefix = `https://shinylive.io/${shortEngine}/editor/`;
+export const appUrlPrefix = `https://shinylive.io/${shortEngine}/app/`;
 
 /**
  * Given a FileContent[] object, return a string that is a LZ-compressed JSON
