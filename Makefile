@@ -9,7 +9,8 @@
 	packages \
 	quarto quartoserve \
 	clean-packages clean distclean \
-	test test-watch webr
+	test test-watch webr \
+	_shinylive
 
 .DEFAULT_GOAL := help
 
@@ -20,6 +21,7 @@ PYODIDE_DIST_FILENAME = pyodide-$(PYODIDE_VERSION).tar.bz2
 BUILD_DIR = ./build
 PACKAGE_DIR = ./packages
 DIST_DIR = ./dist
+SITE_DIR = ./site
 
 # Read htmltools and shiny versions from the package code. It's done with grep
 # because if we try to load the package and read shiny.__version__, it requires
@@ -104,7 +106,7 @@ all: node_modules \
 	copy_pyright \
 	$(BUILD_DIR)/export_template/index.html \
 	$(BUILD_DIR)/export_template/edit/index.html \
-	buildjs
+	_shinylive
 
 ## Build shinylive distribution .tar.gz file
 dist:
@@ -224,6 +226,12 @@ serve-prod-r:
 serve-r:
 	node_modules/.bin/tsx scripts/build.ts --serve --r
 
+# Build the _shinylive directory for deployment of both R and Python sites
+_shinylive:
+	$(MAKE) buildjs-prod
+	cp -Lr $(SITE_DIR) _shinylive/py
+	$(MAKE) buildjs-prod-r
+	cp -Lr $(SITE_DIR) _shinylive/r
 
 # Build htmltools, shiny, and shinywidgets. This target must be run manually after
 # updating the package submodules; it will not run automatically with `make all`
@@ -320,7 +328,8 @@ clean-packages:
 
 ## Remove all build files
 clean:
-	rm -rf $(PACKAGE_DIR)/*.whl $(BUILD_DIR) $(DIST_DIR) quarto/docs/ typings/
+	rm -rf $(PACKAGE_DIR)/*.whl $(BUILD_DIR) $(DIST_DIR) \
+	    $(SITE_DIR)/py $(SITE_DIR)/r quarto/docs/ typings/
 
 ## Remove all build files and venv/
 distclean: clean

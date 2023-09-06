@@ -23,3 +23,6 @@ playwright/static-build/
 !.yarn/versions
 
 /.luarc.json
+
+_shinylive/py
+_shinylive/r
