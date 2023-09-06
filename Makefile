@@ -22,6 +22,7 @@ BUILD_DIR = ./build
 PACKAGE_DIR = ./packages
 DIST_DIR = ./dist
 SITE_DIR = ./site
+SHINYLIVE_DIR = ./_shinylive
 
 # Read htmltools and shiny versions from the package code. It's done with grep
 # because if we try to load the package and read shiny.__version__, it requires
@@ -229,9 +230,9 @@ serve-r:
 # Build the _shinylive directory for deployment of both R and Python sites
 _shinylive:
 	$(MAKE) buildjs-prod
-	cp -Lr $(SITE_DIR) _shinylive/py
+	cp -Lr $(SITE_DIR) $(SHINYLIVE_DIR)/py
 	$(MAKE) buildjs-prod-r
-	cp -Lr $(SITE_DIR) _shinylive/r
+	cp -Lr $(SITE_DIR) $(SHINYLIVE_DIR)/r
 
 # Build htmltools, shiny, and shinywidgets. This target must be run manually after
 # updating the package submodules; it will not run automatically with `make all`
@@ -329,7 +330,7 @@ clean-packages:
 ## Remove all build files
 clean:
 	rm -rf $(PACKAGE_DIR)/*.whl $(BUILD_DIR) $(DIST_DIR) \
-	    $(SITE_DIR)/py $(SITE_DIR)/r quarto/docs/ typings/
+	  $(SHINYLIVE_DIR)/py $(SHINYLIVE_DIR)/r quarto/docs/ typings/
 
 ## Remove all build files and venv/
 distclean: clean
