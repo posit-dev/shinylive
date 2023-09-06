@@ -109,7 +109,7 @@ all: node_modules \
 	_shinylive
 
 ## Build shinylive distribution .tar.gz file
-dist:
+dist: buildjs
 	mkdir -p $(DIST_DIR)
 	ln -s $(BUILD_DIR) shinylive-$(SHINYLIVE_VERSION)
 	tar -chzvf $(DIST_DIR)/shinylive-$(SHINYLIVE_VERSION).tar.gz shinylive-$(SHINYLIVE_VERSION)
