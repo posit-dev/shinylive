@@ -215,15 +215,15 @@ serve:
 serve-prod:
 	node_modules/.bin/tsx scripts/build.ts --serve --prod
 
-# Build JS resources (with minification) with webR as the default engine
+## Build JS resources for production with webR as the default engine
 buildjs-prod-r:
 	node_modules/.bin/tsx scripts/build.ts --prod --r
 
-# Build and serve (with minification) with webR as the default engine
+## Build JS resources for production and serve site with webR as the default engine
 serve-prod-r:
 	node_modules/.bin/tsx scripts/build.ts --serve --prod --r
 
-# Build and serve with webR as the default engine
+## Build JS resources and serve site with webR as the default engine
 serve-r:
 	node_modules/.bin/tsx scripts/build.ts --serve --r
 
