@@ -1,9 +1,11 @@
 Shinylive
 ==========
 
-Code for deploying Shiny applications that will run completely in the browser, using Pyodide (Python compiled to WebAssembly).
+Code for deploying Shiny applications that will run completely in the browser, using Pyodide and webR (Python and R compiled to WebAssembly).
 
-* Current semi-stable version (deployed from `deploy` branch of this repo): https://shinylive.io/py/examples/
+* Current semi-stable version (deployed from `deploy` branch of this repo):
+    * R: https://shinylive.io/r/examples/
+    * Python: https://shinylive.io/py/examples/
 * Latest dev version (deployed from `main` branch of this repo):
     * R: https://posit-dev.github.io/shinylive/r/examples/
     * Python: https://posit-dev.github.io/shinylive/py/examples/
@@ -27,10 +29,16 @@ After that, you can simply run `make all`:
 make all
 ```
 
-To build and serve the live Examples page:
+To build and serve the live Python Examples page:
 
 ```bash
 make serve
+```
+
+To build and serve the live R Examples page:
+
+```bash
+make serve-r
 ```
 
 This will also watch the source files in `src/` for changes, and will rebuild and auto-reload the web page when the files change.
@@ -76,6 +84,9 @@ buildjs-prod           Build JS resources for production (with minification)
 watch                  Build JS resources and watch for changes
 serve                  Build JS resources, watch for changes, and serve site
 serve-prod             Build JS resources for production, watch for changes, and serve site
+buildjs-prod-r         Build JS resources for production with webR as the default engine
+serve-prod-r           Build JS resources for production and serve site with webR as the default engine
+serve-r                Build JS resources and serve site with webR as the default engine
 packages               Build htmltools, shiny, and shinywidgets wheels
 update_packages_lock   Update the shinylive_lock.json file, based on shinylive_requirements.json
 update_packages_lock_local Update the shinylive_lock.json file, but with local packages only
