@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 import * as utils from "../utils";
 import { WebRProxy, loadWebRProxy } from '../webr-proxy';
+import { ChannelType } from "webr";
 
 export type WebRProxyHandle =
   | {
@@ -31,8 +32,15 @@ export async function initWebR({
   if (!stdout) stdout = (x: string) => console.log("webR echo:" + x);
   if (!stderr) stderr = (x: string) => console.error("webR error:" + x);
 
+  const channelType = crossOriginIsolated
+    ? ChannelType.Automatic
+    : ChannelType.PostMessage
+
   const webRProxy = await loadWebRProxy(
-    { baseUrl: utils.currentScriptDir() + "/webr/" },
+    {
+      baseUrl: utils.currentScriptDir() + "/webr/",
+      channelType,
+    },
     stdout,
     stderr
   );

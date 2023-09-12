@@ -135,6 +135,6 @@
   },
   "packageManager": "yarn@3.2.3",
   "dependencies": {
-    "webr": "0.2.0"
+    "webr": "0.2.1"
   }
 }
