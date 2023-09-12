@@ -1,6 +1,6 @@
 import type { AppEngine, AppMode } from "./Components/App";
-import { parseCodeBlock } from "./parse-codeblock";
 import type { Component } from "./parse-codeblock";
+import { parseCodeBlock } from "./parse-codeblock";
 // @ts-expect-error: This import is _not_ bundled. It would be nice to be able
 // import type information from ./Components/App (which gets compiled to
 // shinylive.js), but I haven't figured out how to make it do that and do this
@@ -10,14 +10,17 @@ import { runApp } from "./shinylive.js";
 // Select all of the DOM elements that match the combined selector. It's
 // important that they're selected in the order they appear in the page, so that
 // we execute them in the correct order.
-const blocks: NodeListOf<HTMLPreElement> =
-  document.querySelectorAll(".shinylive-python, .shinylive-r");
+const blocks: NodeListOf<HTMLPreElement> = document.querySelectorAll(
+  ".shinylive-python, .shinylive-r"
+);
 
 blocks.forEach((block) => {
   const container = document.createElement("div");
   container.className = "shinylive-wrapper";
 
-  const engine: AppEngine = block.dataset.engine === 'r' ? 'r' : 'python';
+  const engine: AppEngine = block.classList.contains("shinylive-r")
+    ? "r"
+    : "python";
 
   // Copy over explicitly-set style properties.
   container.style.cssText = block.style.cssText;
