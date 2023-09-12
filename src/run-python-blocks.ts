@@ -18,12 +18,9 @@ blocks.forEach((block) => {
   const container = document.createElement("div");
   container.className = "shinylive-wrapper";
 
-  // Look for the data-engine attribute. It is normally on the .shinylive-xx
-  // element, but the Quarto filter for RevealJS moves the data-engine attribute
-  // to the parent element, so we'll look there as well.
-  const engine: AppEngine = (block.dataset.engine ||
-    block.parentElement?.dataset.engine ||
-    "python") as AppEngine;
+  const engine: AppEngine = block.classList.contains("shinylive-r")
+    ? "r"
+    : "python";
 
   // Copy over explicitly-set style properties.
   container.style.cssText = block.style.cssText;
