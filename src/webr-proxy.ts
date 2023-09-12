@@ -81,6 +81,7 @@ class WebRWorkerProxy implements WebRProxy {
   }
 
   async #run() {
+    await this.webR.init();
     for (;;) {
       const output = await this.webR.read();
       switch (output.type) {
