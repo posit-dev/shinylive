@@ -2,10 +2,11 @@ import { spawn } from "child_process";
 import esbuild from "esbuild";
 import * as fs from "fs";
 import http from "http";
+import path from "path";
 import process from "process";
 import packageJson from "../package.json";
+import type { AppEngine } from "../src/Components/App";
 import buildExamples from "./build_examples_json";
-import type { AppEngine } from '../src/Components/App';
 
 const EXAMPLES_SOURCE_DIR = "./examples";
 const BUILD_DIR = "./build";
@@ -78,6 +79,25 @@ const metafilePlugin = {
   },
 };
 
+function readdirSyncRecursive(dir: string, root: string = dir): string[] {
+  return fs.readdirSync(dir).reduce((files: string[], file: string) => {
+    const name = path.join(dir, file);
+    if (fs.statSync(name).isDirectory()) {
+      return [...files, ...readdirSyncRecursive(name, root)];
+    }
+    return [...files, path.relative(root, name)];
+  }, []);
+}
+
+function buildSiteHtml(appEngine: AppEngine) {
+  console.log(`[${new Date().toISOString()}] Copying HTML templates...`);
+  readdirSyncRecursive("site_template").forEach((file) => {
+    const tmpl = fs.readFileSync(`site_template/${file}`, "utf8");
+    const html = tmpl.replace("{{APP_ENGINE}}", appEngine);
+    fs.writeFileSync(`${SITE_DIR}/${file}`, html);
+  });
+}
+
 const buildmap = {
   app: esbuild.context({
     bundle: true,
@@ -111,7 +131,6 @@ const buildmap = {
     banner: banner,
     metafile: metafile,
     define: {
-      "process.env.APP_ENGINE": `"${appEngine}"`,
       "process.env.NODE_ENV": reactProductionMode
         ? '"production"'
         : '"development"',
@@ -212,6 +231,9 @@ const buildmap = {
   }),
 };
 
+// Build shinylive website HTML in /site for R or Python as requested
+buildSiteHtml(appEngine);
+
 Object.values(buildmap).forEach((build) =>
   build
     .then((context) => {
@@ -236,7 +258,7 @@ if (serve) {
               http.request(
                 { hostname: "0.0.0.0", port: 3001, path: url, method, headers },
                 (proxyRes) => {
-                  if (appEngine === 'r') {
+                  if (appEngine === "r") {
                     proxyRes.headers = {
                       ...proxyRes.headers,
                       "cross-origin-opener-policy": "same-origin",

@@ -17,7 +17,7 @@
       const appFiles = await response.json();
 
       const appRoot = document.getElementById("root");
-      runApp(appRoot, "viewer", {startFiles: appFiles});
+      runApp(appRoot, "viewer", {startFiles: appFiles}, "{{APP_ENGINE}}");
     </script>
     <link rel="stylesheet" href="./{{REL_PATH}}shinylive/style-resets.css" />
     <link rel="stylesheet" href="./{{REL_PATH}}shinylive/shinylive.css" />

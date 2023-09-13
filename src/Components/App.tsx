@@ -1,19 +1,22 @@
+import LZString from "lz-string";
+import * as React from "react";
+import { createRoot } from "react-dom/client";
 import {
   findExampleByTitle,
   getExampleCategories,
   sanitizeTitleForUrl,
 } from "../examples";
 import {
+  PyodideProxyHandle,
   initPyodide,
   initShiny,
-  PyodideProxyHandle,
   usePyodide,
 } from "../hooks/usePyodide";
 import {
-  initWebR,
+  WebRProxyHandle,
   initRShiny,
+  initWebR,
   useWebR,
-  WebRProxyHandle
 } from "../hooks/useWebR";
 import { ProxyType } from "../pyodide-proxy";
 import "./App.css";
@@ -26,9 +29,6 @@ import { Viewer, ViewerMethods } from "./Viewer";
 import { FCorFCJSONtoFC, FileContent, FileContentJson } from "./filecontent";
 import { fetchGist, gistApiResponseToFileContents } from "./gist";
 import { editorUrlPrefix, fileContentsToUrlString } from "./share";
-import LZString from "lz-string";
-import * as React from "react";
-import { createRoot } from "react-dom/client";
 
 // Load Editor component dynamically and lazily because it's large and not
 // needed for all configurations.
@@ -96,7 +96,6 @@ type AppOptions = {
   // In Viewer-only mode, should the header bar be shown?
   showHeaderBar?: boolean;
 };
-
 
 export type ProxyHandle = PyodideProxyHandle | WebRProxyHandle;
 let pyodideProxyHandlePromise: Promise<PyodideProxyHandle> | null = null;
@@ -172,7 +171,7 @@ export function App({
   appMode = "examples-editor-terminal-viewer",
   startFiles = [],
   appOptions = {},
-  appEngine = process.env.APP_ENGINE as AppEngine,
+  appEngine,
 }: {
   appMode: AppMode;
   startFiles: FileContent[];
@@ -220,10 +219,10 @@ export function App({
       useWasmEngine = () => usePyodide({ pyodideProxyHandlePromise: promise });
       break;
     }
-    case "r":{
-      const promise = webRProxyHandlePromise = ensureWebRProxyHandlePromise({
+    case "r": {
+      const promise = (webRProxyHandlePromise = ensureWebRProxyHandlePromise({
         shiny: loadShiny,
-      });
+      }));
       useWasmEngine = () => useWebR({ webRProxyHandlePromise: promise });
       break;
     }
@@ -310,7 +309,9 @@ export function App({
     setHeaderBarCallbacks({
       openEditorWindowFromViewer: () => {
         window.open(
-          editorUrlPrefix + "#code=" + fileContentsToUrlString(startFiles),
+          editorUrlPrefix(appEngine) +
+            "#code=" +
+            fileContentsToUrlString(startFiles),
           "_blank"
         );
       },
@@ -348,8 +349,11 @@ export function App({
               terminalMethods={terminalMethods}
               viewerMethods={viewerMethods}
               utilityMethods={utilityMethods}
-              runOnLoad={currentFiles.some((file) =>
-                file.name === "app.py" || file.name === "app.R" || file.name === "server.R"
+              runOnLoad={currentFiles.some(
+                (file) =>
+                  file.name === "app.py" ||
+                  file.name === "app.R" ||
+                  file.name === "server.R"
               )}
               appEngine={appEngine}
             />
@@ -391,8 +395,11 @@ export function App({
               terminalMethods={terminalMethods}
               viewerMethods={viewerMethods}
               utilityMethods={utilityMethods}
-              runOnLoad={currentFiles.some((file) =>
-                file.name === "app.py" || file.name === "app.R" || file.name === "server.R"
+              runOnLoad={currentFiles.some(
+                (file) =>
+                  file.name === "app.py" ||
+                  file.name === "app.R" ||
+                  file.name === "server.R"
               )}
               appEngine={appEngine}
             />
@@ -491,10 +498,7 @@ export function App({
             appEngine={appEngine}
           />
         </React.Suspense>
-        <Viewer
-          proxyHandle={proxyHandle}
-          setViewerMethods={setViewerMethods}
-        />
+        <Viewer proxyHandle={proxyHandle} setViewerMethods={setViewerMethods} />
       </ResizableGrid>
     );
   } else if (appMode === "viewer") {
@@ -542,7 +546,7 @@ export function runApp(
     allowGistUrl?: boolean;
     allowExampleUrl?: boolean;
   } = {},
-  appEngine: AppEngine = process.env.APP_ENGINE as AppEngine,
+  appEngine: AppEngine
 ) {
   const optsDefaults = {
     allowCodeUrl: false,
@@ -595,7 +599,7 @@ export function runApp(
           if (value === "") exampleName = key;
         }
 
-        const exampleCategories = (await getExampleCategories(appEngine));
+        const exampleCategories = await getExampleCategories(appEngine);
         let pos = findExampleByTitle(exampleName, exampleCategories);
         if (pos) {
           opts.selectedExample = exampleName;
@@ -640,7 +644,12 @@ export function runApp(
     const root = createRoot(domTarget);
     root.render(
       <React.StrictMode>
-        <App appMode={mode} startFiles={startFiles} appOptions={appOpts} appEngine={appEngine} />
+        <App
+          appMode={mode}
+          startFiles={startFiles}
+          appOptions={appOpts}
+          appEngine={appEngine}
+        />
       </React.StrictMode>
     );
   })();

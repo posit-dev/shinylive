@@ -234,9 +234,9 @@ serve-r:
 # Build the _shinylive directory for deployment of both R and Python sites
 _shinylive:
 	$(MAKE) buildjs-prod
-	cp -Lr $(SITE_DIR) $(SHINYLIVE_DIR)/py
+	cp -Lr $(SITE_DIR)/. $(SHINYLIVE_DIR)/py
 	$(MAKE) buildjs-prod-r
-	cp -Lr $(SITE_DIR) $(SHINYLIVE_DIR)/r
+	cp -Lr $(SITE_DIR)/. $(SHINYLIVE_DIR)/r
 
 # Build htmltools, shiny, and shinywidgets. This target must be run manually after
 # updating the package submodules; it will not run automatically with `make all`
