@@ -111,7 +111,6 @@ const buildmap = {
     banner: banner,
     metafile: metafile,
     define: {
-      "process.env.APP_ENGINE": `"${appEngine}"`,
       "process.env.NODE_ENV": reactProductionMode
         ? '"production"'
         : '"development"',
