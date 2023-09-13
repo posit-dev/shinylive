@@ -3,6 +3,7 @@ import esbuild from "esbuild";
 import * as fs from "fs";
 import http from "http";
 import process from "process";
+import path from "path";
 import packageJson from "../package.json";
 import buildExamples from "./build_examples_json";
 import type { AppEngine } from '../src/Components/App';
@@ -77,6 +78,26 @@ const metafilePlugin = {
     });
   },
 };
+
+function readdirSyncRecursive(dir: string, root: string = dir): string[] {
+  return fs.readdirSync(dir).reduce((files: string[], file: string) => {
+    const name = path.join(dir, file);
+    if (fs.statSync(name).isDirectory()) {
+      return [...files, ...readdirSyncRecursive(name, root)];
+    }
+    return [...files, path.relative(root, name)];
+  }, []);
+}
+
+function buildSiteHtml(appEngine: AppEngine) {
+  console.log(`[${new Date().toISOString()}] Copying HTML templates...`);
+  readdirSyncRecursive('site_template')
+    .forEach((file) => {
+      const tmpl = fs.readFileSync(`site_template/${file}`, 'utf8');
+      const html = tmpl.replace('{{APP_ENGINE}}', appEngine);
+      fs.writeFileSync(`${SITE_DIR}/${file}`, html);
+    });
+}
 
 const buildmap = {
   app: esbuild.context({
@@ -210,6 +231,9 @@ const buildmap = {
     plugins: [createRebuildLoggerPlugin("shinylive-sw")],
   }),
 };
+
+// Build shinylive website HTML in /site for R or Python as requested
+buildSiteHtml(appEngine);
 
 Object.values(buildmap).forEach((build) =>
   build
