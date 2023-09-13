@@ -22,8 +22,13 @@
       }
       const appFiles = await response.json();
 
+      let engine = "{{APP_ENGINE}}";
+      if (engine.includes("APP_ENGINE")) {
+        engine = "python";
+      }
+
       const appRoot = document.getElementById("root");
-      runApp(appRoot, "editor-terminal-viewer", {startFiles: appFiles});
+      runApp(appRoot, "editor-terminal-viewer", {startFiles: appFiles}, engine);
     </script>
     <link rel="stylesheet" href="../{{REL_PATH}}shinylive/style-resets.css" />
     <link rel="stylesheet" href="../{{REL_PATH}}shinylive/shinylive.css" />
