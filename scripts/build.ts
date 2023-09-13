@@ -2,11 +2,11 @@ import { spawn } from "child_process";
 import esbuild from "esbuild";
 import * as fs from "fs";
 import http from "http";
-import process from "process";
 import path from "path";
+import process from "process";
 import packageJson from "../package.json";
+import type { AppEngine } from "../src/Components/App";
 import buildExamples from "./build_examples_json";
-import type { AppEngine } from '../src/Components/App';
 
 const EXAMPLES_SOURCE_DIR = "./examples";
 const BUILD_DIR = "./build";
@@ -91,12 +91,11 @@ function readdirSyncRecursive(dir: string, root: string = dir): string[] {
 
 function buildSiteHtml(appEngine: AppEngine) {
   console.log(`[${new Date().toISOString()}] Copying HTML templates...`);
-  readdirSyncRecursive('site_template')
-    .forEach((file) => {
-      const tmpl = fs.readFileSync(`site_template/${file}`, 'utf8');
-      const html = tmpl.replace('{{APP_ENGINE}}', appEngine);
-      fs.writeFileSync(`${SITE_DIR}/${file}`, html);
-    });
+  readdirSyncRecursive("site_template").forEach((file) => {
+    const tmpl = fs.readFileSync(`site_template/${file}`, "utf8");
+    const html = tmpl.replace("{{APP_ENGINE}}", appEngine);
+    fs.writeFileSync(`${SITE_DIR}/${file}`, html);
+  });
 }
 
 const buildmap = {
@@ -259,7 +258,7 @@ if (serve) {
               http.request(
                 { hostname: "0.0.0.0", port: 3001, path: url, method, headers },
                 (proxyRes) => {
-                  if (appEngine === 'r') {
+                  if (appEngine === "r") {
                     proxyRes.headers = {
                       ...proxyRes.headers,
                       "cross-origin-opener-policy": "same-origin",
