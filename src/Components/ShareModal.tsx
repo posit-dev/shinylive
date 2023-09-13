@@ -1,4 +1,5 @@
 import { useOnEscOrClickOutside } from "../hooks/useOnEscOrClickOutside";
+import { AppEngine } from "./App";
 import "./ShareModal.css";
 import { FileContent } from "./filecontent";
 import {
@@ -15,9 +16,11 @@ import * as React from "react";
 export function ShareModal({
   fileContents = [],
   setShareModalVisible,
+  appEngine,
 }: {
   fileContents: FileContent[];
   setShareModalVisible: React.Dispatch<React.SetStateAction<boolean>>;
+  appEngine: AppEngine;
 }) {
   const showModalRef = React.useRef<HTMLDivElement>(null);
 
@@ -25,10 +28,10 @@ export function ShareModal({
 
   const [hideHeaderChecked, setHideHeaderChecked] = React.useState(false);
 
-  const editorUrl = editorUrlPrefix + "#code=" + encodedCode;
+  const editorUrl = editorUrlPrefix(appEngine) + "#code=" + encodedCode;
 
   const appUrl =
-    appUrlPrefix +
+    appUrlPrefix(appEngine) +
     "#" +
     (hideHeaderChecked ? "h=0&" : "") +
     "code=" +

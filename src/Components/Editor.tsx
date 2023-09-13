@@ -425,7 +425,7 @@ export default function Editor({
     syncActiveFileState();
     const fileContents = editorFilesToFileContents(files);
     window.open(
-      editorUrlPrefix + "#code=" + fileContentsToUrlString(fileContents),
+      editorUrlPrefix(appEngine) + "#code=" + fileContentsToUrlString(fileContents),
       "_blank"
     );
   }, [files, syncActiveFileState]);
@@ -445,6 +445,7 @@ export default function Editor({
       <ShareModal
         fileContents={editorFilesToFileContents(files)}
         setShareModalVisible={setShareModalVisible}
+        appEngine={appEngine}
       ></ShareModal>
     );
   }

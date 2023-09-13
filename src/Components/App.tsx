@@ -310,7 +310,7 @@ export function App({
     setHeaderBarCallbacks({
       openEditorWindowFromViewer: () => {
         window.open(
-          editorUrlPrefix + "#code=" + fileContentsToUrlString(startFiles),
+          editorUrlPrefix(appEngine) + "#code=" + fileContentsToUrlString(startFiles),
           "_blank"
         );
       },
