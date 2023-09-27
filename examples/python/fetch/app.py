@@ -6,6 +6,13 @@
 # because shinylive must be served over https (unless you are running on localhost),
 # and browsers will not allow a https page to fetch data with http.
 #
+# If you are fetching data from a different origin, that server will also need to allow
+# cross-origin requests by setting the Access-Control-Allow-Origin header. See
+# https://en.wikipedia.org/wiki/Cross-origin_resource_sharing for more information.
+#
+# If you see "Failed to fetch" in the Python console, it is likely because the endpoint
+# is http and not https, or because the server does not allow cross-origin requests.
+#
 # One important difference between urllib.request.urlopen() and pyodide.http.pyfetch()
 # is that the latter is asynchronous. In a Shiny app, this just means that the
 # reactive.Calc's and outputs must have `async` in front of the function definitions,
