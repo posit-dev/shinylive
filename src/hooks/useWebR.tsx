@@ -87,10 +87,11 @@ export async function initRShiny({
     throw new Error("webRProxyHandle is not ready");
   }
 
-  await webRProxyHandle.webRProxy.runRAsync('webr::install("shiny")')
-  await webRProxyHandle.webRProxy.runRAsync('library(shiny)')
+  await webRProxyHandle.webRProxy.runRAsync('webr::install("renv")');
+  await webRProxyHandle.webRProxy.runRAsync('webr::install("shiny")');
+  await webRProxyHandle.webRProxy.runRAsync("library(shiny)");
   // Increase webR expressions limit for deep call stack required for Shiny
-  await webRProxyHandle.webRProxy.runRAsync('options(expressions=1000)')
+  await webRProxyHandle.webRProxy.runRAsync("options(expressions=1000)");
   ensureOpenChannelListener(webRProxyHandle.webRProxy);
 
   return {
