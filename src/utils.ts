@@ -1,3 +1,5 @@
+import type { AppEngine } from "./Components/App";
+
 // =======================================================================
 // Utility functions
 // =======================================================================
@@ -140,4 +142,20 @@ export function stringToUint8Array(s: string): Uint8Array {
     bytes[i] = s.charCodeAt(i);
   }
   return bytes;
+}
+
+export function engineSwitch(
+  engine: AppEngine,
+  rValue: string,
+  pythonValue: string
+): string {
+  switch (engine) {
+    case "r":
+      return rValue;
+
+    // Legacy default engine value was `python`
+    case "python":
+    default:
+      return pythonValue;
+  }
 }
