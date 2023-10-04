@@ -1,6 +1,7 @@
+import { load as yamlLoad } from "js-yaml";
 import { AppEngine } from "./Components/App";
 import type { FileContent } from "./Components/filecontent";
-import { load as yamlLoad } from "js-yaml";
+import { engineSwitch } from "./utils";
 
 export type Component = "editor" | "terminal" | "viewer" | "examples" | "cell";
 
@@ -38,7 +39,10 @@ export type QuartoArgs = {
  * iVBORw0KGgoAAAANSUhEUgAAACgAAAAuCAYAAABap1twAAAABGdBTUEAALGPC ...
  * ------------------------------
  */
-export function parseCodeBlock(codeblock: string | string[], engine: AppEngine): {
+export function parseCodeBlock(
+  codeblock: string | string[],
+  engine: AppEngine
+): {
   files: FileContent[];
   quartoArgs: Required<QuartoArgs>;
 } {
@@ -66,7 +70,7 @@ export function parseCodeBlock(codeblock: string | string[], engine: AppEngine):
       );
     }
     // For shiny apps, the default filename is "app.py" or "app.R".
-    defaultFilename = engine === 'python' ? 'app.py' : 'app.R';
+    defaultFilename = engineSwitch(engine, "app.R", "app.py");
   } else {
     // In the case of editor-terminal and editor-cell components...
     if (quartoArgs.standalone !== false) {

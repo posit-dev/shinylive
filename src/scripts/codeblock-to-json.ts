@@ -12,6 +12,7 @@
 // import to work at run time, because the output path structure is different.
 import { readLines } from "https://deno.land/std/io/mod.ts";
 
+import type { AppEngine } from "../Components/App";
 import { parseCodeBlock } from "../parse-codeblock";
 
 const { args } = Deno;
@@ -20,7 +21,9 @@ const lines: string[] = [];
 for await (const line of readLines(Deno.stdin)) {
   lines.push(line);
 }
+// Default to python to support legacy codeblocks with an old version of shinylive quarto extension
+const engine: AppEngine = args.length > 0 && args[0] == "r" ? "r" : "python";
 
-const content = parseCodeBlock(lines);
+const content = parseCodeBlock(lines, engine);
 
 await Deno.stdout.write(new TextEncoder().encode(JSON.stringify(content)));

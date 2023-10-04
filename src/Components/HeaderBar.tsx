@@ -1,5 +1,6 @@
 import shinyPyLogo from "../assets/shiny-for-python.svg";
 import shinyRLogo from "../assets/shiny-logo.svg";
+import { engineSwitch } from "../utils";
 import { AppEngine } from "./App";
 import "./HeaderBar.css";
 import { Icon } from "./Icons";
@@ -122,8 +123,8 @@ export default function HeaderBar({
   const mainUrl = {
     python: "https://shiny.posit.co/py/",
     r: "https://shiny.posit.co/",
-  }
-  const shinyLogo = appEngine === "python" ? shinyPyLogo : shinyRLogo;
+  };
+  const shinyLogo = engineSwitch(appEngine, shinyRLogo, shinyPyLogo);
 
   return (
     <div className="HeaderBar">
