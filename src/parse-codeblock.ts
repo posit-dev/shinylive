@@ -78,7 +78,8 @@ export function parseCodeBlock(
         "'#| standalone: true' is not valid for editor-terminal and editor-cell code blocks."
       );
     }
-    defaultFilename = "code.py";
+
+    defaultFilename = engineSwitch(engine, "code.R", "code.py");
   }
 
   const files = parseFileContents(lines, defaultFilename);
