@@ -239,6 +239,8 @@ Object.values(buildmap).forEach((build) =>
     .then((context) => {
       if (watch) {
         context.watch();
+      } else if (serve) {
+        context.rebuild();
       } else {
         context.rebuild();
         context.dispose();
