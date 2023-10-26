@@ -1,8 +1,8 @@
-import { ProxyHandle } from "./App";
+import * as React from "react";
 import { ToHtmlResult } from "../pyodide-proxy";
+import { ProxyHandle } from "./App";
 import "./OutputCell.css";
 import { TerminalMethods } from "./Terminal";
-import * as React from "react";
 
 // =============================================================================
 // OutputCell component
@@ -20,10 +20,10 @@ export function OutputCell({
   });
 
   React.useEffect(() => {
-    const runCodeInTerminal = async (command: string): Promise<void> => {
-      if (!proxyHandle.ready) return;
-      if (proxyHandle.engine !== "pyodide") return;
+    if (!proxyHandle.ready) return;
+    if (proxyHandle.engine !== "pyodide") return;
 
+    const runCodeInTerminal = async (command: string): Promise<void> => {
       try {
         const result = await proxyHandle.pyodide.runPyAsync(command, {
           returnResult: "to_html",
@@ -43,10 +43,10 @@ export function OutputCell({
   }, [setTerminalMethods, proxyHandle]);
 
   React.useEffect(() => {
-    const runCodeInTerminal = async (command: string): Promise<void> => {
-      if (!proxyHandle.ready) return;
-      if (proxyHandle.engine !== "webr") return;
+    if (!proxyHandle.ready) return;
+    if (proxyHandle.engine !== "webr") return;
 
+    const runCodeInTerminal = async (command: string): Promise<void> => {
       try {
         // TODO: Better convert output of runRAsync into HTML format
         const result = await proxyHandle.webRProxy.runRAsync(command);
