@@ -42,12 +42,13 @@ export async function initWebR({
       channelType,
     },
     stdout,
-    stderr
+    stderr,
   );
 
   let initError = false;
   try {
-    await webRProxy.runRAsync('webr::install("codetools")');
+    const libraryUrl = utils.currentScriptDir() + "/webr/library.data";
+    await webRProxy.runRAsync(`webr::mount("/shiny", "${libraryUrl}")`);
     await webRProxy.runRAsync(load_r_pre);
   } catch (e) {
     initError = true;
@@ -87,8 +88,6 @@ export async function initRShiny({
     throw new Error("webRProxyHandle is not ready");
   }
 
-  await webRProxyHandle.webRProxy.runRAsync('webr::install("renv")');
-  await webRProxyHandle.webRProxy.runRAsync('webr::install("shiny")');
   await webRProxyHandle.webRProxy.runRAsync("library(shiny)");
   // Increase webR expressions limit for deep call stack required for Shiny
   await webRProxyHandle.webRProxy.runRAsync("options(expressions=1000)");
@@ -110,7 +109,7 @@ export function useWebR({
       ready: false,
       shinyReady: false,
       initError: false,
-    }
+    },
   );
 
   useEffect(() => {
@@ -144,6 +143,15 @@ function ensureOpenChannelListener(webRProxy: WebRProxy): void {
 }
 
 const load_r_pre = `
+# Force internal tar - silence renv warning
+Sys.setenv(TAR = "internal")
+
+# Use mounted shiny R package library
+.libPaths(c(.libPaths(), "/shiny"))
+
+# Shim R functions with webR versions (e.g. install.packages())
+webr::shim_install()
+
 .shiny_app_registry <- new.env()
 
 # Create a httpuv app from a Shiny app directory
