@@ -76,9 +76,24 @@ const config: PlaywrightTestConfig = {
       port: 3000,
     },
     {
-      command:
-        ". venv/bin/activate && shinylive export playwright/static-app-test playwright/static-build && python3 -u -m http.server --directory playwright/static-build 8008 2> /dev/null",
+      command: `
+        . venv/bin/activate &&
+        mkdir -p playwright/static-build &&
+        shinylive export playwright/static-app-test playwright/static-build/app &&
+        python3 -u -m http.server --directory playwright/static-build/app 8008 2> /dev/null
+      `,
       port: 8008,
+    },
+    {
+      command: `
+        . venv/bin/activate &&
+        mkdir -p playwright/static-build &&
+        shinylive export playwright/editor-cell-test playwright/static-build/cell &&
+        sed -i.bak -e 's/app\.py/code.py/' playwright/static-build/cell/app.json &&
+        sed -i.bak -e 's/viewer/editor-cell/' playwright/static-build/cell/index.html &&
+        python3 -u -m http.server --directory playwright/static-build/cell 8009 2> /dev/null
+      `,
+      port: 8009,
     },
   ],
 };
