@@ -3,7 +3,6 @@ from pathlib import Path
 import astropy.units as u
 import matplotlib.pyplot as plt
 import numpy as np
-import shiny.experimental as x
 from body import body_server, body_ui
 from faicons import icon_svg
 from shiny import App, reactive, render, ui
@@ -13,13 +12,13 @@ from simulation import Simulation, nbody_solve
 # https://prappleizer.github.io/
 
 
-app_ui = x.ui.page_sidebar(
-    x.ui.sidebar(
+app_ui = ui.page_sidebar(
+    ui.sidebar(
         ui.img(
             src="coords.png", style="width: 100%; max-width: 225px;", class_="border"
         ),
-        x.ui.accordion(
-            x.ui.accordion_panel(
+        ui.accordion(
+            ui.accordion_panel(
                 "Settings",
                 ui.input_slider("days", "Simulation duration (days)", 0, 200, value=60),
                 ui.input_slider(
@@ -31,31 +30,29 @@ app_ui = x.ui.page_sidebar(
                     step=0.5,
                 ),
             ),
-            x.ui.accordion_panel(
+            ui.accordion_panel(
                 "Earth",
                 body_ui(
                     "earth", enable=True, mass=597.216, speed=0.0126, theta=270, phi=90
                 ),
             ),
-            x.ui.accordion_panel(
+            ui.accordion_panel(
                 "Moon",
                 body_ui("moon", enable=True, mass=7.347, speed=1.022, theta=60, phi=90),
             ),
-            x.ui.accordion_panel(
+            ui.accordion_panel(
                 "Planet X",
                 body_ui(
                     "planetx", enable=True, mass=7.347, speed=1.022, theta=270, phi=60
                 ),
             ),
-            open=False,
-            multiple=False,
             # mt-4: margin top 4; adds a bit of space above the accordion
             class_="mt-4",
             # Give the accordion the same background color as the sidebar
             style="--bs-accordion-bg: --bslib-sidebar-bg;",
         ),
         position="right",
-        open="open",
+        open="always",
         # In mobile mode, let the sidebar be as tall as it wants
         max_height_mobile="auto",
     ),
@@ -64,7 +61,7 @@ app_ui = x.ui.page_sidebar(
             "run", "Run simulation", icon=icon_svg("play"), class_="btn-primary"
         )
     ),
-    x.ui.output_plot("orbits"),
+    ui.output_plot("orbits"),
 )
 
 
