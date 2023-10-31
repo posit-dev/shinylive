@@ -2,6 +2,7 @@
   { "name": "htmltools", "source": "local", "version": "latest" },
   { "name": "shiny", "source": "local", "version": "latest" },
   { "name": "shinywidgets", "source": "local", "version": "latest" },
+  { "name": "shinyswatch", "source": "pypi", "version": "latest" },
   { "name": "faicons", "source": "local", "version": "latest" },
   {
     "name": "mdit-py-plugins",
