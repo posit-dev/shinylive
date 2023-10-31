@@ -159,6 +159,21 @@
       "seaborn"
     ]
   },
+  "ipywidgets": {
+    "name": "ipywidgets",
+    "version": "8.0.6",
+    "filename": "ipywidgets-8.0.6-py3-none-any.whl",
+    "sha256": "a60bf8d2528997e05ac83fd19ea2fbe65f2e79fbe1b2b35779bdfc46c2941dcc",
+    "url": "https://files.pythonhosted.org/packages/50/7d/2c8b7bba2b1c2b5d1299f22fa7853f09b573c84e63b62870c13a6ec11990/ipywidgets-8.0.6-py3-none-any.whl",
+    "depends": [
+      {"name": "ipython", "specs": [[">=", "6.1.0"]]},
+      {"name": "traitlets", "specs": [[">=", "4.3.1"]]},
+      {"name": "jupyterlab-widgets", "specs": [["~=", "3.0.7"]]}
+    ],
+    "imports": [
+      "ipywidgets"
+    ]
+  },
   "ipyleaflet": {
     "name": "ipyleaflet",
     "version": "0.17.4",
@@ -319,22 +334,6 @@
       "asgiref"
     ]
   },
-  "ipywidgets": {
-    "name": "ipywidgets",
-    "version": "8.1.1",
-    "filename": "ipywidgets-8.1.1-py3-none-any.whl",
-    "sha256": "2b88d728656aea3bbfd05d32c747cfd0078f9d7e159cf982433b58ad717eed7f",
-    "url": "https://files.pythonhosted.org/packages/4a/0e/57ed498fafbc60419a9332d872e929879ceba2d73cb11d284d7112472b3e/ipywidgets-8.1.1-py3-none-any.whl",
-    "depends": [
-      {"name": "comm", "specs": [[">=", "0.1.3"]]},
-      {"name": "ipython", "specs": [[">=", "6.1.0"]]},
-      {"name": "traitlets", "specs": [[">=", "4.3.1"]]},
-      {"name": "jupyterlab-widgets", "specs": [["~=", "3.0.9"]]}
-    ],
-    "imports": [
-      "ipywidgets"
-    ]
-  },
   "jupyter-core": {
     "name": "jupyter-core",
     "version": "5.5.0",
@@ -369,6 +368,47 @@
     "depends": [],
     "imports": [
       "tenacity"
+    ]
+  },
+  "ipython": {
+    "name": "ipython",
+    "version": "8.17.2",
+    "filename": "ipython-8.17.2-py3-none-any.whl",
+    "sha256": "1e4d1d666a023e3c93585ba0d8e962867f7a111af322efff6b9c58062b3e5444",
+    "url": "https://files.pythonhosted.org/packages/20/45/18f0dc2cbc3ee6680a004f620fb1400c6511ded0a76a2dd241813786ce73/ipython-8.17.2-py3-none-any.whl",
+    "depends": [
+      {"name": "decorator", "specs": []},
+      {"name": "jedi", "specs": [[">=", "0.16"]]},
+      {"name": "matplotlib-inline", "specs": []},
+      {"name": "prompt-toolkit", "specs": [["!=", "3.0.37"], ["<", "3.1.0"], [">=", "3.0.30"]]},
+      {"name": "pygments", "specs": [[">=", "2.4.0"]]},
+      {"name": "stack-data", "specs": []},
+      {"name": "traitlets", "specs": [[">=", "5"]]}
+    ],
+    "imports": [
+      "ipython"
+    ]
+  },
+  "traitlets": {
+    "name": "traitlets",
+    "version": "5.13.0",
+    "filename": "traitlets-5.13.0-py3-none-any.whl",
+    "sha256": "baf991e61542da48fe8aef8b779a9ea0aa38d8a54166ee250d5af5ecf4486619",
+    "url": "https://files.pythonhosted.org/packages/ed/fd/cfc0d27ca11f3dd12b2a90d06875d8bfb532ef40ce67be4066d10807f4aa/traitlets-5.13.0-py3-none-any.whl",
+    "depends": [],
+    "imports": [
+      "traitlets"
+    ]
+  },
+  "jupyterlab-widgets": {
+    "name": "jupyterlab-widgets",
+    "version": "3.0.9",
+    "filename": "jupyterlab_widgets-3.0.9-py3-none-any.whl",
+    "sha256": "3cf5bdf5b897bf3bccf1c11873aa4afd776d7430200f765e0686bd352487b58d",
+    "url": "https://files.pythonhosted.org/packages/e8/05/0ebab152288693b5ec7b339aab857362947031143b282853b4c2dd4b5b40/jupyterlab_widgets-3.0.9-py3-none-any.whl",
+    "depends": [],
+    "imports": [
+      "jupyterlab_widgets"
     ]
   },
   "traittypes": {
@@ -488,82 +528,6 @@
       "uc_micro"
     ]
   },
-  "comm": {
-    "name": "comm",
-    "version": "0.1.4",
-    "filename": "comm-0.1.4-py3-none-any.whl",
-    "sha256": "6d52794cba11b36ed9860999cd10fd02d6b2eac177068fdd585e1e2f8a96e67a",
-    "url": "https://files.pythonhosted.org/packages/fe/47/0133ac1b7dc476ed77710715e98077119b3d9bae56b13f6f9055e7da1c53/comm-0.1.4-py3-none-any.whl",
-    "depends": [
-      {"name": "traitlets", "specs": [[">=", "4"]]}
-    ],
-    "imports": [
-      "comm"
-    ]
-  },
-  "ipython": {
-    "name": "ipython",
-    "version": "8.17.2",
-    "filename": "ipython-8.17.2-py3-none-any.whl",
-    "sha256": "1e4d1d666a023e3c93585ba0d8e962867f7a111af322efff6b9c58062b3e5444",
-    "url": "https://files.pythonhosted.org/packages/20/45/18f0dc2cbc3ee6680a004f620fb1400c6511ded0a76a2dd241813786ce73/ipython-8.17.2-py3-none-any.whl",
-    "depends": [
-      {"name": "decorator", "specs": []},
-      {"name": "jedi", "specs": [[">=", "0.16"]]},
-      {"name": "matplotlib-inline", "specs": []},
-      {"name": "prompt-toolkit", "specs": [["!=", "3.0.37"], ["<", "3.1.0"], [">=", "3.0.30"]]},
-      {"name": "pygments", "specs": [[">=", "2.4.0"]]},
-      {"name": "stack-data", "specs": []},
-      {"name": "traitlets", "specs": [[">=", "5"]]}
-    ],
-    "imports": [
-      "ipython"
-    ]
-  },
-  "traitlets": {
-    "name": "traitlets",
-    "version": "5.13.0",
-    "filename": "traitlets-5.13.0-py3-none-any.whl",
-    "sha256": "baf991e61542da48fe8aef8b779a9ea0aa38d8a54166ee250d5af5ecf4486619",
-    "url": "https://files.pythonhosted.org/packages/ed/fd/cfc0d27ca11f3dd12b2a90d06875d8bfb532ef40ce67be4066d10807f4aa/traitlets-5.13.0-py3-none-any.whl",
-    "depends": [],
-    "imports": [
-      "traitlets"
-    ]
-  },
-  "jupyterlab-widgets": {
-    "name": "jupyterlab-widgets",
-    "version": "3.0.9",
-    "filename": "jupyterlab_widgets-3.0.9-py3-none-any.whl",
-    "sha256": "3cf5bdf5b897bf3bccf1c11873aa4afd776d7430200f765e0686bd352487b58d",
-    "url": "https://files.pythonhosted.org/packages/e8/05/0ebab152288693b5ec7b339aab857362947031143b282853b4c2dd4b5b40/jupyterlab_widgets-3.0.9-py3-none-any.whl",
-    "depends": [],
-    "imports": [
-      "jupyterlab_widgets"
-    ]
-  },
-  "idna": {
-    "name": "idna",
-    "version": "3.4",
-    "filename": "idna-3.4-py3-none-any.whl",
-    "sha256": "90b77e79eaa3eba6de819a0c442c0b4ceefc341a7a2ab77d7562bf49f425c5c2",
-    "url": "https://files.pythonhosted.org/packages/fc/34/3030de6f1370931b9dbb4dad48f6ab1015ab1d32447850b9fc94e60097be/idna-3.4-py3-none-any.whl",
-    "depends": [],
-    "imports": [
-      "idna"
-    ]
-  },
-  "sniffio": {
-    "name": "sniffio",
-    "version": "1.3.0",
-    "filename": "sniffio-1.3.0-py3-none-any.whl",
-    "sha256": "eecefdce1e5bbfb7ad2eeaabf7c1eeb404d7757c379bd1f7e5cce9d8bf425384",
-    "url": "https://files.pythonhosted.org/packages/c3/a0/5dba8ed157b0136607c7f2151db695885606968d1fae123dc3391e0cfdbf/sniffio-1.3.0-py3-none-any.whl",
-    "depends": [],
-    "imports": [
-      "sniffio"
-    ]
-  },
   "matplotlib-inline": {
     "name": "matplotlib-inline",
     "version": "0.1.6",
@@ -603,6 +567,28 @@
     ],
     "imports": [
       "stack_data"
+    ]
+  },
+  "idna": {
+    "name": "idna",
+    "version": "3.4",
+    "filename": "idna-3.4-py3-none-any.whl",
+    "sha256": "90b77e79eaa3eba6de819a0c442c0b4ceefc341a7a2ab77d7562bf49f425c5c2",
+    "url": "https://files.pythonhosted.org/packages/fc/34/3030de6f1370931b9dbb4dad48f6ab1015ab1d32447850b9fc94e60097be/idna-3.4-py3-none-any.whl",
+    "depends": [],
+    "imports": [
+      "idna"
+    ]
+  },
+  "sniffio": {
+    "name": "sniffio",
+    "version": "1.3.0",
+    "filename": "sniffio-1.3.0-py3-none-any.whl",
+    "sha256": "eecefdce1e5bbfb7ad2eeaabf7c1eeb404d7757c379bd1f7e5cce9d8bf425384",
+    "url": "https://files.pythonhosted.org/packages/c3/a0/5dba8ed157b0136607c7f2151db695885606968d1fae123dc3391e0cfdbf/sniffio-1.3.0-py3-none-any.whl",
+    "depends": [],
+    "imports": [
+      "sniffio"
     ]
   },
   "wcwidth": {
