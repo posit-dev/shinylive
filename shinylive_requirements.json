@@ -2,6 +2,7 @@
   { "name": "htmltools", "source": "local", "version": "latest" },
   { "name": "shiny", "source": "local", "version": "latest" },
   { "name": "shinywidgets", "source": "local", "version": "latest" },
+  { "name": "shinyswatch", "source": "pypi", "version": "latest" },
   { "name": "faicons", "source": "local", "version": "latest" },
   {
     "name": "mdit-py-plugins",
@@ -23,6 +24,12 @@
   },
   { "name": "plotly", "source": "pypi", "version": "latest" },
   { "name": "seaborn", "source": "pypi", "version": "latest" },
+  {
+    "name": "ipywidgets",
+    "source": "pypi",
+    "version": "8.0.6",
+    "comment": "Using 8.1.1 causes problems when loading. Related to `comm`. "
+  },
   { "name": "ipyleaflet", "source": "pypi", "version": "latest" },
   { "name": "siuba", "source": "pypi", "version": "latest" },
   { "name": "palmerpenguins", "source": "pypi", "version": "latest" },

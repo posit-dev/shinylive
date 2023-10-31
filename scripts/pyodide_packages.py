@@ -93,7 +93,9 @@ EXTRA_DEPENDENCIES = {
         # Pandas doesn't list jinja2 as a hard depedency, but it is needed when
         # doing table styling.
         "jinja2",
-    ]
+    ],
+    # Can be removed when we moved to pyodide w/ python 3.11
+    "anyio": ["exceptiongroup"],
 }
 
 
