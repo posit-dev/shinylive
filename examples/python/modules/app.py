@@ -1,4 +1,4 @@
-from shiny import App, Inputs, Outputs, Session, module, reactive, render, ui
+from shiny import App, module, reactive, render, ui
 
 
 # ============================================================
@@ -15,9 +15,7 @@ def counter_ui(label: str = "Increment counter") -> ui.TagChild:
 
 
 @module.server
-def counter_server(
-    input: Inputs, output: Outputs, session: Session, starting_value: int = 0
-):
+def counter_server(input, output, session, starting_value: int = 0):
     count: reactive.Value[int] = reactive.Value(starting_value)
 
     @reactive.Effect
@@ -40,7 +38,7 @@ app_ui = ui.page_fluid(
 )
 
 
-def server(input: Inputs, output: Outputs, session: Session):
+def server(input, output, session):
     counter_server("counter1")
     counter_server("counter2")
 

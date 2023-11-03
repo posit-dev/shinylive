@@ -5,7 +5,7 @@ from pathlib import Path
 
 import matplotlib.pyplot as plt
 import pandas as pd
-from shiny import App, Inputs, Outputs, Session, render, ui
+from shiny import App, render, ui
 
 mtcars = pd.read_csv(Path(__file__).parent / "mtcars.csv")
 mtcars.drop(["disp", "hp", "drat", "qsec", "vs", "gear", "carb"], axis=1, inplace=True)
@@ -49,7 +49,7 @@ app_ui = ui.page_fluid(
 )
 
 
-def server(input: Inputs, output: Outputs, session: Session):
+def server(input, output, session):
     @output
     @render.plot(alt="A scatterplot")
     def plot1():

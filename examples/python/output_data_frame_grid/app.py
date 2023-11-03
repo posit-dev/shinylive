@@ -1,6 +1,5 @@
 import palmerpenguins
-import pandas as pd
-from shiny import App, Inputs, Outputs, Session, reactive, render, req, ui
+from shiny import App, render, ui
 
 penguins = palmerpenguins.load_penguins()
 # Slim down the data frame to a few representative columns
@@ -30,7 +29,7 @@ app_ui = ui.page_fluid(
 )
 
 
-def server(input: Inputs, output: Outputs, session: Session):
+def server(input, output, session):
     @output
     @render.data_frame
     def grid():

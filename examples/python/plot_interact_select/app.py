@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pandas as pd
 from plotnine import aes, facet_grid, geom_point, ggplot
-from shiny import App, Inputs, Outputs, Session, render, ui
+from shiny import App, render, ui
 from shiny.plotutils import brushed_points, near_points
 
 mtcars = pd.read_csv(Path(__file__).parent / "mtcars.csv")
@@ -52,7 +52,7 @@ app_ui = ui.page_fluid(
 )
 
 
-def server(input: Inputs, output: Outputs, session: Session):
+def server(input, output, session):
     @output
     @render.ui
     def plot_ui():

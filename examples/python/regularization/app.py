@@ -8,7 +8,7 @@ import seaborn as sns
 
 # Import custom Python Functions from local file
 from compare import compare, sim_data
-from shiny import App, Inputs, Outputs, Session, reactive, render, ui
+from shiny import App, reactive, render, ui
 
 # data
 nsims = 100
@@ -193,7 +193,7 @@ app_ui = ui.page_fixed(
 )
 
 
-def server(input: Inputs, output: Outputs, session: Session):
+def server(input, output, session):
     # reactive Calc that runs LASSO, Ridge, and Linear models on generated data
     @reactive.Calc
     def models():

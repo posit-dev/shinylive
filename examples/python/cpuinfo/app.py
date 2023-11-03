@@ -16,7 +16,7 @@ import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from shiny import App, Inputs, Outputs, Session, reactive, render, ui
+from shiny import App, reactive, render, ui
 
 # The agg matplotlib backend seems to be a little more efficient than the default when
 # running on macOS, and also gives more consistent results across operating systems
@@ -112,7 +112,7 @@ def cpu_current():
     return cpu_percent(percpu=True)
 
 
-def server(input: Inputs, output: Outputs, session: Session):
+def server(input, output, session):
     cpu_history = reactive.Value(None)
 
     @reactive.Calc

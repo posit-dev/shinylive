@@ -1,7 +1,7 @@
 # The shinyswatch package provides themes from https://bootswatch.com/
 
 import shinyswatch
-from shiny import App, Inputs, Outputs, Session, render, ui
+from shiny import App, render, ui
 
 app_ui = ui.page_navbar(
     # Available themes:
@@ -49,7 +49,7 @@ app_ui = ui.page_navbar(
 )
 
 
-def server(input: Inputs, output: Outputs, session: Session):
+def server(input, output, session):
     @output
     @render.text
     def txtout():

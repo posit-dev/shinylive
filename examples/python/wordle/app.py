@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import cast
 
 import words
-from shiny import App, Inputs, Outputs, Session, reactive, render, ui
+from shiny import App, Inputs, reactive, render, ui
 from shiny.ui import TagList, div, h3, head_content, tags
 from typing_extensions import Literal
 
@@ -97,7 +97,7 @@ class ShinyInputs(Inputs):
     hard: reactive.Value[bool]
 
 
-def server(input: Inputs, output: Outputs, session: Session):
+def server(input, output, session):
     # Treat `input` as a ShinyInputs object, for the static type checker.
     input = cast(ShinyInputs, input)
 
