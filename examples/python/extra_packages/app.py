@@ -19,7 +19,7 @@ app_ui = ui.page_fluid(
 
         ```
         import micropip
-        micropip.install("mypackage")
+        await micropip.install("mypackage")
         import mypackage
         ```
         """
