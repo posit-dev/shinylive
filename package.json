@@ -51,10 +51,10 @@
     "codemirror": "^6.0.1",
     "dompurify": "^3.0.3",
     "esbuild": "^0.18.10",
-    "eslint": "^8.43.0",
-    "eslint-config-prettier": "^8.8.0",
-    "eslint-plugin-prettier": "^4.2.1",
-    "eslint-plugin-react": "^7.32.2",
+    "eslint": "^8.53.0",
+    "eslint-config-prettier": "^8.10.0",
+    "eslint-plugin-prettier": "^5.0.1",
+    "eslint-plugin-react": "^7.33.2",
     "eslint-plugin-react-hooks": "^4.6.0",
     "events": "^3.3.0",
     "fflate": "^0.8.0",
@@ -105,8 +105,16 @@
         "jsx": true
       },
       "ecmaVersion": "latest",
-      "sourceType": "module"
+      "sourceType": "module",
+      "project": [
+        "./tsconfig.json"
+      ]
     },
+    "ignorePatterns": [
+      "src/pyodide",
+      "src/pyright",
+      "**/*.test.tsx"
+    ],
     "plugins": [
       "react",
       "@typescript-eslint"
@@ -130,6 +138,7 @@
       "@typescript-eslint/no-explicit-any": "off",
       "@typescript-eslint/no-non-null-assertion": "off",
       "@typescript-eslint/no-inferrable-types": "off",
+      "@typescript-eslint/no-floating-promises": "error",
       "react-hooks/rules-of-hooks": "error",
       "react-hooks/exhaustive-deps": "warn"
     }

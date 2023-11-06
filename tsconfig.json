@@ -8,10 +8,18 @@
     "moduleResolution": "node",
     "esModuleInterop": true,
     "resolveJsonModule": true,
-    // Don't accidentally bring in NodeJS types which differ from browser types.
     "types": [],
     "forceConsistentCasingInFileNames": true
   },
+  "include": [
+    "src"
+  ],
+  "exclude": [
+    "src/pyodide",
+    "src/pyright",
+    "**/*.test.tsx",
+    "node_modules"
+  ],
   "$schema": "https://json.schemastore.org/tsconfig",
   "display": "Recommended"
 }
