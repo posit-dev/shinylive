@@ -63,6 +63,15 @@ export async function expect_editor_has_text(page: Page, text: string) {
 }
 
 /**
+ * Test that some text exists in the cell output pane
+ * @param page Page object available from inside playwright tests
+ * @param text Text to search for in the cell output pane
+ */
+export async function expect_output_has_text(page: Page, text: string) {
+  await expect_pane_has_text(page, `code.output-content`, text);
+}
+
+/**
  * Test that some text exists in the terminal pane
  * @param page Page object available from inside playwright tests
  * @param text Text to search for in the terminal panel
