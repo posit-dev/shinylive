@@ -305,7 +305,7 @@ if (serve) {
         if (openBrowser) {
           setTimeout(() => {
             const op = {
-              darwin: ["open"],
+              darwin: ["/usr/bin/open"],
               linux: ["xdg-open"],
               win32: ["cmd", "/c", "start"],
             };
