@@ -127,7 +127,7 @@ $(BUILD_DIR)/shinylive/style-resets.css: src/style-resets.css
 $(BUILD_DIR)/shinylive/pyodide:
 	mkdir -p $(BUILD_DIR)/shinylive/pyodide
 	cd $(BUILD_DIR)/shinylive && \
-	curl -L https://github.com/pyodide/pyodide/releases/download/$(PYODIDE_VERSION)/$(PYODIDE_DIST_FILENAME) \
+	curl --fail -L https://github.com/pyodide/pyodide/releases/download/$(PYODIDE_VERSION)/$(PYODIDE_DIST_FILENAME) \
 	    | tar --exclude "*test*.tar" --exclude "node_modules" -xvj
 
 $(BUILD_DIR)/shinylive/webr: webr
