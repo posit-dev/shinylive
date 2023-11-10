@@ -83,8 +83,8 @@ self.addEventListener("fetch", function (event): void {
     return;
   }
 
-  const coiRequested = url.searchParams.get('coi') === '1'
-    || request.referrer.includes('coi=1');
+  const coiRequested =
+    url.searchParams.get("coi") === "1" || request.referrer.includes("coi=1");
 
   // Fetches that are prepended with /app_<id>/ need to be proxied to pyodide.
   // We use fetchASGI.
@@ -172,7 +172,7 @@ self.addEventListener("fetch", function (event): void {
             request.url === baseUrl + "/favicon.ico"
           ) {
             const cache = await caches.open(version + cacheName);
-            cache.put(request, networkResponse.clone());
+            await cache.put(request, networkResponse.clone());
           }
 
           return networkResponse;
@@ -186,14 +186,16 @@ self.addEventListener("fetch", function (event): void {
     return;
   }
 
-  event.respondWith((async (): Promise<Response> => {
-    const resp = await fetch(request);
-    if (coiRequested) {
-      return addCoiHeaders(resp);
-    } else {
-      return resp;
-    }
-  })());
+  event.respondWith(
+    (async (): Promise<Response> => {
+      const resp = await fetch(request);
+      if (coiRequested) {
+        return addCoiHeaders(resp);
+      } else {
+        return resp;
+      }
+    })()
+  );
 });
 
 // =============================================================================
@@ -209,6 +211,7 @@ const apps = {} as Record<string, MessagePort>;
 // clients, "I restarted!", so that they know to re-register themselves with the
 // service worker. Otherwise the apps for clients will no longer be proxied, and
 // will get a 404 when they try to access the app.
+// eslint-disable-next-line @typescript-eslint/no-floating-promises
 (async () => {
   const allClients = await self.clients.matchAll();
 

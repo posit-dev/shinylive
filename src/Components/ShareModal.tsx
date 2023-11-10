@@ -1,3 +1,4 @@
+import * as React from "react";
 import { useOnEscOrClickOutside } from "../hooks/useOnEscOrClickOutside";
 import { AppEngine } from "./App";
 import "./ShareModal.css";
@@ -7,7 +8,6 @@ import {
   editorUrlPrefix,
   fileContentsToUrlString,
 } from "./share";
-import * as React from "react";
 
 // =============================================================================
 // ShareModal component
@@ -66,6 +66,7 @@ export function ShareModal({
               onClick={() => {
                 if (!editorUrlInputRef.current) return;
                 editorUrlInputRef.current.select();
+                // eslint-disable-next-line @typescript-eslint/no-floating-promises
                 navigator.clipboard.writeText(editorUrlInputRef.current.value);
 
                 setEditorButtonText("\u2713");
@@ -107,6 +108,7 @@ export function ShareModal({
               onClick={() => {
                 if (!appUrlInputRef.current) return;
                 appUrlInputRef.current.select();
+                // eslint-disable-next-line @typescript-eslint/no-floating-promises
                 navigator.clipboard.writeText(appUrlInputRef.current.value);
 
                 setAppButtonText("\u2713");

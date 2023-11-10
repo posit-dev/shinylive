@@ -254,6 +254,7 @@ export function App({
 
   React.useEffect(() => {
     if (appMode === "viewer" && viewerMethods.ready) {
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
       viewerMethods.runApp(currentFiles);
     }
   }, [appMode, currentFiles, viewerMethods]);
@@ -263,6 +264,7 @@ export function App({
   // with multiple instances on a page, and (2) files that are modified in the
   // editor won't be saved.
   React.useEffect(() => {
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     (async () => {
       if (!proxyHandle.ready) return;
       if (proxyHandle.engine !== "pyodide") return;
@@ -557,6 +559,7 @@ export function runApp(
   let startFiles: undefined | FileContentJson[] | FileContent[] =
     opts.startFiles;
 
+  // eslint-disable-next-line @typescript-eslint/no-floating-promises
   (async () => {
     if (startFiles === undefined) {
       // Use the URL hash to determine what files to start with.

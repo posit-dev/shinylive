@@ -1,8 +1,8 @@
 import { RFunction } from "webr";
 import { AwaitableQueue } from "./awaitable-queue";
 import { MessagePortWebSocket } from "./messageportwebsocket";
-import { loadPyodide } from "./pyodide/pyodide";
 import type { PyProxyCallable } from "./pyodide/pyodide";
+import { loadPyodide } from "./pyodide/pyodide";
 
 // =============================================================================
 // Pyodide
@@ -110,7 +110,7 @@ export async function openChannelHttpuv(
   path: string,
   appName: string,
   clientPort: MessagePort,
-  webRProxy: WebRProxy,
+  webRProxy: WebRProxy
 ): Promise<void> {
   const conn = new MessagePortWebSocket(clientPort);
   const shelter = await new webRProxy.webR.Shelter();
@@ -156,11 +156,12 @@ export async function openChannelHttpuv(
   });
 
   // Infinite async loop until connection is closed.
-  for(;;){
+  for (;;) {
     const msg = await fromClientQueue.dequeue();
-    switch(msg.type){
-      case 'websocket.connect': {
-        const callbacks = await webRProxy.webR.evalR(`
+    switch (msg.type) {
+      case "websocket.connect": {
+        const callbacks = await webRProxy.webR.evalR(
+          `
           app <- get(appName, env = .shiny_app_registry)
           onWSMessage <- NULL
           onWSClose <- NULL
@@ -181,27 +182,29 @@ export async function openChannelHttpuv(
           )
           app$onWSOpen(ws)
           list(onWSMessage = onWSMessage, onWSClose = onWSClose)
-        `, { env: { appName } });
-        onWSMessage = await callbacks.get('onWSMessage') as RFunction;
-        onWSClose = await callbacks.get('onWSClose') as RFunction;
+        `,
+          { env: { appName } }
+        );
+        onWSMessage = (await callbacks.get("onWSMessage")) as RFunction;
+        onWSClose = (await callbacks.get("onWSClose")) as RFunction;
         break;
       }
-      case 'websocket.receive': {
+      case "websocket.receive": {
         const text = await new shelter.RCharacter(msg.text);
         try {
-          if (typeof onWSMessage !== 'undefined') {
-            onWSMessage(webRProxy.webR.objs.false, text);
+          if (typeof onWSMessage !== "undefined") {
+            await onWSMessage(webRProxy.webR.objs.false, text);
           }
         } finally {
-          shelter.purge();
+          await shelter.purge();
         }
         break;
       }
-      case 'websocket.disconnect':
-        if (onWSClose) onWSClose();
+      case "websocket.disconnect":
+        if (onWSClose) await onWSClose();
         return;
       default:
-        console.warn(`Unhandled websocket message of type "${msg.type}".`)
+        console.warn(`Unhandled websocket message of type "${msg.type}".`);
         return;
     }
   }

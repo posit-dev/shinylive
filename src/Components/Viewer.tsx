@@ -1,12 +1,12 @@
-import { ProxyHandle } from "./App";
+import * as React from "react";
 import { PyodideProxy } from "../pyodide-proxy";
-import { WebRProxy } from "../webr-proxy";
 import * as utils from "../utils";
+import { WebRProxy } from "../webr-proxy";
+import { ProxyHandle } from "./App";
 import { LoadingAnimation } from "./LoadingAnimation";
 import "./Viewer.css";
 import { FileContent } from "./filecontent";
 import skull from "./skull.svg";
-import * as React from "react";
 
 export type ViewerMethods =
   | { ready: false }
@@ -68,6 +68,7 @@ function createHttpRequestChannel(
   httpRequestChannel.port1.addEventListener("message", (event) => {
     const msg = event.data;
     if (msg.type === "makeRequest") {
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
       proxy.makeRequest(msg.scope, appName, event.ports[0]);
     }
   });
@@ -167,31 +168,31 @@ export function Viewer({
         const appDir = "/home/web_user/" + appName;
         const shelter = await new webRProxy.webR.Shelter();
         const files = await new shelter.RList(
-          Object.fromEntries(appCode.map((file) => {
-            return [file.name, file.content]
-          }))
-        )
+          Object.fromEntries(
+            appCode.map((file) => {
+              return [file.name, file.content];
+            })
+          )
+        );
         try {
-          await webRProxy.runRAsync(
-            '.save_files(files, appDir)',
-            { env: { files, appDir }, captureStreams: false }
-          );
-          await webRProxy.runRAsync(
-            '.start_app(appName, appDir)',
-            {
-              env: { appName, appDir },
-              captureConditions: false,
-              captureStreams: false
-            }
-          );
+          await webRProxy.runRAsync(".save_files(files, appDir)", {
+            env: { files, appDir },
+            captureStreams: false,
+          });
+          await webRProxy.runRAsync(".start_app(appName, appDir)", {
+            env: { appName, appDir },
+            captureConditions: false,
+            captureStreams: false,
+          });
         } finally {
-          shelter.purge();
+          await shelter.purge();
         }
 
         // Run R Shiny housekeeping every 100ms
         if (shinyIntervalRef.current) clearTimeout(shinyIntervalRef.current);
-        shinyIntervalRef.current =  window.setInterval(() => {
-          webRProxy.runRAsync('.shiny_tick()')
+        shinyIntervalRef.current = window.setInterval(() => {
+          // eslint-disable-next-line @typescript-eslint/no-floating-promises
+          webRProxy.runRAsync(".shiny_tick()");
         }, 100);
 
         viewerFrameRef.current.src = appInfo.urlPath;
@@ -213,11 +214,7 @@ export function Viewer({
       // Stop the periodic R Shiny housekeeping
       if (shinyIntervalRef.current) clearTimeout(shinyIntervalRef.current);
 
-      await resetRAppFrame(
-        webRProxy,
-        appInfo.appName,
-        viewerFrameRef.current
-      );
+      await resetRAppFrame(webRProxy, appInfo.appName, viewerFrameRef.current);
       setAppRunningState("empty");
     }
 

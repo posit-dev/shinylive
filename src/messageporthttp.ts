@@ -1,6 +1,6 @@
 import { AwaitableQueue } from "./awaitable-queue";
-import { loadPyodide } from "./pyodide/pyodide";
 import type { PyProxyCallable } from "./pyodide/pyodide";
+import { loadPyodide } from "./pyodide/pyodide";
 import { uint8ArrayToString } from "./utils";
 
 // =============================================================================
@@ -231,7 +231,7 @@ export async function makeHttpuvRequest(
   appName: string,
   clientPort: MessagePort,
   webRProxy: WebRProxy
-){
+) {
   const fromClientQueue = new AwaitableQueue<Record<string, any>>();
 
   clientPort.addEventListener("message", (event) => {
@@ -252,9 +252,10 @@ export async function makeHttpuvRequest(
   async function toClient(event: Record<string, any>): Promise<void> {
     const status = event.status.values[0];
     const utf8Encode = new TextEncoder();
-    const body = event.body.type === 'raw'
-      ? new Uint8Array(event.body.values)
-      : utf8Encode.encode(event.body.values[0]);
+    const body =
+      event.body.type === "raw"
+        ? new Uint8Array(event.body.values)
+        : utf8Encode.encode(event.body.values[0]);
 
     const headers = Object.assign(
       {
@@ -289,7 +290,7 @@ async function handleHttpuvRequests(
   webRProxy: WebRProxy,
   fromClient: () => Promise<Record<string, any>>,
   toClient: (event: Record<string, any>) => Promise<void>
-){
+) {
   let body = new Uint8Array(0);
   const shelter = await new webRProxy.webR.Shelter();
   for (;;) {
@@ -310,7 +311,8 @@ async function handleHttpuvRequests(
       try {
         const bytes = await new shelter.RRaw(Array.from(body));
         const env = await new shelter.REnvironment({ bytes, appName });
-        const httpuvResp = await webRProxy.webR.evalR(`
+        const httpuvResp = await webRProxy.webR.evalR(
+          `
           reader <- .RawReader$new()
           reader$init(bytes)
           tryCatch(
@@ -329,7 +331,9 @@ async function handleHttpuvRequests(
               reader$destroy()
             }
           )
-        `, { env, captureConditions: false, captureStreams: false });
+        `,
+          { env, captureConditions: false, captureStreams: false }
+        );
 
         if (!isRList(httpuvResp)) {
           throw new Error(
@@ -340,20 +344,20 @@ async function handleHttpuvRequests(
         // If the response from httpuv is pointing to a temporary file to serve,
         // grab that file's content and return it in the actual response.
         let resp: RList = httpuvResp;
-        const httpuvBody = await httpuvResp.get('body');
-        if (await httpuvBody.type() === 'list') {
-          const file = await httpuvResp.pluck('body', 'file');
+        const httpuvBody = await httpuvResp.get("body");
+        if ((await httpuvBody.type()) === "list") {
+          const file = await httpuvResp.pluck("body", "file");
           if (file) {
             const filename = await file.toString();
             const content = await webRProxy.webR.FS.readFile(filename);
             const raw = await new shelter.RRaw(Array.from(content));
-            resp = await httpuvResp.set('body', raw) as RList;
+            resp = (await httpuvResp.set("body", raw)) as RList;
           }
         }
 
         await toClient(await resp.toObject({ depth: 0 }));
       } finally {
-        shelter.purge();
+        await shelter.purge();
       }
     }
   }

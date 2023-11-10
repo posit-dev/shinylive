@@ -64,7 +64,7 @@ export function OutputCell({
       } catch (e) {
         setContent({ type: "text", value: (e as Error).message });
       } finally {
-        shelter.purge();
+        await shelter.purge();
       }
     };
 

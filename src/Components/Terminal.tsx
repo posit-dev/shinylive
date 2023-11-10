@@ -1,10 +1,10 @@
-import { ProxyHandle } from "./App";
-import "./Terminal.css";
 import * as React from "react";
 import { Terminal as XTerminal } from "xterm";
 import { FitAddon } from "xterm-addon-fit";
 import { Readline } from "xterm-readline";
 import "xterm/css/xterm.css";
+import { ProxyHandle } from "./App";
+import "./Terminal.css";
 
 export interface TerminalInterface {
   // Display code in the terminal as if it were typed, and execute it.
@@ -41,11 +41,13 @@ export function Terminal({
   const xTermRef = React.useRef<XTerminal | null>(null);
   const [xTermReadline, setXTermReadline] = React.useState<Readline>();
 
-  const runCodeRef = React.useRef(async (command: string): Promise<string> => "");
+  const runCodeRef = React.useRef(
+    async (command: string): Promise<string> => ""
+  );
   React.useEffect(() => {
     runCodeRef.current = async (command: string) => {
       if (!proxyHandle.ready) return "";
-      return await proxyHandle.runCode(command) ?? ">>> ";
+      return (await proxyHandle.runCode(command)) ?? ">>> ";
     };
   }, [proxyHandle]);
 
@@ -75,7 +77,8 @@ export function Terminal({
         selectionBackground: "#9999CC",
       },
       // TODO: Set fonts from CSS?
-      fontFamily: "Menlo, Monaco, Consolas, Liberation Mono, Courier New, Monospace",
+      fontFamily:
+        "Menlo, Monaco, Consolas, Liberation Mono, Courier New, Monospace",
       fontSize: 12,
     });
     const fitAddon = new FitAddon();
@@ -173,6 +176,7 @@ export function Terminal({
 
     function readLine(prompt: string) {
       if (!xTermReadline) return;
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
       xTermReadline.read(prompt).then(processLine);
     }
 
@@ -188,15 +192,15 @@ export function Terminal({
       if (!xTermRef.current) return;
       if (!proxyHandle.ready) return;
       if (proxyHandle.engine !== "webr") return;
-      if (event.key === 'c' && event.ctrlKey) {
+      if (event.key === "c" && event.ctrlKey) {
         xTermRef.current.write("^C");
         proxyHandle.interrupt();
         event.stopPropagation();
       }
     }
-    containerRef.current!.addEventListener('keydown', handleInterrupt, true);
+    containerRef.current!.addEventListener("keydown", handleInterrupt, true);
 
-    readLine(proxyHandle.engine === "webr" ? '> ' : ">>> ");
+    readLine(proxyHandle.engine === "webr" ? "> " : ">>> ");
   }, [proxyHandle, xTermReadline]);
 
   return <div ref={containerRef} className="shinylive-terminal"></div>;

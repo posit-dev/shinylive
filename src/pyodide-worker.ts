@@ -2,9 +2,9 @@ import { ASGIHTTPRequestScope, makeRequest } from "./messageporthttp";
 import { openChannel } from "./messageportwebsocket-channel";
 import { errorToPostableErrorObject } from "./postable-error";
 import type { LoadPyodideConfig, PyUtils, ResultType } from "./pyodide-proxy";
-import { setupPythonEnv, processReturnValue } from "./pyodide-proxy";
-import { loadPyodide } from "./pyodide/pyodide";
+import { processReturnValue, setupPythonEnv } from "./pyodide-proxy";
 import type { Py2JsResult, PyProxyIterable } from "./pyodide/pyodide";
+import { loadPyodide } from "./pyodide/pyodide";
 
 type Pyodide = Awaited<ReturnType<typeof loadPyodide>>;
 
@@ -127,11 +127,11 @@ self.onmessage = async function (e: MessageEvent): Promise<void> {
 
   if (msg.type === "openChannel") {
     const clientPort = e.ports[0];
-    openChannel(msg.path, msg.appName, clientPort, pyodide);
+    await openChannel(msg.path, msg.appName, clientPort, pyodide);
     return;
   } else if (msg.type === "makeRequest") {
     const clientPort = e.ports[0];
-    makeRequest(msg.scope, msg.appName, clientPort, pyodide);
+    await makeRequest(msg.scope, msg.appName, clientPort, pyodide);
     return;
   }
 

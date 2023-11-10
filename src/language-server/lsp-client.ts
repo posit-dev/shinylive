@@ -1,9 +1,9 @@
-import { inferFiletype } from "../utils";
-import { createUri, LanguageServerClient } from "./client";
 import {
   PublishDiagnosticsParams,
   TextDocumentContentChangeEvent,
 } from "vscode-languageserver-protocol";
+import { inferFiletype } from "../utils";
+import { LanguageServerClient, createUri } from "./client";
 
 /**
  * This is a wrapper around the LanguageServerClient class in client.ts. That
@@ -28,59 +28,57 @@ export abstract class LSPClient {
     event: "diagnostics",
     listener: (params: PublishDiagnosticsParams) => void
   ): void {
-    this.initPromise.then(() => {
-      this.client.on(event, listener);
-    });
+    this.initPromise
+      .then(() => {
+        this.client.on(event, listener);
+      })
+      .catch(() => {});
   }
 
   public off(
     event: "diagnostics",
     listener: (params: PublishDiagnosticsParams) => void
   ): void {
-    this.initPromise.then(() => {
-      this.client.off(event, listener);
+    this.initPromise
+      .then(() => {
+        this.client.off(event, listener);
+      })
+      .catch(() => {});
+  }
+
+  public async createFile(filename: string, content: string): Promise<void> {
+    await this.initPromise;
+
+    const languageId = inferFiletype(filename);
+    if (!languageId) {
+      console.log(`LSPClient: Could not infer language for ${filename}`);
+      return;
+    }
+
+    this.client.didOpenTextDocument({
+      textDocument: {
+        languageId: languageId,
+        text: content,
+        uri: createUri(filename),
+      },
     });
   }
 
-  public createFile(filename: string, content: string): void {
-    (async (): Promise<void> => {
-      await this.initPromise;
+  public async deleteFile(filename: string): Promise<void> {
+    await this.initPromise;
 
-      const languageId = inferFiletype(filename);
-      if (!languageId) {
-        console.log(`LSPClient: Could not infer language for ${filename}`);
-        return;
-      }
-
-      this.client.didOpenTextDocument({
-        textDocument: {
-          languageId: languageId,
-          text: content,
-          uri: createUri(filename),
-        },
-      });
-    })();
+    this.client.didCloseTextDocument({
+      textDocument: {
+        uri: createUri(filename),
+      },
+    });
   }
 
-  public deleteFile(filename: string): void {
-    (async (): Promise<void> => {
-      await this.initPromise;
-
-      this.client.didCloseTextDocument({
-        textDocument: {
-          uri: createUri(filename),
-        },
-      });
-    })();
-  }
-
-  public changeFile(
+  public async changeFile(
     filename: string,
     changeEvent: TextDocumentContentChangeEvent
-  ): void {
-    (async (): Promise<void> => {
-      await this.initPromise;
-      this.client.didChangeTextDocument(createUri(filename), [changeEvent]);
-    })();
+  ): Promise<void> {
+    await this.initPromise;
+    this.client.didChangeTextDocument(createUri(filename), [changeEvent]);
   }
 }

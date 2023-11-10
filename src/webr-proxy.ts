@@ -1,16 +1,15 @@
-import { ASGIHTTPRequestScope, makeHttpuvRequest } from "./messageporthttp.js";
-import { openChannelHttpuv } from "./messageportwebsocket-channel.js";
 import { Shelter, WebR, WebROptions } from "webr";
 import type { EvalROptions } from "webr/webr-chan";
+import { ASGIHTTPRequestScope, makeHttpuvRequest } from "./messageporthttp.js";
+import { openChannelHttpuv } from "./messageportwebsocket-channel.js";
 
 export interface WebRProxy {
   webR: WebR;
-  toClientCache: { [key: string]: (event: Record<string, any>) => Promise<void> };
+  toClientCache: {
+    [key: string]: (event: Record<string, any>) => Promise<void>;
+  };
 
-  runRAsync(
-    code: string,
-    options?: EvalROptions,
-  ): Promise<any>;
+  runRAsync(code: string, options?: EvalROptions): Promise<any>;
 
   runCode(code: string): Promise<string>;
 
@@ -34,7 +33,7 @@ class WebRWorkerProxy implements WebRProxy {
     resolve: (prompt: string) => void;
     reject: () => void;
   };
-  toClientCache: WebRProxy['toClientCache'] = {};
+  toClientCache: WebRProxy["toClientCache"] = {};
 
   constructor(
     config: WebROptions,
@@ -49,21 +48,18 @@ class WebRWorkerProxy implements WebRProxy {
       this.prompt = {
         resolve,
         reject,
-      }
+      };
     });
     this.webR.writeConsole(code);
     return await waitForPrompt;
   }
 
-  async runRAsync(
-    code: string,
-    options: EvalROptions = {},
-  ): Promise<any> {
+  async runRAsync(code: string, options: EvalROptions = {}): Promise<any> {
     if (!options.captureStreams) {
-      options.captureStreams = false
+      options.captureStreams = false;
     }
     if (!options.captureConditions) {
-      options.captureConditions = false
+      options.captureConditions = false;
     }
     await this.webR.init();
     if (!this.shelter) this.shelter = await new this.webR.Shelter();
@@ -72,11 +68,12 @@ class WebRWorkerProxy implements WebRProxy {
     } catch (e) {
       this.stderrCallback((e as Error).message);
     } finally {
-      this.shelter.purge();
+      await this.shelter.purge();
     }
   }
 
   run() {
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     this.#run();
   }
 
@@ -85,23 +82,24 @@ class WebRWorkerProxy implements WebRProxy {
     for (;;) {
       const output = await this.webR.read();
       switch (output.type) {
-        case 'stdout':
+        case "stdout":
           this.stdoutCallback(output.data);
           break;
-        case 'stderr':
+        case "stderr":
           this.stderrCallback(output.data);
           break;
-        case 'prompt':
+        case "prompt":
           if (this.prompt) {
             this.prompt.resolve(output.data);
           }
           break;
-        case '_webR_httpuv_WSResponse': {
+        case "_webR_httpuv_WSResponse": {
           const type = output.data.value[0];
-          const appName = output.data.value[1]
+          const appName = output.data.value[1];
           const message = output.data.value[2];
           const toClient = this.toClientCache[appName];
-          if (typeof toClient !== 'undefined') toClient({ type, message });
+          if (typeof toClient !== "undefined")
+            await toClient({ type, message });
           break;
         }
         default:
@@ -115,7 +113,7 @@ class WebRWorkerProxy implements WebRProxy {
     appName: string,
     clientPort: MessagePort
   ): Promise<void> {
-    openChannelHttpuv(path, appName, clientPort, this);
+    await openChannelHttpuv(path, appName, clientPort, this);
   }
 
   async makeRequest(
@@ -123,7 +121,7 @@ class WebRWorkerProxy implements WebRProxy {
     appName: string,
     clientPort: MessagePort
   ): Promise<void> {
-    makeHttpuvRequest(scope, appName, clientPort, this);
+    await makeHttpuvRequest(scope, appName, clientPort, this);
   }
 }
 

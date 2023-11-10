@@ -1,3 +1,4 @@
+import * as React from "react";
 import {
   ExampleCategory,
   ExampleItem,
@@ -9,7 +10,6 @@ import {
 import { AppEngine } from "./App";
 import "./ExampleSelector.css";
 import { FileContent } from "./filecontent";
-import * as React from "react";
 
 export function ExampleSelector({
   setCurrentFiles,
@@ -31,6 +31,7 @@ export function ExampleSelector({
   >(null);
 
   React.useEffect(() => {
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     (async () => {
       setExampleCategories(await getExampleCategories(appEngine));
     })();

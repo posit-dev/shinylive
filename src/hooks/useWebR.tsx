@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
-import * as utils from "../utils";
-import { WebRProxy, loadWebRProxy } from '../webr-proxy';
 import { ChannelType } from "webr";
+import * as utils from "../utils";
+import { WebRProxy, loadWebRProxy } from "../webr-proxy";
 
 export type WebRProxyHandle =
   | {
@@ -19,7 +19,7 @@ export type WebRProxyHandle =
       runCode: (command: string) => Promise<string>;
       tabComplete: (command: string) => Promise<string[]>;
       interrupt: () => void;
-  };
+    };
 
 export async function initWebR({
   stdout,
@@ -34,7 +34,7 @@ export async function initWebR({
 
   const channelType = crossOriginIsolated
     ? ChannelType.Automatic
-    : ChannelType.PostMessage
+    : ChannelType.PostMessage;
 
   const webRProxy = await loadWebRProxy(
     {
@@ -47,7 +47,7 @@ export async function initWebR({
 
   let initError = false;
   try {
-    await webRProxy.runRAsync('webr::install("codetools")')
+    await webRProxy.runRAsync('webr::install("codetools")');
     await webRProxy.runRAsync(load_r_pre);
   } catch (e) {
     initError = true;
@@ -59,7 +59,7 @@ export async function initWebR({
   }
 
   async function tabComplete(code: string): Promise<string[]> {
-    return [''];
+    return [""];
   }
 
   function interrupt() {
@@ -105,13 +105,16 @@ export function useWebR({
 }: {
   webRProxyHandlePromise: Promise<WebRProxyHandle>;
 }) {
-  const [webRProxyHandle, setwebRProxyHandle] = React.useState<WebRProxyHandle>({
-    ready: false,
-    shinyReady: false,
-    initError: false,
-  });
+  const [webRProxyHandle, setwebRProxyHandle] = React.useState<WebRProxyHandle>(
+    {
+      ready: false,
+      shinyReady: false,
+      initError: false,
+    }
+  );
 
   useEffect(() => {
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     (async () => {
       const webRProxyHandle = await webRProxyHandlePromise;
       setwebRProxyHandle(webRProxyHandle);
@@ -132,7 +135,7 @@ function ensureOpenChannelListener(webRProxy: WebRProxy): void {
         exists("${msg.appName}", envir = .shiny_app_registry)
       `);
       if (await appExists.toBoolean()) {
-        webRProxy.openChannel(msg.path, msg.appName, event.ports[0]);
+        await webRProxy.openChannel(msg.path, msg.appName, event.ports[0]);
       }
     }
   });
@@ -140,8 +143,7 @@ function ensureOpenChannelListener(webRProxy: WebRProxy): void {
   channelListenerRegistered = true;
 }
 
-const load_r_pre =
-`
+const load_r_pre = `
 .shiny_app_registry <- new.env()
 
 # Create a httpuv app from a Shiny app directory
@@ -253,4 +255,4 @@ const load_r_pre =
 }
 
 invisible(0)
-`
+`;

@@ -15,9 +15,9 @@ import {
   DidCloseTextDocumentNotification,
   DidCloseTextDocumentParams,
   DidOpenTextDocumentNotification,
-  InitializedNotification,
   InitializeParams,
   InitializeRequest,
+  InitializedNotification,
   LogMessageNotification,
   MessageConnection,
   PublishDiagnosticsNotification,
@@ -166,7 +166,7 @@ export class LanguageServerClient extends EventEmitter {
         initializeParams
       );
       this.capabilities = capabilities;
-      this.connection.sendNotification(InitializedNotification.type, {});
+      await this.connection.sendNotification(InitializedNotification.type, {});
     })();
     return this.initializePromise;
   }
@@ -191,37 +191,45 @@ export class LanguageServerClient extends EventEmitter {
     // };
   }
 
-  didOpenTextDocument(params: {
+  async didOpenTextDocument(params: {
     textDocument: Omit<TextDocumentItem, "version">;
-  }): void {
-    this.connection.sendNotification(DidOpenTextDocumentNotification.type, {
-      textDocument: {
-        ...params.textDocument,
-        version: this.nextVersion(params.textDocument.uri),
-      },
-    });
+  }): Promise<void> {
+    await this.connection.sendNotification(
+      DidOpenTextDocumentNotification.type,
+      {
+        textDocument: {
+          ...params.textDocument,
+          version: this.nextVersion(params.textDocument.uri),
+        },
+      }
+    );
   }
 
   // We close Python files that are deleted. We never write to the file system,
   // so that way they're effectively deleted.
-  didCloseTextDocument(params: DidCloseTextDocumentParams): void {
-    this.connection.sendNotification(
+  async didCloseTextDocument(
+    params: DidCloseTextDocumentParams
+  ): Promise<void> {
+    await this.connection.sendNotification(
       DidCloseTextDocumentNotification.type,
       params
     );
   }
 
-  didChangeTextDocument(
+  async didChangeTextDocument(
     uri: string,
     contentChanges: TextDocumentContentChangeEvent[]
-  ): void {
-    this.connection.sendNotification(DidChangeTextDocumentNotification.type, {
-      textDocument: {
-        uri,
-        version: this.nextVersion(uri),
-      },
-      contentChanges,
-    });
+  ): Promise<void> {
+    await this.connection.sendNotification(
+      DidChangeTextDocumentNotification.type,
+      {
+        textDocument: {
+          uri,
+          version: this.nextVersion(uri),
+        },
+        contentChanges,
+      }
+    );
   }
 
   async completionRequest(params: CompletionParams): Promise<CompletionList> {

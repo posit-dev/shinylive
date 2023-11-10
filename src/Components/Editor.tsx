@@ -3,6 +3,12 @@
 // released; when it's released, we can remove this.
 // https://github.com/microsoft/vscode/issues/141908
 /// <reference types="wicg-file-system-access" />
+import { EditorState, Extension, Prec } from "@codemirror/state";
+import { EditorView, KeyBinding, ViewUpdate, keymap } from "@codemirror/view";
+import "balloon-css";
+import { Zippable, zipSync } from "fflate";
+import * as React from "react";
+import * as LSP from "vscode-languageserver-protocol";
 import * as fileio from "../fileio";
 import { createUri } from "../language-server/client";
 import { LSPClient } from "../language-server/lsp-client";
@@ -28,12 +34,6 @@ import { useTabbedCodeMirror } from "./codeMirror/useTabbedCodeMirror";
 import * as cmUtils from "./codeMirror/utils";
 import { FileContent } from "./filecontent";
 import { editorUrlPrefix, fileContentsToUrlString } from "./share";
-import { EditorState, Extension, Prec } from "@codemirror/state";
-import { EditorView, KeyBinding, keymap, ViewUpdate } from "@codemirror/view";
-import "balloon-css";
-import { Zippable, zipSync } from "fflate";
-import * as React from "react";
-import * as LSP from "vscode-languageserver-protocol";
 
 export type EditorFile =
   | {
@@ -98,9 +98,8 @@ export default function Editor({
   // lsp-extensions.ts, and useTabbedCodeMirror.tsx, there are explicit checks
   // that files are python files in order to enable LS features, and they should
   // not be necessary at this level.
-  const lspClient: LSPClient = appEngine === 'python'
-    ? ensurePyrightClient()
-    : ensureNullClient();
+  const lspClient: LSPClient =
+    appEngine === "python" ? ensurePyrightClient() : ensureNullClient();
 
   // A unique ID for this instance of the Editor. At some point it might make
   // sense to hoist this up into the App component, if we need unique IDs for
@@ -154,8 +153,11 @@ export default function Editor({
   // If there's a file named app.py, assume we have a Shiny app.
   const [isShinyApp, setIsShinyApp] = React.useState(false);
   React.useEffect(() => {
-    setIsShinyApp(files.some(
-      (f) => f.name === "app.py" || f.name === "app.R" || f.name === "server.R")
+    setIsShinyApp(
+      files.some(
+        (f) =>
+          f.name === "app.py" || f.name === "app.R" || f.name === "server.R"
+      )
     );
   }, [files]);
 
@@ -165,6 +167,7 @@ export default function Editor({
   const runCodeInTerminal = React.useCallback(
     (command: string) => {
       if (!terminalMethods.ready) return;
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
       terminalMethods.runCodeInTerminal(command);
     },
     [terminalMethods]
@@ -175,6 +178,7 @@ export default function Editor({
     if (!viewerMethods || !viewerMethods.ready) return;
 
     syncActiveFileState();
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     (async () => {
       await viewerMethods.stopApp();
       await viewerMethods.runApp(editorFilesToFileContents(files));
@@ -198,10 +202,12 @@ export default function Editor({
 
     setFilesHaveChanged(false);
 
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     (async () => {
       await viewerMethods.stopApp();
       currentFilesFromApp.map((file) => {
         if (file.type === "text" && inferFiletype(file.name) === "python") {
+          // eslint-disable-next-line @typescript-eslint/no-floating-promises
           lspClient.createFile(lspPathPrefix + file.name, file.content);
         }
       });
@@ -213,7 +219,8 @@ export default function Editor({
       // state vars are set and available. It would be nice to consolidate the
       // two vars, but I haven't figured out how yet.
       const isShinyCode = currentFilesFromApp.some(
-        (f) => f.name === "app.py" || f.name === 'app.R' || f.name === 'server.R'
+        (f) =>
+          f.name === "app.py" || f.name === "app.R" || f.name === "server.R"
       );
       if (isShinyCode) {
         await viewerMethods.runApp(currentFilesFromApp);
@@ -235,9 +242,11 @@ export default function Editor({
     if (!runOnLoad) return;
     if (!terminalMethods.ready) return;
 
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     (async () => {
       const isShinyCode = currentFilesFromApp.some(
-        (f) => f.name === "app.py" || f.name === 'app.R' || f.name === 'server.R'
+        (f) =>
+          f.name === "app.py" || f.name === "app.R" || f.name === "server.R"
       );
       if (!isShinyCode) {
         // TODO: use activeFile instead of currentFilesFromApp?
@@ -409,7 +418,7 @@ export default function Editor({
 
     if (fileContents.length == 1) {
       const file = fileContents[0];
-      fileio.downloadFile(
+      await fileio.downloadFile(
         file.name,
         file.content,
         file.type === "text" ? "text/plain" : "application/octet-stream"
@@ -425,7 +434,9 @@ export default function Editor({
     syncActiveFileState();
     const fileContents = editorFilesToFileContents(files);
     window.open(
-      editorUrlPrefix(appEngine) + "#code=" + fileContentsToUrlString(fileContents),
+      editorUrlPrefix(appEngine) +
+        "#code=" +
+        fileContentsToUrlString(fileContents),
       "_blank"
     );
   }, [files, syncActiveFileState]);
@@ -470,16 +481,17 @@ export default function Editor({
   // ===========================================================================
   // Buttons
   // ===========================================================================
-  const formatCodeButton = appEngine === 'python' ? (
-    <button
-      className="code-run-button"
-      aria-label="Reformat code"
-      data-balloon-pos="down"
-      onClick={() => formatCode()}
-    >
-      <Icon icon="code"></Icon>
-    </button>
-  ) : null;
+  const formatCodeButton =
+    appEngine === "python" ? (
+      <button
+        className="code-run-button"
+        aria-label="Reformat code"
+        data-balloon-pos="down"
+        onClick={() => formatCode()}
+      >
+        <Icon icon="code"></Icon>
+      </button>
+    ) : null;
 
   const formatCode = React.useCallback(async () => {
     if (!cmView) return;

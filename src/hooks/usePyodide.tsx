@@ -1,6 +1,6 @@
+import React, { useEffect } from "react";
 import { loadPyodideProxy, ProxyType, PyodideProxy } from "../pyodide-proxy";
 import * as utils from "../utils";
-import React, { useEffect } from "react";
 
 export type PyodideProxyHandle =
   | {
@@ -122,6 +122,7 @@ export function usePyodide({
     });
 
   useEffect(() => {
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     (async () => {
       const pyodideProxyHandle = await pyodideProxyHandlePromise;
       setPyodideProxyHandle(pyodideProxyHandle);
@@ -405,11 +406,14 @@ function ensureOpenChannelListener(pyodideProxy: PyodideProxy): void {
   window.addEventListener("message", async (event) => {
     const msg = event.data;
     if (msg.type === "openChannel") {
-      const appExists = await pyodideProxy.runPyAsync(`
+      const appExists = await pyodideProxy.runPyAsync(
+        `
         "${msg.appName}" in _shiny_app_registry
-      `, { returnResult: "value" });
+      `,
+        { returnResult: "value" }
+      );
       if (appExists) {
-        pyodideProxy.openChannel(msg.path, msg.appName, event.ports[0]);
+        await pyodideProxy.openChannel(msg.path, msg.appName, event.ports[0]);
       }
     }
   });

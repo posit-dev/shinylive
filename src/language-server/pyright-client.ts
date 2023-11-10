@@ -1,8 +1,8 @@
+import * as LSP from "vscode-languageserver-protocol";
 import { currentScriptDir } from "../utils";
 import { createUri } from "./client";
 import { LSPClient } from "./lsp-client";
 import { pyright } from "./pyright";
-import * as LSP from "vscode-languageserver-protocol";
 
 let pyrightClient: PyrightClient | null = null;
 
@@ -32,22 +32,25 @@ export class PyrightClient extends LSPClient {
     super(client);
   }
 
-  public override createFile(filename: string, content: string): void {
+  public override async createFile(
+    filename: string,
+    content: string
+  ): Promise<void> {
     const params: LSP.CreateFile = {
       uri: createUri(filename),
       kind: "create",
     };
-    this.client.connection.sendNotification("pyright/createFile", params);
-    super.createFile(filename, content);
+    await this.client.connection.sendNotification("pyright/createFile", params);
+    await super.createFile(filename, content);
   }
 
-  public override deleteFile(filename: string): void {
+  public override async deleteFile(filename: string): Promise<void> {
     const params: LSP.DeleteFile = {
       uri: createUri(filename),
       kind: "delete",
     };
-    this.client.connection.sendNotification("pyright/deleteFile", params);
-    super.deleteFile(filename);
+    await this.client.connection.sendNotification("pyright/deleteFile", params);
+    await super.deleteFile(filename);
   }
 }
 

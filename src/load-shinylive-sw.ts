@@ -1,4 +1,4 @@
-import { dirname, currentScriptDir } from "./utils";
+import { currentScriptDir, dirname } from "./utils";
 
 const localhostNames = ["localhost", "127.0.0.1", "[::1]"];
 
@@ -40,6 +40,7 @@ if ("serviceWorker" in navigator) {
     .then(() => console.log("Service Worker registered"))
     .catch(() => console.log("Service Worker registration failed"));
 
+  // eslint-disable-next-line @typescript-eslint/no-floating-promises
   navigator.serviceWorker.ready.then(() => {
     if (!navigator.serviceWorker.controller) {
       // For Shift+Reload case; navigator.serviceWorker.controller will
