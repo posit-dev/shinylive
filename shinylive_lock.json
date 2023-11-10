@@ -1,8 +1,8 @@
 {
   "htmltools": {
     "name": "htmltools",
-    "version": "0.4.1",
-    "filename": "htmltools-0.4.1-py3-none-any.whl",
+    "version": "0.4.1.9000",
+    "filename": "htmltools-0.4.1.9000-py3-none-any.whl",
     "sha256": null,
     "url": null,
     "depends": [
@@ -15,8 +15,8 @@
   },
   "shiny": {
     "name": "shiny",
-    "version": "0.6.0",
-    "filename": "shiny-0.6.0-py3-none-any.whl",
+    "version": "0.6.0.9001",
+    "filename": "shiny-0.6.0.9001-py3-none-any.whl",
     "sha256": null,
     "url": null,
     "depends": [
@@ -24,7 +24,7 @@
       {"name": "uvicorn", "specs": [[">=", "0.16.0"]]},
       {"name": "starlette", "specs": [[">=", "0.17.1"]]},
       {"name": "python-multipart", "specs": []},
-      {"name": "htmltools", "specs": [[">=", "0.4.0"]]},
+      {"name": "htmltools", "specs": []},
       {"name": "click", "specs": [[">=", "8.1.4"]]},
       {"name": "markdown-it-py", "specs": [[">=", "1.1.0"]]},
       {"name": "mdit-py-plugins", "specs": [[">=", "0.3.0"]]},
@@ -96,7 +96,7 @@
   },
   "mizani": {
     "name": "mizani",
-    "version": "0.0.post20+g57f00ad",
+    "version": "0.8.1.post24+g57f00ad",
     "filename": "mizani-0.0.0-py3-none-any.whl",
     "sha256": null,
     "url": null,
@@ -113,7 +113,7 @@
   },
   "plotnine": {
     "name": "plotnine",
-    "version": "0.0.post20+g64295e1",
+    "version": "0.10.1.post98+g64295e1a",
     "filename": "plotnine-0.0.0-py3-none-any.whl",
     "sha256": null,
     "url": null,

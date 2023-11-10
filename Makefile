@@ -253,7 +253,7 @@ packages: clean-packages \
 $(PACKAGE_DIR)/$(HTMLTOOLS_WHEEL): $(PYBIN) $(PACKAGE_DIR)/py-htmltools
 	# Remove any old copies of the package
 	rm -f $(PACKAGE_DIR)/htmltools*.whl
-	$(PYBIN)/pip install -e $(PACKAGE_DIR)/py-htmltools[dev,test]
+	. $(PYBIN)/activate && cd $(PACKAGE_DIR)/py-htmltools && make install-editable
 	. $(PYBIN)/activate && cd $(PACKAGE_DIR)/py-htmltools && make dist && mv dist/*.whl ../
 
 $(PACKAGE_DIR)/$(SHINY_WHEEL): $(PYBIN) $(PACKAGE_DIR)/py-shiny

@@ -346,24 +346,43 @@ async def _format_py_code(x: str):
   `
 _shiny_app_registry = {}
 
+# The purpose of this class is for Shiny express apps to have the same "shape"
+# as regular Shiny apps which are loaded with:
+#   importlib.import_module(f"{app_name}.app")
+# Essentially we are wrapping the express app in an object that looks like a
+# Python (not Shiny) module. The express app has the name "app" in that module.
+class ShinyExpressAppModule:
+    def __init__(self, app_path):
+        import shiny.express
+        self.app = shiny.express.wrap_express_app(app_path)
+
 async def _start_app(app_name, scope = _shiny_app_registry):
     import sys
     import importlib
+    import shiny.express
+    from pathlib import Path
 
-    app_path = f"/home/pyodide/{app_name}"
-    sys.path.insert(0, app_path)
+    app_dir = f"/home/pyodide/{app_name}"
+    sys.path.insert(0, app_dir)
 
-    await _install_requirements_from_dir(app_path)
+    await _install_requirements_from_dir(app_dir)
 
-    await _load_packages_from_dir(app_path)
+    await _load_packages_from_dir(app_dir)
 
     # This prevents random occurrences of ModuleNotFoundError.
     importlib.invalidate_caches()
 
-    app_obj = importlib.import_module(f"{app_name}.app")
+    class ModuleApp:
+        app = None
+
+    if shiny.express.is_express_app("app.py", app_dir):
+        app_obj = ShinyExpressAppModule(Path(app_dir) / "app.py")
+    else:
+        app_obj = importlib.import_module(f"{app_name}.app")
+
     scope[app_name] = app_obj
 
-    sys.path.remove(app_path)
+    sys.path.remove(app_dir)
 
 
 async def _stop_app(app_name, scope = _shiny_app_registry):
