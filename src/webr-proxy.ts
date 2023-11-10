@@ -131,7 +131,7 @@ export async function loadWebRProxy(
   stderrCallback: (text: string) => void = console.error
 ): Promise<WebRProxy> {
   const webRProxy = new WebRWorkerProxy(config, stdoutCallback, stderrCallback);
-  await webRProxy.webR.init;
+  await webRProxy.webR.init();
   webRProxy.run();
   return webRProxy;
 }
