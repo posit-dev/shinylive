@@ -318,14 +318,16 @@ async function handleHttpuvRequests(
           tryCatch(
             {
               app <- get(appName, env = .shiny_app_registry)
-              app$call(
-                list(
-                  PATH_INFO = "${scope.path}",
-                  REQUEST_METHOD = "${scope.method}",
-                  QUERY_STRING = "${scope.query_string}",
-                  rook.input = reader
+              if (!is.null(app)) {
+                app$call(
+                  list(
+                    PATH_INFO = "${scope.path}",
+                    REQUEST_METHOD = "${scope.method}",
+                    QUERY_STRING = "${scope.query_string}",
+                    rook.input = reader
+                  )
                 )
-              )
+              }
             },
             finally = {
               reader$destroy()
