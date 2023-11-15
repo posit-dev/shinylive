@@ -157,6 +157,10 @@ const load_r_pre = `
   # Required so that downloadLink and registerDataObj work
   shiny:::workerId("")
 
+  # Ensure that shiny::isRunning() returns TRUE
+  shiny:::clearCurrentAppState()
+  shiny:::initCurrentAppState(appObj)
+
   # Creates http and ws handlers from the app object. However, these are not
   # Rook handlers, but rather use Shiny's own middleware protocol.
   # https://github.com/rstudio/shiny/blob/main/R/middleware.R
