@@ -246,36 +246,47 @@ _shinylive:
 # because I'm not sure how to set up the dependencies reliably.
 ## Build htmltools, shiny, and shinywidgets wheels
 packages: clean-packages \
-	$(PACKAGE_DIR)/$(HTMLTOOLS_WHEEL) \
-	$(PACKAGE_DIR)/$(SHINY_WHEEL) \
-	$(PACKAGE_DIR)/$(SHINYWIDGETS_WHEEL) \
-	$(PACKAGE_DIR)/$(FAICONS_WHEEL) \
-	$(PACKAGE_DIR)/$(MIZANI_WHEEL) \
-	$(PACKAGE_DIR)/$(PLOTNINE_WHEEL) \
+	package-htmltools \
+	package-shiny \
+	package-shinywidgets \
+	package-faicons \
+	package-mizani \
+	package-plotnine
+
+
+package-htmltools: $(PACKAGE_DIR)/$(HTMLTOOLS_WHEEL)
+
+package-shiny: $(PACKAGE_DIR)/$(SHINY_WHEEL)
+
+package-shinywidgets: $(PACKAGE_DIR)/$(SHINYWIDGETS_WHEEL)
+
+package-faicons: $(PACKAGE_DIR)/$(FAICONS_WHEEL)
+
+package-mizani: $(PACKAGE_DIR)/$(MIZANI_WHEEL)
+
+package-plotnine: $(PACKAGE_DIR)/$(PLOTNINE_WHEEL)
+
 
 $(PACKAGE_DIR)/$(HTMLTOOLS_WHEEL): $(PYBIN) $(PACKAGE_DIR)/py-htmltools
 	# Remove any old copies of the package
 	rm -f $(PACKAGE_DIR)/htmltools*.whl
-	. $(PYBIN)/activate && cd $(PACKAGE_DIR)/py-htmltools && make install-editable
-	. $(PYBIN)/activate && cd $(PACKAGE_DIR)/py-htmltools && make dist && mv dist/*.whl ../
+	$(PYBIN)/pip install -e $(PACKAGE_DIR)/py-htmltools[dev]
+	. $(PYBIN)/activate && cd $(PACKAGE_DIR)/py-htmltools && make install && mv dist/*.whl ../
 
 $(PACKAGE_DIR)/$(SHINY_WHEEL): $(PYBIN) $(PACKAGE_DIR)/py-shiny
 	# Remove any old copies of the package
 	rm -f $(PACKAGE_DIR)/shiny*.whl
-	$(PYBIN)/pip install -e $(PACKAGE_DIR)/py-shiny[dev,test]
-	. $(PYBIN)/activate && cd $(PACKAGE_DIR)/py-shiny && make dist && mv dist/*.whl ../
+	. $(PYBIN)/activate && cd $(PACKAGE_DIR)/py-shiny && make install && mv dist/*.whl ../
 
 $(PACKAGE_DIR)/$(SHINYWIDGETS_WHEEL): $(PYBIN) $(PACKAGE_DIR)/py-shinywidgets
 	# Remove any old copies of the package
 	rm -f $(PACKAGE_DIR)/shinywidgets*.whl
-	$(PYBIN)/pip install -e $(PACKAGE_DIR)/py-shinywidgets[dev,test]
-	. $(PYBIN)/activate && cd $(PACKAGE_DIR)/py-shinywidgets && make dist && mv dist/*.whl ../
+	. $(PYBIN)/activate && cd $(PACKAGE_DIR)/py-shinywidgets && make install && mv dist/*.whl ../
 
 $(PACKAGE_DIR)/$(FAICONS_WHEEL): $(PYBIN) $(PACKAGE_DIR)/py-faicons
 	# Remove any old copies of the package
 	rm -f $(PACKAGE_DIR)/faicons*.whl
-	$(PYBIN)/pip install -e $(PACKAGE_DIR)/py-faicons[dev,test]
-	. $(PYBIN)/activate && cd $(PACKAGE_DIR)/py-faicons && make dist && mv dist/*.whl ../
+	. $(PYBIN)/activate && cd $(PACKAGE_DIR)/py-faicons && make install && mv dist/*.whl ../
 
 $(PACKAGE_DIR)/$(MIZANI_WHEEL): $(PYBIN) $(PACKAGE_DIR)/mizani
 	rm -f $(PACKAGE_DIR)/mizani*.whl
