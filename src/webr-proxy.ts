@@ -16,13 +16,13 @@ export interface WebRProxy {
   openChannel(
     path: string,
     appName: string,
-    clientPort: MessagePort,
+    clientPort: MessagePort
   ): Promise<void>;
 
   makeRequest(
     scope: ASGIHTTPRequestScope,
     appName: string,
-    clientPort: MessagePort,
+    clientPort: MessagePort
   ): Promise<void>;
 }
 
@@ -38,7 +38,7 @@ class WebRWorkerProxy implements WebRProxy {
   constructor(
     config: WebROptions,
     private stdoutCallback: (text: string) => void,
-    private stderrCallback: (text: string) => void,
+    private stderrCallback: (text: string) => void
   ) {
     this.webR = new WebR(config);
   }
@@ -67,7 +67,6 @@ class WebRWorkerProxy implements WebRProxy {
       return await this.shelter.evalR(code, options);
     } catch (e) {
       this.stderrCallback((e as Error).message);
-      throw e;
     } finally {
       await this.shelter.purge();
     }
@@ -112,7 +111,7 @@ class WebRWorkerProxy implements WebRProxy {
   async openChannel(
     path: string,
     appName: string,
-    clientPort: MessagePort,
+    clientPort: MessagePort
   ): Promise<void> {
     await openChannelHttpuv(path, appName, clientPort, this);
   }
@@ -120,7 +119,7 @@ class WebRWorkerProxy implements WebRProxy {
   async makeRequest(
     scope: ASGIHTTPRequestScope,
     appName: string,
-    clientPort: MessagePort,
+    clientPort: MessagePort
   ): Promise<void> {
     await makeHttpuvRequest(scope, appName, clientPort, this);
   }
@@ -129,7 +128,7 @@ class WebRWorkerProxy implements WebRProxy {
 export async function loadWebRProxy(
   config: WebROptions,
   stdoutCallback: (text: string) => void = console.log,
-  stderrCallback: (text: string) => void = console.error,
+  stderrCallback: (text: string) => void = console.error
 ): Promise<WebRProxy> {
   const webRProxy = new WebRWorkerProxy(config, stdoutCallback, stderrCallback);
   await webRProxy.webR.init();

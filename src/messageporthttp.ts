@@ -13,8 +13,8 @@ export async function fetchASGI(
   resource: RequestInfo,
   init?: RequestInit,
   filter: (bodyChunk: Uint8Array, response: Response) => Uint8Array = (
-    bodyChunk,
-  ) => bodyChunk,
+    bodyChunk
+  ) => bodyChunk
 ): Promise<Response> {
   if (typeof resource === "string" || typeof init !== "undefined") {
     resource = new Request(resource, init);
@@ -27,7 +27,7 @@ export async function fetchASGI(
       type: "makeRequest",
       scope: reqToASGI(resource),
     },
-    [channel.port2],
+    [channel.port2]
   );
 
   const blob = await resource.blob();
@@ -98,13 +98,13 @@ export async function makeRequest(
   scope: ASGIHTTPRequestScope,
   appName: string,
   clientPort: MessagePort,
-  pyodide: Pyodide,
+  pyodide: Pyodide
 ) {
   // We could _almost_ use app(), but unfortunately pyodide's implicit proxying
   // behavior isn't compatible with ASGI (which wants dict, not JsProxy); we
   // need to explicitly convert stuff first, which is what call_pyodide does.
   const asgiFunc = pyodide.runPython(
-    `_shiny_app_registry["${appName}"].app.call_pyodide`,
+    `_shiny_app_registry["${appName}"].app.call_pyodide`
   ) as PyProxyCallable;
   await connect(scope, clientPort, asgiFunc);
 }
@@ -112,7 +112,7 @@ export async function makeRequest(
 async function connect(
   scope: ASGIHTTPRequestScope,
   clientPort: MessagePort,
-  asgiFunc: PyProxyCallable,
+  asgiFunc: PyProxyCallable
 ) {
   const fromClientQueue = new AwaitableQueue<Record<string, any>>();
 
@@ -230,7 +230,7 @@ export async function makeHttpuvRequest(
   scope: ASGIHTTPRequestScope,
   appName: string,
   clientPort: MessagePort,
-  webRProxy: WebRProxy,
+  webRProxy: WebRProxy
 ) {
   const fromClientQueue = new AwaitableQueue<Record<string, any>>();
 
@@ -265,8 +265,8 @@ export async function makeHttpuvRequest(
       Object.fromEntries(
         [...Array(event.headers.names.length).keys()].map((i) => {
           return [event.headers.names[i], event.headers.values[i].values[0]];
-        }),
-      ),
+        })
+      )
     );
 
     clientPort.postMessage({
@@ -289,7 +289,7 @@ async function handleHttpuvRequests(
   appName: string,
   webRProxy: WebRProxy,
   fromClient: () => Promise<Record<string, any>>,
-  toClient: (event: Record<string, any>) => Promise<void>,
+  toClient: (event: Record<string, any>) => Promise<void>
 ) {
   let body = new Uint8Array(0);
   const shelter = await new webRProxy.webR.Shelter();
@@ -318,29 +318,26 @@ async function handleHttpuvRequests(
           tryCatch(
             {
               app <- get(appName, env = .shiny_app_registry)
-              if (!is.null(app)) {
-                app$call(
-                  list(
-                    PATH_INFO = "${scope.path}",
-                    REQUEST_METHOD = "${scope.method}",
-                    QUERY_STRING = "${scope.query_string}",
-                    rook.input = reader
-                  )
+              app$call(
+                list(
+                  PATH_INFO = "${scope.path}",
+                  REQUEST_METHOD = "${scope.method}",
+                  QUERY_STRING = "${scope.query_string}",
+                  rook.input = reader
                 )
-              }
+              )
             },
             finally = {
               reader$destroy()
             }
           )
         `,
-          { env, captureConditions: false, captureStreams: false },
+          { env, captureConditions: false, captureStreams: false }
         );
 
         if (!isRList(httpuvResp)) {
-          const type = await httpuvResp.type();
           throw new Error(
-            `Unexpected response type: "${type}", expected "list".`,
+            `Unexpected response type: "${httpuvResp.type()}", expected "list".`
           );
         }
 
