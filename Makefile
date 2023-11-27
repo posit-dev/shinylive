@@ -18,6 +18,7 @@ SHINYLIVE_VERSION = $(shell node -p "require('./package.json').version")
 
 PYODIDE_VERSION = 0.22.1
 PYODIDE_DIST_FILENAME = pyodide-$(PYODIDE_VERSION).tar.bz2
+R_SHINY_VERSION = 1.8.0.9000-webr
 BUILD_DIR = ./build
 PACKAGE_DIR = ./packages
 DIST_DIR = ./dist
@@ -127,13 +128,15 @@ $(BUILD_DIR)/shinylive/style-resets.css: src/style-resets.css
 $(BUILD_DIR)/shinylive/pyodide:
 	mkdir -p $(BUILD_DIR)/shinylive/pyodide
 	cd $(BUILD_DIR)/shinylive && \
-	curl -L https://github.com/pyodide/pyodide/releases/download/$(PYODIDE_VERSION)/$(PYODIDE_DIST_FILENAME) \
+	curl --fail -L https://github.com/pyodide/pyodide/releases/download/$(PYODIDE_VERSION)/$(PYODIDE_DIST_FILENAME) \
 	    | tar --exclude "*test*.tar" --exclude "node_modules" -xvj
 
 $(BUILD_DIR)/shinylive/webr: webr
 webr:
 	mkdir -p $(BUILD_DIR)/shinylive/webr
 	cp -r node_modules/webr/dist/. $(BUILD_DIR)/shinylive/webr
+	curl --fail -L https://github.com/r-wasm/shiny/releases/download/v$(R_SHINY_VERSION)/library.data -o $(BUILD_DIR)/shinylive/webr/library.data
+	curl --fail -L https://github.com/r-wasm/shiny/releases/download/v$(R_SHINY_VERSION)/library.js.metadata -o $(BUILD_DIR)/shinylive/webr/library.js.metadata
 
 # Copy pyodide.js and .d.ts to src/pyodide/. This is a little weird in that in
 # `make all`, it comes after downloading pyodide. In the future we may be able
