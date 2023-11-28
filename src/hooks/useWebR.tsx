@@ -47,7 +47,7 @@ export async function initWebR({
 
   let initError = false;
   try {
-    await webRProxy.runRAsync('webr::install("codetools")');
+    await webRProxy.runRAsync('webr::install(c("codetools", "renv", "shiny"))');
     await webRProxy.runRAsync(load_r_pre);
   } catch (e) {
     initError = true;
@@ -87,8 +87,6 @@ export async function initRShiny({
     throw new Error("webRProxyHandle is not ready");
   }
 
-  await webRProxyHandle.webRProxy.runRAsync('webr::install("renv")');
-  await webRProxyHandle.webRProxy.runRAsync('webr::install("shiny")');
   await webRProxyHandle.webRProxy.runRAsync("library(shiny)");
   // Increase webR expressions limit for deep call stack required for Shiny
   await webRProxyHandle.webRProxy.runRAsync("options(expressions=1000)");
