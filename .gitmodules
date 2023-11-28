@@ -1,7 +1,7 @@
-[submodule "srcjs/packages/py-shiny"]
+[submodule "packages/py-shiny"]
 	path = packages/py-shiny
 	url = https://github.com/rstudio/py-shiny.git
-[submodule "srcjs/packages/py-htmltools"]
+[submodule "packages/py-htmltools"]
 	path = packages/py-htmltools
 	url = https://github.com/rstudio/py-htmltools.git
 [submodule "typeshed"]
