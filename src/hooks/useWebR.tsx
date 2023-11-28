@@ -47,7 +47,8 @@ export async function initWebR({
 
   let initError = false;
   try {
-    await webRProxy.runRAsync('webr::install(c("codetools", "renv", "shiny"))');
+    const libraryUrl = utils.currentScriptDir() + "/webr/library.data";
+    await webRProxy.runRAsync(`webr::mount("/shiny", "${libraryUrl}")`);
     await webRProxy.runRAsync(load_r_pre);
   } catch (e) {
     initError = true;
@@ -144,6 +145,9 @@ function ensureOpenChannelListener(webRProxy: WebRProxy): void {
 const load_r_pre = `
 # Force internal tar - silence renv warning
 Sys.setenv(TAR = "internal")
+
+# Use mounted shiny R package library
+.libPaths(c(.libPaths(), "/shiny"))
 
 # Shim R functions with webR versions (e.g. install.packages())
 webr::shim_install()
