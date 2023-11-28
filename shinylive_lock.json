@@ -94,23 +94,6 @@
       "mdit_py_plugins"
     ]
   },
-  "mizani": {
-    "name": "mizani",
-    "version": "0.8.1.post24+g57f00ad",
-    "filename": "mizani-0.0.0-py3-none-any.whl",
-    "sha256": null,
-    "url": null,
-    "depends": [
-      {"name": "numpy", "specs": [[">=", "1.19.0"]]},
-      {"name": "scipy", "specs": [[">=", "1.5.0"]]},
-      {"name": "pandas", "specs": [[">=", "1.3.5"]]},
-      {"name": "matplotlib", "specs": [[">=", "3.5.0"]]},
-      {"name": "tzdata", "specs": []}
-    ],
-    "imports": [
-      "mizani"
-    ]
-  },
   "plotnine": {
     "name": "plotnine",
     "version": "0.10.1.post98+g64295e1a",
@@ -176,10 +159,10 @@
   },
   "ipyleaflet": {
     "name": "ipyleaflet",
-    "version": "0.17.4",
-    "filename": "ipyleaflet-0.17.4-py3-none-any.whl",
-    "sha256": "e322a7ed3a2592a5e837f2a7fe5dda0ba050cb39148df0bee0d9e4deb7c9ff8c",
-    "url": "https://files.pythonhosted.org/packages/df/05/232bbac826ebdf72a8c465232c45497f4c747a19a1f11f3cb401e2de8856/ipyleaflet-0.17.4-py3-none-any.whl",
+    "version": "0.18.0",
+    "filename": "ipyleaflet-0.18.0-py3-none-any.whl",
+    "sha256": "b79b367d971e9b8c296650c9f7fe4b02e99fa709af5f0c81a63f80dd6c6bb475",
+    "url": "https://files.pythonhosted.org/packages/04/b9/210c42543136022c409e6daa84181b330a6c42ff561eb2470132109333ed/ipyleaflet-0.18.0-py3-none-any.whl",
     "depends": [
       {"name": "ipywidgets", "specs": [["<", "9"], [">=", "7.6.0"]]},
       {"name": "traittypes", "specs": [["<", "3"], [">=", "0.2.1"]]},
@@ -222,10 +205,10 @@
   },
   "black": {
     "name": "black",
-    "version": "23.10.1",
-    "filename": "black-23.10.1-py3-none-any.whl",
-    "sha256": "d431e6739f727bb2e0495df64a6c7a5310758e87505f5f8cde9ff6c0f2d7e4fe",
-    "url": "https://files.pythonhosted.org/packages/72/6e/3c49b5779a087979cb1916b1409e2bcee2d58bab1f880a4d2720251a3bfa/black-23.10.1-py3-none-any.whl",
+    "version": "23.11.0",
+    "filename": "black-23.11.0-py3-none-any.whl",
+    "sha256": "54caaa703227c6e0c87b76326d0862184729a69b73d3b7305b6288e1d830067e",
+    "url": "https://files.pythonhosted.org/packages/be/fb/8a670d2a246a351d7662e785d85a636c1c60b5800d175421cdfcb2a59b1d/black-23.11.0-py3-none-any.whl",
     "depends": [
       {"name": "click", "specs": [[">=", "8.0.0"]]},
       {"name": "mypy-extensions", "specs": [[">=", "0.4.3"]]},
@@ -250,10 +233,10 @@
   },
   "uvicorn": {
     "name": "uvicorn",
-    "version": "0.23.2",
-    "filename": "uvicorn-0.23.2-py3-none-any.whl",
-    "sha256": "1f9be6558f01239d4fdf22ef8126c39cb1ad0addf76c40e760549d2c2f43ab53",
-    "url": "https://files.pythonhosted.org/packages/79/96/b0882a1c3f7ef3dd86879e041212ae5b62b4bd352320889231cc735a8e8f/uvicorn-0.23.2-py3-none-any.whl",
+    "version": "0.24.0.post1",
+    "filename": "uvicorn-0.24.0.post1-py3-none-any.whl",
+    "sha256": "7c84fea70c619d4a710153482c0d230929af7bcf76c7bfa6de151f0a3a80121e",
+    "url": "https://files.pythonhosted.org/packages/7e/17/4b7a76fffa7babf397481040d8aef2725b2b81ae19f1a31b5ca0c17d49e6/uvicorn-0.24.0.post1-py3-none-any.whl",
     "depends": [
       {"name": "click", "specs": [[">=", "7.0"]]},
       {"name": "h11", "specs": [[">=", "0.8"]]}
@@ -264,10 +247,10 @@
   },
   "starlette": {
     "name": "starlette",
-    "version": "0.31.1",
-    "filename": "starlette-0.31.1-py3-none-any.whl",
-    "sha256": "009fb98ecd551a55017d204f033c58b13abcd4719cb5c41503abbf6d260fde11",
-    "url": "https://files.pythonhosted.org/packages/c5/8c/38a89e8f477a57a506a5727fe5134b6043a9bc487835a5d52a56c457a1cf/starlette-0.31.1-py3-none-any.whl",
+    "version": "0.32.0.post1",
+    "filename": "starlette-0.32.0.post1-py3-none-any.whl",
+    "sha256": "cd0cb10ddb49313f609cedfac62c8c12e56c7314b66d89bb077ba228bada1b09",
+    "url": "https://files.pythonhosted.org/packages/40/9e/6bfa6be40034fa04cc50e2a81d24a4e5b89279c688b51380d70ac31c0556/starlette-0.32.0.post1-py3-none-any.whl",
     "depends": [
       {"name": "anyio", "specs": [["<", "5"], [">=", "3.4.0"]]}
     ],
@@ -348,15 +331,20 @@
       "jupyter_core"
     ]
   },
-  "tzdata": {
-    "name": "tzdata",
-    "version": "2023.3",
-    "filename": "tzdata-2023.3-py2.py3-none-any.whl",
-    "sha256": "7e65763eef3120314099b6939b5546db7adce1e7d6f2e179e3df563c70511eda",
-    "url": "https://files.pythonhosted.org/packages/d5/fb/a79efcab32b8a1f1ddca7f35109a50e4a80d42ac1c9187ab46522b2407d7/tzdata-2023.3-py2.py3-none-any.whl",
-    "depends": [],
+  "mizani": {
+    "name": "mizani",
+    "version": "0.10.0",
+    "filename": "mizani-0.10.0-py3-none-any.whl",
+    "sha256": "2fbe6363b4cc71f063b0c35e993a36df80469b06b7fe7b4b722600f183a2ba5c",
+    "url": "https://files.pythonhosted.org/packages/24/db/0bf4870bdc44876172ce7b3dc2fe3d1e15523cc90aafe3996efa9e8ab078/mizani-0.10.0-py3-none-any.whl",
+    "depends": [
+      {"name": "numpy", "specs": [[">=", "1.19.0"]]},
+      {"name": "scipy", "specs": [[">=", "1.5.0"]]},
+      {"name": "pandas", "specs": [[">=", "1.3.5"]]},
+      {"name": "tzdata", "specs": []}
+    ],
     "imports": [
-      "tzdata"
+      "mizani"
     ]
   },
   "tenacity": {
@@ -372,15 +360,15 @@
   },
   "ipython": {
     "name": "ipython",
-    "version": "8.17.2",
-    "filename": "ipython-8.17.2-py3-none-any.whl",
-    "sha256": "1e4d1d666a023e3c93585ba0d8e962867f7a111af322efff6b9c58062b3e5444",
-    "url": "https://files.pythonhosted.org/packages/20/45/18f0dc2cbc3ee6680a004f620fb1400c6511ded0a76a2dd241813786ce73/ipython-8.17.2-py3-none-any.whl",
+    "version": "8.18.1",
+    "filename": "ipython-8.18.1-py3-none-any.whl",
+    "sha256": "e8267419d72d81955ec1177f8a29aaa90ac80ad647499201119e2f05e99aa397",
+    "url": "https://files.pythonhosted.org/packages/47/6b/d9fdcdef2eb6a23f391251fde8781c38d42acd82abe84d054cb74f7863b0/ipython-8.18.1-py3-none-any.whl",
     "depends": [
       {"name": "decorator", "specs": []},
       {"name": "jedi", "specs": [[">=", "0.16"]]},
       {"name": "matplotlib-inline", "specs": []},
-      {"name": "prompt-toolkit", "specs": [["!=", "3.0.37"], ["<", "3.1.0"], [">=", "3.0.30"]]},
+      {"name": "prompt-toolkit", "specs": [["<", "3.1.0"], [">=", "3.0.41"]]},
       {"name": "pygments", "specs": [[">=", "2.4.0"]]},
       {"name": "stack-data", "specs": []},
       {"name": "traitlets", "specs": [[">=", "5"]]}
@@ -391,10 +379,10 @@
   },
   "traitlets": {
     "name": "traitlets",
-    "version": "5.13.0",
-    "filename": "traitlets-5.13.0-py3-none-any.whl",
-    "sha256": "baf991e61542da48fe8aef8b779a9ea0aa38d8a54166ee250d5af5ecf4486619",
-    "url": "https://files.pythonhosted.org/packages/ed/fd/cfc0d27ca11f3dd12b2a90d06875d8bfb532ef40ce67be4066d10807f4aa/traitlets-5.13.0-py3-none-any.whl",
+    "version": "5.14.0",
+    "filename": "traitlets-5.14.0-py3-none-any.whl",
+    "sha256": "f14949d23829023013c47df20b4a76ccd1a85effb786dc060f34de7948361b33",
+    "url": "https://files.pythonhosted.org/packages/a7/1d/7d07e1b152b419a8a9c7f812eeefd408a0610d869489ee2e86973486713f/traitlets-5.14.0-py3-none-any.whl",
     "depends": [],
     "imports": [
       "traitlets"
@@ -437,10 +425,10 @@
   },
   "branca": {
     "name": "branca",
-    "version": "0.6.0",
-    "filename": "branca-0.6.0-py3-none-any.whl",
-    "sha256": "ae706fc7a88dd0296a58bb11c0cb3c6be358491a3b0abee08fe16b4db17814c0",
-    "url": "https://files.pythonhosted.org/packages/a6/18/cea6374623d82efc292996997cee0a13ae99359c7e66db22f92dc8484dd1/branca-0.6.0-py3-none-any.whl",
+    "version": "0.7.0",
+    "filename": "branca-0.7.0-py3-none-any.whl",
+    "sha256": "c653d9a3fef1e6cd203757c77d3eb44810f11998506451f9a27d52b983500c16",
+    "url": "https://files.pythonhosted.org/packages/2f/e7/603b136221de923055716d23e3047da71f92e0d8ba2c4517ce49a54fe768/branca-0.7.0-py3-none-any.whl",
     "depends": [
       {"name": "jinja2", "specs": []}
     ],
@@ -472,10 +460,10 @@
   },
   "platformdirs": {
     "name": "platformdirs",
-    "version": "3.11.0",
-    "filename": "platformdirs-3.11.0-py3-none-any.whl",
-    "sha256": "e9d171d00af68be50e9202731309c4e658fd8bc76f55c11c7dd760d023bda68e",
-    "url": "https://files.pythonhosted.org/packages/56/29/3ec311dc18804409ecf0d2b09caa976f3ae6215559306b5b530004e11156/platformdirs-3.11.0-py3-none-any.whl",
+    "version": "4.0.0",
+    "filename": "platformdirs-4.0.0-py3-none-any.whl",
+    "sha256": "118c954d7e949b35437270383a3f2531e99dd93cf7ce4dc8340d3356d30f173b",
+    "url": "https://files.pythonhosted.org/packages/31/16/70be3b725073035aa5fc3229321d06e22e73e3e09f6af78dcfdf16c7636c/platformdirs-4.0.0-py3-none-any.whl",
     "depends": [],
     "imports": [
       "platformdirs"
@@ -494,10 +482,10 @@
   },
   "anyio": {
     "name": "anyio",
-    "version": "4.0.0",
-    "filename": "anyio-4.0.0-py3-none-any.whl",
-    "sha256": "cfdb2b588b9fc25ede96d8db56ed50848b0b649dca3dd1df0b11f683bb9e0b5f",
-    "url": "https://files.pythonhosted.org/packages/36/55/ad4de788d84a630656ece71059665e01ca793c04294c463fd84132f40fe6/anyio-4.0.0-py3-none-any.whl",
+    "version": "4.1.0",
+    "filename": "anyio-4.1.0-py3-none-any.whl",
+    "sha256": "56a415fbc462291813a94528a779597226619c8e78af7de0507333f700011e5f",
+    "url": "https://files.pythonhosted.org/packages/85/4f/d010eca6914703d8e6be222165d02c3e708ed909cdb2b7af3743667f302e/anyio-4.1.0-py3-none-any.whl",
     "depends": [
       {"name": "idna", "specs": [[">=", "2.8"]]},
       {"name": "sniffio", "specs": [[">=", "1.1"]]}
@@ -528,6 +516,17 @@
       "uc_micro"
     ]
   },
+  "tzdata": {
+    "name": "tzdata",
+    "version": "2023.3",
+    "filename": "tzdata-2023.3-py2.py3-none-any.whl",
+    "sha256": "7e65763eef3120314099b6939b5546db7adce1e7d6f2e179e3df563c70511eda",
+    "url": "https://files.pythonhosted.org/packages/d5/fb/a79efcab32b8a1f1ddca7f35109a50e4a80d42ac1c9187ab46522b2407d7/tzdata-2023.3-py2.py3-none-any.whl",
+    "depends": [],
+    "imports": [
+      "tzdata"
+    ]
+  },
   "matplotlib-inline": {
     "name": "matplotlib-inline",
     "version": "0.1.6",
@@ -543,10 +542,10 @@
   },
   "prompt-toolkit": {
     "name": "prompt-toolkit",
-    "version": "3.0.39",
-    "filename": "prompt_toolkit-3.0.39-py3-none-any.whl",
-    "sha256": "9dffbe1d8acf91e3de75f3b544e4842382fc06c6babe903ac9acb74dc6e08d88",
-    "url": "https://files.pythonhosted.org/packages/a9/b4/ba77c84edf499877317225d7b7bc047a81f7c2eed9628eeb6bab0ac2e6c9/prompt_toolkit-3.0.39-py3-none-any.whl",
+    "version": "3.0.41",
+    "filename": "prompt_toolkit-3.0.41-py3-none-any.whl",
+    "sha256": "f36fe301fafb7470e86aaf90f036eef600a3210be4decf461a5b1ca8403d3cb2",
+    "url": "https://files.pythonhosted.org/packages/1f/9d/be9b01085bbd67a71c4b6aa02518fade8104e7a2224e5de5e947811d7176/prompt_toolkit-3.0.41-py3-none-any.whl",
     "depends": [
       {"name": "wcwidth", "specs": []}
     ],
@@ -571,10 +570,10 @@
   },
   "idna": {
     "name": "idna",
-    "version": "3.4",
-    "filename": "idna-3.4-py3-none-any.whl",
-    "sha256": "90b77e79eaa3eba6de819a0c442c0b4ceefc341a7a2ab77d7562bf49f425c5c2",
-    "url": "https://files.pythonhosted.org/packages/fc/34/3030de6f1370931b9dbb4dad48f6ab1015ab1d32447850b9fc94e60097be/idna-3.4-py3-none-any.whl",
+    "version": "3.6",
+    "filename": "idna-3.6-py3-none-any.whl",
+    "sha256": "c05567e9c24a6b9faaa835c4821bad0590fbb9d5779e7caa6e1cc4978e7eb24f",
+    "url": "https://files.pythonhosted.org/packages/c2/e7/a82b05cf63a603df6e68d59ae6a68bf5064484a0718ea5033660af4b54a9/idna-3.6-py3-none-any.whl",
     "depends": [],
     "imports": [
       "idna"
@@ -593,10 +592,10 @@
   },
   "wcwidth": {
     "name": "wcwidth",
-    "version": "0.2.9",
-    "filename": "wcwidth-0.2.9-py2.py3-none-any.whl",
-    "sha256": "9a929bd8380f6cd9571a968a9c8f4353ca58d7cd812a4822bba831f8d685b223",
-    "url": "https://files.pythonhosted.org/packages/19/0b/00728863778b14ececfc97e40850fd71529b6a1695907981cc3fdc085ba6/wcwidth-0.2.9-py2.py3-none-any.whl",
+    "version": "0.2.12",
+    "filename": "wcwidth-0.2.12-py2.py3-none-any.whl",
+    "sha256": "f26ec43d96c8cbfed76a5075dac87680124fa84e0855195a6184da9c187f133c",
+    "url": "https://files.pythonhosted.org/packages/31/b1/a59de0ad3aabb17523a39804f4c6df3ae87ead053a4e25362ae03d73d03a/wcwidth-0.2.12-py2.py3-none-any.whl",
     "depends": [],
     "imports": [
       "wcwidth"

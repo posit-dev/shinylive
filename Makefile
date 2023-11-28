@@ -40,9 +40,7 @@ FAICONS_WHEEL = faicons-$(FAICONS_VERSION)-py3-none-any.whl
 
 # Hard code these versions for now
 PLOTNINE_VERSION=0.0.0
-MIZANI_VERSION=0.0.0
 PLOTNINE_WHEEL=plotnine-$(PLOTNINE_VERSION)-py3-none-any.whl
-MIZANI_WHEEL=mizani-$(MIZANI_VERSION)-py3-none-any.whl
 
 VENV = venv
 PYBIN = $(VENV)/bin
@@ -149,7 +147,6 @@ pyodide_packages_local: $(BUILD_DIR)/shinylive/pyodide/$(HTMLTOOLS_WHEEL) \
 	$(BUILD_DIR)/shinylive/pyodide/$(SHINY_WHEEL) \
 	$(BUILD_DIR)/shinylive/pyodide/$(SHINYWIDGETS_WHEEL) \
 	$(BUILD_DIR)/shinylive/pyodide/$(FAICONS_WHEEL) \
-	$(BUILD_DIR)/shinylive/pyodide/$(MIZANI_WHEEL) \
 	$(BUILD_DIR)/shinylive/pyodide/$(PLOTNINE_WHEEL)
 
 $(BUILD_DIR)/shinylive/pyodide/$(HTMLTOOLS_WHEEL): $(PACKAGE_DIR)/$(HTMLTOOLS_WHEEL)
@@ -175,11 +172,6 @@ $(BUILD_DIR)/shinylive/pyodide/$(FAICONS_WHEEL): $(PACKAGE_DIR)/$(FAICONS_WHEEL)
 	# Remove any old copies of faicons
 	rm -f $(BUILD_DIR)/shinylive/pyodide/faicons*.whl
 	cp $(PACKAGE_DIR)/$(FAICONS_WHEEL) $(BUILD_DIR)/shinylive/pyodide/$(FAICONS_WHEEL)
-
-$(BUILD_DIR)/shinylive/pyodide/$(MIZANI_WHEEL): $(PACKAGE_DIR)/$(MIZANI_WHEEL)
-	mkdir -p $(BUILD_DIR)/shinylive/pyodide
-	rm -f $(BUILD_DIR)/shinylive/pyodide/mizani*.whl
-	cp $(PACKAGE_DIR)/$(MIZANI_WHEEL) $(BUILD_DIR)/shinylive/pyodide/$(MIZANI_WHEEL)
 
 $(BUILD_DIR)/shinylive/pyodide/$(PLOTNINE_WHEEL): $(PACKAGE_DIR)/$(PLOTNINE_WHEEL)
 	mkdir -p $(BUILD_DIR)/shinylive/pyodide
@@ -247,7 +239,6 @@ packages: clean-packages \
 	package-shiny \
 	package-shinywidgets \
 	package-faicons \
-	package-mizani \
 	package-plotnine
 
 
@@ -258,8 +249,6 @@ package-shiny: $(PACKAGE_DIR)/$(SHINY_WHEEL)
 package-shinywidgets: $(PACKAGE_DIR)/$(SHINYWIDGETS_WHEEL)
 
 package-faicons: $(PACKAGE_DIR)/$(FAICONS_WHEEL)
-
-package-mizani: $(PACKAGE_DIR)/$(MIZANI_WHEEL)
 
 package-plotnine: $(PACKAGE_DIR)/$(PLOTNINE_WHEEL)
 
@@ -284,11 +273,6 @@ $(PACKAGE_DIR)/$(FAICONS_WHEEL): $(PYBIN) $(PACKAGE_DIR)/py-faicons
 	# Remove any old copies of the package
 	rm -f $(PACKAGE_DIR)/faicons*.whl
 	. $(PYBIN)/activate && cd $(PACKAGE_DIR)/py-faicons && make install && mv dist/*.whl ../
-
-$(PACKAGE_DIR)/$(MIZANI_WHEEL): $(PYBIN) $(PACKAGE_DIR)/mizani
-	rm -f $(PACKAGE_DIR)/mizani*.whl
-	$(PYBIN)/pip install -e $(PACKAGE_DIR)/mizani[build]
-	. $(PYBIN)/activate && cd $(PACKAGE_DIR)/mizani && make dist && mv dist/*.whl ../$(MIZANI_WHEEL)
 
 $(PACKAGE_DIR)/$(PLOTNINE_WHEEL): $(PYBIN) $(PACKAGE_DIR)/plotnine
 	rm -f $(PACKAGE_DIR)/plotnine*.whl

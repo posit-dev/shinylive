@@ -13,9 +13,6 @@
 [submodule "packages/py-faicons"]
 	path = packages/py-faicons
 	url = https://github.com/rstudio/py-faicons.git
-[submodule "packages/mizani"]
-	path = packages/mizani
-	url = https://github.com/has2k1/mizani.git
 [submodule "packages/plotnine"]
 	path = packages/plotnine
 	url = https://github.com/wch/plotnine.git
