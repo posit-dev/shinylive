@@ -1,18 +1,18 @@
 [submodule "packages/py-shiny"]
 	path = packages/py-shiny
-	url = https://github.com/rstudio/py-shiny.git
+	url = https://github.com/posit-dev/py-shiny.git
 [submodule "packages/py-htmltools"]
 	path = packages/py-htmltools
-	url = https://github.com/rstudio/py-htmltools.git
+	url = https://github.com/posit-dev/py-htmltools.git
 [submodule "typeshed"]
 	path = typeshed
 	url = https://github.com/python/typeshed.git
 [submodule "packages/py-shinywidgets"]
 	path = packages/py-shinywidgets
-	url = https://github.com/rstudio/py-shinywidgets.git
+	url = https://github.com/posit-dev/py-shinywidgets.git
 [submodule "packages/py-faicons"]
 	path = packages/py-faicons
-	url = https://github.com/rstudio/py-faicons.git
+	url = https://github.com/posit-dev/py-faicons.git
 [submodule "packages/plotnine"]
 	path = packages/plotnine
 	url = https://github.com/wch/plotnine.git
