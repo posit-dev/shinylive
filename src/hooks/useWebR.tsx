@@ -42,7 +42,7 @@ export async function initWebR({
       channelType,
     },
     stdout,
-    stderr
+    stderr,
   );
 
   let initError = false;
@@ -110,7 +110,7 @@ export function useWebR({
       ready: false,
       shinyReady: false,
       initError: false,
-    }
+    },
   );
 
   useEffect(() => {
@@ -144,6 +144,12 @@ function ensureOpenChannelListener(webRProxy: WebRProxy): void {
 }
 
 const load_r_pre = `
+# Force internal tar - silence renv warning
+Sys.setenv(TAR = "internal")
+
+# Shim R functions with webR versions (e.g. install.packages())
+webr::shim_install()
+
 .shiny_app_registry <- new.env()
 
 # Create a httpuv app from a Shiny app directory
