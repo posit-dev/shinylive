@@ -18,6 +18,7 @@ SHINYLIVE_VERSION = $(shell node -p "require('./package.json').version")
 
 PYODIDE_VERSION = 0.22.1
 PYODIDE_DIST_FILENAME = pyodide-$(PYODIDE_VERSION).tar.bz2
+DOWNLOAD_DIR = ./downloads
 BUILD_DIR = ./build
 PACKAGE_DIR = ./packages
 DIST_DIR = ./dist
@@ -122,11 +123,16 @@ $(BUILD_DIR)/shinylive/style-resets.css: src/style-resets.css
 	mkdir -p $(BUILD_DIR)/shinylive
 	cp src/style-resets.css $(BUILD_DIR)/shinylive
 
-$(BUILD_DIR)/shinylive/pyodide:
+$(DOWNLOAD_DIR)/$(PYODIDE_DIST_FILENAME):
+	mkdir -p $(DOWNLOAD_DIR)
+	cd $(DOWNLOAD_DIR) && \
+		curl --fail -L -O https://github.com/pyodide/pyodide/releases/download/$(PYODIDE_VERSION)/$(PYODIDE_DIST_FILENAME)
+
+$(BUILD_DIR)/shinylive/pyodide: $(DOWNLOAD_DIR)/$(PYODIDE_DIST_FILENAME)
 	mkdir -p $(BUILD_DIR)/shinylive/pyodide
-	cd $(BUILD_DIR)/shinylive && \
-	curl --fail -L https://github.com/pyodide/pyodide/releases/download/$(PYODIDE_VERSION)/$(PYODIDE_DIST_FILENAME) \
-	    | tar --exclude "*test*.tar" --exclude "node_modules" -xvj
+	tar --exclude "*test*.tar" --exclude "node_modules" \
+		-xvjf $(DOWNLOAD_DIR)/$(PYODIDE_DIST_FILENAME) \
+		-C $(BUILD_DIR)/shinylive
 
 $(BUILD_DIR)/shinylive/webr: webr
 webr:
@@ -331,9 +337,9 @@ clean:
 	rm -rf $(PACKAGE_DIR)/*.whl $(BUILD_DIR) $(DIST_DIR) \
 	  $(SHINYLIVE_DIR)/py $(SHINYLIVE_DIR)/r quarto/docs/ typings/
 
-## Remove all build files and venv/
+## Remove all build files, venv/, and downloads/
 distclean: clean
-	rm -rf $(VENV)
+	rm -rf $(VENV) $(DOWNLOAD_DIR)
 
 ## Run tests
 test:

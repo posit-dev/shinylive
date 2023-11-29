@@ -2,6 +2,7 @@
 /node_modules/
 /packages/*.whl
 /dist/
+/downloads/
 /build/
 __pycache__
 /typings/
