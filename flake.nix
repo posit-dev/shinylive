@@ -16,13 +16,25 @@
 
     in {
       packages = forEachSupportedSystem ({ pkgs, system, ... }: {
-        default = pkgs.stdenv.mkDerivation {
+        default = pkgs.stdenv.mkDerivation rec {
           name = "shinylive";
           src = ./.;
 
           # TODO:
           # - cache yarn packages
-          # - cache pyodide tarball
+
+          pyodide-version = "0.22.1";
+
+          pyodide-tarball = pkgs.fetchurl {
+            url =
+              "https://github.com/pyodide/pyodide/releases/download/${pyodide-version}/pyodide-${pyodide-version}.tar.bz2";
+            sha256 = "sha256-2Ys+ifzjRVjZ7OLO30DyjttWXAuFW1xupAXIhGyeFgU=";
+          };
+
+          preBuild = ''
+            mkdir -p downloads
+            cp ${pyodide-tarball} downloads/
+          '';
 
           nativeBuildInputs = with pkgs; [
             nodejs_20
