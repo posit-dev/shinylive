@@ -12,8 +12,7 @@ Code for deploying Shiny applications that will run completely in the browser, u
 
 ## Prerequisites
 
-`Shinylive` uses `yarn` for dependency management. If running `yarn --version` on the machine throws `command not found` error, install `yarn` on the machine by following the yarn installation documentation [here](https://classic.yarnpkg.com/lang/en/docs/install).
-
+Building Shinylive requires NodeJS.
 
 ## Build instructions
 
@@ -77,7 +76,7 @@ submodules             Update git submodules to commits referenced in this repos
 submodules-pull        Pull latest changes in git submodules
 all                    Build everything _except_ the shinylive.tar.gz distribution file
 dist                   Build shinylive distribution .tar.gz file
-node_modules           Install node modules using yarn
+node_modules           Install node modules
 pyodide_packages_local Copy local package wheels to the pyodide directory
 buildjs                Build JS resources from src/ dir
 buildjs-prod           Build JS resources for production (with minification)

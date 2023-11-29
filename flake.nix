@@ -26,7 +26,6 @@
 
           nativeBuildInputs = with pkgs; [
             nodejs_20
-            nodePackages.yarn
             python311
             (with python311Packages; [ pip virtualenv ])
             curl
