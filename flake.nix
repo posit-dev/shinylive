@@ -1,3 +1,6 @@
+# Building requires "submodules=1" to be passed to nix build. For example:
+#    nix build ".?submodules=1"
+#    nix build "github:posit-dev/shinylive?submodules=1"
 {
   description = "Shinylive web assets";
 
@@ -31,6 +34,21 @@
             sha256 = "sha256-2Ys+ifzjRVjZ7OLO30DyjttWXAuFW1xupAXIhGyeFgU=";
           };
 
+          # Cached npm dependencies specified by src/package-lock.json. During
+          # development, whenever package-lock.json is updated, the hash needs
+          # to be updated. To find the hash, run:
+          #     prefetch-npm-deps package-lock.json
+          npm-deps = pkgs.fetchNpmDeps {
+            inherit src;
+            hash = "sha256-EE883j16RBHg0rhkNqIpRJDnwNVaWfbtx+L8LAY7GMk=";
+          };
+
+          configurePhase = ''
+            npm config set cache "${npm-deps}" --location project
+            npm config set offline true --location project
+            npm config set progress false --location project
+          '';
+
           preBuild = ''
             mkdir -p downloads
             cp ${pyodide-tarball} downloads/
@@ -63,7 +81,7 @@
           # Get the nativeBuildInputs from packages.default
           inputsFrom = [ self.packages.${system}.default ];
 
-          packages = with pkgs; [ ];
+          packages = with pkgs; [ prefetch-npm-deps ];
         };
       });
     };
