@@ -18,6 +18,7 @@ SHINYLIVE_VERSION = $(shell node -p "require('./package.json').version")
 
 PYODIDE_VERSION = 0.22.1
 PYODIDE_DIST_FILENAME = pyodide-$(PYODIDE_VERSION).tar.bz2
+DOWNLOAD_DIR = ./downloads
 BUILD_DIR = ./build
 PACKAGE_DIR = ./packages
 DIST_DIR = ./dist
@@ -40,9 +41,7 @@ FAICONS_WHEEL = faicons-$(FAICONS_VERSION)-py3-none-any.whl
 
 # Hard code these versions for now
 PLOTNINE_VERSION=0.0.0
-MIZANI_VERSION=0.0.0
 PLOTNINE_WHEEL=plotnine-$(PLOTNINE_VERSION)-py3-none-any.whl
-MIZANI_WHEEL=mizani-$(MIZANI_VERSION)-py3-none-any.whl
 
 VENV = venv
 PYBIN = $(VENV)/bin
@@ -116,19 +115,24 @@ dist: buildjs
 	tar -chzvf $(DIST_DIR)/shinylive-$(SHINYLIVE_VERSION).tar.gz shinylive-$(SHINYLIVE_VERSION)
 	rm shinylive-$(SHINYLIVE_VERSION)
 
-## Install node modules using yarn
+## Install node modules
 node_modules: package.json
-	yarn
+	npm ci
 
 $(BUILD_DIR)/shinylive/style-resets.css: src/style-resets.css
 	mkdir -p $(BUILD_DIR)/shinylive
 	cp src/style-resets.css $(BUILD_DIR)/shinylive
 
-$(BUILD_DIR)/shinylive/pyodide:
+$(DOWNLOAD_DIR)/$(PYODIDE_DIST_FILENAME):
+	mkdir -p $(DOWNLOAD_DIR)
+	cd $(DOWNLOAD_DIR) && \
+		curl --fail -L -O https://github.com/pyodide/pyodide/releases/download/$(PYODIDE_VERSION)/$(PYODIDE_DIST_FILENAME)
+
+$(BUILD_DIR)/shinylive/pyodide: $(DOWNLOAD_DIR)/$(PYODIDE_DIST_FILENAME)
 	mkdir -p $(BUILD_DIR)/shinylive/pyodide
-	cd $(BUILD_DIR)/shinylive && \
-	curl -L https://github.com/pyodide/pyodide/releases/download/$(PYODIDE_VERSION)/$(PYODIDE_DIST_FILENAME) \
-	    | tar --exclude "*test*.tar" --exclude "node_modules" -xvj
+	tar --exclude "*test*.tar" --exclude "node_modules" \
+		-xvjf $(DOWNLOAD_DIR)/$(PYODIDE_DIST_FILENAME) \
+		-C $(BUILD_DIR)/shinylive
 
 $(BUILD_DIR)/shinylive/webr: webr
 webr:
@@ -149,7 +153,6 @@ pyodide_packages_local: $(BUILD_DIR)/shinylive/pyodide/$(HTMLTOOLS_WHEEL) \
 	$(BUILD_DIR)/shinylive/pyodide/$(SHINY_WHEEL) \
 	$(BUILD_DIR)/shinylive/pyodide/$(SHINYWIDGETS_WHEEL) \
 	$(BUILD_DIR)/shinylive/pyodide/$(FAICONS_WHEEL) \
-	$(BUILD_DIR)/shinylive/pyodide/$(MIZANI_WHEEL) \
 	$(BUILD_DIR)/shinylive/pyodide/$(PLOTNINE_WHEEL)
 
 $(BUILD_DIR)/shinylive/pyodide/$(HTMLTOOLS_WHEEL): $(PACKAGE_DIR)/$(HTMLTOOLS_WHEEL)
@@ -175,11 +178,6 @@ $(BUILD_DIR)/shinylive/pyodide/$(FAICONS_WHEEL): $(PACKAGE_DIR)/$(FAICONS_WHEEL)
 	# Remove any old copies of faicons
 	rm -f $(BUILD_DIR)/shinylive/pyodide/faicons*.whl
 	cp $(PACKAGE_DIR)/$(FAICONS_WHEEL) $(BUILD_DIR)/shinylive/pyodide/$(FAICONS_WHEEL)
-
-$(BUILD_DIR)/shinylive/pyodide/$(MIZANI_WHEEL): $(PACKAGE_DIR)/$(MIZANI_WHEEL)
-	mkdir -p $(BUILD_DIR)/shinylive/pyodide
-	rm -f $(BUILD_DIR)/shinylive/pyodide/mizani*.whl
-	cp $(PACKAGE_DIR)/$(MIZANI_WHEEL) $(BUILD_DIR)/shinylive/pyodide/$(MIZANI_WHEEL)
 
 $(BUILD_DIR)/shinylive/pyodide/$(PLOTNINE_WHEEL): $(PACKAGE_DIR)/$(PLOTNINE_WHEEL)
 	mkdir -p $(BUILD_DIR)/shinylive/pyodide
@@ -243,41 +241,44 @@ _shinylive:
 # because I'm not sure how to set up the dependencies reliably.
 ## Build htmltools, shiny, and shinywidgets wheels
 packages: clean-packages \
-	$(PACKAGE_DIR)/$(HTMLTOOLS_WHEEL) \
-	$(PACKAGE_DIR)/$(SHINY_WHEEL) \
-	$(PACKAGE_DIR)/$(SHINYWIDGETS_WHEEL) \
-	$(PACKAGE_DIR)/$(FAICONS_WHEEL) \
-	$(PACKAGE_DIR)/$(MIZANI_WHEEL) \
-	$(PACKAGE_DIR)/$(PLOTNINE_WHEEL) \
+	package-htmltools \
+	package-shiny \
+	package-shinywidgets \
+	package-faicons \
+	package-plotnine
+
+
+package-htmltools: $(PACKAGE_DIR)/$(HTMLTOOLS_WHEEL)
+
+package-shiny: $(PACKAGE_DIR)/$(SHINY_WHEEL)
+
+package-shinywidgets: $(PACKAGE_DIR)/$(SHINYWIDGETS_WHEEL)
+
+package-faicons: $(PACKAGE_DIR)/$(FAICONS_WHEEL)
+
+package-plotnine: $(PACKAGE_DIR)/$(PLOTNINE_WHEEL)
+
 
 $(PACKAGE_DIR)/$(HTMLTOOLS_WHEEL): $(PYBIN) $(PACKAGE_DIR)/py-htmltools
 	# Remove any old copies of the package
 	rm -f $(PACKAGE_DIR)/htmltools*.whl
-	. $(PYBIN)/activate && cd $(PACKAGE_DIR)/py-htmltools && make install-editable
-	. $(PYBIN)/activate && cd $(PACKAGE_DIR)/py-htmltools && make dist && mv dist/*.whl ../
+	$(PYBIN)/pip install -e $(PACKAGE_DIR)/py-htmltools[dev]
+	. $(PYBIN)/activate && cd $(PACKAGE_DIR)/py-htmltools && make install && mv dist/*.whl ../
 
 $(PACKAGE_DIR)/$(SHINY_WHEEL): $(PYBIN) $(PACKAGE_DIR)/py-shiny
 	# Remove any old copies of the package
 	rm -f $(PACKAGE_DIR)/shiny*.whl
-	$(PYBIN)/pip install -e $(PACKAGE_DIR)/py-shiny[dev,test]
-	. $(PYBIN)/activate && cd $(PACKAGE_DIR)/py-shiny && make dist && mv dist/*.whl ../
+	. $(PYBIN)/activate && cd $(PACKAGE_DIR)/py-shiny && make install && mv dist/*.whl ../
 
 $(PACKAGE_DIR)/$(SHINYWIDGETS_WHEEL): $(PYBIN) $(PACKAGE_DIR)/py-shinywidgets
 	# Remove any old copies of the package
 	rm -f $(PACKAGE_DIR)/shinywidgets*.whl
-	$(PYBIN)/pip install -e $(PACKAGE_DIR)/py-shinywidgets[dev,test]
-	. $(PYBIN)/activate && cd $(PACKAGE_DIR)/py-shinywidgets && make dist && mv dist/*.whl ../
+	. $(PYBIN)/activate && cd $(PACKAGE_DIR)/py-shinywidgets && make install && mv dist/*.whl ../
 
 $(PACKAGE_DIR)/$(FAICONS_WHEEL): $(PYBIN) $(PACKAGE_DIR)/py-faicons
 	# Remove any old copies of the package
 	rm -f $(PACKAGE_DIR)/faicons*.whl
-	$(PYBIN)/pip install -e $(PACKAGE_DIR)/py-faicons[dev,test]
-	. $(PYBIN)/activate && cd $(PACKAGE_DIR)/py-faicons && make dist && mv dist/*.whl ../
-
-$(PACKAGE_DIR)/$(MIZANI_WHEEL): $(PYBIN) $(PACKAGE_DIR)/mizani
-	rm -f $(PACKAGE_DIR)/mizani*.whl
-	$(PYBIN)/pip install -e $(PACKAGE_DIR)/mizani[build]
-	. $(PYBIN)/activate && cd $(PACKAGE_DIR)/mizani && make dist && mv dist/*.whl ../$(MIZANI_WHEEL)
+	. $(PYBIN)/activate && cd $(PACKAGE_DIR)/py-faicons && make install && mv dist/*.whl ../
 
 $(PACKAGE_DIR)/$(PLOTNINE_WHEEL): $(PYBIN) $(PACKAGE_DIR)/plotnine
 	rm -f $(PACKAGE_DIR)/plotnine*.whl
@@ -336,10 +337,10 @@ clean:
 	rm -rf $(PACKAGE_DIR)/*.whl $(BUILD_DIR) $(DIST_DIR) \
 	  $(SHINYLIVE_DIR)/py $(SHINYLIVE_DIR)/r quarto/docs/ typings/
 
-## Remove all build files and venv/
+## Remove all build files, venv/, and downloads/
 distclean: clean
-	rm -rf $(VENV)
+	rm -rf $(VENV) $(DOWNLOAD_DIR)
 
 ## Run tests
 test:
-	yarn playwright test
+	npm run playwright test

@@ -2,6 +2,7 @@
 /node_modules/
 /packages/*.whl
 /dist/
+/downloads/
 /build/
 __pycache__
 /typings/
@@ -13,14 +14,6 @@ __pycache__
 .vscode/*.log
 
 playwright/static-build/
-
-.pnp.*
-.yarn/*
-!.yarn/patches
-!.yarn/plugins
-!.yarn/releases
-!.yarn/sdks
-!.yarn/versions
 
 /.luarc.json
 

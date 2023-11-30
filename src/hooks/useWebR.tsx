@@ -42,12 +42,12 @@ export async function initWebR({
       channelType,
     },
     stdout,
-    stderr
+    stderr,
   );
 
   let initError = false;
   try {
-    await webRProxy.runRAsync('webr::install("codetools")');
+    await webRProxy.runRAsync('webr::install(c("codetools", "renv", "shiny"))');
     await webRProxy.runRAsync(load_r_pre);
   } catch (e) {
     initError = true;
@@ -87,8 +87,6 @@ export async function initRShiny({
     throw new Error("webRProxyHandle is not ready");
   }
 
-  await webRProxyHandle.webRProxy.runRAsync('webr::install("renv")');
-  await webRProxyHandle.webRProxy.runRAsync('webr::install("shiny")');
   await webRProxyHandle.webRProxy.runRAsync("library(shiny)");
   // Increase webR expressions limit for deep call stack required for Shiny
   await webRProxyHandle.webRProxy.runRAsync("options(expressions=1000)");
@@ -110,7 +108,7 @@ export function useWebR({
       ready: false,
       shinyReady: false,
       initError: false,
-    }
+    },
   );
 
   useEffect(() => {
@@ -144,6 +142,12 @@ function ensureOpenChannelListener(webRProxy: WebRProxy): void {
 }
 
 const load_r_pre = `
+# Force internal tar - silence renv warning
+Sys.setenv(TAR = "internal")
+
+# Shim R functions with webR versions (e.g. install.packages())
+webr::shim_install()
+
 .shiny_app_registry <- new.env()
 
 # Create a httpuv app from a Shiny app directory
@@ -156,6 +160,10 @@ const load_r_pre = `
 
   # Required so that downloadLink and registerDataObj work
   shiny:::workerId("")
+
+  # Ensure that shiny::isRunning() returns TRUE
+  shiny:::clearCurrentAppState()
+  shiny:::initCurrentAppState(appObj)
 
   # Creates http and ws handlers from the app object. However, these are not
   # Rook handlers, but rather use Shiny's own middleware protocol.
