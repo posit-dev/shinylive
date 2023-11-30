@@ -96,7 +96,7 @@
   },
   "plotnine": {
     "name": "plotnine",
-    "version": "0.10.1.post98+g64295e1a",
+    "version": "0.0.post20+g64295e1",
     "filename": "plotnine-0.0.0-py3-none-any.whl",
     "sha256": null,
     "url": null,
