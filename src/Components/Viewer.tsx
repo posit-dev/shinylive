@@ -29,6 +29,8 @@ function setupAppProxyPath(proxy: PyodideProxy | WebRProxy): {
 } {
   const appName = `app_${utils.makeRandomKey(20)}`;
   const urlPath = appName + "/";
+  // Pass through any query string or hash in the outer URL to the iframe url.
+  const srcPath = urlPath + window.location.search + window.location.hash;
 
   if (!navigator.serviceWorker.controller) {
     throw new Error("ServiceWorker controller was not found!");
@@ -49,7 +51,7 @@ function setupAppProxyPath(proxy: PyodideProxy | WebRProxy): {
     }
   });
 
-  return { appName, urlPath };
+  return { appName, urlPath: srcPath };
 }
 
 // Register the app path with the service worker
