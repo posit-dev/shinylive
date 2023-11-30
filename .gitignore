@@ -15,14 +15,6 @@ __pycache__
 
 playwright/static-build/
 
-.pnp.*
-.yarn/*
-!.yarn/patches
-!.yarn/plugins
-!.yarn/releases
-!.yarn/sdks
-!.yarn/versions
-
 /.luarc.json
 
 _shinylive/py

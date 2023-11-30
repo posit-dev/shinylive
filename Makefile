@@ -115,9 +115,9 @@ dist: buildjs
 	tar -chzvf $(DIST_DIR)/shinylive-$(SHINYLIVE_VERSION).tar.gz shinylive-$(SHINYLIVE_VERSION)
 	rm shinylive-$(SHINYLIVE_VERSION)
 
-## Install node modules using yarn
+## Install node modules
 node_modules: package.json
-	yarn
+	npm ci
 
 $(BUILD_DIR)/shinylive/style-resets.css: src/style-resets.css
 	mkdir -p $(BUILD_DIR)/shinylive
@@ -343,4 +343,4 @@ distclean: clean
 
 ## Run tests
 test:
-	yarn playwright test
+	npm run playwright test
