@@ -56,7 +56,7 @@ function setupAppProxyPath(proxy: PyodideProxy | WebRProxy): {
 function createHttpRequestChannel(
   proxy: PyodideProxy | WebRProxy,
   appName: string,
-  urlPath: string
+  urlPath: string,
 ): MessageChannel {
   if (!navigator.serviceWorker.controller) {
     throw new Error("ServiceWorker controller was not found!");
@@ -79,7 +79,7 @@ function createHttpRequestChannel(
       type: "configureProxyPath",
       path: urlPath,
     },
-    [httpRequestChannel.port2]
+    [httpRequestChannel.port2],
   );
 
   return httpRequestChannel;
@@ -88,7 +88,7 @@ function createHttpRequestChannel(
 async function resetPyAppFrame(
   pyodide: PyodideProxy,
   appName: string,
-  appFrame: HTMLIFrameElement
+  appFrame: HTMLIFrameElement,
 ): Promise<void> {
   // Reset the app iframe before shutting down the app, so that the user doesn't
   // see the flash of gray indicating a closed session.
@@ -96,7 +96,7 @@ async function resetPyAppFrame(
 
   const stoppedPreviousApp = (await pyodide.runPyAsync(
     `_stop_app('${appName}')`,
-    { returnResult: "value", printResult: false }
+    { returnResult: "value", printResult: false },
   )) as boolean;
 
   // If we stopped a previously-running app, pause for a bit before continuing.
@@ -108,7 +108,7 @@ async function resetPyAppFrame(
 async function resetRAppFrame(
   webRProxy: WebRProxy,
   appName: string,
-  appFrame: HTMLIFrameElement
+  appFrame: HTMLIFrameElement,
 ): Promise<void> {
   // Reset the app iframe before shutting down the app, so that the user doesn't
   // see the flash of gray indicating a closed session.
@@ -136,7 +136,7 @@ export function Viewer({
   >("loading");
   const shinyIntervalRef = React.useRef<number>(0);
   const [lastErrorMessage, setLastErrorMessage] = React.useState<string | null>(
-    null
+    null,
   );
 
   // Shiny for R
@@ -167,12 +167,18 @@ export function Viewer({
         const appName = appInfo.appName;
         const appDir = "/home/web_user/" + appName;
         const shelter = await new webRProxy.webR.Shelter();
+        // TODO: Simplify R list creation once webR accepts Uint8Array for RRaw
         const files = await new shelter.RList(
           Object.fromEntries(
-            appCode.map((file) => {
-              return [file.name, file.content];
-            })
-          )
+            await Promise.all(
+              appCode.map(async (f) => {
+                if (f.type === "text") {
+                  return [f.name, await new shelter.RCharacter(f.content)];
+                }
+                return [f.name, await new shelter.RRaw(Array.from(f.content))];
+              }),
+            ),
+          ),
         );
         try {
           await webRProxy.runRAsync(".save_files(files, appDir)", {
@@ -283,7 +289,7 @@ export function Viewer({
       await resetPyAppFrame(
         pyodideproxy,
         appInfo.appName,
-        viewerFrameRef.current
+        viewerFrameRef.current,
       );
       setAppRunningState("empty");
     }

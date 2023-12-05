@@ -231,7 +231,11 @@ webr::shim_install()
     filename <- file.path(appDir, name)
     path <- dirname(filename)
     dir.create(path, recursive = TRUE, showWarnings = FALSE)
-    writeLines(files[[name]], filename)
+    if (is.character(files[[name]])) {
+      writeLines(files[[name]], filename, useBytes = TRUE)
+    } else {
+      writeBin(files[[name]], filename)
+    }
   }
 }
 
