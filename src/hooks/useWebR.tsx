@@ -232,7 +232,7 @@ webr::shim_install()
     path <- dirname(filename)
     dir.create(path, recursive = TRUE, showWarnings = FALSE)
     if (is.character(files[[name]])) {
-      writeLines(files[[name]], filename)
+      writeLines(files[[name]], filename, useBytes = TRUE)
     } else {
       writeBin(files[[name]], filename)
     }
