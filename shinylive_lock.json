@@ -1,8 +1,8 @@
 {
   "htmltools": {
     "name": "htmltools",
-    "version": "0.4.1.9001",
-    "filename": "htmltools-0.4.1.9001-py3-none-any.whl",
+    "version": "0.5.1",
+    "filename": "htmltools-0.5.1-py3-none-any.whl",
     "sha256": null,
     "url": null,
     "depends": [
@@ -15,8 +15,8 @@
   },
   "shiny": {
     "name": "shiny",
-    "version": "0.6.0.9001",
-    "filename": "shiny-0.6.0.9001-py3-none-any.whl",
+    "version": "0.6.1",
+    "filename": "shiny-0.6.1-py3-none-any.whl",
     "sha256": null,
     "url": null,
     "depends": [
@@ -24,7 +24,7 @@
       {"name": "uvicorn", "specs": [[">=", "0.16.0"]]},
       {"name": "starlette", "specs": [[">=", "0.17.1"]]},
       {"name": "python-multipart", "specs": []},
-      {"name": "htmltools", "specs": [[">=", "0.4.1.9001"]]},
+      {"name": "htmltools", "specs": [[">=", "0.5.1"]]},
       {"name": "click", "specs": [[">=", "8.1.4"]]},
       {"name": "markdown-it-py", "specs": [[">=", "1.1.0"]]},
       {"name": "mdit-py-plugins", "specs": [[">=", "0.3.0"]]},
