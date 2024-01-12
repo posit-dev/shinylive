@@ -4,7 +4,7 @@ import pandas
 from shiny import render
 
 # We need to import something from express to activate express mode
-from shiny.express import ui
+import shiny.express
 
 
 @render.table
