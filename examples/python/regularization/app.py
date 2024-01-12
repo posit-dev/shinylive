@@ -38,9 +38,9 @@ with ui.div(class_="col-md-78 col-lg-5 py-4 mx-auto"):
     ui.input_slider(
         "a",
         "Select a Regularization Strength:",
-        0.000000001,
-        1,
-        0.1,
+        min=0.000000001,
+        max=1,
+        value=0.1,
         step=0.01,
         width="100%",
     )
