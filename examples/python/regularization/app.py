@@ -100,39 +100,36 @@ with ui.div(class_="col-lg-6 py-5 mx-auto"):
         """
     )
     # LaTeX
-    ui.p("$$MSE = \\frac{1}{n} \\sum_{i=1}^{n} (Y_i - \hat{Y}_i)^2$$")
-    ui.p(
-        """
-        Regularization works by adding a penalty to the loss function in order
-        to penalize large model parameters. In Linear Regression, the penalty
-        increases when the size of the coefficients increases. Because the loss
-        function is made up of two things: the original loss function (the MSE,
-        here) and the penalty, predictors must 'pull their weight' by reducing
-        the MSE enough to be 'worth' the penalty. This causes small, unimportant
-        predictors to have small or zero coefficients.
+    "$$MSE = \\frac{1}{n} \\sum_{i=1}^{n} (Y_i - \hat{Y}_i)^2$$"
 
-        LASSO (L1) and Ridge (L2) are two common forms of Regularization. LASSO
-        adds a penalty to the loss function by taking the absolute value of each
-        parameter/coefficient, and adding them all together. Ridge adds a
-        penalty to the loss function by taking the square of each
-        parameter/coefficient, and adding them all together."""
-    )
-    # LaTeX
-    ui.p(
-        "$$LASSO = \\frac{1}{n} \\sum_{i=1}^{n} (Y_i - \hat{Y}_i)^2 + \\lambda \\underbrace{\\sum_{j=1}^{p} |\\beta_j|}_\\text{penalty}$$"
-    )
-    ui.p(
-        "$$Ridge = \\frac{1}{n} \\sum_{i=1}^{n} (Y_i - \hat{Y}_i)^2 + \\lambda \\underbrace{\\sum_{j=1}^{p} \\beta_j^2}_\\text{penalty}$$"
-    )
-    ui.p(
-        """
-        When using regularization, we must choose the regularization strength
-        (see slider above) which is a number that scales how harshly we
-        penalize. If we multiply the penalty by 0, that's the same as not having
-        a penalty at all. But if we multiply the penalty by 500, that would
-        penalize the parameters a lot more."""
-    )
-    ui.p("$$\\lambda \\text{ is the regularization strength.}$$")
+    """
+    Regularization works by adding a penalty to the loss function in order
+    to penalize large model parameters. In Linear Regression, the penalty
+    increases when the size of the coefficients increases. Because the loss
+    function is made up of two things: the original loss function (the MSE,
+    here) and the penalty, predictors must 'pull their weight' by reducing
+    the MSE enough to be 'worth' the penalty. This causes small, unimportant
+    predictors to have small or zero coefficients.
+
+    LASSO (L1) and Ridge (L2) are two common forms of Regularization. LASSO
+    adds a penalty to the loss function by taking the absolute value of each
+    parameter/coefficient, and adding them all together. Ridge adds a
+    penalty to the loss function by taking the square of each
+    parameter/coefficient, and adding them all together.
+    """
+
+    "$$LASSO = \\frac{1}{n} \\sum_{i=1}^{n} (Y_i - \hat{Y}_i)^2 + \\lambda \\underbrace{\\sum_{j=1}^{p} |\\beta_j|}_\\text{penalty}$$"
+
+    "$$Ridge = \\frac{1}{n} \\sum_{i=1}^{n} (Y_i - \hat{Y}_i)^2 + \\lambda \\underbrace{\\sum_{j=1}^{p} \\beta_j^2}_\\text{penalty}$$"
+
+    """
+    When using regularization, we must choose the regularization strength
+    (see slider above) which is a number that scales how harshly we
+    penalize. If we multiply the penalty by 0, that's the same as not having
+    a penalty at all. But if we multiply the penalty by 500, that would
+    penalize the parameters a lot more."""
+
+    "$$\\lambda \\text{ is the regularization strength.}$$"
 
 
 with ui.div(class_="col-lg-6 py-5 mx-auto"):
