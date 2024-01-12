@@ -12,32 +12,20 @@ ui.input_radio_buttons(
 @render.ui
 def dyn_ui():
     if input.type() == "text":
-        return ui.TagList(
-            ui.input_text("x", "Text input", placeholder="Enter text"),
-            ui.output_text("txt"),
-        )
+        return ui.input_text("x", "Text input", placeholder="Enter text")
 
     elif input.type() == "select":
-        return ui.TagList(
-            ui.input_select(
-                "x",
-                "Select",
-                {"a": "Choice A", "b": "Choice B", "c": "Choice C"},
-            ),
-            ui.output_text("txt"),
+        return ui.input_select(
+            "x",
+            "Select",
+            {"a": "Choice A", "b": "Choice B", "c": "Choice C"},
         )
 
     elif input.type() == "date":
-        return ui.TagList(
-            ui.input_date("x", "Choose a date"),
-            ui.output_text_verbatim("txt"),
-        )
+        return ui.input_date("x", "Choose a date")
 
     elif input.type() == "slider":
-        return ui.TagList(
-            ui.input_slider("x", "Select a number", 1, 100, 50),
-            ui.output_text_verbatim("txt"),
-        )
+        return ui.input_slider("x", "Select a number", 1, 100, 50)
 
     else:
         return ui.div("You selected", ui.tags.b("other", style="color: red;"))
