@@ -212,8 +212,8 @@ def _shim_seaborn_load_dataset():
     import importlib
     import importlib.abc
     import io
+    import os
     import sys
-
     import pyodide.code
 
     # ==========================================================================
@@ -257,10 +257,12 @@ def _shim_seaborn_load_dataset():
         return list(filter(None, dataset_names))
 
     def load_dataset(name, cache=True, data_home=None, **kws):
-        import os
-
-        import pandas as pd
-        import seaborn
+        # Load these dynamically with importlib instead of with 'import pandas'
+        # because if we do a normal import, then Pyodide will detect and
+        # automatically download the files for these packages and all their
+        # dependencies when it starts, which is slow.
+        pd = importlib.import_module("pandas")
+        seaborn = importlib.import_module("seaborn")
 
         if isinstance(name, pd.DataFrame):
             err = (
