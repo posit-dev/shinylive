@@ -15,8 +15,8 @@
   },
   "shiny": {
     "name": "shiny",
-    "version": "0.6.1.9004",
-    "filename": "shiny-0.6.1.9004-py3-none-any.whl",
+    "version": "0.6.1.9007",
+    "filename": "shiny-0.6.1.9007-py3-none-any.whl",
     "sha256": null,
     "url": null,
     "depends": [
