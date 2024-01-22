@@ -27,5 +27,4 @@ def custom_card(id):
 def cards():
     with ui.layout_columns():
         for i in range(input.card_n()):
-            with ui.card():
-                custom_card(i)
+            custom_card(i)
