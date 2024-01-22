@@ -1,5 +1,3 @@
-# Note: This app uses a development version of plotnine.
-
 import json
 from pathlib import Path
 

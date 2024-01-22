@@ -41,7 +41,7 @@ export async function initPyodide({
       indexURL: utils.currentScriptDir() + "/pyodide/",
     },
     stdout,
-    stderr
+    stderr,
   );
 
   let initError = false;
@@ -203,9 +203,170 @@ def _mock_ipython():
     m.backend2gui = {}
     mods["IPython.core.pylabtools"] = m
 
+
+# A shim for the seaborn.load_dataset() function to work in Pyodide. Normally
+# that function won't work in Pyodide because it uses the urllib module, which
+# doesn't work in Pyodide. This shim replaces the uses of urllib with a wrapper
+# function around JS's synchronous XMLHttpRequest.
+def _shim_seaborn_load_dataset():
+    import importlib
+    import importlib.abc
+    import io
+    import os
+    import sys
+    import pyodide.code
+
+    # ==========================================================================
+    # Python wrapper to get a URL synchronously using a JS XMLHttpRequest.
+    # ==========================================================================
+    get_url = pyodide.code.run_js(
+        """
+    (url) => {
+      const request = new XMLHttpRequest();
+      request.open("GET", url, false); // false for synchronous request
+      request.send(null);
+      if (request.status === 200) {
+          return request.responseText;
+      } else {
+          return "";
+      }
+    }
+    """
+    )
+
+    # ==========================================================================
+    # Substitutes for functions from seaborn.utils
+    # ==========================================================================
+    DATASET_SOURCE = "https://raw.githubusercontent.com/mwaskom/seaborn-data/master"
+    DATASET_NAMES_URL = f"{DATASET_SOURCE}/dataset_names.txt"
+
+    def urlopen(url: str) -> io.BytesIO:
+        res = get_url(url)
+        return io.BytesIO(res.encode("utf-8"))
+
+    def urlretrieve(url: str, filename: str) -> None:
+        res = get_url(url)
+        with open(filename, "w") as file:
+            file.write(res)
+
+    def get_dataset_names():
+        with urlopen(DATASET_NAMES_URL) as resp:
+            txt = resp.read()
+
+        dataset_names = [name.strip() for name in txt.decode().split("\\n")]
+        return list(filter(None, dataset_names))
+
+    def load_dataset(name, cache=True, data_home=None, **kws):
+        # Load these dynamically with importlib instead of with 'import pandas'
+        # because if we do a normal import, then Pyodide will detect and
+        # automatically download the files for these packages and all their
+        # dependencies when it starts, which is slow.
+        pd = importlib.import_module("pandas")
+        seaborn = importlib.import_module("seaborn")
+
+        if isinstance(name, pd.DataFrame):
+            err = (
+                "This function accepts only strings (the name of an example dataset). "
+                "You passed a pandas DataFrame. If you have your own dataset, "
+                "it is not necessary to use this function before plotting."
+            )
+            raise TypeError(err)
+
+        url = f"{DATASET_SOURCE}/{name}.csv"
+
+        if cache:
+            cache_path = os.path.join(
+                seaborn.utils.get_data_home(data_home), os.path.basename(url)
+            )
+            if not os.path.exists(cache_path):
+                if name not in get_dataset_names():
+                    raise ValueError(f"'{name}' is not one of the example datasets.")
+                urlretrieve(url, cache_path)
+            full_path = cache_path
+        else:
+            full_path = url
+
+        df = pd.read_csv(full_path, **kws)
+
+        if df.iloc[-1].isnull().all():
+            df = df.iloc[:-1]
+
+        if name == "tips":
+            df["day"] = pd.Categorical(df["day"], ["Thur", "Fri", "Sat", "Sun"])
+            df["sex"] = pd.Categorical(df["sex"], ["Male", "Female"])
+            df["time"] = pd.Categorical(df["time"], ["Lunch", "Dinner"])
+            df["smoker"] = pd.Categorical(df["smoker"], ["Yes", "No"])
+
+        elif name == "flights":
+            months = df["month"].str[:3]
+            df["month"] = pd.Categorical(months, months.unique())
+
+        elif name == "exercise":
+            df["time"] = pd.Categorical(df["time"], ["1 min", "15 min", "30 min"])
+            df["kind"] = pd.Categorical(df["kind"], ["rest", "walking", "running"])
+            df["diet"] = pd.Categorical(df["diet"], ["no fat", "low fat"])
+
+        elif name == "titanic":
+            df["class"] = pd.Categorical(df["class"], ["First", "Second", "Third"])
+            df["deck"] = pd.Categorical(df["deck"], list("ABCDEFG"))
+
+        elif name == "penguins":
+            df["sex"] = df["sex"].str.title()
+
+        elif name == "diamonds":
+            df["color"] = pd.Categorical(
+                df["color"],
+                ["D", "E", "F", "G", "H", "I", "J"],
+            )
+            df["clarity"] = pd.Categorical(
+                df["clarity"],
+                ["IF", "VVS1", "VVS2", "VS1", "VS2", "SI1", "SI2", "I1"],
+            )
+            df["cut"] = pd.Categorical(
+                df["cut"],
+                ["Ideal", "Premium", "Very Good", "Good", "Fair"],
+            )
+
+        elif name == "taxis":
+            df["pickup"] = pd.to_datetime(df["pickup"])
+            df["dropoff"] = pd.to_datetime(df["dropoff"])
+
+        elif name == "seaice":
+            df["Date"] = pd.to_datetime(df["Date"])
+
+        elif name == "dowjones":
+            df["Date"] = pd.to_datetime(df["Date"])
+
+        return df
+
+    # ======================================================================================
+    # Import hook to inject shim when seaborn is loaded
+    # ======================================================================================
+    class PostImportFinder(importlib.abc.MetaPathFinder):
+        def __init__(self):
+            self.is_loading = False
+
+        def find_module(self, fullname, path=None):
+            if fullname == "seaborn" and not self.is_loading:
+                return self
+
+        def load_module(self, fullname):
+            self.is_loading = True
+            # Load the actual seaborn module
+            seaborn = importlib.import_module("seaborn")
+
+            # Apply the shimmed version of load_dataset
+            seaborn.utils.load_dataset = load_dataset
+            seaborn.load_dataset = load_dataset
+
+            return seaborn
+
+    sys.meta_path.insert(0, PostImportFinder())
+
 _mock_multiprocessing()
 _mock_ipykernel()
 _mock_ipython()
+_shim_seaborn_load_dataset()
 
 def _pyodide_env_init():
     import os
@@ -429,7 +590,7 @@ function ensureOpenChannelListener(pyodideProxy: PyodideProxy): void {
         `
         "${msg.appName}" in _shiny_app_registry
       `,
-        { returnResult: "value" }
+        { returnResult: "value" },
       );
       if (appExists) {
         await pyodideProxy.openChannel(msg.path, msg.appName, event.ports[0]);
