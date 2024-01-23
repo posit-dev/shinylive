@@ -1,5 +1,4 @@
-from shiny import render
-from shiny.express import ui, input, output, expressify
+from shiny.express import ui, input, output, expressify, render
 import numpy as np
 import matplotlib.pyplot as plt
 
