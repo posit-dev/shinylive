@@ -1,8 +1,8 @@
 {
   "private": true,
   "name": "shinylive",
-  "version": "0.2.4",
-  "description": "Run Shiny applications with Python running in the browser.",
+  "version": "0.2.5",
+  "description": "Run Shiny applications with R or Python running in the browser.",
   "main": "index.js",
   "repository": {
     "url": "https://github.com/posit-dev/shinylive",
