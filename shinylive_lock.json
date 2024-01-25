@@ -15,8 +15,8 @@
   },
   "shiny": {
     "name": "shiny",
-    "version": "0.6.1.9007",
-    "filename": "shiny-0.6.1.9007-py3-none-any.whl",
+    "version": "0.7.0",
+    "filename": "shiny-0.7.0-py3-none-any.whl",
     "sha256": null,
     "url": null,
     "depends": [
@@ -38,14 +38,14 @@
   },
   "shinywidgets": {
     "name": "shinywidgets",
-    "version": "0.2.4.9000",
-    "filename": "shinywidgets-0.2.4.9000-py3-none-any.whl",
+    "version": "0.3.0",
+    "filename": "shinywidgets-0.3.0-py3-none-any.whl",
     "sha256": null,
     "url": null,
     "depends": [
       {"name": "ipywidgets", "specs": [[">=", "7.6.5"]]},
       {"name": "jupyter-core", "specs": []},
-      {"name": "shiny", "specs": [[">=", "0.5.1.9003"]]},
+      {"name": "shiny", "specs": [[">=", "0.6.1.9005"]]},
       {"name": "python-dateutil", "specs": [[">=", "2.8.2"]]}
     ],
     "imports": [
@@ -70,8 +70,8 @@
   },
   "faicons": {
     "name": "faicons",
-    "version": "0.2.1.9000",
-    "filename": "faicons-0.2.1.9000-py3-none-any.whl",
+    "version": "0.2.2",
+    "filename": "faicons-0.2.2-py3-none-any.whl",
     "sha256": null,
     "url": null,
     "depends": [
