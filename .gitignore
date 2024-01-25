@@ -1,6 +1,4 @@
 /venv/
-**/.venv/
-**/.DS_Store
 /node_modules/
 /packages/*.whl
 /dist/
