@@ -17,39 +17,36 @@
 import textwrap
 from datetime import datetime
 
-from shiny import App, reactive, render, ui
+from shiny import reactive
+from shiny.express import ui, input, render
 
-app_ui = ui.page_fluid(
-    ui.h3("Press the button:"),
-    ui.input_action_button("btn", "Time"),
-    ui.h3("Time between button presses:"),
-    ui.output_text_verbatim("txt", placeholder=True),
-)
+ui.h3("Press the button:"),
+ui.input_action_button("btn", "Time"),
+ui.h3("Time between button presses:"),
 
 
-def server(input, output, session):
-    # A reactive.Value with an array tracking timestamps of all button presses.
-    all_times = reactive.Value([datetime.now().timestamp()])
-
-    # This Effect is triggered by pressing the button. It makes a copy of all_times(),
-    # because we don't want to modify the original, then appends the new timestamp,
-    # then sets all_times() to the new, longer array.
-    @reactive.Effect
-    @reactive.event(input.btn)
-    def _():
-        x = all_times().copy()
-        x.append(datetime.now().timestamp())
-        all_times.set(x)
-
-    # This text output is invalidated when all_times() changes. It calculates the
-    # differences between each timestamp and returns the array of differences as a
-    # string.
-    @output
-    @render.text
-    def txt():
-        x = all_times()
-        x = [round(j - i, 2) for i, j in zip(x[:-1], x[1:])]
-        return "\n".join(textwrap.wrap(str(x), width=45))
+# A reactive.Value with an array tracking timestamps of all button presses.
+all_times = reactive.Value([datetime.now().timestamp()])
 
 
-app = App(app_ui, server)
+# This Effect is triggered by pressing the button. It makes a copy of all_times(),
+# because we don't want to modify the original, then appends the new timestamp,
+# then sets all_times() to the new, longer array.
+@reactive.Effect
+@reactive.event(input.btn)
+def _():
+    x = all_times().copy()
+    x.append(datetime.now().timestamp())
+    all_times.set(x)
+
+
+# This text output is invalidated when all_times() changes. It calculates the
+# differences between each timestamp and returns the array of differences as a
+# string.
+
+
+@render.text
+def txt():
+    x = all_times()
+    x = [round(j - i, 2) for i, j in zip(x[:-1], x[1:])]
+    return "\n".join(textwrap.wrap(str(x), width=45))

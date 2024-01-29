@@ -1,54 +1,28 @@
-from shiny import App, render, ui
+import matplotlib.pyplot as plt
+import numpy as np
+from shiny.express import expressify, input, output, render, ui
 
-app_ui = ui.page_fluid(
-    ui.input_radio_buttons(
-        "type",
-        "Input Type",
-        choices=["text", "select", "date", "slider", "other"],
-    ),
-    ui.output_ui("dyn_ui"),
-)
+ui.input_slider("card_n", "Number of cards", value=3, min=1, max=5)
 
 
-def server(input, output, session):
-    @output
-    @render.ui
-    def dyn_ui():
-        if input.type() == "text":
-            return ui.TagList(
-                ui.input_text("x", "Text input", placeholder="Enter text"),
-                ui.output_text("txt"),
-            )
+@expressify
+def custom_card(id):
+    id = id + 1
+    with ui.card():
+        f"Card {id}"
 
-        elif input.type() == "select":
-            return ui.TagList(
-                ui.input_select(
-                    "x",
-                    "Select",
-                    {"a": "Choice A", "b": "Choice B", "c": "Choice C"},
-                ),
-                ui.output_text("txt"),
-            )
-
-        elif input.type() == "date":
-            return ui.TagList(
-                ui.input_date("x", "Choose a date"),
-                ui.output_text_verbatim("txt"),
-            )
-
-        elif input.type() == "slider":
-            return ui.TagList(
-                ui.input_slider("x", "Select a number", 1, 100, 50),
-                ui.output_text_verbatim("txt"),
-            )
-
-        else:
-            return ui.div("You selected", ui.tags.b("other", style="color: red;"))
-
-    @output
-    @render.text
-    def txt():
-        return f'x is: "{input.x()}"'
+        # Specifying the ID like this lets us include a renderer in the iterator
+        # without causing ID conflicts.
+        @output(id=f"hist_{id }")
+        @render.plot(alt="A histogram")
+        def histogram():
+            np.random.seed(19680801)
+            x = 100 + 15 * np.random.randn(437)
+            plt.hist(x, 20, density=True)
 
 
-app = App(app_ui, server, debug=True)
+@render.express
+def cards():
+    with ui.layout_columns():
+        for i in range(input.card_n()):
+            custom_card(i)

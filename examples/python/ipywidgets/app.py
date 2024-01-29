@@ -1,31 +1,17 @@
-import ipywidgets as ipy
-from shiny import App, render, ui
-from shinywidgets import output_widget, reactive_read, render_widget
+from shiny.express import input, ui
+from shinywidgets import render_altair
 
-app_ui = ui.page_fluid(output_widget("slider", height="50px"), ui.output_text("value"))
+ui.input_selectize("var", "Select variable", choices=["bill_length_mm", "body_mass_g"])
 
 
-def server(input, output, session):
-    s = ipy.IntSlider(
-        value=5,
-        min=0,
-        max=10,
-        step=1,
-        description="Test:",
-        continuous_update=True,
-        orientation="horizontal",
-        readout=False,
+@render_altair
+def hist():
+    import altair as alt
+    from palmerpenguins import load_penguins
+
+    df = load_penguins()
+    return (
+        alt.Chart(df)
+        .mark_bar()
+        .encode(x=alt.X(f"{input.var()}:Q", bin=True), y="count()")
     )
-
-    @output
-    @render_widget
-    def slider():
-        return s
-
-    @output
-    @render.text
-    def value():
-        return f"The value of the slider is: {reactive_read(s, 'value')}"
-
-
-app = App(app_ui, server, debug=True)
