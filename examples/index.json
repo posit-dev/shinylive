@@ -37,8 +37,6 @@
         "apps": [
           "file_download_core",
           "modules",
-          "plot_interact_basic",
-          "plot_interact_exclude",
           "orbit",
           "wordle",
           "static_content"
