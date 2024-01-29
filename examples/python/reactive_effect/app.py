@@ -3,9 +3,9 @@
 # disk, or sending messages to a server.
 
 from shiny import reactive
-from shiny.express import ui, input
+from shiny.express import input, ui
 
-ui.input_text("x", "Text input", placeholder="Enter text"),
+ui.input_text("x", "Text input", placeholder="Enter text")
 
 
 @reactive.Effect

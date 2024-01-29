@@ -93,7 +93,7 @@ with ui.sidebar():
             "copper": "copper",
             "prism": "prism (not recommended)",
         },
-    ),
+    )
     ui.input_action_button("reset", "Clear history", class_="btn-sm")
     ui.input_switch("hold", "Freeze output", value=False)
 
