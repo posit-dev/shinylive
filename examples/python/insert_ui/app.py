@@ -1,5 +1,5 @@
-from shiny import reactive, render
-from shiny.express import ui, input
+from shiny import reactive
+from shiny.express import ui, input, render
 
 ui.h2("Dynamic UI")
 with ui.div(id="main-content"):

@@ -8,8 +8,8 @@ import seaborn as sns
 
 # Import custom Python Functions from local file
 from compare import compare, sim_data
-from shiny import reactive, render
-from shiny.express import ui, input
+from shiny import reactive
+from shiny.express import ui, input, render
 
 # data
 nsims = 100

@@ -11,8 +11,8 @@ import numpy as np
 import pandas as pd
 from helpers import plot_cpu
 
-from shiny import reactive, render
-from shiny.express import input, ui, output
+from shiny import reactive
+from shiny.express import input, ui, output, render
 
 # The agg matplotlib backend seems to be a little more efficient than the default when
 # running on macOS, and also gives more consistent results across operating systems

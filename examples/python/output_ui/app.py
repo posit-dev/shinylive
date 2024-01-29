@@ -1,7 +1,6 @@
-from shiny.express import ui, input, output, expressify, render
-import numpy as np
 import matplotlib.pyplot as plt
-
+import numpy as np
+from shiny.express import expressify, input, output, render, ui
 
 ui.input_slider("card_n", "Number of cards", value=3, min=1, max=5)
 
