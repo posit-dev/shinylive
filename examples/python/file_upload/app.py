@@ -6,8 +6,8 @@ from shiny.express import ui, input, render
 
 
 MAX_SIZE = 50000
-ui.input_file("file1", "Choose a file to upload:", multiple=True),
-ui.input_radio_buttons("type", "Type:", ["Text", "Binary"]),
+ui.input_file("file1", "Choose a file to upload:", multiple=True)
+ui.input_radio_buttons("type", "Type:", ["Text", "Binary"])
 
 
 def format_hexdump(data: bytes) -> str:

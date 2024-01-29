@@ -20,9 +20,9 @@ from datetime import datetime
 from shiny import reactive
 from shiny.express import ui, input, render
 
-ui.h3("Press the button:"),
-ui.input_action_button("btn", "Time"),
-ui.h3("Time between button presses:"),
+ui.h3("Press the button:")
+ui.input_action_button("btn", "Time")
+ui.h3("Time between button presses:")
 
 
 # A reactive.Value with an array tracking timestamps of all button presses.

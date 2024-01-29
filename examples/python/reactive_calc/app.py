@@ -3,10 +3,9 @@
 # change.
 
 from shiny import reactive
-from shiny.express import ui, input, render
+from shiny.express import input, render, ui
 
-
-ui.input_slider("x", "Choose a number", 1, 100, 50),
+ui.input_slider("x", "Choose a number", 1, 100, 50)
 
 
 @reactive.Calc

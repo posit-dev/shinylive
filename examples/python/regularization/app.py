@@ -19,7 +19,7 @@ sim = [sim_data(n=1000) for i in range(0, nsims)]
 
 ui.tags.script(
     src="https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
-),
+)
 ui.tags.script("if (window.MathJax) MathJax.Hub.Queue(['Typeset', MathJax.Hub]);")
 
 
@@ -32,7 +32,7 @@ def models():
 
 
 with ui.div(class_="col-md-10 col-lg-8 py-5 mx-auto text-lg-center text-left"):
-    ui.h3("How Does Regularization Strength Affect Coefficient Estimates?"),
+    ui.h3("How Does Regularization Strength Affect Coefficient Estimates?")
 
 with ui.div(class_="col-md-78 col-lg-5 py-4 mx-auto"):
     ui.input_slider(

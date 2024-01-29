@@ -1,7 +1,7 @@
-from shiny.express import ui, input, render
+from shiny.express import input, render, ui
 from utils import square
 
-ui.input_slider("n", "N", 0, 100, 20),
+ui.input_slider("n", "N", 0, 100, 20)
 
 
 @render.text
