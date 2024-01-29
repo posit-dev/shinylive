@@ -10,9 +10,12 @@
         "category": "Featured",
         "apps": [
           "cpuinfo",
+          "orbit",
           "regularization",
+          "wordle",
           "plotly",
-          "ipyleaflet"
+          "ipyleaflet",
+          "camera"
         ]
       },
       {
@@ -24,10 +27,44 @@
           "file_download",
           "insert_ui",
           "input_update",
+          "modules",
           "extra_packages",
+          "static_content",
           "fetch",
           "ipywidgets"
         ]
+      },
+      {
+        "category": "Inputs",
+        "apps": [
+          "input_text",
+          "input_numeric",
+          "input_slider",
+          "input_checkbox",
+          "input_switch",
+          "input_checkbox_group",
+          "input_select",
+          "input_radio",
+          "input_text_area",
+          "input_date",
+          "input_date_range",
+          "input_password"
+        ]
+      },
+      {
+        "category": "Outputs",
+        "apps": [
+          "output_text",
+          "output_text_verbatim",
+          "output_ui",
+          "output_plot",
+          "output_table",
+          "output_data_frame_grid"
+        ]
+      },
+      {
+        "category": "Layout",
+        "apps": ["shinyswatch", "layout_sidebar", "layout_two_column"]
       },
       {
         "category": "Reactivity",
@@ -36,17 +73,6 @@
           "reactive_effect",
           "reactive_calc",
           "reactive_value"
-        ]
-      },
-      {
-        "category": "Shiny Core",
-        "apps": [
-          "modules",
-          "plot_interact_basic",
-          "plot_interact_exclude",
-          "orbit",
-          "wordle",
-          "static_content"
         ]
       },
       {
