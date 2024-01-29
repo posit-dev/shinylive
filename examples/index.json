@@ -8,7 +8,7 @@
       },
       {
         "category": "Featured",
-        "apps": ["cpuinfo", "regularization", "plotly", "ipyleaflet"]
+        "apps": ["cpuinfo", "regularization", "plotly", "altair", "ipyleaflet"]
       },
       {
         "category": "Intermediate",
@@ -19,8 +19,7 @@
           "insert_ui",
           "input_update",
           "extra_packages",
-          "fetch",
-          "ipywidgets"
+          "fetch"
         ]
       },
       {
