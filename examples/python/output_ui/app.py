@@ -1,5 +1,4 @@
-from shiny import render
-from shiny.express import ui, input
+from shiny.express import ui, input, render
 
 
 ui.input_radio_buttons(

@@ -5,8 +5,7 @@ from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
-from shiny.express import ui, input
-from shiny import render
+from shiny.express import ui, input, render
 
 with ui.layout_columns():
     with ui.card():

@@ -2,8 +2,8 @@
 # only re-runs after it has been invalidated -- that is, when upstream reactive inputs
 # change.
 
-from shiny import reactive, render
-from shiny.express import ui, input
+from shiny import reactive
+from shiny.express import ui, input, render
 
 
 ui.input_slider("x", "Choose a number", 1, 100, 50),

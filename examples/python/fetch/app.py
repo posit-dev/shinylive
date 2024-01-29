@@ -25,8 +25,8 @@
 from pprint import pformat
 
 import pyodide.http
-from shiny import reactive, render
-from shiny.express import ui, input
+from shiny import reactive
+from shiny.express import ui, input, render
 
 
 @reactive.Calc

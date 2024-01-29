@@ -2,8 +2,8 @@
 # side effects can include printing messages to the console, writing files to
 # disk, or sending messages to a server.
 
-from shiny import reactive, render
-from shiny.express import ui, input
+from shiny import reactive
+from shiny.express import ui, input, render
 
 ui.input_slider("n", "N", 0, 20, 10),
 ui.input_action_button("btn", "Click me"),

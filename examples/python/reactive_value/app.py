@@ -17,8 +17,8 @@
 import textwrap
 from datetime import datetime
 
-from shiny import reactive, render
-from shiny.express import ui, input
+from shiny import reactive
+from shiny.express import ui, input, render
 
 ui.h3("Press the button:"),
 ui.input_action_button("btn", "Time"),

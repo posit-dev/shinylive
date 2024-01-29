@@ -2,8 +2,7 @@ import mimetypes
 from math import ceil
 from typing import List
 
-from shiny import render
-from shiny.express import ui, input
+from shiny.express import ui, input, render
 
 
 MAX_SIZE = 50000
