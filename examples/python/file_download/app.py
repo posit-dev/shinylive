@@ -5,7 +5,7 @@ from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
-from shiny import App, ui
+from shiny import App, render, ui
 
 
 # A card component wrapper.
@@ -38,18 +38,18 @@ app_ui = ui.page_fluid(
 
 
 def server(input, output, session):
-    @session.download()
+    @render.download()
     def download1():
         # This is the simplest case. The implementation simply returns the path to a
         # file on disk.
         path = Path(__file__).parent / "mtcars.csv"
         return str(path)
 
-    @session.download(filename="image.png")
+    @render.download(filename="image.png")
     def download2():
         # Another way to implement a file download is by yielding bytes; either all at
         # once, like in this case, or by yielding multiple times. When using this
-        # approach, you should pass a filename argument to @session.download, which
+        # approach, you should pass a filename argument to @render.download, which
         # determines what the browser will name the downloaded file.
         x = np.random.uniform(size=input.num_points())
         y = np.random.uniform(size=input.num_points())
@@ -60,7 +60,7 @@ def server(input, output, session):
             plt.savefig(buf, format="png")
             yield buf.getvalue()
 
-    @session.download(
+    @render.download(
         filename=lambda: f"data-{date.today().isoformat()}-{np.random.randint(100,999)}.csv"
     )
     async def download3():
