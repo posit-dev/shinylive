@@ -3,7 +3,7 @@
 # disk, or sending messages to a server.
 
 from shiny import reactive
-from shiny.express import ui, input, render
+from shiny.express import input, render, ui
 
 ui.input_slider("n", "N", 0, 20, 10)
 ui.input_action_button("btn", "Click me")
@@ -11,7 +11,7 @@ ui.tags.br()
 "The value of the slider when the button was last clicked:"
 
 
-@reactive.Effect
+@reactive.effect
 @reactive.event(input.btn)
 def _():
     print("You clicked the button!")

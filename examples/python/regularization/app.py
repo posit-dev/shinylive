@@ -9,7 +9,7 @@ import seaborn as sns
 # Import custom Python Functions from local file
 from compare import compare, sim_data
 from shiny import reactive
-from shiny.express import ui, input, render
+from shiny.express import input, render, ui
 
 # data
 nsims = 100
@@ -23,7 +23,7 @@ ui.tags.script(
 ui.tags.script("if (window.MathJax) MathJax.Hub.Queue(['Typeset', MathJax.Hub]);")
 
 
-@reactive.Calc
+@reactive.calc
 def models():
     sim_alpha = [compare(df, alpha=input.a()) for df in sim]
     sim_alpha = pd.concat(sim_alpha)

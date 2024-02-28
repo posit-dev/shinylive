@@ -1,5 +1,5 @@
 from shiny import reactive
-from shiny.express import ui, input, render
+from shiny.express import input, render, ui
 
 ui.h2("Dynamic UI")
 with ui.div(id="main-content"):
@@ -14,7 +14,7 @@ with ui.div(id="main-content"):
     # Another way of adding dynamic content is with ui.insert_ui() and ui.remove_ui().
     # The insertion is imperative, so, compared to @render.ui, more care is needed to
     # make sure you don't add multiple copies of the content.
-    @reactive.Effect
+    @reactive.effect
     def _():
         btn = input.btn()
         if btn % 2 == 1:

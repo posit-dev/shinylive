@@ -16,14 +16,13 @@ def counter_ui(label: str = "Increment counter") -> ui.TagChild:
 
 @module.server
 def counter_server(input, output, session, starting_value: int = 0):
-    count: reactive.Value[int] = reactive.Value(starting_value)
+    count: reactive.value[int] = reactive.value(starting_value)
 
-    @reactive.Effect
+    @reactive.effect
     @reactive.event(input.button)
     def _():
         count.set(count() + 1)
 
-    @output
     @render.text
     def out() -> str:
         return f"Click count is {count()}"

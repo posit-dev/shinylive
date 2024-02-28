@@ -48,7 +48,6 @@ app_ui = ui.page_fluid(
 
 
 def server(input, output, session):
-    @output
     @render.plot(alt="A scatterplot")
     def plot1():
         if input.plot_type() == "matplotlib":
@@ -68,22 +67,18 @@ def server(input, output, session):
 
             return p
 
-    @output
     @render.text()
     def click_info():
         return "click:\n" + json.dumps(input.plot1_click(), indent=2)
 
-    @output
     @render.text()
     def dblclick_info():
         return "dblclick:\n" + json.dumps(input.plot1_dblclick(), indent=2)
 
-    @output
     @render.text()
     def hover_info():
         return "hover:\n" + json.dumps(input.plot1_hover(), indent=2)
 
-    @output
     @render.text()
     def brush_info():
         return "brush:\n" + json.dumps(input.plot1_brush(), indent=2)

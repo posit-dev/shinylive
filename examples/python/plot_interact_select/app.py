@@ -52,7 +52,6 @@ app_ui = ui.page_fluid(
 
 
 def server(input, output, session):
-    @output
     @render.ui
     def plot_ui():
         hover_opts_kwargs = {}
@@ -71,7 +70,6 @@ def server(input, output, session):
             brush=ui.brush_opts(**brush_opts_kwargs),
         )
 
-    @output
     @render.plot()
     def plot1():
         p = ggplot(mtcars, aes("wt", "mpg")) + geom_point()
@@ -80,7 +78,6 @@ def server(input, output, session):
 
         return p
 
-    @output
     @render.table()
     def near_hover():
         return near_points(
@@ -91,7 +88,6 @@ def server(input, output, session):
             all_rows=input.all_rows(),
         )
 
-    @output
     @render.table()
     def in_brush():
         return brushed_points(

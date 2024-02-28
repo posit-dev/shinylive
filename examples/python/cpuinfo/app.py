@@ -10,9 +10,8 @@ import matplotlib
 import numpy as np
 import pandas as pd
 from helpers import plot_cpu
-
 from shiny import reactive
-from shiny.express import input, ui, output, render
+from shiny.express import input, output, render, ui
 
 # The agg matplotlib backend seems to be a little more efficient than the default when
 # running on macOS, and also gives more consistent results across operating systems
@@ -28,16 +27,16 @@ ncpu = cpu_count(logical=True)
 ui.page_opts(fillable=True)
 
 
-@reactive.Calc
+@reactive.calc
 def cpu_current():
     reactive.invalidate_later(SAMPLE_PERIOD)
     return cpu_percent(percpu=True)
 
 
-cpu_history = reactive.Value(None)
+cpu_history = reactive.value(None)
 
 
-@reactive.Calc
+@reactive.calc
 def cpu_history_with_hold():
     # If "hold" is on, grab an isolated snapshot of cpu_history; if not, then do a
     # regular read
@@ -50,7 +49,7 @@ def cpu_history_with_hold():
             return cpu_history()
 
 
-@reactive.Effect
+@reactive.effect
 def collect_cpu_samples():
     """cpu_percent() reports just the current CPU usage sample; this Effect gathers
     them up and stores them in the cpu_history reactive value, in a numpy 2D array
@@ -68,7 +67,7 @@ def collect_cpu_samples():
             cpu_history.set(combined_data)
 
 
-@reactive.Effect(priority=100)
+@reactive.effect(priority=100)
 @reactive.event(input.reset)
 def reset_history():
     cpu_history.set(None)

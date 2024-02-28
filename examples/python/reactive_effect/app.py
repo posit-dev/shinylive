@@ -8,6 +8,6 @@ from shiny.express import input, ui
 ui.input_text("x", "Text input", placeholder="Enter text")
 
 
-@reactive.Effect
+@reactive.effect
 def _():
     print(f"x has changed to {input.x()}")

@@ -70,7 +70,7 @@ def server(input, output, session):
     moon_body = body_server("moon", "Moon", [3.84e5, 0, 0])
     planetx_body = body_server("planetx", "Planet X", [-3.84e5, 0, 0])
 
-    @reactive.Calc()
+    @reactive.calc()
     def simulation():
         bodies = [
             x for x in [earth_body(), moon_body(), planetx_body()] if x is not None
@@ -85,7 +85,6 @@ def server(input, output, session):
 
         return sim.history
 
-    @output
     @render.plot
     # ignore_none=False is used to instruct Shiny to render this plot even before the
     # input.run button is clicked for the first time. We do this because we want to

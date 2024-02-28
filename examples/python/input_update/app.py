@@ -1,14 +1,14 @@
 from datetime import date
 
 from shiny import reactive
-from shiny.express import ui, input
+from shiny.express import input, ui
 
 ui.h1("Updating inputs")
 
 ui.markdown(
     """
 Each Shiny input has an `update_*` function which can be used to update that input.
-Most options can be changed including the value, style, and input label, please see  
+Most options can be changed including the value, style, and input label, please see
 [the docs](https://shiny.posit.co/py/api/ui.update_sidebar.html) for more examples.
 """
 )
@@ -22,13 +22,13 @@ ui.input_action_button(
 )
 
 
-@reactive.Effect
+@reactive.effect
 @reactive.event(input.to_20)
 def set_to_20():
     ui.update_slider("slider", value=20)
 
 
-@reactive.Effect
+@reactive.effect
 @reactive.event(input.to_60)
 def set_to_60():
     ui.update_slider("slider", value=60)

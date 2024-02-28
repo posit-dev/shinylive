@@ -15,7 +15,7 @@
 #
 # One important difference between urllib.request.urlopen() and pyodide.http.pyfetch()
 # is that the latter is asynchronous. In a Shiny app, this just means that the
-# reactive.Calc's and outputs must have `async` in front of the function definitions,
+# reactive.calc's and outputs must have `async` in front of the function definitions,
 # and when they're called, they must have `await` in front of them.
 #
 # If you want to write code that works in both regular Python and Pyodide, see the
@@ -26,15 +26,15 @@ from pprint import pformat
 
 import pyodide.http
 from shiny import reactive
-from shiny.express import ui, input, render
+from shiny.express import input, render, ui
 
 
-@reactive.Calc
+@reactive.calc
 def url():
     return f"https://goweather.herokuapp.com/weather/{input.city()}"
 
 
-@reactive.Calc
+@reactive.calc
 async def weather_data():
     if input.city() == "":
         return

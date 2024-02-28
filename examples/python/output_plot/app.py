@@ -9,7 +9,6 @@ app_ui = ui.page_fluid(
 
 
 def server(input, output, session):
-    @output
     @render.plot(alt="A histogram")
     def plot():
         np.random.seed(19680801)

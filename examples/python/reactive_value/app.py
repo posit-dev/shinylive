@@ -18,21 +18,21 @@ import textwrap
 from datetime import datetime
 
 from shiny import reactive
-from shiny.express import ui, input, render
+from shiny.express import input, render, ui
 
 ui.h3("Press the button:")
 ui.input_action_button("btn", "Time")
 ui.h3("Time between button presses:")
 
 
-# A reactive.Value with an array tracking timestamps of all button presses.
-all_times = reactive.Value([datetime.now().timestamp()])
+# A reactive.value with an array tracking timestamps of all button presses.
+all_times = reactive.value([datetime.now().timestamp()])
 
 
 # This Effect is triggered by pressing the button. It makes a copy of all_times(),
 # because we don't want to modify the original, then appends the new timestamp,
 # then sets all_times() to the new, longer array.
-@reactive.Effect
+@reactive.effect
 @reactive.event(input.btn)
 def _():
     x = all_times().copy()

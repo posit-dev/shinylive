@@ -8,7 +8,7 @@ from shiny.express import input, render, ui
 ui.input_slider("x", "Choose a number", 1, 100, 50)
 
 
-@reactive.Calc
+@reactive.calc
 def x_times_2():
     val = input.x() * 2
     print(f"Running x_times_2(). Result is {val}.")
