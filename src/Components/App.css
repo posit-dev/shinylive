@@ -40,6 +40,7 @@
 /* Settings for standalone app viewer (with no other components) */
 .shinylive-container.viewer {
   --pad: 0;
+  min-width: unset;
 }
 
 .shinylive-container > div {
