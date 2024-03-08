@@ -120,9 +120,10 @@ export default function Editor({
       }
 
       const language = inferFiletype(file.name);
+      const indentSpaces = language === "r" ? 2 : 4;
 
       return [
-        getExtensions({ lineNumbers }),
+        getExtensions({ lineNumbers, indentSpaces }),
         getLanguageExtension(language),
         EditorView.updateListener.of((u: ViewUpdate) => {
           if (u.docChanged) {
@@ -131,11 +132,11 @@ export default function Editor({
         }),
         languageServerExtensions(lspClient, lspPathPrefix + file.name),
         Prec.high(
-          keymap.of(keyBindings({ runSelectedTextOrCurrentLine, runAllAuto }))
+          keymap.of(keyBindings({ runSelectedTextOrCurrentLine, runAllAuto })),
         ),
       ];
     },
-    [lineNumbers, setFilesHaveChanged, lspClient, lspPathPrefix]
+    [lineNumbers, setFilesHaveChanged, lspClient, lspPathPrefix],
   );
 
   const [cmView, setCmView] = React.useState<EditorView>();
@@ -156,8 +157,8 @@ export default function Editor({
     setIsShinyApp(
       files.some(
         (f) =>
-          f.name === "app.py" || f.name === "app.R" || f.name === "server.R"
-      )
+          f.name === "app.py" || f.name === "app.R" || f.name === "server.R",
+      ),
     );
   }, [files]);
 
@@ -170,7 +171,7 @@ export default function Editor({
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
       terminalMethods.runCodeInTerminal(command);
     },
-    [terminalMethods]
+    [terminalMethods],
   );
 
   // Runs the Shiny application using the current set of files in the editor.
@@ -220,7 +221,7 @@ export default function Editor({
       // two vars, but I haven't figured out how yet.
       const isShinyCode = currentFilesFromApp.some(
         (f) =>
-          f.name === "app.py" || f.name === "app.R" || f.name === "server.R"
+          f.name === "app.py" || f.name === "app.R" || f.name === "server.R",
       );
       if (isShinyCode) {
         await viewerMethods.runApp(currentFilesFromApp);
@@ -246,7 +247,7 @@ export default function Editor({
     (async () => {
       const isShinyCode = currentFilesFromApp.some(
         (f) =>
-          f.name === "app.py" || f.name === "app.R" || f.name === "server.R"
+          f.name === "app.py" || f.name === "app.R" || f.name === "server.R",
       );
       if (!isShinyCode) {
         // TODO: use activeFile instead of currentFilesFromApp?
@@ -344,7 +345,7 @@ export default function Editor({
 
         const transaction = diagnosticToTransaction(
           file.ref.editorState,
-          params.diagnostics.filter(diagnosticFilter)
+          params.diagnostics.filter(diagnosticFilter),
         );
 
         // In the case where the View's state is the same as the file we're
@@ -359,7 +360,7 @@ export default function Editor({
       // Notably, we do not call `setFiles` because we're only modifying the
       // `file.ref` part, and  we dont' want to trigger a re-render.
     },
-    [files, lspPathPrefix, syncActiveFileState, cmView]
+    [files, lspPathPrefix, syncActiveFileState, cmView],
   );
 
   React.useEffect(() => {
@@ -421,7 +422,7 @@ export default function Editor({
       await fileio.downloadFile(
         file.name,
         file.content,
-        file.type === "text" ? "text/plain" : "application/octet-stream"
+        file.type === "text" ? "text/plain" : "application/octet-stream",
       );
     } else {
       const zippableContents = editorFilesToFflateZippable(files);
@@ -437,7 +438,7 @@ export default function Editor({
       editorUrlPrefix(appEngine) +
         "#code=" +
         fileContentsToUrlString(fileContents),
-      "_blank"
+      "_blank",
     );
   }, [files, syncActiveFileState]);
 
@@ -507,7 +508,7 @@ export default function Editor({
     // Make sure the cursor stays within the document.
     const cursorPos = Math.min(
       formatted.length,
-      cmView.state.selection.main.anchor
+      cmView.state.selection.main.anchor,
     );
     // Replace the old code with the new formatted code.
     const transaction = cmView.state.update({
@@ -566,14 +567,14 @@ export default function Editor({
 // =============================================================================
 export function fileContentsToEditorFiles(
   files: FileContent[],
-  inferEditorExtensions: (f: FileContent) => Extension
+  inferEditorExtensions: (f: FileContent) => Extension,
 ): EditorFile[] {
   return files.map((f) => fileContentToEditorFile(f, inferEditorExtensions));
 }
 
 export function fileContentToEditorFile(
   file: FileContent,
-  inferEditorExtensions: (f: FileContent) => Extension
+  inferEditorExtensions: (f: FileContent) => Extension,
 ): EditorFile {
   if (file.type === "binary") {
     const content = file.content;
@@ -654,7 +655,7 @@ function diagnosticFilter(diagnostic: LSP.Diagnostic): boolean {
   // https://github.com/microsoft/pyright/issues/3344
   if (
     /Argument does not match parameter type for parameter "value".*Iterable\[SliderValueArg@input_slider\]/s.test(
-      diagnostic.message
+      diagnostic.message,
     )
   ) {
     return false;

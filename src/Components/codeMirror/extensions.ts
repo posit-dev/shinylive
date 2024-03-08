@@ -16,12 +16,12 @@ import { html } from "@codemirror/lang-html";
 import { javascript } from "@codemirror/lang-javascript";
 import { python } from "@codemirror/lang-python";
 import {
+  StreamLanguage,
   bracketMatching,
   defaultHighlightStyle,
   foldKeymap,
   indentOnInput,
   indentUnit,
-  StreamLanguage,
   syntaxHighlighting,
 } from "@codemirror/language";
 import { r } from "@codemirror/legacy-modes/mode/r";
@@ -29,19 +29,20 @@ import { lintGutter, lintKeymap } from "@codemirror/lint";
 import { highlightSelectionMatches, searchKeymap } from "@codemirror/search";
 import { EditorState, Extension } from "@codemirror/state";
 import {
+  EditorView,
   drawSelection,
   dropCursor,
-  EditorView,
   highlightActiveLineGutter,
   highlightSpecialChars,
   keymap,
-  lineNumbers,
+  lineNumbers as lineNumbersExtension,
   rectangularSelection,
 } from "@codemirror/view";
 
-export function getExtensions(
-  opts: { lineNumbers?: boolean } = { lineNumbers: true }
-): Extension {
+export function getExtensions({
+  indentSpaces = 4,
+  lineNumbers = true,
+}: { indentSpaces?: number; lineNumbers?: boolean } = {}): Extension {
   const extensions = [
     // lineNumbers(),
     highlightActiveLineGutter(),
@@ -52,7 +53,7 @@ export function getExtensions(
     dropCursor(),
     EditorState.allowMultipleSelections.of(true),
     indentOnInput(),
-    indentUnit.of("    "),
+    indentUnit.of(" ".repeat(indentSpaces)),
     syntaxHighlighting(defaultHighlightStyle, { fallback: true }),
     bracketMatching(),
     closeBrackets(),
@@ -73,8 +74,8 @@ export function getExtensions(
     ]),
   ];
 
-  if (opts.lineNumbers) {
-    extensions.push(lineNumbers(), lintGutterWithCustomTheme());
+  if (lineNumbers) {
+    extensions.push(lineNumbersExtension(), lintGutterWithCustomTheme());
   }
 
   return extensions;
@@ -133,7 +134,7 @@ function lintGutterWithCustomTheme() {
   // Extensions differently.
   extensions = extensions.filter(
     // Compare .constructor to see if the classes match.
-    (ext) => ext.constructor !== lintGutterCustomTheme.constructor
+    (ext) => ext.constructor !== lintGutterCustomTheme.constructor,
   );
   extensions.push(lintGutterCustomTheme);
 
