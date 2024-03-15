@@ -45,8 +45,9 @@ jobs:
       - name: Deploy to S3
         run: |
           pip install awscli
-          echo "Foo content" > foo.txt
-          aws s3 sync foo.txt s3://shinylive.io --delete
+          mkdir foo/
+          echo "Foo content" > foo/test.txt
+          aws s3 sync foo s3://shinylive.io --delete
 
 
       # - name: Check out submodules
