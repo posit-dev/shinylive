@@ -31,7 +31,7 @@ jobs:
       # Deploy content to S3
       # =====================================================
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v2
+        uses: aws-actions/configure-aws-credentials@v3
         env:
           AWS_ACCOUNT_ID: "341745101194"
           AWS_REGION: us-east-1
