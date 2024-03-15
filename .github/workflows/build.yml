@@ -75,6 +75,25 @@ jobs:
 
 
       # =====================================================
+      # Publish to AWS S3 for shinylive.io
+      # =====================================================
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        env:
+          AWS_ACCOUNT_ID: "341745101194"
+          AWS_REGION: us-east-1
+        with:
+          role-to-assume: arn:aws:iam::${{ env.AWS_ACCOUNT_ID }}:role/ShinyliveDeploy
+          role-session-name: gha-deploy-shinylive
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Deploy to S3
+        run: |
+          pip install awscli
+          aws s3 sync _shinylive s3://shinylive.io --delete
+
+
+      # =====================================================
       # Publish to shinylive.io
       # =====================================================
       # Deploy the _shinylive/ subdirectory to shinylive.io. It might make sense
