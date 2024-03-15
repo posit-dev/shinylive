@@ -36,7 +36,7 @@ jobs:
           AWS_ACCOUNT_ID: "341745101194"
           AWS_REGION: us-east-1
         with:
-          role-to-assume: arn:aws:iam::${{ env.AWS_ACCOUNT_ID }}:role/DeployShinylive
+          role-to-assume: arn:aws:iam::${{ env.AWS_ACCOUNT_ID }}:role/ShinyliveDeploy
           role-session-name: gha-deploy-shinylive
           aws-region: ${{ env.AWS_REGION }}
 
