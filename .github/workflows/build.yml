@@ -19,7 +19,7 @@ jobs:
       fail-fast: false
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
@@ -84,6 +84,7 @@ jobs:
         env:
           AWS_ACCOUNT_ID: "341745101194"
           AWS_REGION: us-east-1
+          AWS_CLOUDFRONT_DISTRIBUTION_ID: "E2SN9UWE8YY9EG"
         with:
           role-to-assume: arn:aws:iam::${{ env.AWS_ACCOUNT_ID }}:role/ShinyliveDeploy
           role-session-name: gha-deploy-shinylive
@@ -93,6 +94,7 @@ jobs:
         run: |
           pip install awscli
           aws s3 sync _shinylive s3://shinylive.io --delete
+          aws cloudfront create-invalidation --distribution-id $AWS_CLOUDFRONT_DISTRIBUTION_ID --paths "/*"
 
 
       # =====================================================
