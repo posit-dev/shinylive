@@ -70,7 +70,7 @@ jobs:
       # Upload _shinylive/ artifact
       # =====================================================
       - name: Upload _shinylive/ artifact
-        if: github.ref == 'refs/heads/main'
+        # if: github.ref == 'refs/heads/main'
         uses: actions/upload-pages-artifact@v1
         with:
           path: "_shinylive/"
