@@ -19,7 +19,7 @@ jobs:
       fail-fast: false
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
@@ -93,6 +93,7 @@ jobs:
         run: |
           pip install awscli
           aws s3 sync _shinylive s3://shinylive.io --delete
+          aws cloudfront create-invalidation --distribution-id ${{ secrets.AWS_CLOUDFRONT_DISTRIBUTION_ID }} --paths "/*"
 
 
       # =====================================================
