@@ -113,9 +113,11 @@ git pull
 make submodules
 ```
 
-## Adding new packages
+## Adding new packages or updating package versions
 
-If you add a package to `shinylive_requirements.json`, the lockfile must also be regenerated:
+The `shinylive_lock.json` file lists specific versions of packages which will be included in the Shinylive distribution (in addition to the base Pyodide packages). This file is generated from `shinylive_requirements.json`.
+
+If you add a package to `shinylive_requirements.json`, or want to update package versions, the lockfile must also be regenerated:
 
 ```
 make update_packages_lock
