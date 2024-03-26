@@ -49,7 +49,7 @@ export async function initWebR({
   let initError = false;
   try {
     await webRProxy.webR.objs.globalEnv.bind('.base_url', baseUrl);
-    await webRProxy.runRAsync(`webr::mount("/shiny", "${baseUrl}library.data")`);
+    await webRProxy.runRAsync(`webr::mount("/shinylive/library", "${baseUrl}library.data")`);
     await webRProxy.runRAsync(load_r_pre);
   } catch (e) {
     initError = true;
@@ -149,7 +149,7 @@ Sys.setenv(TAR = "internal")
 
 # Use shinylive R package libraries
 dir.create("/shinylive/webr/packages", showWarnings = FALSE, recursive = TRUE)
-.libPaths(c(.libPaths(), "/shinylive/webr/packages", "/shiny"))
+.libPaths(c(.libPaths(), "/shinylive/webr/packages", "/shinylive/library"))
 
 # Shim R functions with webR versions (e.g. install.packages())
 webr::shim_install()
