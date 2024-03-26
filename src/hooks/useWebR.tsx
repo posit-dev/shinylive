@@ -146,8 +146,9 @@ const load_r_pre = `
 # Force internal tar - silence renv warning
 Sys.setenv(TAR = "internal")
 
-# Use mounted shiny R package library
-.libPaths(c(.libPaths(), "/shiny"))
+# Use shinylive R package libraries
+dir.create("/shinylive/webr/packages", showWarnings = FALSE, recursive = TRUE)
+.libPaths(c(.libPaths(), "/shinylive/webr/packages", "/shiny"))
 
 # Shim R functions with webR versions (e.g. install.packages())
 webr::shim_install()
@@ -250,6 +251,24 @@ webr::shim_install()
 }
 
 .webr_pkg_cache <- list()
+lapply(rownames(installed.packages()), function(p) { .webr_pkg_cache[[p]] <<- TRUE })
+
+.install_with_fallback <- function(package) {
+  # Don't try to re-mount installed package
+  if (isTRUE(.webr_pkg_cache[[package]])) return()
+
+  tryCatch({
+    webr::mount(
+      glue::glue("/shinylive/webr/packages/{package}"),
+      glue::glue("./packages/{package}/library.data")
+    )
+    .webr_pkg_cache[[package]] <<- nzchar(system.file(package = package))
+  }, error = function(cond) {
+    # Fall back to the default webR package repository
+    webr::install(package)
+  })
+}
+
 .start_app <- function(appName, appDir) {
 
   # Uniquely install packages with webr
@@ -261,7 +280,7 @@ webr::shim_install()
     .webr_pkg_cache[[pkg_name]] <<- has_pkg
 
     if (!has_pkg) {
-      webr::install(pkg_name)
+      .install_with_fallback(pkg_name)
     }
   })
 
