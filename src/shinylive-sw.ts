@@ -20,7 +20,7 @@ const version = "v6";
 // for cross-origin isolation. Required when using webR.
 function addCoiHeaders(resp: Response): Response {
   const headers = new Headers(resp.headers);
-  headers.set("Cross-Origin-Embedder-Policy", "require-corp");
+  headers.set("Cross-Origin-Embedder-Policy", "credentialless");
   headers.set("Cross-Origin-Resource-Policy", "cross-origin");
   headers.set("Cross-Origin-Opener-Policy", "same-origin");
   return new Response(resp.body, {

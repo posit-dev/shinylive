@@ -259,7 +259,7 @@ export async function makeHttpuvRequest(
 
     const headers = Object.assign(
       {
-        "cross-origin-embedder-policy": "require-corp",
+        "cross-origin-embedder-policy": "credentialless",
         "cross-origin-resource-policy": "cross-origin",
       },
       Object.fromEntries(
