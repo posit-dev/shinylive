@@ -35,10 +35,11 @@ export async function initWebR({
   const channelType = crossOriginIsolated
     ? ChannelType.Automatic
     : ChannelType.PostMessage;
+  const baseUrl = utils.currentScriptDir() + "/webr/";
 
   const webRProxy = await loadWebRProxy(
     {
-      baseUrl: utils.currentScriptDir() + "/webr/",
+      baseUrl,
       channelType,
     },
     stdout,
@@ -47,8 +48,8 @@ export async function initWebR({
 
   let initError = false;
   try {
-    const libraryUrl = utils.currentScriptDir() + "/webr/library.data";
-    await webRProxy.runRAsync(`webr::mount("/shiny", "${libraryUrl}")`);
+    await webRProxy.webR.objs.globalEnv.bind('.base_url', baseUrl);
+    await webRProxy.runRAsync(`webr::mount("/shiny", "${baseUrl}library.data")`);
     await webRProxy.runRAsync(load_r_pre);
   } catch (e) {
     initError = true;
@@ -260,7 +261,7 @@ lapply(rownames(installed.packages()), function(p) { .webr_pkg_cache[[p]] <<- TR
   tryCatch({
     webr::mount(
       glue::glue("/shinylive/webr/packages/{package}"),
-      glue::glue("./packages/{package}/library.data")
+      glue::glue("{.base_url}packages/{package}/library.data")
     )
     .webr_pkg_cache[[package]] <<- nzchar(system.file(package = package))
   }, error = function(cond) {
