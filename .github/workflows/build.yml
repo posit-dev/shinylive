@@ -68,10 +68,10 @@ jobs:
 
 
       # =====================================================
-      # Publish to AWS S3 for shinylive.io
+      # Publish to AWS for shinylive.io
       # =====================================================
       - name: Configure AWS Credentials
-        if: github.ref == 'refs/heads/main'
+        if: github.ref == 'refs/heads/deploy'
         uses: aws-actions/configure-aws-credentials@v2
         env:
           AWS_ACCOUNT_ID: "341745101194"
@@ -82,7 +82,7 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Deploy to S3
-        if: github.ref == 'refs/heads/main'
+        if: github.ref == 'refs/heads/deploy'
         env:
           AWS_CLOUDFRONT_DISTRIBUTION_ID: "E2SN9UWE8YY9EG"
         run: |
