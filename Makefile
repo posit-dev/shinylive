@@ -89,6 +89,8 @@ submodules:
 ## Pull latest changes in git submodules
 submodules-pull:
 	git submodule update --recursive --remote
+submodules-pull-shiny:
+	git submodule update --remote packages/py-shiny
 
 
 ## Build everything _except_ the shinylive.tar.gz distribution file
