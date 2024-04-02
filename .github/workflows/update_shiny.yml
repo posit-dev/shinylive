@@ -2,9 +2,6 @@ name: Update py-shiny submodule
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - barret_test
 
 jobs:
   update-shiny:
@@ -43,4 +40,4 @@ jobs:
           PY_SHINY_SHA=$(git -C packages/py-shiny rev-parse --short HEAD)
           git add packages/py-shiny shinylive_lock.json && \
             git commit --message "Pull latest posit-dev/py-shiny@$PY_SHINY_SHA" && \
-            git push origin HEAD:barret_test
+            git push origin HEAD:main
