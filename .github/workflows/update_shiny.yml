@@ -2,6 +2,9 @@ name: Pull latest py-shiny submodule
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - barret_test
 
 jobs:
   build:
