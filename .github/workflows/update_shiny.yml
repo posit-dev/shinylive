@@ -1,4 +1,4 @@
-name: Pull latest py-shiny submodule
+name: Update py-shiny submodule
 
 on:
   workflow_dispatch:
