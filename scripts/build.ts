@@ -264,7 +264,7 @@ if (serve) {
                     proxyRes.headers = {
                       ...proxyRes.headers,
                       "cross-origin-opener-policy": "same-origin",
-                      "cross-origin-embedder-policy": "require-corp",
+                      "cross-origin-embedder-policy": "credentialless",
                       "cross-origin-resource-policy": "cross-origin",
                     };
                   }
