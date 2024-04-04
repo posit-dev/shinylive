@@ -90,6 +90,8 @@ jobs:
         run: |
           pip install awscli
           aws s3 sync _shinylive s3://shinylive.io --delete
+          aws s3 cp --exclude "*" --include "*.data" --include "*.so" --recursive --content-type="application/wasm" --metadata-directive="REPLACE" s3://shinylive.io/r/shinylive/webr/ s3://shinylive.io/r/shinylive/webr/
+          aws s3 cp --exclude "*" --include "*.js.metadata" --recursive --content-type="text/javascript" --metadata-directive="REPLACE" s3://shinylive.io/r/shinylive/webr/ s3://shinylive.io/r/shinylive/webr/
           aws cloudfront create-invalidation --distribution-id $AWS_CLOUDFRONT_DISTRIBUTION_ID --paths "/*"
 
       # =====================================================
