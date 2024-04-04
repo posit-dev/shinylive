@@ -102,24 +102,6 @@ jobs:
           path: "_shinylive/"
 
       # =====================================================
-      # Publish to shinylive.io
-      # =====================================================
-      # Deploy the _shinylive/ subdirectory to shinylive.io. It might make sense
-      # to do this as a separate job using the uploaded site/ artifact (like
-      # deploy_gh_pages), but this actually deploys a different subdirectory,
-      # _shinylive/, so we'll just do it in line.
-      - name: Publish to shinylive.io
-        if: github.ref == 'refs/heads/deploy'
-        uses: cloudflare/wrangler-action@2.0.0
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          # We need to tell that we're deploying on the "main" branch (even
-          # though we're actually on "deploy" branch) so that it is a production
-          # deployment.
-          command: pages publish _shinylive/ --project-name=shinylive --commit-dirty=true --branch=main
-
-      # =====================================================
       # Upload shinylive bundle on release
       # =====================================================
       # Ensure that if the version in package.json is "0.0.5", then release tag
