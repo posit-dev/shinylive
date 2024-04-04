@@ -13,8 +13,8 @@ const useCaching = false;
 export type {};
 declare const self: ServiceWorkerGlobalScope;
 
-const cacheName = "::prismExperimentsServiceworker";
-const version = "v6";
+const cacheName = "::shinyliveServiceworker";
+const version = "v8";
 
 // Modify a response so that the required CORP/COOP/COEP headers are in place
 // for cross-origin isolation. Required when using webR.
@@ -32,7 +32,7 @@ function addCoiHeaders(resp: Response): Response {
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
-    Promise.all([self.skipWaiting(), caches.open(version + cacheName)])
+    Promise.all([self.skipWaiting(), caches.open(version + cacheName)]),
   );
 });
 
@@ -51,9 +51,9 @@ self.addEventListener("activate", function (event) {
           })
           .map(function (key) {
             return caches.delete(key);
-          })
+          }),
       );
-    })()
+    })(),
   );
 });
 
@@ -78,7 +78,7 @@ self.addEventListener("fetch", function (event): void {
       new Response(shinylive_inject_socket_js, {
         headers: { "Content-Type": "text/javascript" },
         status: 200,
-      })
+      }),
     );
     return;
   }
@@ -101,7 +101,7 @@ self.addEventListener("fetch", function (event): void {
               `Couldn't find parent page for ${url}. This may be because the Service Worker has updated. Try reloading the page.`,
               {
                 status: 404,
-              }
+              },
             );
           }
 
@@ -134,14 +134,14 @@ self.addEventListener("fetch", function (event): void {
             referrer: request.referrer,
           }),
           undefined,
-          filter
+          filter,
         );
         if (coiRequested) {
           return addCoiHeaders(resp);
         } else {
           return resp;
         }
-      })()
+      })(),
     );
     return;
   }
@@ -181,7 +181,7 @@ self.addEventListener("fetch", function (event): void {
             status: 404,
           });
         }
-      })()
+      })(),
     );
     return;
   }
@@ -194,7 +194,7 @@ self.addEventListener("fetch", function (event): void {
       } else {
         return resp;
       }
-    })()
+    })(),
   );
 });
 
@@ -242,10 +242,10 @@ function injectSocketFilter(bodyChunk: Uint8Array, response: Response) {
     const base_path = dirname(self.location.pathname);
     const newStr = bodyChunkStr.replace(
       /<\/head>/,
-      `<script src="${base_path}/shinylive-inject-socket.js" type="module"></script>\n</head>`
+      `<script src="${base_path}/shinylive-inject-socket.js" type="module"></script>\n</head>`,
     );
     const newChunk = Uint8Array.from(
-      newStr.split("").map((s) => s.charCodeAt(0))
+      newStr.split("").map((s) => s.charCodeAt(0)),
     );
     return newChunk;
   }
