@@ -26,7 +26,7 @@ jobs:
 
       - name: Pull latest py-shiny
         run: |
-          make submodules-pull
+          make submodules-pull-shiny
 
       - name: Build shinylive
         run: |
