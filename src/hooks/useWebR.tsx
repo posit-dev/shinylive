@@ -252,25 +252,38 @@ webr::shim_install()
 }
 
 .webr_pkg_cache <- list()
-lapply(rownames(installed.packages()), function(p) { .webr_pkg_cache[[p]] <<- TRUE })
 
-.install_with_fallback <- function(package) {
-  # Don't try to re-mount installed package
-  if (isTRUE(.webr_pkg_cache[[package]])) return()
+.mount_vfs_images <- function(appDir) {
+  metadata_path <- glue::glue("{appDir}/_webr/metadata.rds")
 
-  tryCatch({
-    webr::mount(
-      glue::glue("/shinylive/webr/packages/{package}"),
-      glue::glue("{.base_url}packages/{package}/library.data")
-    )
-    .webr_pkg_cache[[package]] <<- nzchar(system.file(package = package))
-  }, error = function(cond) {
-    # Fall back to the default webR package repository
-    webr::install(package)
-  })
+  if (file.exists(metadata_path)) {
+    metadata <- readRDS(metadata_path)
+    lapply(metadata, function(data) {
+      name <- data$name
+      path <- data$path
+      mountpoint <- glue::glue("/shinylive/webr/packages/{name}")
+
+      # Mount the virtual filesystem image, unless we already have done so
+      if (!file.exists(mountpoint)) {
+        webr::mount(mountpoint, glue::glue("{.base_url}{path}"))
+      }
+
+      # If this is a full library, add it to .libPaths()
+      if(data$type == "library") {
+        paths <- .libPaths()
+        paths <- append(paths, mountpoint , after = length(paths) - 1)
+        .libPaths(paths)
+      }
+    })
+  }
+
+  # Update package cache
+  lapply(rownames(installed.packages()), function(p) { .webr_pkg_cache[[p]] <<- TRUE })
 }
 
 .start_app <- function(appName, appDir) {
+  # Mount VFS images provided in Shinylive app assets
+  .mount_vfs_images(appDir)
 
   # Uniquely install packages with webr
   unique_pkgs <- unique(renv::dependencies(appDir, quiet = TRUE)$Package)
@@ -281,7 +294,7 @@ lapply(rownames(installed.packages()), function(p) { .webr_pkg_cache[[p]] <<- TR
     .webr_pkg_cache[[pkg_name]] <<- has_pkg
 
     if (!has_pkg) {
-      .install_with_fallback(pkg_name)
+      webr::install(pkg_name)
     }
   })
 
