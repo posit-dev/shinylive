@@ -1,39 +1,35 @@
 library(shiny)
+library(bslib)
 
 # Define UI for dataset viewer app ----
-ui <- fluidPage(
+ui <- page_sidebar(
 
   # App title ----
-  titlePanel("Shiny Text"),
+  title = "Shiny Text",
 
-  # Sidebar layout with a input and output definitions ----
-  sidebarLayout(
+  # Sidebar panel for inputs ----
+  sidebar = sidebar(
 
-    # Sidebar panel for inputs ----
-    sidebarPanel(
-
-      # Input: Selector for choosing dataset ----
-      selectInput(inputId = "dataset",
-                  label = "Choose a dataset:",
-                  choices = c("rock", "pressure", "cars")),
-
-      # Input: Numeric entry for number of obs to view ----
-      numericInput(inputId = "obs",
-                   label = "Number of observations to view:",
-                   value = 10)
+    # Input: Selector for choosing dataset ----
+    selectInput(
+      inputId = "dataset",
+      label = "Choose a dataset:",
+      choices = c("rock", "pressure", "cars")
     ),
 
-    # Main panel for displaying outputs ----
-    mainPanel(
-
-      # Output: Verbatim text for data summary ----
-      verbatimTextOutput("summary"),
-
-      # Output: HTML table with requested number of observations ----
-      tableOutput("view")
-
+    # Input: Numeric entry for number of obs to view ----
+    numericInput(
+      inputId = "obs",
+      label = "Number of observations to view:",
+      value = 10
     )
-  )
+  ),
+
+  # Output: Verbatim text for data summary ----
+  verbatimTextOutput("summary"),
+
+  # Output: HTML table with requested number of observations ----
+  tableOutput("view")
 )
 
 # Define server logic to summarize and view selected dataset ----
@@ -41,10 +37,12 @@ server <- function(input, output) {
 
   # Return the requested dataset ----
   datasetInput <- reactive({
-    switch(input$dataset,
-           "rock" = rock,
-           "pressure" = pressure,
-           "cars" = cars)
+    switch(
+      input$dataset,
+      "rock" = rock,
+      "pressure" = pressure,
+      "cars" = cars
+    )
   })
 
   # Generate a summary of the dataset ----
@@ -57,7 +55,6 @@ server <- function(input, output) {
   output$view <- renderTable({
     head(datasetInput(), n = input$obs)
   })
-
 }
 
 # Create Shiny app ----

@@ -1,4 +1,5 @@
 library(shiny)
+library(bslib)
 
 # Workaround for Chromium Issue 468227
 downloadButton <- function(...) {
@@ -7,35 +8,26 @@ downloadButton <- function(...) {
   tag
 }
 
-# Define UI for data download app ----
-ui <- fluidPage(
+# Define UI for slider demo app ----
+ui <- page_sidebar(
 
   # App title ----
-  titlePanel("Downloading Data"),
+  title = "Downloading Data",
 
-  # Sidebar layout with input and output definitions ----
-  sidebarLayout(
+  # Sidebar panel for inputs ----
+  sidebar = sidebar(
 
-    # Sidebar panel for inputs ----
-    sidebarPanel(
-
-      # Input: Choose dataset ----
-      selectInput("dataset", "Choose a dataset:",
-                  choices = c("rock", "pressure", "cars")),
-
-      # Button
-      downloadButton("downloadData", "Download")
-
+    # Input: Choose dataset ----
+    selectInput(
+      "dataset",
+      "Choose a dataset:",
+      choices = c("rock", "pressure", "cars")
     ),
 
-    # Main panel for displaying outputs ----
-    mainPanel(
-
-      tableOutput("table")
-
-    )
-
-  )
+    # Button
+    downloadButton("downloadData", "Download")
+  ),
+  tableOutput("table")
 )
 
 # Define server logic to display and download selected file ----
@@ -43,10 +35,12 @@ server <- function(input, output) {
 
   # Reactive value for selected dataset ----
   datasetInput <- reactive({
-    switch(input$dataset,
-           "rock" = rock,
-           "pressure" = pressure,
-           "cars" = cars)
+    switch(
+      input$dataset,
+      "rock" = rock,
+      "pressure" = pressure,
+      "cars" = cars
+    )
   })
 
   # Table of selected dataset ----
@@ -63,7 +57,6 @@ server <- function(input, output) {
       write.csv(datasetInput(), file, row.names = FALSE)
     }
   )
-
 }
 
 # Create Shiny app ----
