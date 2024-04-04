@@ -1,50 +1,47 @@
 library(shiny)
+library(bslib)
 
 # Define UI for dataset viewer app ----
-ui <- fluidPage(
+ui <- page_sidebar(
 
   # App title ----
-  titlePanel("Reactivity"),
+  title = "Reactivity",
 
-  # Sidebar layout with input and output definitions ----
-  sidebarLayout(
+  # Sidebar panel for inputs ----
+  sidebar = sidebar(
 
-    # Sidebar panel for inputs ----
-    sidebarPanel(
-
-      # Input: Text for providing a caption ----
-      # Note: Changes made to the caption in the textInput control
-      # are updated in the output area immediately as you type
-      textInput(inputId = "caption",
-                label = "Caption:",
-                value = "Data Summary"),
-
-      # Input: Selector for choosing dataset ----
-      selectInput(inputId = "dataset",
-                  label = "Choose a dataset:",
-                  choices = c("rock", "pressure", "cars")),
-
-      # Input: Numeric entry for number of obs to view ----
-      numericInput(inputId = "obs",
-                   label = "Number of observations to view:",
-                   value = 10)
-
+    # Input: Text for providing a caption ----
+    # Note: Changes made to the caption in the textInput control
+    # are updated in the output area immediately as you type
+    textInput(
+      inputId = "caption",
+      label = "Caption:",
+      value = "Data Summary"
     ),
 
-    # Main panel for displaying outputs ----
-    mainPanel(
+    # Input: Selector for choosing dataset ----
+    selectInput(
+      inputId = "dataset",
+      label = "Choose a dataset:",
+      choices = c("rock", "pressure", "cars")
+    ),
 
-      # Output: Formatted text for caption ----
-      h3(textOutput("caption", container = span)),
-
-      # Output: Verbatim text for data summary ----
-      verbatimTextOutput("summary"),
-
-      # Output: HTML table with requested number of observations ----
-      tableOutput("view")
-
+    # Input: Numeric entry for number of obs to view ----
+    numericInput(
+      inputId = "obs",
+      label = "Number of observations to view:",
+      value = 10
     )
-  )
+  ),
+
+  # Output: Formatted text for caption ----
+  h3(textOutput("caption", container = span)),
+
+  # Output: Verbatim text for data summary ----
+  verbatimTextOutput("summary"),
+
+  # Output: HTML table with requested number of observations ----
+  tableOutput("view")
 )
 
 # Define server logic to summarize and view selected dataset ----
@@ -58,10 +55,12 @@ server <- function(input, output) {
   # 2. The computation and result are shared by all the callers,
   #    i.e. it only executes a single time
   datasetInput <- reactive({
-    switch(input$dataset,
-           "rock" = rock,
-           "pressure" = pressure,
-           "cars" = cars)
+    switch(
+      input$dataset,
+      "rock" = rock,
+      "pressure" = pressure,
+      "cars" = cars
+    )
   })
 
   # Create caption ----
@@ -95,7 +94,6 @@ server <- function(input, output) {
   output$view <- renderTable({
     head(datasetInput(), n = input$obs)
   })
-
 }
 
 # Create Shiny app ----

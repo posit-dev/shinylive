@@ -1,4 +1,5 @@
 library(shiny)
+library(bslib)
 library(datasets)
 
 # Data pre-processing ----
@@ -10,39 +11,34 @@ mpgData$am <- factor(mpgData$am, labels = c("Automatic", "Manual"))
 
 
 # Define UI for miles per gallon app ----
-ui <- fluidPage(
+ui <- page_sidebar(
 
   # App title ----
-  titlePanel("Miles Per Gallon"),
+  title = "Miles Per Gallon",
 
-  # Sidebar layout with input and output definitions ----
-  sidebarLayout(
+  # Sidebar panel for inputs ----
+  sidebar = sidebar(
 
-    # Sidebar panel for inputs ----
-    sidebarPanel(
-
-      # Input: Selector for variable to plot against mpg ----
-      selectInput("variable", "Variable:",
-                  c("Cylinders" = "cyl",
-                    "Transmission" = "am",
-                    "Gears" = "gear")),
-
-      # Input: Checkbox for whether outliers should be included ----
-      checkboxInput("outliers", "Show outliers", TRUE)
-
+    # Input: Selector for variable to plot against mpg ----
+    selectInput(
+      "variable",
+      "Variable:",
+      c(
+        "Cylinders" = "cyl",
+        "Transmission" = "am",
+        "Gears" = "gear"
+      )
     ),
 
-    # Main panel for displaying outputs ----
-    mainPanel(
+    # Input: Checkbox for whether outliers should be included ----
+    checkboxInput("outliers", "Show outliers", TRUE)
+  ),
 
-      # Output: Formatted text for caption ----
-      h3(textOutput("caption")),
+  # Output: Formatted text for caption ----
+  h3(textOutput("caption")),
 
-      # Output: Plot of the requested variable against mpg ----
-      plotOutput("mpgPlot")
-
-    )
-  )
+  # Output: Plot of the requested variable against mpg ----
+  plotOutput("mpgPlot")
 )
 
 # Define server logic to plot various variables against mpg ----
@@ -63,12 +59,14 @@ server <- function(input, output) {
   # Generate a plot of the requested variable against mpg ----
   # and only exclude outliers if requested
   output$mpgPlot <- renderPlot({
-    boxplot(as.formula(formulaText()),
-            data = mpgData,
-            outline = input$outliers,
-            col = "#75AADB", pch = 19)
+    boxplot(
+      as.formula(formulaText()),
+      data = mpgData,
+      outline = input$outliers,
+      col = "#75AADB",
+      pch = 19
+    )
   })
-
 }
 
 # Create Shiny app ----
