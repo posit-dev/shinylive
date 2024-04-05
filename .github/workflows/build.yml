@@ -89,9 +89,11 @@ jobs:
           AWS_CLOUDFRONT_DISTRIBUTION_ID: "E2SN9UWE8YY9EG"
         run: |
           pip install awscli
+          gzip -k _shinylive/r/shinylive/webr/library.data
           aws s3 sync _shinylive s3://shinylive.io --delete
           aws s3 cp --exclude "*" --include "*.data" --include "*.so" --recursive --content-type="application/wasm" --metadata-directive="REPLACE" s3://shinylive.io/r/shinylive/webr/ s3://shinylive.io/r/shinylive/webr/
           aws s3 cp --exclude "*" --include "*.js.metadata" --recursive --content-type="text/javascript" --metadata-directive="REPLACE" s3://shinylive.io/r/shinylive/webr/ s3://shinylive.io/r/shinylive/webr/
+          aws s3 cp --content-encoding="gzip" --content-type="application/wasm" --metadata-directive="REPLACE" _shinylive/r/shinylive/webr/library.data.gz s3://shinylive.io/r/shinylive/webr/library.data
           aws cloudfront create-invalidation --distribution-id $AWS_CLOUDFRONT_DISTRIBUTION_ID --paths "/*"
 
       # =====================================================
