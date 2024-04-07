@@ -26,7 +26,7 @@ requirements_file = top_dir / "shinylive_requirements.json"
 package_lock_file = top_dir / "shinylive_lock.json"
 
 pyodide_dir = top_dir / "build" / "shinylive" / "pyodide"
-repodata_json_file = pyodide_dir / "repodata.json"
+pyodide_lock_json_file = pyodide_dir / "pyodide-lock.json"
 
 usage_info = f"""
 This script is a tool to find the versions of htmltools, shiny, and their dependencies
@@ -41,8 +41,8 @@ It proceeds in three steps:
 2. It retrieves the packages listed in shinylive_lock.json, from local directories, and
    from PyPI.
 
-3. It updates Pyodide's repodata.json file to include the new packages (the ones listed
-   in shinylive_lock.json).
+3. It updates Pyodide's pyodide-lock.json file to include the new packages (the ones
+   listed in shinylive_lock.json).
 
 Note that the dependency resolution in step 1 is not very smart about versions. The
 version for packages in shinylive_requirements.json can be either "latest" or a specific
@@ -56,20 +56,20 @@ Usage:
     Create/replace shinylive_lock.json file, based on shinylive_requirements.json.
 
   pyodide_packages.py update_lockfile_local
-    Update shinylive_lock.json file, based on shinylive_requirements.json, but only
-    with local packages (not those from PyPI). This should be run whenever the local
-    package versions change.
+    Update shinylive_lock.json file, based on shinylive_requirements.json, but only with
+    local packages (not those from PyPI). This should be run whenever the local package
+    versions change.
 
   pyodide_packages.py retrieve_packages
     Gets packages listed in lockfile, from local sources and from PyPI. Saves packages
     to {os.path.relpath(pyodide_dir)}.
 
-  pyodide_packages.py update_pyodide_repodata_json
-    Modifies pyodide's package.json to include Shiny-related packages. Modifies
-    {os.path.relpath(repodata_json_file)}
+  pyodide_packages.py update_pyodide_pyodide_lock_json
+    Modifies pyodide's package-lock.json to include Shiny-related packages. Modifies
+    {os.path.relpath(pyodide_lock_json_file)}
 """
 
-# Packages that shouldn't be listed in "depends" in Pyodide's repodata.json file.
+# Packages that shouldn't be listed in "depends" in Pyodide's pyodide-lock.json file.
 AVOID_DEPEND_PACKAGES = [
     "typing",
     "python",
@@ -192,9 +192,9 @@ class PypiPackageMetadata(TypedDict):
     vulnerabilities: list[object]
 
 
-# =============================================
-# Data structures used in pyodide/repodata.json
-# =============================================
+# =================================================
+# Data structures used in pyodide/pyodide-lock.json
+# =================================================
 class PyodidePackageInfo(TypedDict):
     name: str
     version: str
@@ -206,7 +206,7 @@ class PyodidePackageInfo(TypedDict):
     unvendored_tests: NotRequired[bool]
 
 
-# The package information structure used by Pyodide's repodata.json.
+# The package information structure used by Pyodide's pyodide-lock.json.
 class PyodidePackagesFile(TypedDict):
     info: dict[str, str]
     packages: dict[str, PyodidePackageInfo]
@@ -280,7 +280,7 @@ def _recurse_dependencies_lockfile(
     Recursively find all dependencies of the given packages. This will mutate the object
     passed in.
     """
-    pyodide_packages_info = orig_pyodide_repodata()["packages"]
+    pyodide_packages_info = orig_pyodide_lock()["packages"]
     i = 0
     while i < len(pkgs):
         pkg_info = pkgs[list(pkgs.keys())[i]]
@@ -553,14 +553,14 @@ def _sha256_file(filename: str) -> str:
         return hashlib.sha256(f.read()).hexdigest()
 
 
-# =============================================================================
-# Functions for modifying the pyodide/repodata.json file with the extra packages.
-# =============================================================================
-def update_pyodide_repodata_json():
-    pyodide_packages = orig_pyodide_repodata()
+# ===================================================================================
+# Functions for modifying the pyodide/pyodide-lock.json file with the extra packages.
+# ===================================================================================
+def update_pyodide_pyodide_lock_json():
+    pyodide_packages = orig_pyodide_lock()
 
     print(
-        f"Adding package information from {package_lock_file} into {repodata_json_file}"
+        f"Adding package information from {package_lock_file} into {pyodide_lock_json_file}"
     )
 
     with open(package_lock_file, "r") as f:
@@ -569,7 +569,7 @@ def update_pyodide_repodata_json():
     print("Adding packages to Pyodide packages:")
     for name, pkg_info in lockfile_packages.items():
         if name in pyodide_packages:
-            raise Exception(f"  {name} already in {repodata_json_file}")
+            raise Exception(f"  {name} already in {pyodide_lock_json_file}")
 
         print(f"  {name}")
         p_pkg_info = _lockfile_to_pyodide_package_info(pkg_info)
@@ -585,15 +585,15 @@ def update_pyodide_repodata_json():
     for name in EXTRA_DEPENDENCIES:
         pyodide_packages["packages"][name]["depends"].extend(EXTRA_DEPENDENCIES[name])
 
-    print("Writing pyodide/repodata.json")
-    with open(repodata_json_file, "w") as f:
+    print("Writing pyodide/pyodide-lock.json")
+    with open(pyodide_lock_json_file, "w") as f:
         json.dump(pyodide_packages, f)
 
 
 def _lockfile_to_pyodide_package_info(pkg: LockfilePackageInfo) -> PyodidePackageInfo:
     """
     Given the information about a package from the lockfile, translate it to the format
-    used by pyodide/repodata.json.
+    used by pyodide/pyodide-lock.json.
     """
     return {
         "name": pkg["name"],
@@ -607,25 +607,25 @@ def _lockfile_to_pyodide_package_info(pkg: LockfilePackageInfo) -> PyodidePackag
     }
 
 
-def orig_pyodide_repodata() -> PyodidePackagesFile:
+def orig_pyodide_lock() -> PyodidePackagesFile:
     """
-    Read in the original Pyodide repodata.json from the Pyodide directory. If it doesn't
-    already exist, this will make a copy, named repodata.orig.json. Then it will read in
-    repodata.orig.json and return the "packages" field.
+    Read in the original Pyodide pyodide-lock.json from the Pyodide directory. If it
+    doesn't already exist, this will make a copy, named pyodide-lock.orig.json. Then it
+    will read in pyodide-lock.orig.json and return the "packages" field.
     """
 
-    orig_repodata_json_file = os.path.join(
-        os.path.dirname(repodata_json_file), "repodata.orig.json"
+    orig_pyodide_lock_json_file = os.path.join(
+        os.path.dirname(pyodide_lock_json_file), "pyodide-lock.orig.json"
     )
 
-    if not os.path.isfile(orig_repodata_json_file):
+    if not os.path.isfile(orig_pyodide_lock_json_file):
         print(
-            f"{os.path.relpath(orig_repodata_json_file)} does not exist. "
-            + f" Copying {os.path.relpath(repodata_json_file)} to {os.path.relpath(orig_repodata_json_file)}."
+            f"{os.path.relpath(orig_pyodide_lock_json_file)} does not exist. "
+            + f" Copying {os.path.relpath(pyodide_lock_json_file)} to {os.path.relpath(orig_pyodide_lock_json_file)}."
         )
-        shutil.copy(repodata_json_file, orig_repodata_json_file)
+        shutil.copy(pyodide_lock_json_file, orig_pyodide_lock_json_file)
 
-    with open(orig_repodata_json_file, "r") as f:
+    with open(orig_pyodide_lock_json_file, "r") as f:
         pyodide_packages_info = cast(PyodidePackagesFile, json.load(f))
 
     return pyodide_packages_info
@@ -745,8 +745,8 @@ if __name__ == "__main__":
     elif sys.argv[1] == "retrieve_packages":
         retrieve_packages()
 
-    elif sys.argv[1] == "update_pyodide_repodata_json":
-        update_pyodide_repodata_json()
+    elif sys.argv[1] == "update_pyodide_lock_json":
+        update_pyodide_pyodide_lock_json()
 
     else:
         print(usage_info)

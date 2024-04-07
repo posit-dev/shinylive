@@ -90,7 +90,7 @@ packages               Build htmltools, shiny, and shinywidgets wheels
 update_packages_lock   Update the shinylive_lock.json file, based on shinylive_requirements.json
 update_packages_lock_local Update the shinylive_lock.json file, but with local packages only
 retrieve_packages      Download packages in shinylive_lock.json from PyPI
-update_pyodide_repodata_json Update pyodide/repodata.json to include packages in shinylive_lock.json
+update_pyodide_lock_json Update pyodide/pyodide-lock.json to include packages in shinylive_lock.json
 create_typeshed_json   Create the typeshed.json file which will be used by the shinylive type checker
 copy_pyright           Copy src/pyright files to build directory
 api-docs               Build Shiny API docs
