@@ -236,14 +236,14 @@ buildSiteHtml(appEngine);
 
 Object.values(buildmap).forEach((build) =>
   build
-    .then((context) => {
+    .then(async (context) => {
       if (watch) {
-        context.watch();
+        await context.watch();
       } else if (serve) {
-        context.rebuild();
+        await context.rebuild();
       } else {
-        context.rebuild();
-        context.dispose();
+        await context.rebuild();
+        await context.dispose();
       }
     })
     .catch(() => process.exit(1))
@@ -251,8 +251,8 @@ Object.values(buildmap).forEach((build) =>
 
 if (serve) {
   buildmap["app"]
-    .then((context) => {
-      context.serve({ servedir: SITE_DIR, port: 3001 }).then(() => {
+    .then(async (context) => {
+      await context.serve({ servedir: SITE_DIR, port: 3001 }).then(() => {
         http
           .createServer((req, res) => {
             const { url, method, headers } = req;
