@@ -699,7 +699,9 @@ class NoIndentEncoder(json.JSONEncoder):
 
         # Save copy of any keyword argument values needed for use here.
         self._kwargs = {k: v for k, v in kwargs.items() if k not in ignore}
-        super(NoIndentEncoder, self).__init__(**kwargs)
+        super(NoIndentEncoder, self).__init__(
+            **kwargs  # pyright: ignore[reportArgumentType]
+        )
 
     def default(self, o: object) -> object:
         if isinstance(o, NoIndent):
@@ -724,7 +726,10 @@ class NoIndentEncoder(json.JSONEncoder):
             if match:
                 obj_id = match.group(1)
                 no_indent_obj = cast(NoIndent, self._obj_registry[int(obj_id)])
-                json_repr = json.dumps(no_indent_obj.value, **self._kwargs)
+                json_repr = json.dumps(
+                    no_indent_obj.value,
+                    **self._kwargs,  # pyright: ignore[reportArgumentType]
+                )
                 # Replace the matched id string with json formatted representation
                 # of the corresponding Python object.
                 # "@@123@@" -> {"name": "shiny", "specs": [[">=", "0.2.0.9004"]]}
