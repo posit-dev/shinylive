@@ -96,6 +96,8 @@ EXTRA_DEPENDENCIES = {
     ],
     # Can be removed when we moved to pyodide w/ python 3.11
     "anyio": ["exceptiongroup"],
+    # palmerpenguins imports pkg_resources, which is part of setuptools.
+    "palmerpenguins": ["setuptools"],
 }
 
 
