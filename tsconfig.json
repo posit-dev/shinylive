@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "noEmit": true,
     "jsx": "react-jsx",
     "target": "es2020",
     "module": "es2020",
@@ -7,6 +8,7 @@
     "isolatedModules": true,
     "moduleResolution": "node",
     "esModuleInterop": true,
+    "skipLibCheck": true,
     "resolveJsonModule": true,
     "types": [],
     "forceConsistentCasingInFileNames": true
