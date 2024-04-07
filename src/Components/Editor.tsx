@@ -3,25 +3,28 @@
 // released; when it's released, we can remove this.
 // https://github.com/microsoft/vscode/issues/141908
 /// <reference types="wicg-file-system-access" />
-import { EditorState, Extension, Prec } from "@codemirror/state";
-import { EditorView, KeyBinding, ViewUpdate, keymap } from "@codemirror/view";
+import type { Extension } from "@codemirror/state";
+import { EditorState, Prec } from "@codemirror/state";
+import type { KeyBinding, ViewUpdate } from "@codemirror/view";
+import { EditorView, keymap } from "@codemirror/view";
 import "balloon-css";
-import { Zippable, zipSync } from "fflate";
+import type { Zippable } from "fflate";
+import { zipSync } from "fflate";
 import * as React from "react";
-import * as LSP from "vscode-languageserver-protocol";
+import type * as LSP from "vscode-languageserver-protocol";
 import * as fileio from "../fileio";
 import { createUri } from "../language-server/client";
-import { LSPClient } from "../language-server/lsp-client";
+import type { LSPClient } from "../language-server/lsp-client";
 import { ensureNullClient } from "../language-server/null-client";
 import { ensurePyrightClient } from "../language-server/pyright-client";
 import { inferFiletype, modKeySymbol, stringToUint8Array } from "../utils";
 import type { AppEngine, UtilityMethods } from "./App";
 import "./Editor.css";
-import { HeaderBarCallbacks } from "./HeaderBar";
+import type { HeaderBarCallbacks } from "./HeaderBar";
 import { Icon } from "./Icons";
 import { ShareModal } from "./ShareModal";
-import { TerminalMethods } from "./Terminal";
-import { ViewerMethods } from "./Viewer";
+import type { TerminalMethods } from "./Terminal";
+import type { ViewerMethods } from "./Viewer";
 import { FileTabs } from "./codeMirror/FileTabs";
 import {
   getBinaryFileExtensions,
@@ -32,7 +35,7 @@ import { diagnosticToTransaction } from "./codeMirror/language-server/diagnostic
 import { languageServerExtensions } from "./codeMirror/language-server/lsp-extension";
 import { useTabbedCodeMirror } from "./codeMirror/useTabbedCodeMirror";
 import * as cmUtils from "./codeMirror/utils";
-import { FileContent } from "./filecontent";
+import type { FileContent } from "./filecontent";
 import { editorUrlPrefix, fileContentsToUrlString } from "./share";
 
 export type EditorFile =

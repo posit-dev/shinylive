@@ -3,7 +3,7 @@ import { Terminal as XTerminal } from "xterm";
 import { FitAddon } from "xterm-addon-fit";
 import { Readline } from "xterm-readline";
 import "xterm/css/xterm.css";
-import { ProxyHandle } from "./App";
+import type { ProxyHandle } from "./App";
 import "./Terminal.css";
 
 export interface TerminalInterface {
@@ -42,7 +42,7 @@ export function Terminal({
   const [xTermReadline, setXTermReadline] = React.useState<Readline>();
 
   const runCodeRef = React.useRef(
-    async (command: string): Promise<string> => ""
+    async (command: string): Promise<string> => "",
   );
   React.useEffect(() => {
     runCodeRef.current = async (command: string) => {
@@ -54,7 +54,7 @@ export function Terminal({
   const tabCompleteRef = React.useRef(
     async (command: string): Promise<string[]> => {
       return [];
-    }
+    },
   );
   React.useEffect(() => {
     tabCompleteRef.current = async (command: string): Promise<string[]> => {

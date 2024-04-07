@@ -1,4 +1,5 @@
-import { ASGIHTTPRequestScope, makeRequest } from "./messageporthttp";
+import type { ASGIHTTPRequestScope } from "./messageporthttp";
+import { makeRequest } from "./messageporthttp";
 import { openChannel } from "./messageportwebsocket-channel";
 import { errorToPostableErrorObject } from "./postable-error";
 import type { LoadPyodideConfig, PyUtils, ResultType } from "./pyodide-proxy";

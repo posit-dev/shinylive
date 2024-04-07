@@ -27,7 +27,8 @@ import {
 import { r } from "@codemirror/legacy-modes/mode/r";
 import { lintGutter, lintKeymap } from "@codemirror/lint";
 import { highlightSelectionMatches, searchKeymap } from "@codemirror/search";
-import { EditorState, Extension } from "@codemirror/state";
+import type { Extension } from "@codemirror/state";
+import { EditorState } from "@codemirror/state";
 import {
   EditorView,
   drawSelection,

@@ -1,9 +1,10 @@
-import {
+import type {
   PublishDiagnosticsParams,
   TextDocumentContentChangeEvent,
 } from "vscode-languageserver-protocol";
 import { inferFiletype } from "../utils";
-import { LanguageServerClient, createUri } from "./client";
+import type { LanguageServerClient } from "./client";
+import { createUri } from "./client";
 
 /**
  * This is a wrapper around the LanguageServerClient class in client.ts. That
@@ -26,7 +27,7 @@ export abstract class LSPClient {
 
   public on(
     event: "diagnostics",
-    listener: (params: PublishDiagnosticsParams) => void
+    listener: (params: PublishDiagnosticsParams) => void,
   ): void {
     this.initPromise
       .then(() => {
@@ -37,7 +38,7 @@ export abstract class LSPClient {
 
   public off(
     event: "diagnostics",
-    listener: (params: PublishDiagnosticsParams) => void
+    listener: (params: PublishDiagnosticsParams) => void,
   ): void {
     this.initPromise
       .then(() => {
@@ -76,7 +77,7 @@ export abstract class LSPClient {
 
   public async changeFile(
     filename: string,
-    changeEvent: TextDocumentContentChangeEvent
+    changeEvent: TextDocumentContentChangeEvent,
   ): Promise<void> {
     await this.initPromise;
     this.client.didChangeTextDocument(createUri(filename), [changeEvent]);

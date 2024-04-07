@@ -1,6 +1,6 @@
 import { AwaitableQueue } from "./awaitable-queue";
 import type { PyCallable } from "./pyodide/ffi";
-import { loadPyodide } from "./pyodide/pyodide";
+import type { loadPyodide } from "./pyodide/pyodide";
 import { uint8ArrayToString } from "./utils";
 
 // =============================================================================
@@ -223,8 +223,9 @@ function asgiBodyToArray(body: any): Uint8Array {
 // =============================================================================
 // webR
 // =============================================================================
-import { RList, isRList } from "webr";
-import { WebRProxy } from "./webr-proxy";
+import type { RList } from "webr";
+import { isRList } from "webr";
+import type { WebRProxy } from "./webr-proxy";
 
 export async function makeHttpuvRequest(
   scope: ASGIHTTPRequestScope,

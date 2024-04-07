@@ -1,5 +1,5 @@
-import { Text } from "@codemirror/state";
-import { EditorView } from "@codemirror/view";
+import type { Text } from "@codemirror/state";
+import type { EditorView } from "@codemirror/view";
 
 export type CursorPosition = { line: number; col: number };
 
@@ -25,7 +25,7 @@ export function getSelectedText(cmView: EditorView): string {
   const cmState = cmView.state;
   return cmState.sliceDoc(
     cmState.selection.main.from,
-    cmState.selection.main.to
+    cmState.selection.main.to,
   );
 }
 

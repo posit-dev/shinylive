@@ -1,9 +1,6 @@
-import {
-  DragState,
-  initDragState,
-  updateDragState,
-} from "./DragToResizeHelpers";
 import React from "react";
+import type { DragState } from "./DragToResizeHelpers";
+import { initDragState, updateDragState } from "./DragToResizeHelpers";
 
 export function useDragToResizeGrid({
   containerRef,
@@ -26,7 +23,7 @@ export function useDragToResizeGrid({
     }) => {
       if (!containerRef.current) {
         console.error(
-          "How are you dragging on an element without a container?"
+          "How are you dragging on an element without a container?",
         );
         return;
       }
@@ -48,7 +45,7 @@ export function useDragToResizeGrid({
 
       startListeningForMouseMove();
     },
-    [containerRef]
+    [containerRef],
   );
 
   const onMouseMove = React.useCallback(
@@ -56,7 +53,7 @@ export function useDragToResizeGrid({
       const container = containerRef.current;
       if (!container) {
         console.error(
-          "How are you dragging on an element without a container?"
+          "How are you dragging on an element without a container?",
         );
         return;
       }
@@ -72,7 +69,7 @@ export function useDragToResizeGrid({
         container,
       });
     },
-    [containerRef, dragStateRef]
+    [containerRef, dragStateRef],
   );
 
   const finishDrag = React.useCallback(() => {

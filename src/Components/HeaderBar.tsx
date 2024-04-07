@@ -1,10 +1,10 @@
+import * as React from "react";
 import shinyPyLogo from "../assets/shiny-for-python.svg";
 import shinyRLogo from "../assets/shiny-logo.svg";
 import { engineSwitch } from "../utils";
-import { AppEngine } from "./App";
+import type { AppEngine } from "./App";
 import "./HeaderBar.css";
 import { Icon } from "./Icons";
-import * as React from "react";
 
 export type HeaderBarCallbacks = {
   loadLocalFiles?: () => void;

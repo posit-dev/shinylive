@@ -1,5 +1,5 @@
 import { load as yamlLoad } from "js-yaml";
-import { AppEngine } from "./Components/App";
+import type { AppEngine } from "./Components/App";
 import type { FileContent } from "./Components/filecontent";
 import { engineSwitch } from "./utils";
 
@@ -41,7 +41,7 @@ export type QuartoArgs = {
  */
 export function parseCodeBlock(
   codeblock: string | string[],
-  engine: AppEngine
+  engine: AppEngine,
 ): {
   files: FileContent[];
   quartoArgs: Required<QuartoArgs>;
@@ -66,7 +66,7 @@ export function parseCodeBlock(
     // Shinylive app code blocks must have an explicit "#| standalone: true".
     if (quartoArgs.standalone !== true) {
       throw new Error(
-        "Shinylive application code blocks must have a '#| standalone: true' argument. In the future other values will be supported."
+        "Shinylive application code blocks must have a '#| standalone: true' argument. In the future other values will be supported.",
       );
     }
     // For shiny apps, the default filename is "app.py" or "app.R".
@@ -75,7 +75,7 @@ export function parseCodeBlock(
     // In the case of editor-terminal and editor-cell components...
     if (quartoArgs.standalone !== false) {
       throw new Error(
-        "'#| standalone: true' is not valid for editor-terminal and editor-cell code blocks."
+        "'#| standalone: true' is not valid for editor-terminal and editor-cell code blocks.",
       );
     }
 
@@ -118,7 +118,7 @@ export function processQuartoArgs(lines: string[]): {
 
   // Parse the args as YAML.
   const quartoArgs: QuartoArgs = yamlLoad(
-    argCommentLines.join("\n")
+    argCommentLines.join("\n"),
   ) as QuartoArgs;
 
   return {
@@ -138,7 +138,7 @@ export function processQuartoArgs(lines: string[]): {
  */
 export function parseFileContents(
   lines: string[],
-  defaultFilename: string
+  defaultFilename: string,
 ): FileContent[] {
   const files: FileContent[] = [];
 

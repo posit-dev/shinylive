@@ -1,15 +1,17 @@
 import * as React from "react";
-import {
+import type {
   ExampleCategory,
   ExampleItem,
   ExamplePosition,
+} from "../examples";
+import {
   findExampleByTitle,
   getExampleCategories,
   sanitizeTitleForUrl,
 } from "../examples";
-import { AppEngine } from "./App";
+import type { AppEngine } from "./App";
 import "./ExampleSelector.css";
-import { FileContent } from "./filecontent";
+import type { FileContent } from "./filecontent";
 
 export function ExampleSelector({
   setCurrentFiles,
@@ -44,7 +46,7 @@ export function ExampleSelector({
 
     let position = findExampleByTitle(
       startWithSelectedExample,
-      exampleCategories
+      exampleCategories,
     );
     if (!position) {
       position = { categoryIndex: 0, index: 0 };
@@ -57,7 +59,7 @@ export function ExampleSelector({
       if (!exampleCategories) return;
       setCurrentFiles(exampleCategories[categoryIndex].apps[index].files);
     },
-    [exampleCategories, setCurrentFiles]
+    [exampleCategories, setCurrentFiles],
   );
 
   const chooseExample = React.useCallback(
@@ -71,7 +73,7 @@ export function ExampleSelector({
       setCurrentSelection({ categoryIndex, index });
       setExampleUrlHash(example.title);
     },
-    [filesHaveChanged, exampleCategories, setCurrentSelection]
+    [filesHaveChanged, exampleCategories, setCurrentSelection],
   );
 
   // Keep app up-to-date with current selection
@@ -138,7 +140,7 @@ export function ExampleSelector({
           <section key={category}>
             <h3 className="category-title">{category}</h3>
             {apps.map((item, index) =>
-              renderExampleItem({ item, index, categoryIndex })
+              renderExampleItem({ item, index, categoryIndex }),
             )}
           </section>
         ))}

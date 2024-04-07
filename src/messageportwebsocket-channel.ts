@@ -1,8 +1,8 @@
-import { RFunction } from "webr";
+import type { RFunction } from "webr";
 import { AwaitableQueue } from "./awaitable-queue";
 import { MessagePortWebSocket } from "./messageportwebsocket";
 import type { PyCallable } from "./pyodide/ffi";
-import { loadPyodide } from "./pyodide/pyodide";
+import type { loadPyodide } from "./pyodide/pyodide";
 
 // =============================================================================
 // Pyodide
@@ -104,7 +104,7 @@ async function connect(
 // =============================================================================
 // webR
 // =============================================================================
-import { WebRProxy } from "./webr-proxy";
+import type { WebRProxy } from "./webr-proxy";
 
 export async function openChannelHttpuv(
   path: string,

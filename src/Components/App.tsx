@@ -6,27 +6,23 @@ import {
   getExampleCategories,
   sanitizeTitleForUrl,
 } from "../examples";
-import {
-  PyodideProxyHandle,
-  initPyodide,
-  initShiny,
-  usePyodide,
-} from "../hooks/usePyodide";
-import {
-  WebRProxyHandle,
-  initRShiny,
-  initWebR,
-  useWebR,
-} from "../hooks/useWebR";
-import { ProxyType } from "../pyodide-proxy";
+import type { PyodideProxyHandle } from "../hooks/usePyodide";
+import { initPyodide, initShiny, usePyodide } from "../hooks/usePyodide";
+import type { WebRProxyHandle } from "../hooks/useWebR";
+import { initRShiny, initWebR, useWebR } from "../hooks/useWebR";
+import type { ProxyType } from "../pyodide-proxy";
 import "./App.css";
 import { ExampleSelector } from "./ExampleSelector";
-import HeaderBar, { HeaderBarCallbacks } from "./HeaderBar";
+import type { HeaderBarCallbacks } from "./HeaderBar";
+import HeaderBar from "./HeaderBar";
 import { OutputCell } from "./OutputCell";
 import { ResizableGrid } from "./ResizableGrid/ResizableGrid";
-import { Terminal, TerminalInterface, TerminalMethods } from "./Terminal";
-import { Viewer, ViewerMethods } from "./Viewer";
-import { FCorFCJSONtoFC, FileContent, FileContentJson } from "./filecontent";
+import type { TerminalInterface, TerminalMethods } from "./Terminal";
+import { Terminal } from "./Terminal";
+import type { ViewerMethods } from "./Viewer";
+import { Viewer } from "./Viewer";
+import type { FileContent, FileContentJson } from "./filecontent";
+import { FCorFCJSONtoFC } from "./filecontent";
 import { fetchGist, gistApiResponseToFileContents } from "./gist";
 import { editorUrlPrefix, fileContentsToUrlString } from "./share";
 
@@ -129,7 +125,7 @@ function ensurePyodideProxyHandlePromise({
           // When we get here, .ready will always be true.
           if (pyodideProxyHandle.ready) {
             await pyodideProxyHandle.pyodide.runPyAsync(
-              `print(pyodide.console.BANNER); print(" ")`
+              `print(pyodide.console.BANNER); print(" ")`,
             );
           }
         }
@@ -241,7 +237,7 @@ export function App({
   const [terminalMethods, setTerminalMethods] = React.useState<TerminalMethods>(
     {
       ready: false,
-    }
+    },
   );
 
   const [currentFiles, setCurrentFiles] =
@@ -314,7 +310,7 @@ export function App({
           editorUrlPrefix(appEngine) +
             "#code=" +
             fileContentsToUrlString(startFiles),
-          "_blank"
+          "_blank",
         );
       },
     });
@@ -355,7 +351,7 @@ export function App({
                 (file) =>
                   file.name === "app.py" ||
                   file.name === "app.R" ||
-                  file.name === "server.R"
+                  file.name === "server.R",
               )}
               appEngine={appEngine}
             />
@@ -401,7 +397,7 @@ export function App({
                 (file) =>
                   file.name === "app.py" ||
                   file.name === "app.R" ||
-                  file.name === "server.R"
+                  file.name === "server.R",
               )}
               appEngine={appEngine}
             />
@@ -548,7 +544,7 @@ export function runApp(
     allowGistUrl?: boolean;
     allowExampleUrl?: boolean;
   } = {},
-  appEngine: AppEngine
+  appEngine: AppEngine,
 ) {
   const optsDefaults = {
     allowCodeUrl: false,
@@ -611,7 +607,7 @@ export function runApp(
           // the first available example.
           pos = { categoryIndex: 0, index: 0 };
           opts.selectedExample = sanitizeTitleForUrl(
-            exampleCategories[pos.categoryIndex].apps[pos.index].title
+            exampleCategories[pos.categoryIndex].apps[pos.index].title,
           );
         }
         startFiles = exampleCategories[pos.categoryIndex].apps[pos.index].files;
@@ -635,12 +631,12 @@ export function runApp(
     delete appOpts.allowCodeUrl;
     delete appOpts.allowExampleUrl;
     const unusedArgs = Object.keys(appOpts).filter(
-      (key) => !propertyOfAppOptions(key)
+      (key) => !propertyOfAppOptions(key),
     );
     if (unusedArgs.length > 0) {
       console.warn(
         "The following arguments were detected but not used in running app",
-        unusedArgs
+        unusedArgs,
       );
     }
 
@@ -653,7 +649,7 @@ export function runApp(
           appOptions={appOpts}
           appEngine={appEngine}
         />
-      </React.StrictMode>
+      </React.StrictMode>,
     );
   })();
 }

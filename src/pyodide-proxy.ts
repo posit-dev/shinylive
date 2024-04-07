@@ -1,4 +1,5 @@
-import { ASGIHTTPRequestScope, makeRequest } from "./messageporthttp.js";
+import type { ASGIHTTPRequestScope } from "./messageporthttp.js";
+import { makeRequest } from "./messageporthttp.js";
 import { openChannel } from "./messageportwebsocket-channel";
 import { postableErrorObjectToError } from "./postable-error";
 import type * as PyodideWorker from "./pyodide-worker";
