@@ -4,7 +4,6 @@ import { errorToPostableErrorObject } from "./postable-error";
 import type { LoadPyodideConfig, PyUtils, ResultType } from "./pyodide-proxy";
 import { processReturnValue, setupPythonEnv } from "./pyodide-proxy";
 import type { PyIterable } from "./pyodide/ffi";
-import type { Py2JsResult } from "./pyodide/pyodide";
 import { loadPyodide } from "./pyodide/pyodide";
 
 type Pyodide = Awaited<ReturnType<typeof loadPyodide>>;
@@ -146,15 +145,18 @@ self.onmessage = async function (e: MessageEvent): Promise<void> {
     }
     //
     else if (msg.type === "loadPackagesFromImports") {
-      await pyodide.loadPackagesFromImports(msg.code);
+      const result = await pyodide.loadPackagesFromImports(msg.code);
+      messagePort.postMessage({
+        type: "reply",
+        subtype: "done",
+        value: result,
+      });
     }
     //
     else if (msg.type === "runPythonAsync") {
       await pyodide.loadPackagesFromImports(msg.code);
 
-      const result = await (pyodide.runPythonAsync(
-        msg.code,
-      ) as Promise<Py2JsResult>);
+      const result = await pyodide.runPythonAsync(msg.code);
 
       if (msg.printResult && result !== undefined) {
         self.stdout_callback(pyUtils.repr(result));

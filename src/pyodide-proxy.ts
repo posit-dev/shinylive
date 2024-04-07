@@ -3,7 +3,7 @@ import { openChannel } from "./messageportwebsocket-channel";
 import { postableErrorObjectToError } from "./postable-error";
 import type * as PyodideWorker from "./pyodide-worker";
 import type { PyIterable } from "./pyodide/ffi";
-import type { Py2JsResult } from "./pyodide/pyodide";
+import type { PackageData } from "./pyodide/pyodide";
 import { loadPyodide } from "./pyodide/pyodide";
 import * as utils from "./utils";
 
@@ -221,11 +221,9 @@ class NormalPyodideProxy implements PyodideProxy {
     },
   ): Promise<ReturnMapping[K]> {
     await this.pyodide.loadPackagesFromImports(code);
-    let result: Py2JsResult;
+    let result: any;
     try {
-      result = await (this.pyodide.runPythonAsync(
-        code,
-      ) as Promise<Py2JsResult>);
+      result = await this.pyodide.runPythonAsync(code);
     } catch (err) {
       if (err instanceof this.pyodide.ffi.PythonError) {
         const shortTraceback = this.pyUtils.shortFormatLastTraceback();
@@ -411,20 +409,26 @@ class WebWorkerPyodideProxy implements PyodideProxy {
     });
   }
 
-  async loadPackagesFromImports(code: string): Promise<void> {
-    await this.postMessageAsync({
+  async loadPackagesFromImports(code: string): Promise<Array<PackageData>> {
+    const msg = await this.postMessageAsync({
       type: "loadPackagesFromImports",
       code,
     });
+
+    if (msg.subtype !== "done") {
+      throw new Error(
+        `Unexpected message type. Expected type 'done', got type '${msg.subtype}'`,
+      );
+    }
+    return msg.value as Array<PackageData>;
   }
 
   async tabComplete(code: string): Promise<string[]> {
-    let msg = await this.postMessageAsync({
+    const msg = await this.postMessageAsync({
       type: "tabComplete",
       code,
     });
 
-    msg = msg as PyodideWorker.ReplyMessage;
     if (msg.subtype !== "tabCompletions") {
       throw new Error(
         `Unexpected message type. Expected type 'tabCompletions', got type '${msg.subtype}'`,
@@ -554,7 +558,7 @@ export function loadPyodideProxy(
 // value according to the returnResult parameter.
 // https://stackoverflow.com/questions/72166620/typescript-conditional-return-type-using-an-object-parameter-and-default-values
 export function processReturnValue<K extends keyof ReturnMapping = "none">(
-  value: Py2JsResult,
+  value: any,
   returnResult = "none" as K,
   pyodide: Pyodide,
   repr: (x: any) => string,
@@ -584,7 +588,7 @@ export function processReturnValue<K extends keyof ReturnMapping = "none">(
           value: "Couldn't finding _to_html function.",
         });
       }
-      const val = (toHtml(value) as Py2JsResult).toJs({
+      const val = toHtml(value).toJs({
         dict_converter: Object.fromEntries,
       });
       return val;
