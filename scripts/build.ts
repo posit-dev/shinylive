@@ -57,7 +57,7 @@ function createRebuildLoggerPlugin(label: string) {
     setup(build: esbuild.PluginBuild) {
       build.onStart(() => {
         console.log(
-          `[${new Date().toISOString()}] Rebuilding JS files for ${label}...`
+          `[${new Date().toISOString()}] Rebuilding JS files for ${label}...`,
         );
       });
     },
@@ -72,7 +72,7 @@ const metafilePlugin = {
         console.log("metafile");
         fs.writeFileSync(
           "esbuild-metadata.json",
-          JSON.stringify(result.metafile)
+          JSON.stringify(result.metafile),
         );
       }
     });
@@ -126,6 +126,8 @@ const buildmap = {
     // causes problems when ../pyodide/pyodide.js loads "pyodide_py.tar" -- it
     // looks in /shinylive/chunks/pyodide/pyodide_py.tar, which doesn't exist.
     // This probably has something to do with how pyodide.js specifies the path.
+    // UPDATE: pyodide_py.tar was removed from Pyodide in 0.23.0, so it might be
+    // OK to use /chunks/[name] now.
     chunkNames: "[name]-[hash]",
     minify: minify,
     banner: banner,
@@ -246,7 +248,7 @@ Object.values(buildmap).forEach((build) =>
         await context.dispose();
       }
     })
-    .catch(() => process.exit(1))
+    .catch(() => process.exit(1)),
 );
 
 if (serve) {
@@ -290,14 +292,14 @@ if (serve) {
                   } else {
                     const client = res.writeHead(
                       proxyRes.statusCode!,
-                      proxyRes.headers
+                      proxyRes.headers,
                     );
                     if (req.url === "/esbuild") clients.push(client);
                   }
                   proxyRes.pipe(res, { end: true });
-                }
+                },
               ),
-              { end: true }
+              { end: true },
             );
           })
           .listen(3000);

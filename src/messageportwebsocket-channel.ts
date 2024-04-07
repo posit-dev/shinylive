@@ -1,7 +1,7 @@
 import { RFunction } from "webr";
 import { AwaitableQueue } from "./awaitable-queue";
 import { MessagePortWebSocket } from "./messageportwebsocket";
-import type { PyProxyCallable } from "./pyodide/pyodide";
+import type { PyCallable } from "./pyodide/ffi";
 import { loadPyodide } from "./pyodide/pyodide";
 
 // =============================================================================
@@ -22,22 +22,22 @@ export async function openChannel(
   path: string,
   appName: string,
   clientPort: MessagePort,
-  pyodide: Pyodide
+  pyodide: Pyodide,
 ): Promise<void> {
   const conn = new MessagePortWebSocket(clientPort);
   // We could _almost_ use app(), but unfortunately pyodide's implicit proxying
   // behavior isn't compatible with ASGI (which wants dict, not JsProxy); we
   // need to explicitly convert stuff first, which is what call_pyodide does.
   const asgiFunc = pyodide.runPython(
-    `_shiny_app_registry["${appName}"].app.call_pyodide`
-  ) as PyProxyCallable;
+    `_shiny_app_registry["${appName}"].app.call_pyodide`,
+  ) as PyCallable;
   await connect(path, conn, asgiFunc);
 }
 
 async function connect(
   path: string,
   conn: MessagePortWebSocket,
-  asgiFunc: PyProxyCallable
+  asgiFunc: PyCallable,
 ) {
   // The `scope` argument we'll pass to the ASGI app
   const scope = {
@@ -110,7 +110,7 @@ export async function openChannelHttpuv(
   path: string,
   appName: string,
   clientPort: MessagePort,
-  webRProxy: WebRProxy
+  webRProxy: WebRProxy,
 ): Promise<void> {
   const conn = new MessagePortWebSocket(clientPort);
   const shelter = await new webRProxy.webR.Shelter();
@@ -183,7 +183,7 @@ export async function openChannelHttpuv(
           app$onWSOpen(ws)
           list(onWSMessage = onWSMessage, onWSClose = onWSClose)
         `,
-          { env: { appName } }
+          { env: { appName } },
         );
         onWSMessage = (await callbacks.get("onWSMessage")) as RFunction;
         onWSClose = (await callbacks.get("onWSClose")) as RFunction;

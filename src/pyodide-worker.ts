@@ -3,7 +3,8 @@ import { openChannel } from "./messageportwebsocket-channel";
 import { errorToPostableErrorObject } from "./postable-error";
 import type { LoadPyodideConfig, PyUtils, ResultType } from "./pyodide-proxy";
 import { processReturnValue, setupPythonEnv } from "./pyodide-proxy";
-import type { Py2JsResult, PyProxyIterable } from "./pyodide/pyodide";
+import type { PyIterable } from "./pyodide/ffi";
+import type { Py2JsResult } from "./pyodide/pyodide";
 import { loadPyodide } from "./pyodide/pyodide";
 
 type Pyodide = Awaited<ReturnType<typeof loadPyodide>>;
@@ -99,7 +100,7 @@ self.stderr_callback = function (s: string) {
 // which is equivalent to the following JS call:
 //   foo.bar("a", 2)
 // This function gets injected into the Python global namespace.
-async function callJS(fnName: PyProxyIterable, args: PyProxyIterable) {
+async function callJS(fnName: PyIterable, args: PyIterable) {
   self.postMessage({
     type: "nonreply",
     subtype: "callJS",
@@ -152,7 +153,7 @@ self.onmessage = async function (e: MessageEvent): Promise<void> {
       await pyodide.loadPackagesFromImports(msg.code);
 
       const result = await (pyodide.runPythonAsync(
-        msg.code
+        msg.code,
       ) as Promise<Py2JsResult>);
 
       if (msg.printResult && result !== undefined) {
@@ -164,7 +165,7 @@ self.onmessage = async function (e: MessageEvent): Promise<void> {
           result,
           msg.returnResult,
           pyodide,
-          pyUtils.repr
+          pyUtils.repr,
         );
 
         messagePort.postMessage({
@@ -173,7 +174,7 @@ self.onmessage = async function (e: MessageEvent): Promise<void> {
           value: processedResult,
         });
       } finally {
-        if (pyodide.isPyProxy(result)) {
+        if (result instanceof pyodide.ffi.PyProxy) {
           result.destroy();
         }
       }
@@ -212,7 +213,7 @@ self.onmessage = async function (e: MessageEvent): Promise<void> {
           result,
           msg.returnResult,
           pyodide,
-          pyUtils.repr
+          pyUtils.repr,
         );
 
         messagePort.postMessage({
@@ -221,7 +222,7 @@ self.onmessage = async function (e: MessageEvent): Promise<void> {
           value: processedResult,
         });
       } finally {
-        if (pyodide.isPyProxy(result)) {
+        if (result instanceof pyodide.ffi.PyProxy) {
           result.destroy();
         }
       }
@@ -235,7 +236,7 @@ self.onmessage = async function (e: MessageEvent): Promise<void> {
       });
     }
   } catch (e) {
-    if (e instanceof pyodide.PythonError) {
+    if (e instanceof pyodide.ffi.PythonError) {
       e.message = pyUtils.shortFormatLastTraceback();
     }
 
