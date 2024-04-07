@@ -305,7 +305,7 @@ class NormalPyodideProxy implements PyodideProxy {
     appName: string,
     clientPort: MessagePort
   ): Promise<void> {
-    openChannel(path, appName, clientPort, this.pyodide);
+    await openChannel(path, appName, clientPort, this.pyodide);
   }
 
   async makeRequest(
@@ -313,7 +313,7 @@ class NormalPyodideProxy implements PyodideProxy {
     appName: string,
     clientPort: MessagePort
   ): Promise<void> {
-    makeRequest(scope, appName, clientPort, this.pyodide);
+    await makeRequest(scope, appName, clientPort, this.pyodide);
   }
 
   public static async build(
