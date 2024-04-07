@@ -11,18 +11,6 @@ type Pyodide = Awaited<ReturnType<typeof loadPyodide>>;
 let pyodideStatus: "none" | "loading" | "loaded" = "none";
 let pyodide: Pyodide;
 
-// For run-time type checking. These are the results from a Python call that can
-// be converted to a JS value, but only the basic types (no proxies). This is
-// equivalent to the following TS type, except that we we use it at run time:
-//    Exclude<Py2JsResult, PyProxy>
-const Py2JsResultBasicTypenames = [
-  "string",
-  "number",
-  "bigint",
-  "boolean",
-  "undefined",
-];
-
 // This top-level Web Worker object (viewed from the inside).
 interface PyodideWebWorkerInside
   extends Omit<DedicatedWorkerGlobalScope, "postMessage"> {
