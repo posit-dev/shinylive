@@ -61,6 +61,7 @@ declare class PyProxy {
 	$$props: PyProxyProps;
 	/** @private */
 	$$flags: number;
+	static [Symbol.hasInstance](obj: any): obj is PyProxy;
 	/**
 	 * @private
 	 * @hideconstructor
@@ -1088,6 +1089,7 @@ export declare type Py2JsResult = any;
  */
 export declare type ConfigType = {
 	indexURL: string;
+	packageCacheDir: string;
 	lockFileURL: string;
 	homedir: string;
 	fullStdLib?: boolean;
@@ -1117,7 +1119,6 @@ export declare function loadPyodide(options?: {
 	 */
 	indexURL?: string;
 	/**
-	 * The URL from which Pyodide will load the Pyodide ``repodata.json`` lock
 	 * file. You can produce custom lock files with :py:func:`micropip.freeze`.
 	 * Default: ```${indexURL}/repodata.json```
 	 */

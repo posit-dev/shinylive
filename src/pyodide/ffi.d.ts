@@ -45,6 +45,7 @@ declare class PyProxy {
 	$$props: PyProxyProps;
 	/** @private */
 	$$flags: number;
+	static [Symbol.hasInstance](obj: any): obj is PyProxy;
 	/**
 	 * @private
 	 * @hideconstructor
