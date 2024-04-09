@@ -258,10 +258,15 @@ webr::shim_install()
   metadata_path <- glue::glue("/shinylive/webr/packages/metadata.rds")
 
   # Attempt this download quietly, if no metadata exists we can still continue
-  try(suppressWarnings({
-
+  found <- webr::eval_js(glue::glue("
+    var xhr = new XMLHttpRequest();
+    xhr.open('HEAD', '{metadata_url}', false);
+    xhr.send();
+    (xhr.status >= 200 && xhr.status < 300)
+  "))
+  if (found) {
     download.file(metadata_url, metadata_path, quiet = TRUE)
-  }), silent = TRUE)
+  }
 
   if (file.exists(metadata_path)) {
     metadata <- readRDS(metadata_path)
