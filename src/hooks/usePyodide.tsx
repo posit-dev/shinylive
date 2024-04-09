@@ -518,7 +518,8 @@ class ShinyExpressAppModule:
         import shiny.express
         self.app = shiny.express.wrap_express_app(app_path)
 
-async def _start_app(app_name, scope = _shiny_app_registry):
+async def _start_app(app_name, scope = _shiny_app_registry, dev_mode = False):
+    import os
     import sys
     import importlib
     import shiny.express
@@ -537,10 +538,17 @@ async def _start_app(app_name, scope = _shiny_app_registry):
     class ModuleApp:
         app = None
 
+    if dev_mode:
+        # Enable shiny dev mode for error console
+        os.environ["SHINY_DEV_MODE"] = "1"
+
     if shiny.express.is_express_app("app.py", app_dir):
         app_obj = ShinyExpressAppModule(Path(app_dir) / "app.py")
     else:
         app_obj = importlib.import_module(f"{app_name}.app")
+
+    if dev_mode:
+        os.environ.pop("SHINY_DEV_MODE")
 
     scope[app_name] = app_obj
 

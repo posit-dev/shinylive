@@ -126,9 +126,11 @@ async function resetRAppFrame(
 export function Viewer({
   proxyHandle,
   setViewerMethods,
+  devMode = false,
 }: {
   proxyHandle: ProxyHandle;
   setViewerMethods: React.Dispatch<React.SetStateAction<ViewerMethods>>;
+  devMode?: boolean;
 }) {
   const viewerFrameRef = React.useRef<HTMLIFrameElement>(null);
   const [appRunningState, setAppRunningState] = React.useState<
@@ -268,6 +270,7 @@ export function Viewer({
         await pyodideproxy.callPyAsync({
           fnName: ["_start_app"],
           args: [appName],
+          kwargs: { dev_mode: devMode },
         });
 
         viewerFrameRef.current.src = appInfo.urlPath;
