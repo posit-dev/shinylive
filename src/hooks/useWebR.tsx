@@ -253,8 +253,15 @@ webr::shim_install()
 
 .webr_pkg_cache <- list()
 
-.mount_vfs_images <- function(appDir) {
-  metadata_path <- glue::glue("{appDir}/_webr/metadata.rds")
+.mount_vfs_images <- function() {
+  metadata_url <- glue::glue("{.base_url}packages/metadata.rds")
+  metadata_path <- glue::glue("/shinylive/webr/packages/metadata.rds")
+
+  # Attempt this download quietly, if no metadata exists we can still continue
+  try(suppressWarnings({
+
+    download.file(metadata_url, metadata_path, quiet = TRUE)
+  }), silent = TRUE)
 
   if (file.exists(metadata_path)) {
     metadata <- readRDS(metadata_path)
@@ -283,7 +290,7 @@ webr::shim_install()
 
 .start_app <- function(appName, appDir) {
   # Mount VFS images provided in Shinylive app assets
-  .mount_vfs_images(appDir)
+  .mount_vfs_images()
 
   # Uniquely install packages with webr
   unique_pkgs <- unique(renv::dependencies(appDir, quiet = TRUE)$Package)
