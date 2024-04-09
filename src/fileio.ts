@@ -1,4 +1,4 @@
-import { FileContent } from "./Components/filecontent";
+import type { FileContent } from "./Components/filecontent";
 import { isBinary } from "./utils";
 
 // Maximum size files to upload, in bytes.
@@ -24,14 +24,14 @@ export async function loadDirectoryRecursive(
   dirHandle: FileSystemDirectoryHandle,
   dirPrefix = "",
   maxBytes = MAX_FILE_SIZE,
-  maxFiles = MAX_FILES
+  maxFiles = MAX_FILES,
 ): Promise<FileContent[]> {
   const files: FileContent[] = [];
 
   for await (const fileHandle of dirHandle.values()) {
     if (files.length > maxFiles) {
       throw new Error(
-        `Too many files in directory ${dirHandle.name}; maximum is ${maxFiles}.`
+        `Too many files in directory ${dirHandle.name}; maximum is ${maxFiles}.`,
       );
     }
 
@@ -60,7 +60,7 @@ export async function loadDirectoryRecursive(
 
 export async function loadFileContent(
   fileHandle: FileSystemFileHandle,
-  maxBytes: number = MAX_FILE_SIZE
+  maxBytes: number = MAX_FILE_SIZE,
 ): Promise<FileContent> {
   const fileData = await fileHandle.getFile();
   if (fileData.size > maxBytes) {
@@ -93,13 +93,13 @@ export function assertHasFileAccessApiSupport(): void {
 
 export async function saveFileContentsToDirectory(
   files: FileContent[],
-  dirHandle: FileSystemDirectoryHandle
+  dirHandle: FileSystemDirectoryHandle,
 ): Promise<void> {
   for (const file of files) {
     const filePathParts = file.name.split("/");
     const dir = await ensureDirPathExists(
       filePathParts.slice(0, -1),
-      dirHandle
+      dirHandle,
     );
 
     await saveFileContentToFile(
@@ -109,7 +109,7 @@ export async function saveFileContentsToDirectory(
         ...file,
         name: filePathParts.slice(-1)[0],
       },
-      dir
+      dir,
     );
   }
 }
@@ -118,7 +118,7 @@ export async function saveFileContentsToDirectory(
 export async function downloadFile(
   filename: string,
   content: BlobPart,
-  type = "text/plain"
+  type = "text/plain",
 ): Promise<void> {
   const element = document.createElement("a");
   const file = new Blob([content], { type: type });
@@ -133,7 +133,7 @@ export async function downloadFile(
 // resulting dirHandle. If dirname is [], then just return dirHandle.
 async function ensureDirPathExists(
   dirParts: string[],
-  dirHandle: FileSystemDirectoryHandle
+  dirHandle: FileSystemDirectoryHandle,
 ): Promise<FileSystemDirectoryHandle> {
   if (dirParts.length === 0) {
     return dirHandle;
@@ -148,7 +148,7 @@ async function ensureDirPathExists(
 
 async function saveFileContentToFile(
   file: FileContent,
-  dirHandle: FileSystemDirectoryHandle
+  dirHandle: FileSystemDirectoryHandle,
 ): Promise<void> {
   const fileHandle = await dirHandle.getFileHandle(file.name, {
     create: true,

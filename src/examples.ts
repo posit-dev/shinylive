@@ -1,9 +1,6 @@
-import { AppEngine } from "./Components/App";
-import {
-  FCJSONtoFC,
-  FileContent,
-  FileContentJson,
-} from "./Components/filecontent";
+import type { AppEngine } from "./Components/App";
+import type { FileContent, FileContentJson } from "./Components/filecontent";
+import { FCJSONtoFC } from "./Components/filecontent";
 
 export type ExampleItemJson = {
   title: string;
@@ -50,18 +47,17 @@ export type ExamplePosition = {
 let exampleCategories: ExampleCategory[] | null = null;
 
 export async function getExampleCategories(
-  engine: AppEngine
+  engine: AppEngine,
 ): Promise<ExampleCategory[]> {
   if (exampleCategories) {
     return exampleCategories;
   }
 
   const response = await fetch("../shinylive/examples.json");
-  const exampleIndexJson =
-    (await response.json()) as ExampleIndexJson[];
+  const exampleIndexJson = (await response.json()) as ExampleIndexJson[];
 
   const exampleCategoriesJson = exampleIndexJson.find(
-    (value) => value.engine === engine
+    (value) => value.engine === engine,
   );
 
   if (!exampleCategoriesJson) {
@@ -69,7 +65,7 @@ export async function getExampleCategories(
   }
 
   exampleCategories = exampleCategoriesJson.examples.map(
-    exampleCategoryJsonToExampleCategory
+    exampleCategoryJsonToExampleCategory,
   );
 
   return exampleCategories;
@@ -77,7 +73,7 @@ export async function getExampleCategories(
 
 export function findExampleByTitle(
   title: string,
-  exampleCategories: ExampleCategory[]
+  exampleCategories: ExampleCategory[],
 ): ExamplePosition | null {
   if (title === "") return null;
 
@@ -108,7 +104,7 @@ export function sanitizeTitleForUrl(title: string) {
 }
 
 function exampleCategoryJsonToExampleCategory(
-  x: ExampleCategoryJson
+  x: ExampleCategoryJson,
 ): ExampleCategory {
   return {
     category: x.category,

@@ -1,5 +1,6 @@
 import React, { useEffect } from "react";
-import { loadPyodideProxy, ProxyType, PyodideProxy } from "../pyodide-proxy";
+import type { ProxyType, PyodideProxy } from "../pyodide-proxy";
+import { loadPyodideProxy } from "../pyodide-proxy";
 import * as utils from "../utils";
 
 export type PyodideProxyHandle =

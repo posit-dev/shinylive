@@ -1,16 +1,14 @@
+import type { Extension } from "@codemirror/state";
+import { StateEffect } from "@codemirror/state";
+import type { EditorView } from "@codemirror/view";
+import * as React from "react";
 import * as fileio from "../../fileio";
-import { LSPClient } from "../../language-server/lsp-client";
+import type { LSPClient } from "../../language-server/lsp-client";
 import { inferFiletype } from "../../utils";
-import {
-  EditorFile,
-  fileContentsToEditorFiles,
-  fileContentToEditorFile,
-} from "../Editor";
+import type { EditorFile } from "../Editor";
+import { fileContentsToEditorFiles, fileContentToEditorFile } from "../Editor";
 import type { FileContent } from "../filecontent";
 import { getMinimalExtensions } from "./extensions";
-import { Extension, StateEffect } from "@codemirror/state";
-import { EditorView } from "@codemirror/view";
-import * as React from "react";
 
 export function useTabbedCodeMirror({
   currentFilesFromApp,
@@ -38,7 +36,7 @@ export function useTabbedCodeMirror({
   // If a file name is being edited, this will be an object with index and name
   // (as it is being edited); otherwise it's null when no renaming is happening.
   const [editingFilename, setEditingFilename] = React.useState<string | null>(
-    null
+    null,
   );
 
   // This state var is used contorl whether to focus on the editor. We want it
@@ -60,7 +58,7 @@ export function useTabbedCodeMirror({
   // ===========================================================================
   React.useEffect(() => {
     setFiles(
-      fileContentsToEditorFiles(currentFilesFromApp, inferEditorExtensions)
+      fileContentsToEditorFiles(currentFilesFromApp, inferEditorExtensions),
     );
     setActiveFileIdx(0);
 
@@ -97,7 +95,7 @@ export function useTabbedCodeMirror({
     };
     const newFile: EditorFile = fileContentToEditorFile(
       fileContent,
-      inferEditorExtensions
+      inferEditorExtensions,
     );
 
     setEditingFilename(newFile.name);
@@ -117,12 +115,12 @@ export function useTabbedCodeMirror({
 
     const newFile: EditorFile = fileContentToEditorFile(
       fileContent,
-      inferEditorExtensions
+      inferEditorExtensions,
     );
 
     const updatedFiles = [...files];
     const filenameMatchIdx = updatedFiles.findIndex(
-      (f) => f.name === newFile.name
+      (f) => f.name === newFile.name,
     );
     if (filenameMatchIdx === -1) {
       updatedFiles.push(newFile);
@@ -151,7 +149,7 @@ export function useTabbedCodeMirror({
       });
       cmView.dispatch({
         effects: StateEffect.reconfigure.of(
-          inferEditorExtensions(updatedFiles[fileIndex])
+          inferEditorExtensions(updatedFiles[fileIndex]),
         ),
       });
     }
@@ -168,7 +166,7 @@ export function useTabbedCodeMirror({
     if (inferFiletype(newFileName) === "python") {
       lspClient.createFile(
         lspPathPrefix + newFileName,
-        updatedFiles[fileIndex].ref.editorState.doc.toString()
+        updatedFiles[fileIndex].ref.editorState.doc.toString(),
       );
     }
   }

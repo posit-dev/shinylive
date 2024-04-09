@@ -1,7 +1,8 @@
 import React, { useEffect } from "react";
 import { ChannelType } from "webr";
 import * as utils from "../utils";
-import { WebRProxy, loadWebRProxy } from "../webr-proxy";
+import type { WebRProxy } from "../webr-proxy";
+import { loadWebRProxy } from "../webr-proxy";
 
 export type WebRProxyHandle =
   | {

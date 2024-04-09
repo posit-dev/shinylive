@@ -7,20 +7,25 @@ on:
     branches: [main]
   release:
     types: [published]
-
+  workflow_run:
+    workflows: [Update py-shiny submodule]
+    types:
+      - completed
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
     strategy:
       matrix:
         python-version: ["3.11"]
       fail-fast: false
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
 
@@ -65,6 +70,33 @@ jobs:
       #     retention-days: 30
 
       # =====================================================
+      # Publish to AWS for shinylive.io
+      # =====================================================
+      - name: Configure AWS Credentials
+        if: github.ref == 'refs/heads/deploy'
+        uses: aws-actions/configure-aws-credentials@v2
+        env:
+          AWS_ACCOUNT_ID: "341745101194"
+          AWS_REGION: us-east-1
+        with:
+          role-to-assume: arn:aws:iam::${{ env.AWS_ACCOUNT_ID }}:role/ShinyliveDeploy
+          role-session-name: gha-deploy-shinylive
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Deploy to S3
+        if: github.ref == 'refs/heads/deploy'
+        env:
+          AWS_CLOUDFRONT_DISTRIBUTION_ID: "E2SN9UWE8YY9EG"
+        run: |
+          pip install awscli
+          gzip -k _shinylive/r/shinylive/webr/library.data
+          aws s3 sync _shinylive s3://shinylive.io --delete
+          aws s3 cp --exclude "*" --include "*.data" --include "*.so" --recursive --content-type="application/wasm" --metadata-directive="REPLACE" s3://shinylive.io/r/shinylive/webr/ s3://shinylive.io/r/shinylive/webr/
+          aws s3 cp --exclude "*" --include "*.js.metadata" --recursive --content-type="text/javascript" --metadata-directive="REPLACE" s3://shinylive.io/r/shinylive/webr/ s3://shinylive.io/r/shinylive/webr/
+          aws s3 cp --content-encoding="gzip" --content-type="application/wasm" --metadata-directive="REPLACE" _shinylive/r/shinylive/webr/library.data.gz s3://shinylive.io/r/shinylive/webr/library.data
+          aws cloudfront create-invalidation --distribution-id $AWS_CLOUDFRONT_DISTRIBUTION_ID --paths "/*"
+
+      # =====================================================
       # Upload _shinylive/ artifact
       # =====================================================
       - name: Upload _shinylive/ artifact
@@ -72,26 +104,6 @@ jobs:
         uses: actions/upload-pages-artifact@v1
         with:
           path: "_shinylive/"
-
-
-      # =====================================================
-      # Publish to shinylive.io
-      # =====================================================
-      # Deploy the _shinylive/ subdirectory to shinylive.io. It might make sense
-      # to do this as a separate job using the uploaded site/ artifact (like
-      # deploy_gh_pages), but this actually deploys a different subdirectory,
-      # _shinylive/, so we'll just do it in line.
-      - name: Publish to shinylive.io
-        if: github.ref == 'refs/heads/deploy'
-        uses: cloudflare/wrangler-action@2.0.0
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          # We need to tell that we're deploying on the "main" branch (even
-          # though we're actually on "deploy" branch) so that it is a production
-          # deployment.
-          command: pages publish _shinylive/ --project-name=shinylive --commit-dirty=true --branch=main
-
 
       # =====================================================
       # Upload shinylive bundle on release
@@ -120,7 +132,6 @@ jobs:
           tag: ${{ github.ref }}
           file_glob: true
           overwrite: true
-
 
   # =====================================================
   # Deploy GitHub Pages site

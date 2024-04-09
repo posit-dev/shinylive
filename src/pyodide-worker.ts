@@ -1,27 +1,16 @@
-import { ASGIHTTPRequestScope, makeRequest } from "./messageporthttp";
+import type { ASGIHTTPRequestScope } from "./messageporthttp";
+import { makeRequest } from "./messageporthttp";
 import { openChannel } from "./messageportwebsocket-channel";
 import { errorToPostableErrorObject } from "./postable-error";
 import type { LoadPyodideConfig, PyUtils, ResultType } from "./pyodide-proxy";
 import { processReturnValue, setupPythonEnv } from "./pyodide-proxy";
-import type { Py2JsResult, PyProxyIterable } from "./pyodide/pyodide";
+import type { PyIterable } from "./pyodide/ffi";
 import { loadPyodide } from "./pyodide/pyodide";
 
 type Pyodide = Awaited<ReturnType<typeof loadPyodide>>;
 
 let pyodideStatus: "none" | "loading" | "loaded" = "none";
 let pyodide: Pyodide;
-
-// For run-time type checking. These are the results from a Python call that can
-// be converted to a JS value, but only the basic types (no proxies). This is
-// equivalent to the following TS type, except that we we use it at run time:
-//    Exclude<Py2JsResult, PyProxy>
-const Py2JsResultBasicTypenames = [
-  "string",
-  "number",
-  "bigint",
-  "boolean",
-  "undefined",
-];
 
 // This top-level Web Worker object (viewed from the inside).
 interface PyodideWebWorkerInside
@@ -111,7 +100,7 @@ self.stderr_callback = function (s: string) {
 // which is equivalent to the following JS call:
 //   foo.bar("a", 2)
 // This function gets injected into the Python global namespace.
-async function callJS(fnName: PyProxyIterable, args: PyProxyIterable) {
+async function callJS(fnName: PyIterable, args: PyIterable) {
   self.postMessage({
     type: "nonreply",
     subtype: "callJS",
@@ -157,15 +146,18 @@ self.onmessage = async function (e: MessageEvent): Promise<void> {
     }
     //
     else if (msg.type === "loadPackagesFromImports") {
-      await pyodide.loadPackagesFromImports(msg.code);
+      const result = await pyodide.loadPackagesFromImports(msg.code);
+      messagePort.postMessage({
+        type: "reply",
+        subtype: "done",
+        value: result,
+      });
     }
     //
     else if (msg.type === "runPythonAsync") {
       await pyodide.loadPackagesFromImports(msg.code);
 
-      const result = await (pyodide.runPythonAsync(
-        msg.code
-      ) as Promise<Py2JsResult>);
+      const result = await pyodide.runPythonAsync(msg.code);
 
       if (msg.printResult && result !== undefined) {
         self.stdout_callback(pyUtils.repr(result));
@@ -176,7 +168,7 @@ self.onmessage = async function (e: MessageEvent): Promise<void> {
           result,
           msg.returnResult,
           pyodide,
-          pyUtils.repr
+          pyUtils.repr,
         );
 
         messagePort.postMessage({
@@ -185,7 +177,7 @@ self.onmessage = async function (e: MessageEvent): Promise<void> {
           value: processedResult,
         });
       } finally {
-        if (pyodide.isPyProxy(result)) {
+        if (result instanceof pyodide.ffi.PyProxy) {
           result.destroy();
         }
       }
@@ -224,7 +216,7 @@ self.onmessage = async function (e: MessageEvent): Promise<void> {
           result,
           msg.returnResult,
           pyodide,
-          pyUtils.repr
+          pyUtils.repr,
         );
 
         messagePort.postMessage({
@@ -233,7 +225,7 @@ self.onmessage = async function (e: MessageEvent): Promise<void> {
           value: processedResult,
         });
       } finally {
-        if (pyodide.isPyProxy(result)) {
+        if (result instanceof pyodide.ffi.PyProxy) {
           result.destroy();
         }
       }
@@ -247,7 +239,7 @@ self.onmessage = async function (e: MessageEvent): Promise<void> {
       });
     }
   } catch (e) {
-    if (e instanceof pyodide.PythonError) {
+    if (e instanceof pyodide.ffi.PythonError) {
       e.message = pyUtils.shortFormatLastTraceback();
     }
 

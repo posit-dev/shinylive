@@ -1,4 +1,4 @@
-import * as LSP from "vscode-languageserver-protocol";
+import type * as LSP from "vscode-languageserver-protocol";
 import { currentScriptDir } from "../utils";
 import { createUri } from "./client";
 import { LSPClient } from "./lsp-client";
@@ -34,7 +34,7 @@ export class PyrightClient extends LSPClient {
 
   public override async createFile(
     filename: string,
-    content: string
+    content: string,
   ): Promise<void> {
     const params: LSP.CreateFile = {
       uri: createUri(filename),
@@ -61,7 +61,7 @@ export class PyrightClient extends LSPClient {
  */
 async function getInitializationOptions(): Promise<any> {
   const response = await fetch(
-    currentScriptDir() + "/pyright/typeshed.en.json"
+    currentScriptDir() + "/pyright/typeshed.en.json",
   );
   const typeshed = await response.json();
 

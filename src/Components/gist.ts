@@ -1,7 +1,7 @@
 // Shape of file content from user input (i.e. examples.json, data structure
 // passed to App.runApp). If the type is "binary", then content is a
 import { isBinary, stringToUint8Array, uint8ArrayToString } from "../utils";
-import { FileContent } from "./filecontent";
+import type { FileContent } from "./filecontent";
 
 export type GistApiResponse = {
   url: string;
@@ -39,7 +39,7 @@ export async function fetchGist(id: string): Promise<GistApiResponse> {
 }
 
 export async function gistApiResponseToFileContents(
-  gist: GistApiResponse
+  gist: GistApiResponse,
 ): Promise<FileContent[]> {
   const result: FileContent[] = [];
 

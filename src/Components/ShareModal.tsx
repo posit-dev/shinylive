@@ -1,8 +1,8 @@
 import * as React from "react";
 import { useOnEscOrClickOutside } from "../hooks/useOnEscOrClickOutside";
-import { AppEngine } from "./App";
+import type { AppEngine } from "./App";
 import "./ShareModal.css";
-import { FileContent } from "./filecontent";
+import type { FileContent } from "./filecontent";
 import {
   appUrlPrefix,
   editorUrlPrefix,

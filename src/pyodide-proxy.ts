@@ -1,9 +1,11 @@
-import { ASGIHTTPRequestScope, makeRequest } from "./messageporthttp.js";
+import type { ASGIHTTPRequestScope } from "./messageporthttp.js";
+import { makeRequest } from "./messageporthttp.js";
 import { openChannel } from "./messageportwebsocket-channel";
 import { postableErrorObjectToError } from "./postable-error";
 import type * as PyodideWorker from "./pyodide-worker";
+import type { PyIterable } from "./pyodide/ffi";
+import type { PackageData } from "./pyodide/pyodide";
 import { loadPyodide } from "./pyodide/pyodide";
-import type { Py2JsResult, PyProxyIterable } from "./pyodide/pyodide";
 import * as utils from "./utils";
 
 type Pyodide = Awaited<ReturnType<typeof loadPyodide>>;
@@ -71,7 +73,7 @@ export interface PyodideProxy {
   // https://stackoverflow.com/questions/72166620/typescript-conditional-return-type-using-an-object-parameter-and-default-values
   runPyAsync<K extends keyof ReturnMapping = "none">(
     code: string,
-    { returnResult, printResult }?: { returnResult?: K; printResult?: boolean }
+    { returnResult, printResult }?: { returnResult?: K; printResult?: boolean },
   ): Promise<ReturnMapping[K]>;
 
   // registerJsModule: typeof registerJsModule;
@@ -98,12 +100,12 @@ export interface PyodideProxy {
   openChannel(
     path: string,
     appName: string,
-    clientPort: MessagePort
+    clientPort: MessagePort,
   ): Promise<void>;
   makeRequest(
     scope: ASGIHTTPRequestScope,
     appName: string,
-    clientPort: MessagePort
+    clientPort: MessagePort,
   ): Promise<void>;
 }
 
@@ -122,15 +124,13 @@ export interface LoadPyodideConfig {
 // A set of proxies for Python functions that the are called from JS.
 export interface PyUtils {
   repr: (x: any) => string;
-  tabComplete: (x: string) => PyProxyIterable;
+  tabComplete: (x: string) => PyIterable;
   shortFormatLastTraceback: () => string;
 }
 
 export async function setupPythonEnv(
   pyodide: Pyodide,
-  callJS:
-    | null
-    | ((fnName: PyProxyIterable, args: PyProxyIterable) => Promise<any>)
+  callJS: null | ((fnName: PyIterable, args: PyIterable) => Promise<any>),
 ): Promise<PyUtils> {
   const repr = pyodide.globals.get("repr") as (x: any) => string;
 
@@ -143,9 +143,7 @@ export async function setupPythonEnv(
   pyodide.console.PyodideConsole(__main__.__dict__)
   `);
 
-  const tabComplete = pyconsole.complete.copy() as (
-    x: string
-  ) => PyProxyIterable;
+  const tabComplete = pyconsole.complete.copy() as (x: string) => PyIterable;
 
   pyconsole.destroy();
 
@@ -189,7 +187,7 @@ class NormalPyodideProxy implements PyodideProxy {
 
   constructor(
     private stdoutCallback: (text: string) => void,
-    private stderrCallback: (text: string) => void
+    private stderrCallback: (text: string) => void,
   ) {}
 
   async init(config: LoadPyodideConfig) {
@@ -221,16 +219,14 @@ class NormalPyodideProxy implements PyodideProxy {
     }: { returnResult?: K; printResult?: boolean } = {
       returnResult: "none" as K,
       printResult: false,
-    }
+    },
   ): Promise<ReturnMapping[K]> {
     await this.pyodide.loadPackagesFromImports(code);
-    let result: Py2JsResult;
+    let result: any;
     try {
-      result = await (this.pyodide.runPythonAsync(
-        code
-      ) as Promise<Py2JsResult>);
+      result = await this.pyodide.runPythonAsync(code);
     } catch (err) {
-      if (err instanceof this.pyodide.PythonError) {
+      if (err instanceof this.pyodide.ffi.PythonError) {
         const shortTraceback = this.pyUtils.shortFormatLastTraceback();
         err.message = shortTraceback;
       }
@@ -247,10 +243,10 @@ class NormalPyodideProxy implements PyodideProxy {
         result,
         returnResult,
         this.pyodide,
-        this.pyUtils.repr
+        this.pyUtils.repr,
       );
     } finally {
-      if (this.pyodide.isPyProxy(result)) {
+      if (result instanceof this.pyodide.ffi.PyProxy) {
         result.destroy();
       }
     }
@@ -291,10 +287,10 @@ class NormalPyodideProxy implements PyodideProxy {
         result,
         returnResult,
         this.pyodide,
-        this.pyUtils.repr
+        this.pyUtils.repr,
       );
     } finally {
-      if (this.pyodide.isPyProxy(result)) {
+      if (result instanceof this.pyodide.ffi.PyProxy) {
         result.destroy();
       }
     }
@@ -303,23 +299,23 @@ class NormalPyodideProxy implements PyodideProxy {
   async openChannel(
     path: string,
     appName: string,
-    clientPort: MessagePort
+    clientPort: MessagePort,
   ): Promise<void> {
-    openChannel(path, appName, clientPort, this.pyodide);
+    await openChannel(path, appName, clientPort, this.pyodide);
   }
 
   async makeRequest(
     scope: ASGIHTTPRequestScope,
     appName: string,
-    clientPort: MessagePort
+    clientPort: MessagePort,
   ): Promise<void> {
-    makeRequest(scope, appName, clientPort, this.pyodide);
+    await makeRequest(scope, appName, clientPort, this.pyodide);
   }
 
   public static async build(
     config: LoadPyodideConfig,
     stdoutCallback: (text: string) => void,
-    stderrCallback: (text: string) => void
+    stderrCallback: (text: string) => void,
   ): Promise<NormalPyodideProxy> {
     const proxy = new NormalPyodideProxy(stdoutCallback, stderrCallback);
 
@@ -338,10 +334,7 @@ class NormalPyodideProxy implements PyodideProxy {
   // which is equivalent to the following JS call:
   //   foo.bar("a", 2)
   // This function gets injected into the Python global namespace.
-  private async callJS(
-    fnName: PyProxyIterable,
-    args: PyProxyIterable
-  ): Promise<any> {
+  private async callJS(fnName: PyIterable, args: PyIterable): Promise<any> {
     let fn = globalThis as any;
     for (const el of fnName.toJs()) {
       fn = fn[el];
@@ -364,11 +357,11 @@ class WebWorkerPyodideProxy implements PyodideProxy {
 
   constructor(
     private stdoutCallback: (text: string) => void,
-    private stderrCallback: (text: string) => void
+    private stderrCallback: (text: string) => void,
   ) {
     this.pyWorker = new Worker(
       utils.currentScriptDir() + "/pyodide-worker.js",
-      { type: "module" }
+      { type: "module" },
     );
 
     this.pyWorker.onmessage = (e) => {
@@ -402,7 +395,7 @@ class WebWorkerPyodideProxy implements PyodideProxy {
   // returns void immediately, this function returns a promise, which resolves
   // when a ReplyMessage is received from the worker.
   async postMessageAsync(
-    msg: PyodideWorker.InMessage
+    msg: PyodideWorker.InMessage,
   ): Promise<PyodideWorker.ReplyMessage> {
     return new Promise((onSuccess) => {
       const channel = new MessageChannel();
@@ -417,23 +410,29 @@ class WebWorkerPyodideProxy implements PyodideProxy {
     });
   }
 
-  async loadPackagesFromImports(code: string): Promise<void> {
-    await this.postMessageAsync({
+  async loadPackagesFromImports(code: string): Promise<Array<PackageData>> {
+    const msg = await this.postMessageAsync({
       type: "loadPackagesFromImports",
       code,
     });
+
+    if (msg.subtype !== "done") {
+      throw new Error(
+        `Unexpected message type. Expected type 'done', got type '${msg.subtype}'`,
+      );
+    }
+    return msg.value as Array<PackageData>;
   }
 
   async tabComplete(code: string): Promise<string[]> {
-    let msg = await this.postMessageAsync({
+    const msg = await this.postMessageAsync({
       type: "tabComplete",
       code,
     });
 
-    msg = msg as PyodideWorker.ReplyMessage;
     if (msg.subtype !== "tabCompletions") {
       throw new Error(
-        `Unexpected message type. Expected type 'tabCompletions', got type '${msg.subtype}'`
+        `Unexpected message type. Expected type 'tabCompletions', got type '${msg.subtype}'`,
       );
     }
     return msg.completions;
@@ -450,7 +449,7 @@ class WebWorkerPyodideProxy implements PyodideProxy {
     }: { returnResult?: K; printResult?: boolean } = {
       returnResult: "none" as K,
       printResult: false,
-    }
+    },
   ): Promise<ReturnMapping[K]> {
     const response = (await this.postMessageAsync({
       type: "runPythonAsync",
@@ -502,7 +501,7 @@ class WebWorkerPyodideProxy implements PyodideProxy {
   async openChannel(
     path: string,
     appName: string,
-    clientPort: MessagePort
+    clientPort: MessagePort,
   ): Promise<void> {
     return this.pyWorker.postMessage({ type: "openChannel", path, appName }, [
       clientPort,
@@ -512,7 +511,7 @@ class WebWorkerPyodideProxy implements PyodideProxy {
   async makeRequest(
     scope: ASGIHTTPRequestScope,
     appName: string,
-    clientPort: MessagePort
+    clientPort: MessagePort,
   ): Promise<void> {
     return this.pyWorker.postMessage({ type: "makeRequest", scope, appName }, [
       clientPort,
@@ -527,7 +526,7 @@ class WebWorkerPyodideProxy implements PyodideProxy {
   public static async build(
     config: LoadPyodideConfig,
     stdoutCallback: (text: string) => void,
-    stderrCallback: (text: string) => void
+    stderrCallback: (text: string) => void,
   ): Promise<WebWorkerPyodideProxy> {
     const proxy = new WebWorkerPyodideProxy(stdoutCallback, stderrCallback);
     await proxy.init(config);
@@ -541,7 +540,7 @@ class WebWorkerPyodideProxy implements PyodideProxy {
 export function loadPyodideProxy(
   config: LoadPyodideConfig & { type: "normal" | "webworker" },
   stdoutCallback: (text: string) => void = console.log,
-  stderrCallback: (text: string) => void = console.error
+  stderrCallback: (text: string) => void = console.error,
 ): Promise<PyodideProxy> {
   if (config.type === "normal") {
     return NormalPyodideProxy.build(config, stdoutCallback, stderrCallback);
@@ -560,14 +559,14 @@ export function loadPyodideProxy(
 // value according to the returnResult parameter.
 // https://stackoverflow.com/questions/72166620/typescript-conditional-return-type-using-an-object-parameter-and-default-values
 export function processReturnValue<K extends keyof ReturnMapping = "none">(
-  value: Py2JsResult,
+  value: any,
   returnResult = "none" as K,
   pyodide: Pyodide,
-  repr: (x: any) => string
+  repr: (x: any) => string,
 ): ReturnMapping[K] {
   const possibleReturnValues = {
     get value() {
-      if (pyodide.isPyProxy(value)) {
+      if (value instanceof pyodide.ffi.PyProxy) {
         // If `result` is a PyProxy, we need to explicitly convert to JS.
         return value.toJs();
       } else {
@@ -590,7 +589,7 @@ export function processReturnValue<K extends keyof ReturnMapping = "none">(
           value: "Couldn't finding _to_html function.",
         });
       }
-      const val = (toHtml(value) as Py2JsResult).toJs({
+      const val = toHtml(value).toJs({
         dict_converter: Object.fromEntries,
       });
       return val;

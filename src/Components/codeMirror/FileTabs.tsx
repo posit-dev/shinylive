@@ -1,7 +1,7 @@
-import { Icon } from "../Icons";
-import { useTabbedCodeMirror } from "./useTabbedCodeMirror";
 import "balloon-css";
 import * as React from "react";
+import { Icon } from "../Icons";
+import type { useTabbedCodeMirror } from "./useTabbedCodeMirror";
 
 // =============================================================================
 // Utility functions
@@ -37,7 +37,7 @@ export function FileTabs({
             files.every(
               (file, i) =>
                 i === index || // Can't conflict with its own name
-                file.name.toLowerCase() !== editingFilename.toLowerCase()
+                file.name.toLowerCase() !== editingFilename.toLowerCase(),
             );
 
           return (

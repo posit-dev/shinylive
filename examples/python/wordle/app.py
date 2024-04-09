@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import cast
 
 import words
-from shiny import App, Inputs, reactive, render, ui
+from shiny import App, Inputs, Outputs, Session, reactive, render, ui
 from shiny.ui import TagList, div, h3, head_content, tags
 from typing_extensions import Literal
 
@@ -97,7 +97,7 @@ class ShinyInputs(Inputs):
     hard: reactive.value[bool]
 
 
-def server(input, output, session):
+def server(input: Inputs, output: Outputs, session: Session):
     # Treat `input` as a ShinyInputs object, for the static type checker.
     input = cast(ShinyInputs, input)
 
@@ -174,9 +174,9 @@ def server(input, output, session):
                 match_type = guess.match_types[i]
                 if letter not in letter_matches:
                     # If there isn't an existing entry for that letter, just use it.
-                    letter_matches["letter"] = match_type
+                    letter_matches[letter] = match_type
                 else:
-                    prev_match_type = letter_matches["letter"]
+                    prev_match_type = letter_matches[letter]
                     if match_type == "correct" and prev_match_type in [
                         "not-in-word",
                         "in-word",

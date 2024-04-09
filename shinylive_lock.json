@@ -15,8 +15,8 @@
   },
   "shiny": {
     "name": "shiny",
-    "version": "0.8.1",
-    "filename": "shiny-0.8.1-py3-none-any.whl",
+    "version": "0.8.1.9000",
+    "filename": "shiny-0.8.1.9000-py3-none-any.whl",
     "sha256": null,
     "url": null,
     "depends": [
@@ -28,7 +28,8 @@
       {"name": "mdit-py-plugins", "specs": [[">=", "0.3.0"]]},
       {"name": "linkify-it-py", "specs": [[">=", "1.0"]]},
       {"name": "appdirs", "specs": [[">=", "1.4.4"]]},
-      {"name": "asgiref", "specs": [[">=", "3.5.2"]]}
+      {"name": "asgiref", "specs": [[">=", "3.5.2"]]},
+      {"name": "packaging", "specs": [[">=", "20.9"]]}
     ],
     "imports": [
       "shiny"

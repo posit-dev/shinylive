@@ -1,0 +1,43 @@
+name: Update py-shiny submodule
+
+on:
+  workflow_dispatch:
+
+jobs:
+  update-shiny:
+    name: Update py-shiny submodule
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Upgrade pip
+        run: python -m pip install --upgrade pip
+
+      - name: Check out submodules
+        run: |
+          make submodules
+
+      - name: Pull latest py-shiny
+        run: |
+          make submodules-pull-shiny
+
+      - name: Build shinylive
+        run: |
+          make all
+
+      - name: Set up git within GHA
+        uses: actions4git/setup-git@v1
+
+      - name: Commit and push changes
+        run: |
+          PY_SHINY_SHA=$(git -C packages/py-shiny rev-parse --short HEAD)
+          git add packages/py-shiny shinylive_lock.json && \
+            git commit --message "Pull latest posit-dev/py-shiny@$PY_SHINY_SHA" && \
+            git push origin HEAD:main
