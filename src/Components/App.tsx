@@ -364,6 +364,7 @@ export function App({
           <Viewer
             proxyHandle={proxyHandle}
             setViewerMethods={setViewerMethods}
+            devMode={true}
           />
         </ResizableGrid>
       </>
@@ -410,6 +411,7 @@ export function App({
           <Viewer
             proxyHandle={proxyHandle}
             setViewerMethods={setViewerMethods}
+            devMode={true}
           />
         </ResizableGrid>
       </>
@@ -496,7 +498,11 @@ export function App({
             appEngine={appEngine}
           />
         </React.Suspense>
-        <Viewer proxyHandle={proxyHandle} setViewerMethods={setViewerMethods} />
+        <Viewer
+          proxyHandle={proxyHandle}
+          setViewerMethods={setViewerMethods}
+          devMode={true}
+        />
       </ResizableGrid>
     );
   } else if (appMode === "viewer") {
@@ -519,6 +525,7 @@ export function App({
           <Viewer
             proxyHandle={proxyHandle}
             setViewerMethods={setViewerMethods}
+            devMode={false}
           />
         </div>
       </>

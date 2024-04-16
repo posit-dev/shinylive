@@ -37,8 +37,8 @@
   },
   "shinywidgets": {
     "name": "shinywidgets",
-    "version": "0.3.1",
-    "filename": "shinywidgets-0.3.1-py3-none-any.whl",
+    "version": "0.3.1.9000",
+    "filename": "shinywidgets-0.3.1.9000-py3-none-any.whl",
     "sha256": null,
     "url": null,
     "depends": [
