@@ -15,8 +15,8 @@
   },
   "shiny": {
     "name": "shiny",
-    "version": "0.8.1.9000",
-    "filename": "shiny-0.8.1.9000-py3-none-any.whl",
+    "version": "0.9.0",
+    "filename": "shiny-0.9.0-py3-none-any.whl",
     "sha256": null,
     "url": null,
     "depends": [
@@ -37,8 +37,8 @@
   },
   "shinywidgets": {
     "name": "shinywidgets",
-    "version": "0.3.1.9000",
-    "filename": "shinywidgets-0.3.1.9000-py3-none-any.whl",
+    "version": "0.3.2",
+    "filename": "shinywidgets-0.3.2-py3-none-any.whl",
     "sha256": null,
     "url": null,
     "depends": [
@@ -53,10 +53,10 @@
   },
   "shinyswatch": {
     "name": "shinyswatch",
-    "version": "0.5.1",
-    "filename": "shinyswatch-0.5.1-py3-none-any.whl",
-    "sha256": "91d0766b1d1c4ff3a44128c1fa1b5c993f03f2b5700e080b53971dc517dc04e6",
-    "url": "https://files.pythonhosted.org/packages/cc/f4/8d386eb46f90abd9f857ad6867eeea8dfb981f834fab69f3e6da67944c22/shinyswatch-0.5.1-py3-none-any.whl",
+    "version": "0.6.0",
+    "filename": "shinyswatch-0.6.0-py3-none-any.whl",
+    "sha256": "8de7153f84d533bc8252bf47674c622351a8cb0ae6b2afaf81f167b7af1b417f",
+    "url": "https://files.pythonhosted.org/packages/f0/22/ee61c29ae02dd6f9cb5bd80804ade3d85b9b0c9782c930d8c061fcc863a8/shinyswatch-0.6.0-py3-none-any.whl",
     "depends": [
       {"name": "typing-extensions", "specs": [[">=", "3.10.0.0"]]},
       {"name": "packaging", "specs": [[">=", "20.9"]]},
@@ -114,10 +114,10 @@
   },
   "plotly": {
     "name": "plotly",
-    "version": "5.18.0",
-    "filename": "plotly-5.18.0-py3-none-any.whl",
-    "sha256": "23aa8ea2f4fb364a20d34ad38235524bd9d691bf5299e800bca608c31e8db8de",
-    "url": "https://files.pythonhosted.org/packages/a8/07/72953cf70e3bd3a24cbc3e743e6f8539abe6e3e6d83c3c0c83426eaffd39/plotly-5.18.0-py3-none-any.whl",
+    "version": "5.20.0",
+    "filename": "plotly-5.20.0-py3-none-any.whl",
+    "sha256": "837a9c8aa90f2c0a2f0d747b82544d014dc2a2bdde967b5bb1da25b53932d1a9",
+    "url": "https://files.pythonhosted.org/packages/00/4e/6258fc3b26f1f7abd1b2e75b1e9e4f12f13584136e2e1549f995ff4c6b7b/plotly-5.20.0-py3-none-any.whl",
     "depends": [
       {"name": "tenacity", "specs": [[">=", "6.2.0"]]},
       {"name": "packaging", "specs": []}
@@ -128,14 +128,14 @@
   },
   "seaborn": {
     "name": "seaborn",
-    "version": "0.13.0",
-    "filename": "seaborn-0.13.0-py3-none-any.whl",
-    "sha256": "70d740828c48de0f402bb17234e475eda687e3c65f4383ea25d0cc4728f7772e",
-    "url": "https://files.pythonhosted.org/packages/7b/e5/83fcd7e9db036c179e0352bfcd20f81d728197a16f883e7b90307a88e65e/seaborn-0.13.0-py3-none-any.whl",
+    "version": "0.13.2",
+    "filename": "seaborn-0.13.2-py3-none-any.whl",
+    "sha256": "636f8336facf092165e27924f223d3c62ca560b1f2bb5dff7ab7fad265361987",
+    "url": "https://files.pythonhosted.org/packages/83/11/00d3c3dfc25ad54e731d91449895a79e4bf2384dc3ac01809010ba88f6d5/seaborn-0.13.2-py3-none-any.whl",
     "depends": [
       {"name": "numpy", "specs": [["!=", "1.24.0"], [">=", "1.20"]]},
       {"name": "pandas", "specs": [[">=", "1.2"]]},
-      {"name": "matplotlib", "specs": [["!=", "3.6.1"], [">=", "3.3"]]}
+      {"name": "matplotlib", "specs": [["!=", "3.6.1"], [">=", "3.4"]]}
     ],
     "imports": [
       "seaborn"
@@ -158,10 +158,10 @@
   },
   "ipyleaflet": {
     "name": "ipyleaflet",
-    "version": "0.18.0",
-    "filename": "ipyleaflet-0.18.0-py3-none-any.whl",
-    "sha256": "b79b367d971e9b8c296650c9f7fe4b02e99fa709af5f0c81a63f80dd6c6bb475",
-    "url": "https://files.pythonhosted.org/packages/04/b9/210c42543136022c409e6daa84181b330a6c42ff561eb2470132109333ed/ipyleaflet-0.18.0-py3-none-any.whl",
+    "version": "0.18.2",
+    "filename": "ipyleaflet-0.18.2-py3-none-any.whl",
+    "sha256": "dc5bed1bad3ba3244fe97aac9d4ed8f8096ae3d5e6ac0c5fdfbe7f1d2a01d3f8",
+    "url": "https://files.pythonhosted.org/packages/ac/6e/5e37c062d615e82c044086a38b0cd56ab86b9a298b1fa3688d01afe3ae39/ipyleaflet-0.18.2-py3-none-any.whl",
     "depends": [
       {"name": "ipywidgets", "specs": [["<", "9"], [">=", "7.6.0"]]},
       {"name": "traittypes", "specs": [["<", "3"], [">=", "0.2.1"]]},
@@ -204,10 +204,10 @@
   },
   "black": {
     "name": "black",
-    "version": "23.11.0",
-    "filename": "black-23.11.0-py3-none-any.whl",
-    "sha256": "54caaa703227c6e0c87b76326d0862184729a69b73d3b7305b6288e1d830067e",
-    "url": "https://files.pythonhosted.org/packages/be/fb/8a670d2a246a351d7662e785d85a636c1c60b5800d175421cdfcb2a59b1d/black-23.11.0-py3-none-any.whl",
+    "version": "24.4.0",
+    "filename": "black-24.4.0-py3-none-any.whl",
+    "sha256": "74eb9b5420e26b42c00a3ff470dc0cd144b80a766128b1771d07643165e08d0e",
+    "url": "https://files.pythonhosted.org/packages/6c/4c/3e898e42fb0e14f2639583b10702b69d145c42bdd97e017950479055dd4a/black-24.4.0-py3-none-any.whl",
     "depends": [
       {"name": "click", "specs": [[">=", "8.0.0"]]},
       {"name": "mypy-extensions", "specs": [[">=", "0.4.3"]]},
@@ -318,14 +318,14 @@
   },
   "mizani": {
     "name": "mizani",
-    "version": "0.10.0",
-    "filename": "mizani-0.10.0-py3-none-any.whl",
-    "sha256": "2fbe6363b4cc71f063b0c35e993a36df80469b06b7fe7b4b722600f183a2ba5c",
-    "url": "https://files.pythonhosted.org/packages/24/db/0bf4870bdc44876172ce7b3dc2fe3d1e15523cc90aafe3996efa9e8ab078/mizani-0.10.0-py3-none-any.whl",
+    "version": "0.11.1",
+    "filename": "mizani-0.11.1-py3-none-any.whl",
+    "sha256": "d3441e5b7f08168ced8426566a0c084e3df3f03e290b8206747d3f288cf20e40",
+    "url": "https://files.pythonhosted.org/packages/2a/eb/777d71d00d0a67659234b50505842cfc44fb304e01d3acf80501b6b2ab63/mizani-0.11.1-py3-none-any.whl",
     "depends": [
-      {"name": "numpy", "specs": [[">=", "1.19.0"]]},
-      {"name": "scipy", "specs": [[">=", "1.5.0"]]},
-      {"name": "pandas", "specs": [[">=", "1.3.5"]]},
+      {"name": "numpy", "specs": [[">=", "1.23.0"]]},
+      {"name": "scipy", "specs": [[">=", "1.7.0"]]},
+      {"name": "pandas", "specs": [[">=", "2.1.0"]]},
       {"name": "tzdata", "specs": []}
     ],
     "imports": [
