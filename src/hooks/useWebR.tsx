@@ -274,10 +274,11 @@ webr::shim_install()
     lapply(metadata, function(data) {
       name <- data$name
       path <- data$path
+      cached <- data$cached
       mountpoint <- glue::glue("/shinylive/webr/packages/{name}")
 
       # Mount the virtual filesystem image, unless we already have done so
-      if (!file.exists(mountpoint)) {
+      if (cached && !file.exists(mountpoint)) {
         webr::mount(mountpoint, glue::glue("{.base_url}{path}"))
       }
 
