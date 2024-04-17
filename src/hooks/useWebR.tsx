@@ -291,7 +291,7 @@ webr::shim_install()
     })
   }
 
-  # Update package cache
+  # Warm package cache with installed packages
   lapply(rownames(installed.packages()), function(p) { .webr_pkg_cache[[p]] <<- TRUE })
 }
 
