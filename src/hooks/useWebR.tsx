@@ -36,10 +36,11 @@ export async function initWebR({
   const channelType = crossOriginIsolated
     ? ChannelType.Automatic
     : ChannelType.PostMessage;
+  const baseUrl = utils.currentScriptDir() + "/webr/";
 
   const webRProxy = await loadWebRProxy(
     {
-      baseUrl: utils.currentScriptDir() + "/webr/",
+      baseUrl,
       channelType,
     },
     stdout,
@@ -48,8 +49,8 @@ export async function initWebR({
 
   let initError = false;
   try {
-    const libraryUrl = utils.currentScriptDir() + "/webr/library.data";
-    await webRProxy.runRAsync(`webr::mount("/shiny", "${libraryUrl}")`);
+    await webRProxy.webR.objs.globalEnv.bind('.base_url', baseUrl);
+    await webRProxy.runRAsync(`webr::mount("/shinylive/library", "${baseUrl}library.data")`);
     await webRProxy.runRAsync(load_r_pre);
   } catch (e) {
     initError = true;
@@ -147,8 +148,9 @@ const load_r_pre = `
 # Force internal tar - silence renv warning
 Sys.setenv(TAR = "internal")
 
-# Use mounted shiny R package library
-.libPaths(c(.libPaths(), "/shiny"))
+# Use shinylive R package libraries
+dir.create("/shinylive/webr/packages", showWarnings = FALSE, recursive = TRUE)
+.libPaths(c(.libPaths(), "/shinylive/webr/packages", "/shinylive/library"))
 
 # Shim R functions with webR versions (e.g. install.packages())
 webr::shim_install()
@@ -251,7 +253,51 @@ webr::shim_install()
 }
 
 .webr_pkg_cache <- list()
+
+.mount_vfs_images <- function() {
+  metadata_url <- glue::glue("{.base_url}packages/metadata.rds")
+  metadata_path <- glue::glue("/shinylive/webr/packages/metadata.rds")
+
+  # Attempt this download quietly, if no metadata exists we can still continue
+  found <- webr::eval_js(glue::glue("
+    var xhr = new XMLHttpRequest();
+    xhr.open('HEAD', '{metadata_url}', false);
+    xhr.send();
+    (xhr.status >= 200 && xhr.status < 300)
+  "))
+  if (found) {
+    download.file(metadata_url, metadata_path, quiet = TRUE)
+  }
+
+  if (file.exists(metadata_path)) {
+    metadata <- readRDS(metadata_path)
+    lapply(metadata, function(data) {
+      name <- data$name
+      path <- data$path
+      available <- data$cached
+      mountpoint <- glue::glue("/shinylive/webr/packages/{name}")
+
+      # Mount the virtual filesystem image, unless we already have done so
+      if (available && !file.exists(mountpoint)) {
+        webr::mount(mountpoint, glue::glue("{.base_url}{path}"))
+      }
+
+      # If this is a full library, add it to .libPaths()
+      if(data$type == "library") {
+        paths <- .libPaths()
+        paths <- append(paths, mountpoint , after = length(paths) - 1)
+        .libPaths(paths)
+      }
+    })
+  }
+
+  # Warm package cache with installed packages
+  lapply(rownames(installed.packages()), function(p) { .webr_pkg_cache[[p]] <<- TRUE })
+}
+
 .start_app <- function(appName, appDir) {
+  # Mount VFS images provided in Shinylive app assets
+  .mount_vfs_images()
 
   # Uniquely install packages with webr
   unique_pkgs <- unique(renv::dependencies(appDir, quiet = TRUE)$Package)
