@@ -36,7 +36,11 @@ import { languageServerExtensions } from "./codeMirror/language-server/lsp-exten
 import { useTabbedCodeMirror } from "./codeMirror/useTabbedCodeMirror";
 import * as cmUtils from "./codeMirror/utils";
 import type { FileContent } from "./filecontent";
-import { editorUrlPrefix, fileContentsToUrlString } from "./share";
+import {
+  editorUrlPrefix,
+  fileContentsToUrlString,
+  fileContentsToUrlStringInWebWorker,
+} from "./share";
 
 export type EditorFile =
   | {
@@ -182,10 +186,15 @@ export default function Editor({
     if (!viewerMethods || !viewerMethods.ready) return;
 
     syncActiveFileState();
+    const fileContents = editorFilesToFileContents(files);
+
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    updateBrowserUrlHash(fileContents);
+
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     (async () => {
       await viewerMethods.stopApp();
-      await viewerMethods.runApp(editorFilesToFileContents(files));
+      await viewerMethods.runApp(fileContents);
     })();
   }, [viewerMethods, syncActiveFileState, files]);
 
@@ -713,4 +722,15 @@ function keyBindings({
       },
     },
   ];
+}
+/**
+ * Update the browser URL hash with the current contents of the Editor.
+ */
+async function updateBrowserUrlHash(
+  fileContents: FileContent[],
+): Promise<void> {
+  const encodedFileContents =
+    await fileContentsToUrlStringInWebWorker(fileContents);
+  const hash = "#code=" + encodedFileContents;
+  history.replaceState(null, "", hash);
 }
