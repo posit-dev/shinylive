@@ -54,14 +54,14 @@ export class LanguageServerClient extends EventEmitter {
   constructor(
     public connection: MessageConnection,
     private locale: string,
-    public rootUri: string
+    public rootUri: string,
   ) {
     super();
   }
 
   on(
     event: "diagnostics",
-    listener: (params: PublishDiagnosticsParams) => void
+    listener: (params: PublishDiagnosticsParams) => void,
   ): this {
     super.on(event, listener);
     return this;
@@ -77,7 +77,7 @@ export class LanguageServerClient extends EventEmitter {
 
   errorCount(): number {
     return this.allDiagnostics().filter(
-      (e) => e.severity === DiagnosticSeverity.Error
+      (e) => e.severity === DiagnosticSeverity.Error,
     ).length;
   }
 
@@ -99,7 +99,7 @@ export class LanguageServerClient extends EventEmitter {
           this.diagnostics.set(params.uri, params.diagnostics);
           // Republish as you can't listen twice.
           this.emit("diagnostics", params);
-        }
+        },
       );
       this.connection.onRequest(RegistrationRequest.type, () => {
         // Ignore. I don't think we should get these at all given our
@@ -163,7 +163,7 @@ export class LanguageServerClient extends EventEmitter {
       };
       const { capabilities } = await this.connection.sendRequest(
         InitializeRequest.type,
-        initializeParams
+        initializeParams,
       );
       this.capabilities = capabilities;
       await this.connection.sendNotification(InitializedNotification.type, {});
@@ -201,24 +201,24 @@ export class LanguageServerClient extends EventEmitter {
           ...params.textDocument,
           version: this.nextVersion(params.textDocument.uri),
         },
-      }
+      },
     );
   }
 
   // We close Python files that are deleted. We never write to the file system,
   // so that way they're effectively deleted.
   async didCloseTextDocument(
-    params: DidCloseTextDocumentParams
+    params: DidCloseTextDocumentParams,
   ): Promise<void> {
     await this.connection.sendNotification(
       DidCloseTextDocumentNotification.type,
-      params
+      params,
     );
   }
 
   async didChangeTextDocument(
     uri: string,
-    contentChanges: TextDocumentContentChangeEvent[]
+    contentChanges: TextDocumentContentChangeEvent[],
   ): Promise<void> {
     await this.connection.sendNotification(
       DidChangeTextDocumentNotification.type,
@@ -228,14 +228,14 @@ export class LanguageServerClient extends EventEmitter {
           version: this.nextVersion(uri),
         },
         contentChanges,
-      }
+      },
     );
   }
 
   async completionRequest(params: CompletionParams): Promise<CompletionList> {
     const results = await this.connection.sendRequest(
       CompletionRequest.type,
-      params
+      params,
     );
     if (!results) {
       // Not clear how this should be handled.

@@ -56,7 +56,7 @@ export abstract class LSPClient {
       return;
     }
 
-    this.client.didOpenTextDocument({
+    await this.client.didOpenTextDocument({
       textDocument: {
         languageId: languageId,
         text: content,
@@ -68,7 +68,7 @@ export abstract class LSPClient {
   public async deleteFile(filename: string): Promise<void> {
     await this.initPromise;
 
-    this.client.didCloseTextDocument({
+    await this.client.didCloseTextDocument({
       textDocument: {
         uri: createUri(filename),
       },
@@ -80,6 +80,6 @@ export abstract class LSPClient {
     changeEvent: TextDocumentContentChangeEvent,
   ): Promise<void> {
     await this.initPromise;
-    this.client.didChangeTextDocument(createUri(filename), [changeEvent]);
+    await this.client.didChangeTextDocument(createUri(filename), [changeEvent]);
   }
 }
