@@ -11,6 +11,7 @@ import "balloon-css";
 import type { Zippable } from "fflate";
 import { zipSync } from "fflate";
 import * as React from "react";
+import toast, { Toaster } from "react-hot-toast";
 import type * as LSP from "vscode-languageserver-protocol";
 import * as fileio from "../fileio";
 import { createUri } from "../language-server/client";
@@ -41,6 +42,10 @@ import {
   fileContentsToUrlString,
   fileContentsToUrlStringInWebWorker,
 } from "./share";
+
+// If the file contents are larger than this value, then don't automatically
+// update the URL hash when re-running the app.
+const UPDATE_URL_SIZE_THRESHOLD = 250000;
 
 export type EditorFile =
   | {
@@ -120,6 +125,33 @@ export default function Editor({
   // the Viewer component.
   const lspPathPrefix = `editor${editorInstanceId}/`;
 
+  // This tracks whether the files have changed since the the last time the user
+  // has run the app/code. This is used to determine whether to update the URL.
+  // It is different from `setFilesHaveChanged` which is passed in, because that
+  // tracks whether the files have changed since they were passed into the
+  // Editor component.
+  //
+  // If the Editor starts with a file, then you change it and re-run, then both
+  // the external `filesHaveChanged` and `filesHaveChangedSinceLastRun` will be
+  // true. But if you re-run it again without making changes, then
+  // `filesHaveChanged` will still be true, and `filesHaveChangedSinceLastRun`
+  // will be false.
+  const [filesHaveChangedSinceLastRun, setFilesHaveChangedSinceLastRun] =
+    React.useState<boolean>(false);
+
+  // This is a shortcut to indicate that the files have changed. See the comment
+  // for `setFilesHaveChangedSinceLastRun` to understand why this is needed.
+  const setFilesHaveChangedCombined = React.useCallback(
+    (value: boolean) => {
+      setFilesHaveChanged(value);
+      setFilesHaveChangedSinceLastRun(value);
+    },
+    [setFilesHaveChanged, setFilesHaveChangedSinceLastRun],
+  );
+
+  const [hasShownUrlTooLargeMessage, setHasShownUrlTooLargeMessage] =
+    React.useState<boolean>(false);
+
   // Given a FileContent object, figure out which editor extensions to use.
   // Use a memoized function to maintain referentially stablity.
   const inferEditorExtensions = React.useCallback(
@@ -136,7 +168,7 @@ export default function Editor({
         getLanguageExtension(language),
         EditorView.updateListener.of((u: ViewUpdate) => {
           if (u.docChanged) {
-            setFilesHaveChanged(true);
+            setFilesHaveChangedCombined(true);
           }
         }),
         languageServerExtensions(lspClient, lspPathPrefix + file.name),
@@ -145,7 +177,7 @@ export default function Editor({
         ),
       ];
     },
-    [lineNumbers, setFilesHaveChanged, lspClient, lspPathPrefix],
+    [lineNumbers, setFilesHaveChangedCombined, lspClient, lspPathPrefix],
   );
 
   const [cmView, setCmView] = React.useState<EditorView>();
@@ -154,7 +186,7 @@ export default function Editor({
     currentFilesFromApp,
     cmView,
     inferEditorExtensions,
-    setFilesHaveChanged,
+    setFilesHaveChanged: setFilesHaveChangedCombined,
     lspClient,
     lspPathPrefix,
   });
@@ -190,17 +222,41 @@ export default function Editor({
     syncActiveFileState();
     const fileContents = editorFilesToFileContents(files);
 
-    if (updateUrlHashOnRerun) {
-      // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      updateBrowserUrlHash(fileContents);
+    if (updateUrlHashOnRerun && filesHaveChangedSinceLastRun) {
+      const filesSize = fileContentsSize(fileContents);
+
+      if (
+        !hasShownUrlTooLargeMessage &&
+        filesSize > UPDATE_URL_SIZE_THRESHOLD
+      ) {
+        toast(
+          "Auto-updating the app link is disabled because the app is very large. " +
+            "If you want the sharing URL, click the Share button.",
+        );
+        setHasShownUrlTooLargeMessage(true);
+      } else {
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+        updateBrowserUrlHash(fileContents);
+      }
     }
+
+    setFilesHaveChangedCombined(false);
 
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     (async () => {
       await viewerMethods.stopApp();
       await viewerMethods.runApp(fileContents);
     })();
-  }, [viewerMethods, syncActiveFileState, files]);
+  }, [
+    viewerMethods,
+    syncActiveFileState,
+    updateUrlHashOnRerun,
+    filesHaveChangedSinceLastRun,
+    setFilesHaveChangedCombined,
+    hasShownUrlTooLargeMessage,
+    setHasShownUrlTooLargeMessage,
+    files,
+  ]);
 
   // Run the entire current file in the terminal.
   const runAllCode = React.useCallback(() => {
@@ -571,6 +627,13 @@ export default function Editor({
         </div>
       ) : null}
       <div className="editor-container" ref={cmDivRef}></div>
+      <Toaster
+        toastOptions={{
+          duration: 5000,
+          position: "top-center",
+          style: { fontFamily: "var(--font-face)" },
+        }}
+      />
       {floatingButtons ? (
         <div className="floating-buttons">{runButton}</div>
       ) : null}
@@ -651,6 +714,22 @@ function editorFilesToFflateZippable(files: EditorFile[]): Zippable {
   }
 
   return res;
+}
+
+// Get the size in bytes of the contents of a FileContent array. Note that this
+// isn't exactly the size in bytes -- for text files, it counts the number of
+// characters, but some could be multi-byte (and the size could vary depending
+// on the encoding). But it's close enough for our purposes.
+function fileContentsSize(files: FileContent[]): number {
+  let size = 0;
+  for (const file of files) {
+    if (file.type === "binary") {
+      size += file.content.length;
+    } else {
+      size += file.content.length;
+    }
+  }
+  return size;
 }
 
 // =============================================================================
