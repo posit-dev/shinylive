@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -18,6 +18,13 @@
         allowCodeUrl: true,
         allowGistUrl: true,
         allowExampleUrl: true,
+        // This option causes shinylive to update the URL hash when the user
+        // clicks on the re-run button in the editor. It is false by default.
+        // It should be set to true only when the editor and viewer are used
+        // in a full-window configuration. If you are using the editor and
+        // viewer embedded in a larger page, it does not make sense to set
+        // this to true.
+        updateUrlHashOnRerun: true,
       };
 
       const appRoot = document.getElementById("root");

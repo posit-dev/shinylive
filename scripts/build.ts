@@ -176,6 +176,7 @@ const buildmap = {
       "src/pyodide-worker.ts",
       "src/load-shinylive-sw.ts",
       "src/run-python-blocks.ts",
+      "src/lzstring-worker.ts",
     ],
     outdir: `${BUILD_DIR}/shinylive`,
     // See note in esbuild.build() call above about why these are external.

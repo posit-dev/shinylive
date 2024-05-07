@@ -68,6 +68,7 @@
     "prettier-plugin-organize-imports": "^3.2.4",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "react-hot-toast": "^2.4.1",
     "tsx": "^4.7.0",
     "typescript": "^5.3.3",
     "vscode-languageserver-protocol": "^3.17.5",
@@ -142,6 +143,5 @@
       "react-hooks/rules-of-hooks": "error",
       "react-hooks/exhaustive-deps": "warn"
     }
-  },
-  "packageManager": "yarn@3.2.3"
+  }
 }
