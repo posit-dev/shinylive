@@ -8,7 +8,7 @@ import { marked } from "marked";
 import { MarkupContent } from "vscode-languageserver-types";
 
 export const renderDocumentation = (
-  documentation: MarkupContent | string | undefined
+  documentation: MarkupContent | string | undefined,
 ): HTMLElement => {
   if (!documentation) {
     documentation = "No documentation";
@@ -45,7 +45,9 @@ DOMPurify.addHook("afterSanitizeAttributes", function (node) {
 });
 
 export const renderMarkdown = (markdown: string): SanitisedHtml => {
-  const html = DOMPurify.sanitize(marked.parse(markdown, { gfm: true }));
+  const html = DOMPurify.sanitize(
+    marked.parse(markdown, { gfm: true, headerIds: false, mangle: false }),
+  );
   return {
     __html: html,
   };
