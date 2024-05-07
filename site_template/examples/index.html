@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -15,11 +15,23 @@
       // reasons, if you enable any of these, then this site should be hosted on
       // a separate domain or subdomain from other content. Otherwise the
       // running of arbitrary code could be used, for example, to steal cookies.
-      runApp(appRoot, "examples-editor-terminal-viewer", {
-        allowCodeUrl: true,
-        allowGistUrl: true,
-        allowExampleUrl: true,
-      }, "{{APP_ENGINE}}");
+      runApp(
+        appRoot,
+        "examples-editor-terminal-viewer",
+        {
+          allowCodeUrl: true,
+          allowGistUrl: true,
+          allowExampleUrl: true,
+          // This option causes shinylive to update the URL hash when the user
+          // clicks on the re-run button in the editor. It is false by default.
+          // It should be set to true only when the editor and viewer are used
+          // in a full-window configuration. If you are using the editor and
+          // viewer embedded in a larger page, it does not make sense to set
+          // this to true.
+          updateUrlHashOnRerun: true,
+        },
+        "{{APP_ENGINE}}",
+      );
     </script>
     <link rel="stylesheet" href="../shinylive/style-resets.css" />
     <link rel="stylesheet" href="../shinylive/shinylive.css" />

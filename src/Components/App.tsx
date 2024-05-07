@@ -91,6 +91,10 @@ type AppOptions = {
 
   // In Viewer-only mode, should the header bar be shown?
   showHeaderBar?: boolean;
+
+  // When the app is re-run from the Editor, should the URL hash be updated with
+  // the encoded version of the app?
+  updateUrlHashOnRerun?: boolean;
 };
 
 export type ProxyHandle = PyodideProxyHandle | WebRProxyHandle;
@@ -353,6 +357,7 @@ export function App({
                   file.name === "app.R" ||
                   file.name === "server.R",
               )}
+              updateUrlHashOnRerun={appOptions.updateUrlHashOnRerun}
               appEngine={appEngine}
             />
           </React.Suspense>
@@ -400,6 +405,7 @@ export function App({
                   file.name === "app.R" ||
                   file.name === "server.R",
               )}
+              updateUrlHashOnRerun={appOptions.updateUrlHashOnRerun}
               appEngine={appEngine}
             />
           </React.Suspense>
@@ -433,6 +439,7 @@ export function App({
             terminalMethods={terminalMethods}
             utilityMethods={utilityMethods}
             runOnLoad={false}
+            updateUrlHashOnRerun={appOptions.updateUrlHashOnRerun}
             appEngine={appEngine}
           />
         </React.Suspense>
@@ -458,6 +465,7 @@ export function App({
             lineNumbers={false}
             showHeaderBar={false}
             floatingButtons={true}
+            updateUrlHashOnRerun={appOptions.updateUrlHashOnRerun}
             appEngine={appEngine}
           />
         </React.Suspense>
@@ -495,6 +503,7 @@ export function App({
             terminalMethods={terminalMethods}
             utilityMethods={utilityMethods}
             viewerMethods={viewerMethods}
+            updateUrlHashOnRerun={appOptions.updateUrlHashOnRerun}
             appEngine={appEngine}
           />
         </React.Suspense>

@@ -81,6 +81,7 @@ export default function Editor({
   lineNumbers = true,
   showHeaderBar = true,
   floatingButtons = false,
+  updateUrlHashOnRerun = false,
   appEngine,
 }: {
   currentFilesFromApp: FileContent[];
@@ -97,6 +98,7 @@ export default function Editor({
   lineNumbers?: boolean;
   showHeaderBar?: boolean;
   floatingButtons?: boolean;
+  updateUrlHashOnRerun?: boolean;
   appEngine: AppEngine;
 }) {
   // In the future, instead of directly instantiating the PyrightClient, it
@@ -188,8 +190,10 @@ export default function Editor({
     syncActiveFileState();
     const fileContents = editorFilesToFileContents(files);
 
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    updateBrowserUrlHash(fileContents);
+    if (updateUrlHashOnRerun) {
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
+      updateBrowserUrlHash(fileContents);
+    }
 
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     (async () => {
