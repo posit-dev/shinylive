@@ -3,17 +3,13 @@
 import json
 import os
 import shutil
-import sys
 from pathlib import Path
 from typing import Optional
 
 import pyright
 
 # TODO: Automate version detection
-PYODIDE_PYTHON_VERSION = "3.10"
-
-if sys.version_info < (3, 9):
-    raise RuntimeError("This script requires Python 3.9+")
+PYODIDE_PYTHON_VERSION = "3.11"
 
 # Packages that we'll create type stubs for.
 PACKAGES = ("htmltools", "shiny", "shinywidgets", "shinyswatch")
