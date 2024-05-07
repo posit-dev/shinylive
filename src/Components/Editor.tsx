@@ -740,18 +740,9 @@ function fileContentsSize(files: FileContent[]): number {
  */
 function diagnosticFilter(diagnostic: LSP.Diagnostic): boolean {
   // Don't show diagnostics about unused vars.
-  if (diagnostic.severity === 4 && /is unused$/.test(diagnostic.message)) {
-    return false;
-  }
-
-  // The version of pyright we currently use still has a buggy diagnostic. Once
-  // we update pyright, we can remove this filter.
-  // https://github.com/rstudio/py-shiny/issues/124
-  // https://github.com/microsoft/pyright/issues/3344
   if (
-    /Argument does not match parameter type for parameter "value".*Iterable\[SliderValueArg@input_slider\]/s.test(
-      diagnostic.message,
-    )
+    diagnostic.severity === 4 &&
+    /is not accessed$/.test(diagnostic.message)
   ) {
     return false;
   }
