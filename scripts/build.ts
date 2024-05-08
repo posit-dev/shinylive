@@ -15,8 +15,8 @@ const SITE_DIR = "./site";
 const SHINYLIVE_VERSION = packageJson.version;
 const currentYear = new Date().getFullYear();
 const banner = {
-  js: `// Shinylive ${SHINYLIVE_VERSION}\n// Copyright ${currentYear} RStudio, PBC`,
-  css: `/* Shinylive ${SHINYLIVE_VERSION}\n// Copyright ${currentYear} RStudio, PBC */`,
+  js: `// Shinylive ${SHINYLIVE_VERSION}\n// Copyright ${currentYear} Posit, PBC`,
+  css: `/* Shinylive ${SHINYLIVE_VERSION}\n// Copyright ${currentYear} Posit, PBC */`,
 };
 
 const clients: http.ServerResponse[] = [];
