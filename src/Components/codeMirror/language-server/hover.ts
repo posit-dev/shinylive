@@ -9,12 +9,14 @@ import {
   createUri,
   type LanguageServerClient,
 } from "../../../language-server/client";
-import type { LSPClient } from "../../../language-server/lsp-client";
 import { renderDocumentation } from "./documentation";
 import { offsetToPosition } from "./positions";
 
-export function hover(lspClient: LSPClient, filename: string): Extension {
-  return createHoverTooltip(lspClient.client, filename);
+export function hover(
+  lspClient: LanguageServerClient,
+  filename: string,
+): Extension {
+  return createHoverTooltip(lspClient, filename);
 }
 
 function createHoverTooltip(

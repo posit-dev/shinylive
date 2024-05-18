@@ -21,7 +21,6 @@ import {
   createUri,
   type LanguageServerClient,
 } from "../../../language-server/client";
-import type { LSPClient } from "../../../language-server/lsp-client";
 import { offsetToPosition } from "./positions";
 import { escapeRegExp } from "./regexp-util";
 
@@ -32,10 +31,10 @@ const identifierLike = /[a-zA-Z0-9_\u{a1}-\u{10ffff}]+/u;
 type AugmentedCompletion = Completion & { item: CompletionItem };
 
 export function autocompletion(
-  lspClient: LSPClient,
+  lspClient: LanguageServerClient,
   filename: string,
 ): Extension {
-  const client = lspClient.client;
+  const client = lspClient;
   const uri = createUri(filename);
 
   const findCompletion = async (

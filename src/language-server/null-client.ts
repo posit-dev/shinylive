@@ -1,20 +1,19 @@
-import { createUri, LanguageServerClient } from "./client";
-import { LSPClient } from "./lsp-client";
 import {
   AbstractMessageReader,
   AbstractMessageWriter,
   createMessageConnection,
 } from "vscode-jsonrpc";
+import { LanguageServerClient, createUri } from "./client";
 
-let nullClient: NullClient | null = null;
+let nullClient: NullLspClient | null = null;
 
 /**
  * This returns a NullClient object. If this is called multiple times, it
  * will return the same object each time.
  */
-export function ensureNullClient(): NullClient {
+export function ensureNullClient(): NullLspClient {
   if (!nullClient) {
-    nullClient = new NullClient();
+    nullClient = new NullLspClient();
   }
   return nullClient;
 }
@@ -33,14 +32,13 @@ export class NullMessageWriter extends AbstractMessageWriter {
 /**
  * A "null" LSP client that listens for messages but does nothing.
  */
-export class NullClient extends LSPClient {
+export class NullLspClient extends LanguageServerClient {
   constructor() {
     const conn = createMessageConnection(
       new NullMessageReader(),
-      new NullMessageWriter()
+      new NullMessageWriter(),
     );
     conn.listen();
-    const client = new LanguageServerClient(conn, "en", createUri(""));
-    super(client);
+    super(conn, "en", createUri(""));
   }
 }

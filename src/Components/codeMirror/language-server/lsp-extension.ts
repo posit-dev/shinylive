@@ -1,7 +1,7 @@
 import type { Extension } from "@codemirror/state";
 import { EditorView, type ViewUpdate } from "@codemirror/view";
 import type { TextDocumentContentChangeEvent } from "vscode-languageserver-protocol";
-import type { LSPClient } from "../../../language-server/lsp-client";
+import type { LanguageServerClient } from "../../../language-server/client";
 import { inferFiletype } from "../../../utils";
 import { autocompletion } from "./autocompletion";
 import { hover } from "./hover";
@@ -9,7 +9,7 @@ import { offsetToPosition } from "./positions";
 import { signatureHelp } from "./signatureHelp";
 
 export function languageServerExtensions(
-  lspClient: LSPClient,
+  lspClient: LanguageServerClient,
   filename: string,
 ): Extension[] {
   if (inferFiletype(filename) !== "python") {

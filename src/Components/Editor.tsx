@@ -14,8 +14,8 @@ import * as React from "react";
 import toast, { Toaster } from "react-hot-toast";
 import type * as LSP from "vscode-languageserver-protocol";
 import * as fileio from "../fileio";
+import type { LanguageServerClient } from "../language-server/client";
 import { createUri } from "../language-server/client";
-import type { LSPClient } from "../language-server/lsp-client";
 import { ensureNullClient } from "../language-server/null-client";
 import { ensurePyrightClient } from "../language-server/pyright-client";
 import { inferFiletype, modKeySymbol, stringToUint8Array } from "../utils";
@@ -112,7 +112,7 @@ export default function Editor({
   // lsp-extensions.ts, and useTabbedCodeMirror.tsx, there are explicit checks
   // that files are python files in order to enable LS features, and they should
   // not be necessary at this level.
-  const lspClient: LSPClient =
+  const lspClient: LanguageServerClient =
     appEngine === "python" ? ensurePyrightClient() : ensureNullClient();
 
   // A unique ID for this instance of the Editor. At some point it might make

@@ -26,6 +26,7 @@ import {
   type TextDocumentContentChangeEvent,
   type TextDocumentItem,
 } from "vscode-languageserver-protocol";
+import { inferFiletype } from "../utils";
 
 /**
  * Create a URI for a source document under the default root of file:///src/.
@@ -50,19 +51,41 @@ export class LanguageServerClient extends EventEmitter {
   private diagnostics: Map<string, Diagnostic[]> = new Map();
   private initializePromise: Promise<void> | undefined;
 
+  public initPromise: Promise<void>;
+
   constructor(
     public connection: MessageConnection,
     private locale: string,
     public rootUri: string,
   ) {
     super();
+    // This promise resolves when initialization is complete. We keep it around
+    // so that if someone calls one of the methods before initialization
+    // finishes, we can still safely register those callbacks.
+    this.initPromise = this.initialize();
   }
 
   on(
     event: "diagnostics",
     listener: (params: PublishDiagnosticsParams) => void,
   ): this {
-    super.on(event, listener);
+    this.initPromise
+      .then(() => {
+        super.on(event, listener);
+      })
+      .catch(() => {});
+    return this;
+  }
+
+  off(
+    event: "diagnostics",
+    listener: (params: PublishDiagnosticsParams) => void,
+  ): this {
+    this.initPromise
+      .then(() => {
+        super.off(event, listener);
+      })
+      .catch(() => {});
     return this;
   }
 
@@ -170,7 +193,7 @@ export class LanguageServerClient extends EventEmitter {
     return this.initializePromise;
   }
 
-  private async getInitializationOptions(): Promise<any> {
+  async getInitializationOptions(): Promise<any> {
     // This is commented out because we have shimmed in our own version of this
     // function. When this code is run through esbuild, esbuild will include the
     // json file in the bundle. The shimmed version effectively does the same
@@ -188,6 +211,44 @@ export class LanguageServerClient extends EventEmitter {
     //   // Custom option in our Pyright version
     //   diagnosticStyle: "simplified",
     // };
+  }
+
+  public async createFile(filename: string, content: string): Promise<void> {
+    await this.initPromise;
+
+    const languageId = inferFiletype(filename);
+    if (!languageId) {
+      console.log(
+        `LanguageServerClientExtended: Could not infer language for ${filename}`,
+      );
+      return;
+    }
+
+    await this.didOpenTextDocument({
+      textDocument: {
+        languageId: languageId,
+        text: content,
+        uri: createUri(filename),
+      },
+    });
+  }
+
+  public async deleteFile(filename: string): Promise<void> {
+    await this.initPromise;
+
+    await this.didCloseTextDocument({
+      textDocument: {
+        uri: createUri(filename),
+      },
+    });
+  }
+
+  public async changeFile(
+    filename: string,
+    changeEvent: TextDocumentContentChangeEvent,
+  ): Promise<void> {
+    await this.initPromise;
+    await this.didChangeTextDocument(createUri(filename), [changeEvent]);
   }
 
   async didOpenTextDocument(params: {

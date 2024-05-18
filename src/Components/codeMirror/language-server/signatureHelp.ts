@@ -30,7 +30,6 @@ import {
   createUri,
   type LanguageServerClient,
 } from "../../../language-server/client";
-import type { LSPClient } from "../../../language-server/lsp-client";
 import { nameFromSignature, removeFullyQualifiedName } from "./names";
 import { offsetToPosition } from "./positions";
 
@@ -250,11 +249,11 @@ const formatHighlightedParameter = (
  * Create a signatureHelp Extension.
  */
 export const signatureHelp = (
-  lspClient: LSPClient,
+  lspClient: LanguageServerClient,
   filename: string,
   automatic: boolean,
 ): Extension => {
-  const client = lspClient.client;
+  const client = lspClient;
   const uri = createUri(filename);
 
   class SignatureHelpView implements PluginValue {
