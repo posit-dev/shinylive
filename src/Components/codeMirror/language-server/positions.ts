@@ -3,14 +3,14 @@
  *
  * SPDX-License-Identifier: MIT
  */
-import { Text } from "@codemirror/state";
-import { Position, Range } from "vscode-languageserver-protocol";
+import type { Text } from "@codemirror/state";
+import type { Position, Range } from "vscode-languageserver-protocol";
 
 // See https://microsoft.github.io/language-server-protocol/specifications/specification-3-17/#position
 
 export const positionToOffset = (
   document: Text,
-  position: Position
+  position: Position,
 ): number | undefined => {
   if (position.line >= document.lines) {
     return undefined;

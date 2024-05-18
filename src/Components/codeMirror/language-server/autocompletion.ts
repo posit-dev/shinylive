@@ -4,26 +4,26 @@
  * SPDX-License-Identifier: MIT
  */
 import {
-  createUri,
-  LanguageServerClient,
-} from "../../../language-server/client";
-import { LSPClient } from "../../../language-server/lsp-client";
-import { offsetToPosition } from "./positions";
-import { escapeRegExp } from "./regexp-util";
-import {
   autocompletion as cmAutocompletion,
-  Completion,
-  CompletionContext,
-  CompletionResult,
   insertBracket,
+  type Completion,
+  type CompletionContext,
+  type CompletionResult,
 } from "@codemirror/autocomplete";
-import { Extension, TransactionSpec } from "@codemirror/state";
-import * as LSP from "vscode-languageserver-protocol";
+import type { Extension, TransactionSpec } from "@codemirror/state";
+import type * as LSP from "vscode-languageserver-protocol";
 import {
-  CompletionItem,
   CompletionItemKind,
   CompletionTriggerKind,
+  type CompletionItem,
 } from "vscode-languageserver-protocol";
+import {
+  createUri,
+  type LanguageServerClient,
+} from "../../../language-server/client";
+import type { LSPClient } from "../../../language-server/lsp-client";
+import { offsetToPosition } from "./positions";
+import { escapeRegExp } from "./regexp-util";
 
 // Used to find the true start of the completion. Doesn't need to exactly match
 // any language's identifier definition.
@@ -33,13 +33,13 @@ type AugmentedCompletion = Completion & { item: CompletionItem };
 
 export function autocompletion(
   lspClient: LSPClient,
-  filename: string
+  filename: string,
 ): Extension {
   const client = lspClient.client;
   const uri = createUri(filename);
 
   const findCompletion = async (
-    context: CompletionContext
+    context: CompletionContext,
   ): Promise<CompletionResult | null> => {
     if (!client || !uri || !client.capabilities?.completionProvider) {
       return null;
@@ -99,7 +99,7 @@ export function autocompletion(
  *  Convert a LSP CompletionItem to a CM Completion object.
  */
 function LSPCompletionItemToCMCompletion(
-  item: LSP.CompletionItem
+  item: LSP.CompletionItem,
 ): AugmentedCompletion {
   const completion: AugmentedCompletion = {
     // In practice we don't get textEdit fields back from Pyright so the label is used.
@@ -159,7 +159,7 @@ function LSPCompletionItemToCMCompletion(
 //   };
 
 const createTriggerCharactersRegExp = (
-  client: LanguageServerClient
+  client: LanguageServerClient,
 ): RegExp | undefined => {
   const characters = client.capabilities?.completionProvider?.triggerCharacters;
   if (characters && characters.length > 0) {
@@ -172,7 +172,7 @@ const mapCompletionKind = Object.fromEntries(
   Object.entries(CompletionItemKind).map(([key, value]) => [
     value,
     key.toLowerCase(),
-  ])
+  ]),
 ) as Record<CompletionItemKind, string>;
 
 const boost = (item: LSP.CompletionItem): number | undefined => {

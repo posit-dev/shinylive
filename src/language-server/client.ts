@@ -5,27 +5,26 @@
  */
 import { EventEmitter } from "events";
 import {
-  CompletionList,
-  CompletionParams,
   CompletionRequest,
-  Diagnostic,
   DiagnosticSeverity,
   DiagnosticTag,
   DidChangeTextDocumentNotification,
   DidCloseTextDocumentNotification,
-  DidCloseTextDocumentParams,
   DidOpenTextDocumentNotification,
-  InitializeParams,
   InitializeRequest,
   InitializedNotification,
-  LogMessageNotification,
-  MessageConnection,
   PublishDiagnosticsNotification,
-  PublishDiagnosticsParams,
   RegistrationRequest,
-  ServerCapabilities,
-  TextDocumentContentChangeEvent,
-  TextDocumentItem,
+  type CompletionList,
+  type CompletionParams,
+  type Diagnostic,
+  type DidCloseTextDocumentParams,
+  type InitializeParams,
+  type MessageConnection,
+  type PublishDiagnosticsParams,
+  type ServerCapabilities,
+  type TextDocumentContentChangeEvent,
+  type TextDocumentItem,
 } from "vscode-languageserver-protocol";
 
 /**

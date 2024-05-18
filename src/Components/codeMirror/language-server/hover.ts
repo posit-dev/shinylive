@@ -1,17 +1,17 @@
+import type { Extension } from "@codemirror/state";
+import { hoverTooltip, type Tooltip } from "@codemirror/view";
+import {
+  HoverRequest,
+  type HoverParams,
+  type MarkupContent,
+} from "vscode-languageserver-protocol";
 import {
   createUri,
-  LanguageServerClient,
+  type LanguageServerClient,
 } from "../../../language-server/client";
-import { LSPClient } from "../../../language-server/lsp-client";
+import type { LSPClient } from "../../../language-server/lsp-client";
 import { renderDocumentation } from "./documentation";
 import { offsetToPosition } from "./positions";
-import { Extension } from "@codemirror/state";
-import { hoverTooltip, Tooltip } from "@codemirror/view";
-import {
-  HoverParams,
-  HoverRequest,
-  MarkupContent,
-} from "vscode-languageserver-protocol";
 
 export function hover(lspClient: LSPClient, filename: string): Extension {
   return createHoverTooltip(lspClient.client, filename);
@@ -19,7 +19,7 @@ export function hover(lspClient: LSPClient, filename: string): Extension {
 
 function createHoverTooltip(
   client: LanguageServerClient,
-  filename: string
+  filename: string,
 ): Extension {
   const uri = createUri(filename);
 
@@ -33,7 +33,7 @@ function createHoverTooltip(
 
     const result = await client.connection.sendRequest(
       HoverRequest.type,
-      params
+      params,
     );
     if (result === null) return null;
 
