@@ -42,17 +42,13 @@ export const createUri = (name: string) => `file:///src/${name}`;
  * Tracks and exposes the diagnostics.
  */
 export abstract class LanguageServerClient extends EventEmitter {
+  initPromise: Promise<void>;
   /**
    * The capabilities of the server we're connected to.
-   * Populated after initialize.
    */
   capabilities: ServerCapabilities | undefined;
   private versions: Map<string, number> = new Map();
   private diagnostics: Map<string, Diagnostic[]> = new Map();
-
-  // This is assigned in the constructor by the call to this.initialize(), but
-  // TypeScript needs a hint here.
-  private initializePromise!: Promise<void>;
 
   constructor(
     public connection: MessageConnection,
@@ -60,56 +56,8 @@ export abstract class LanguageServerClient extends EventEmitter {
     public rootUri: string,
   ) {
     super();
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    this.initialize();
-  }
 
-  on(
-    event: "diagnostics",
-    listener: (params: PublishDiagnosticsParams) => void,
-  ): this {
-    this.initializePromise
-      .then(() => {
-        super.on(event, listener);
-      })
-      .catch(() => {});
-    return this;
-  }
-
-  off(
-    event: "diagnostics",
-    listener: (params: PublishDiagnosticsParams) => void,
-  ): this {
-    this.initializePromise
-      .then(() => {
-        super.off(event, listener);
-      })
-      .catch(() => {});
-    return this;
-  }
-
-  currentDiagnostics(uri: string): Diagnostic[] {
-    return this.diagnostics.get(uri) ?? [];
-  }
-
-  allDiagnostics(): Diagnostic[] {
-    return Array.from(this.diagnostics.values()).flat();
-  }
-
-  errorCount(): number {
-    return this.allDiagnostics().filter(
-      (e) => e.severity === DiagnosticSeverity.Error,
-    ).length;
-  }
-
-  /**
-   * Initialize or wait for in-progress initialization.
-   */
-  async initialize(): Promise<void> {
-    if (this.initializePromise) {
-      return this.initializePromise;
-    }
-    this.initializePromise = (async () => {
+    this.initPromise = (async () => {
       // this.connection.onNotification(LogMessageNotification.type, (params) =>
       //   console.log("[LS]", params.message)
       // );
@@ -182,21 +130,62 @@ export abstract class LanguageServerClient extends EventEmitter {
           },
         ],
       };
+
       const { capabilities } = await this.connection.sendRequest(
         InitializeRequest.type,
         initializeParams,
       );
       this.capabilities = capabilities;
+
       await this.connection.sendNotification(InitializedNotification.type, {});
     })();
-    return this.initializePromise;
   }
 
-  async getInitializationOptions(): Promise<any> {}
+  on(
+    event: "diagnostics",
+    listener: (params: PublishDiagnosticsParams) => void,
+  ): this {
+    this.initPromise
+      .then(() => {
+        super.on(event, listener);
+      })
+      .catch(() => {});
+    return this;
+  }
+
+  off(
+    event: "diagnostics",
+    listener: (params: PublishDiagnosticsParams) => void,
+  ): this {
+    this.initPromise
+      .then(() => {
+        super.off(event, listener);
+      })
+      .catch(() => {});
+    return this;
+  }
+
+  currentDiagnostics(uri: string): Diagnostic[] {
+    return this.diagnostics.get(uri) ?? [];
+  }
+
+  allDiagnostics(): Diagnostic[] {
+    return Array.from(this.diagnostics.values()).flat();
+  }
+
+  errorCount(): number {
+    return this.allDiagnostics().filter(
+      (e) => e.severity === DiagnosticSeverity.Error,
+    ).length;
+  }
+
+  // This can be overridden by subclasses. It's used to pass initialization
+  // options to the server.
+  async getInitializationOptions(): Promise<any> {
+    return null;
+  }
 
   public async createFile(filename: string, content: string): Promise<void> {
-    await this.initializePromise;
-
     const languageId = inferFiletype(filename);
     if (!languageId) {
       console.log(
@@ -215,8 +204,6 @@ export abstract class LanguageServerClient extends EventEmitter {
   }
 
   public async deleteFile(filename: string): Promise<void> {
-    await this.initializePromise;
-
     await this.didCloseTextDocument({
       textDocument: {
         uri: createUri(filename),
@@ -228,13 +215,13 @@ export abstract class LanguageServerClient extends EventEmitter {
     filename: string,
     changeEvent: TextDocumentContentChangeEvent,
   ): Promise<void> {
-    await this.initializePromise;
     await this.didChangeTextDocument(createUri(filename), [changeEvent]);
   }
 
   async didOpenTextDocument(params: {
     textDocument: Omit<TextDocumentItem, "version">;
   }): Promise<void> {
+    await this.initPromise;
     await this.connection.sendNotification(
       DidOpenTextDocumentNotification.type,
       {
@@ -251,6 +238,7 @@ export abstract class LanguageServerClient extends EventEmitter {
   async didCloseTextDocument(
     params: DidCloseTextDocumentParams,
   ): Promise<void> {
+    await this.initPromise;
     await this.connection.sendNotification(
       DidCloseTextDocumentNotification.type,
       params,
@@ -261,6 +249,7 @@ export abstract class LanguageServerClient extends EventEmitter {
     uri: string,
     contentChanges: TextDocumentContentChangeEvent[],
   ): Promise<void> {
+    await this.initPromise;
     await this.connection.sendNotification(
       DidChangeTextDocumentNotification.type,
       {
@@ -274,6 +263,7 @@ export abstract class LanguageServerClient extends EventEmitter {
   }
 
   async completionRequest(params: CompletionParams): Promise<CompletionList> {
+    await this.initPromise;
     const results = await this.connection.sendRequest(
       CompletionRequest.type,
       params,

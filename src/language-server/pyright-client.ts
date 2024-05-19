@@ -8,7 +8,6 @@ import * as utils from "../utils";
 import { currentScriptDir } from "../utils";
 import { LanguageServerClient, createUri } from "./client";
 
-// This is modified by bin/update-pyright.sh
 const workerScriptName = "pyright.worker.js";
 
 let pyrightClient: PyrightLspClient | null = null;
@@ -74,10 +73,8 @@ export class PyrightLspClient extends LanguageServerClient {
   }
 
   /**
-   * This is a replacement for LanguageServerClient.getInitializationOptions().
-   * The primary purpose of this version is so that esbuild won't inline the
-   * json file in .js bundle. This works because uses fetch() instead of
-   * import().
+   * This uses fetch() instead of import() so that esbuild will not inline the
+   * entire JSON file into the .js bundle.
    */
   override async getInitializationOptions(): Promise<any> {
     const response = await fetch(

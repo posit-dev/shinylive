@@ -73,7 +73,7 @@ const triggerSignatureHelpRequest = async (
   client: LanguageServerClient,
   uri: string,
 ): Promise<void> => {
-  await client.initialize();
+  await client.initPromise;
   const pos = view.state.selection.main.from;
   const params: SignatureHelpParams = {
     textDocument: { uri },
