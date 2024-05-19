@@ -75,8 +75,9 @@ export class PyrightLspClient extends LanguageServerClient {
 
   /**
    * This is a replacement for LanguageServerClient.getInitializationOptions().
-   * The primary purpose of this version is so that esbuild won't include the json
-   * file in .js bundle. This works because uses fetch() instead of import().
+   * The primary purpose of this version is so that esbuild won't inline the
+   * json file in .js bundle. This works because uses fetch() instead of
+   * import().
    */
   override async getInitializationOptions(): Promise<any> {
     const response = await fetch(

@@ -41,7 +41,7 @@ export const createUri = (name: string) => `file:///src/${name}`;
  *
  * Tracks and exposes the diagnostics.
  */
-export class LanguageServerClient extends EventEmitter {
+export abstract class LanguageServerClient extends EventEmitter {
   /**
    * The capabilities of the server we're connected to.
    * Populated after initialize.
@@ -49,9 +49,10 @@ export class LanguageServerClient extends EventEmitter {
   capabilities: ServerCapabilities | undefined;
   private versions: Map<string, number> = new Map();
   private diagnostics: Map<string, Diagnostic[]> = new Map();
-  private initializePromise: Promise<void> | undefined;
 
-  public initPromise: Promise<void>;
+  // This is assigned in the constructor by the call to this.initialize(), but
+  // TypeScript needs a hint here.
+  private initializePromise!: Promise<void>;
 
   constructor(
     public connection: MessageConnection,
@@ -59,17 +60,15 @@ export class LanguageServerClient extends EventEmitter {
     public rootUri: string,
   ) {
     super();
-    // This promise resolves when initialization is complete. We keep it around
-    // so that if someone calls one of the methods before initialization
-    // finishes, we can still safely register those callbacks.
-    this.initPromise = this.initialize();
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    this.initialize();
   }
 
   on(
     event: "diagnostics",
     listener: (params: PublishDiagnosticsParams) => void,
   ): this {
-    this.initPromise
+    this.initializePromise
       .then(() => {
         super.on(event, listener);
       })
@@ -81,7 +80,7 @@ export class LanguageServerClient extends EventEmitter {
     event: "diagnostics",
     listener: (params: PublishDiagnosticsParams) => void,
   ): this {
-    this.initPromise
+    this.initializePromise
       .then(() => {
         super.off(event, listener);
       })
@@ -193,28 +192,10 @@ export class LanguageServerClient extends EventEmitter {
     return this.initializePromise;
   }
 
-  async getInitializationOptions(): Promise<any> {
-    // This is commented out because we have shimmed in our own version of this
-    // function. When this code is run through esbuild, esbuild will include the
-    // json file in the bundle. The shimmed version effectively does the same
-    // thing, but it loads the json file dynamically.
-    //
-    // const typeshed = await retryAsyncLoad(() => {
-    //   switch (this.locale) {
-    //     // New languages go here.
-    //     default:
-    //       return import(`./typeshed.en.json`);
-    //   }
-    // });
-    // return {
-    //   files: typeshed,
-    //   // Custom option in our Pyright version
-    //   diagnosticStyle: "simplified",
-    // };
-  }
+  async getInitializationOptions(): Promise<any> {}
 
   public async createFile(filename: string, content: string): Promise<void> {
-    await this.initPromise;
+    await this.initializePromise;
 
     const languageId = inferFiletype(filename);
     if (!languageId) {
@@ -234,7 +215,7 @@ export class LanguageServerClient extends EventEmitter {
   }
 
   public async deleteFile(filename: string): Promise<void> {
-    await this.initPromise;
+    await this.initializePromise;
 
     await this.didCloseTextDocument({
       textDocument: {
@@ -247,7 +228,7 @@ export class LanguageServerClient extends EventEmitter {
     filename: string,
     changeEvent: TextDocumentContentChangeEvent,
   ): Promise<void> {
-    await this.initPromise;
+    await this.initializePromise;
     await this.didChangeTextDocument(createUri(filename), [changeEvent]);
   }
 
