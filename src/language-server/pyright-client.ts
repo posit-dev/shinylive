@@ -35,7 +35,7 @@ export class PyrightLspClient extends LanguageServerClient {
       utils.currentScriptDir() + `/pyright/${workerScriptName}`;
 
     const foreground = new Worker(workerScript, {
-      name: "Pyright-foreground",
+      name: "pyright-foreground",
     });
     const connection = createMessageConnection(
       new BrowserMessageReader(foreground),
