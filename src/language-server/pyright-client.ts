@@ -59,7 +59,7 @@ export class PyrightLspClient extends LanguageServerClient {
       uri: createUri(filename),
       kind: "create",
     };
-    await this.connection.sendNotification("pyright/createFile", params);
+    await this.connection.sendNotification("$/createFile", params);
     await super.createFile(filename, content);
   }
 
@@ -68,7 +68,7 @@ export class PyrightLspClient extends LanguageServerClient {
       uri: createUri(filename),
       kind: "delete",
     };
-    await this.connection.sendNotification("pyright/deleteFile", params);
+    await this.connection.sendNotification("$/deleteFile", params);
     await super.deleteFile(filename);
   }
 

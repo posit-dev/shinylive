@@ -121,8 +121,7 @@ export abstract class LanguageServerClient extends EventEmitter {
         },
         initializationOptions: await this.getInitializationOptions(),
         processId: null,
-        // Do we need both of these?
-        rootUri: this.rootUri,
+        rootUri: null,
         workspaceFolders: [
           {
             name: "src",
