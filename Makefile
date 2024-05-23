@@ -5,7 +5,7 @@
 	pyodide_packages_local \
 	create_typeshed_json \
 	copy_pyright \
-	submodules submodules-pull \
+	submodules submodules-pull submodules-pull-shiny submodules-pull-htmltools \
 	buildjs watch serve \
 	packages \
 	quarto quartoserve \
@@ -93,6 +93,8 @@ submodules-pull:
 	git submodule update --recursive --remote
 submodules-pull-shiny:
 	git submodule update --remote packages/py-shiny
+submodules-pull-htmltools:
+	git submodule update --remote packages/py-htmltools
 
 
 ## Build everything _except_ the shinylive.tar.gz distribution file
