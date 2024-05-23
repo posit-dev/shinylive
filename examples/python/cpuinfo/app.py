@@ -82,6 +82,9 @@ ui.tags.style(
     """
 )
 
+# Disable busy indicators
+ui.busy_indicators.use(spinners=False, pulse=False)
+
 with ui.sidebar():
     ui.input_select(
         "cmap",
