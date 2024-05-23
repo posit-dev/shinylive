@@ -18,7 +18,7 @@ def _():
     # You can do other things here, like write data to disk.
 
 
-@render.text
+@render.code
 @reactive.event(input.btn)
 def txt():
     return f"Last value: {input.n()}"

@@ -39,10 +39,10 @@ app_ui = ui.page_fluid(
         ),
     ),
     ui.row(
-        ui.column(3, ui.output_text_verbatim("click_info")),
-        ui.column(3, ui.output_text_verbatim("dblclick_info")),
-        ui.column(3, ui.output_text_verbatim("hover_info")),
-        ui.column(3, ui.output_text_verbatim("brush_info")),
+        ui.column(3, ui.output_code("click_info")),
+        ui.column(3, ui.output_code("dblclick_info")),
+        ui.column(3, ui.output_code("hover_info")),
+        ui.column(3, ui.output_code("brush_info")),
     ),
 )
 
@@ -67,19 +67,19 @@ def server(input, output, session):
 
             return p
 
-    @render.text()
+    @render.code()
     def click_info():
         return "click:\n" + json.dumps(input.plot1_click(), indent=2)
 
-    @render.text()
+    @render.code()
     def dblclick_info():
         return "dblclick:\n" + json.dumps(input.plot1_dblclick(), indent=2)
 
-    @render.text()
+    @render.code()
     def hover_info():
         return "hover:\n" + json.dumps(input.plot1_hover(), indent=2)
 
-    @render.text()
+    @render.code()
     def brush_info():
         return "brush:\n" + json.dumps(input.plot1_brush(), indent=2)
 

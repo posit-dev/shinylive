@@ -2,8 +2,7 @@ import mimetypes
 from math import ceil
 from typing import List
 
-from shiny.express import ui, input, render
-
+from shiny.express import input, render, ui
 
 MAX_SIZE = 50000
 ui.input_file("file1", "Choose a file to upload:", multiple=True)
@@ -28,7 +27,7 @@ def group_into_blocks(x: List[str], blocksize: int):
     ]
 
 
-@render.text
+@render.code
 def file_content():
     file_infos = input.file1()
     if not file_infos:

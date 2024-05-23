@@ -21,7 +21,7 @@ app_ui = ui.page_fluid(
     ui.input_switch("filters", "Filters", True),
     ui.output_data_frame("grid"),
     ui.panel_fixed(
-        ui.output_text_verbatim("detail"),
+        ui.output_code("detail"),
         right="10px",
         bottom="10px",
     ),
@@ -51,7 +51,7 @@ def server(input, output, session):
                 filters=input.filters(),
             )
 
-    @render.text
+    @render.code
     def detail():
         if (
             input.grid_selected_rows() is not None

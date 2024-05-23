@@ -4,7 +4,7 @@ from utils import square
 ui.input_slider("n", "N", 0, 100, 20)
 
 
-@render.text
+@render.code
 def txt():
     val = square(input.n())
     return f"{input.n()} squared is {val}"

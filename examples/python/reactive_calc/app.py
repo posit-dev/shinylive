@@ -15,11 +15,11 @@ def x_times_2():
     return val
 
 
-@render.text
+@render.code
 def txt1():
     return f'x times 2 is: "{x_times_2()}"'
 
 
-@render.text
+@render.code
 def txt2():
     return f'x times 2 is: "{x_times_2()}"'

@@ -45,7 +45,7 @@ def _():
 # string.
 
 
-@render.text
+@render.code
 def txt():
     x = all_times()
     x = [round(j - i, 2) for i, j in zip(x[:-1], x[1:])]

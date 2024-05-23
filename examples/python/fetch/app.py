@@ -90,7 +90,7 @@ ui.input_radio_buttons(
 )
 
 
-@render.text
+@render.code
 async def info():
     if input.city() == "":
         return ""

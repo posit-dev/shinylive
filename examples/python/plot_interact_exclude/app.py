@@ -34,7 +34,7 @@ app_ui = ui.page_fluid(
         ),
     ),
     ui.row(
-        ui.column(12, {"style": "margin-top: 15px;"}, ui.output_text_verbatim("model")),
+        ui.column(12, {"style": "margin-top: 15px;"}, ui.output_code("model")),
     ),
 )
 
@@ -78,7 +78,7 @@ def server(input, output, session):
             + geom_smooth(method="lm", fullrange=True)
         )
 
-    @render.text()
+    @render.code()
     def model():
         df = data_with_keep()
         df_keep = df[df["keep"]]

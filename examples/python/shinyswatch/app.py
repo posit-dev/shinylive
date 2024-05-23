@@ -30,7 +30,7 @@ app_ui = ui.page_navbar(
                         ui.tags.h4("Table"),
                         ui.output_table("table"),
                         ui.tags.h4("Verbatim text output"),
-                        ui.output_text_verbatim("txtout"),
+                        ui.output_code("txtout"),
                         ui.tags.h1("Header 1"),
                         ui.tags.h2("Header 2"),
                         ui.tags.h3("Header 3"),
@@ -51,7 +51,7 @@ app_ui = ui.page_navbar(
 
 def server(input, output, session):
     @output
-    @render.text
+    @render.code
     def txtout():
         return f"{input.txt()}, {input.slider()}, {input.slider()}"
 

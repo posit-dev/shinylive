@@ -9,7 +9,7 @@ def counter_ui(label: str = "Increment counter") -> ui.TagChild:
     return ui.card(
         ui.h2("This is " + label),
         ui.input_action_button(id="button", label=label),
-        ui.output_text_verbatim(id="out"),
+        ui.output_code(id="out"),
     )
 
 
@@ -22,7 +22,7 @@ def counter_server(input, output, session, starting_value: int = 0):
     def _():
         count.set(count() + 1)
 
-    @render.text
+    @render.code
     def out() -> str:
         return f"Click count is {count()}"
 
