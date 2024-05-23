@@ -1,8 +1,8 @@
 {
   "htmltools": {
     "name": "htmltools",
-    "version": "0.5.1",
-    "filename": "htmltools-0.5.1-py3-none-any.whl",
+    "version": "0.5.2",
+    "filename": "htmltools-0.5.2-py3-none-any.whl",
     "sha256": null,
     "url": null,
     "depends": [
@@ -15,8 +15,8 @@
   },
   "shiny": {
     "name": "shiny",
-    "version": "0.9.0.9000",
-    "filename": "shiny-0.9.0.9000-py3-none-any.whl",
+    "version": "0.10.1",
+    "filename": "shiny-0.10.1-py3-none-any.whl",
     "sha256": null,
     "url": null,
     "depends": [
