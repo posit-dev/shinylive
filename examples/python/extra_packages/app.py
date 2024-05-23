@@ -3,7 +3,8 @@ import isodate
 import tabulate
 from shiny.express import ui
 
-"""
+ui.markdown(
+    """
 This application doesn't actually do anything -- it simply demonstrates how to
 import extra packages from PyPI, by using a `requirements.txt` file.
 
@@ -20,3 +21,4 @@ import micropip
 await micropip.install("mypackage")
 import mypackage
 """
+)
