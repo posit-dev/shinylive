@@ -295,7 +295,7 @@ webr::shim_install()
   lapply(rownames(installed.packages()), function(p) { .webr_pkg_cache[[p]] <<- TRUE })
 }
 
-.start_app <- function(appName, appDir) {
+.start_app <- function(appName, appDir, devMode = FALSE) {
   # Mount VFS images provided in Shinylive app assets
   .mount_vfs_images()
 
@@ -312,6 +312,11 @@ webr::shim_install()
     }
   })
 
+  if (isTRUE(devMode)) {
+    # Enable client-side dev mode features, namely the error console
+    options(shiny.client_devmode = TRUE)
+  }
+  
   app <- .shiny_to_httpuv(appDir)
   assign(appName, app, envir = .shiny_app_registry)
   invisible(0)

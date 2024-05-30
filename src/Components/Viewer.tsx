@@ -187,8 +187,8 @@ export function Viewer({
             env: { files, appDir },
             captureStreams: false,
           });
-          await webRProxy.runRAsync(".start_app(appName, appDir)", {
-            env: { appName, appDir },
+          await webRProxy.runRAsync(".start_app(appName, appDir, devMode)", {
+            env: { appName, appDir, devMode },
             captureConditions: false,
             captureStreams: false,
           });
