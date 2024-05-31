@@ -111,13 +111,13 @@ const buildmap = {
     // we'll mark them as external so esbuild doesn't try to bundle them.
     external: [
       "node-fetch",
-      "path",
-      "fs",
-      "vm",
-      "crypto",
-      "child_process",
-      "url",
-      "ws",
+      "node:path",
+      "node:fs",
+      "node:vm",
+      "node:crypto",
+      "node:child_process",
+      "node:url",
+      "node:ws",
     ],
     format: "esm",
     target: "es2020",
@@ -182,12 +182,12 @@ const buildmap = {
     // See note in esbuild.build() call above about why these are external.
     external: [
       "node-fetch",
-      "path",
-      "fs",
-      "vm",
-      "crypto",
-      "child_process",
-      "url",
+      "node:path",
+      "node:fs",
+      "node:vm",
+      "node:crypto",
+      "node:child_process",
+      "node:url",
       // shinylive.js is used in run-python-blocks.ts, but we don't want to
       // bundle it.
       "./shinylive.js",
