@@ -3,11 +3,11 @@
  *
  * SPDX-License-Identifier: MIT
  */
-import { positionToOffset } from "./positions";
-import { Diagnostic, setDiagnostics } from "@codemirror/lint";
-import { EditorState, Text, Transaction } from "@codemirror/state";
-import { EditorView } from "@codemirror/view";
+import { setDiagnostics, type Diagnostic } from "@codemirror/lint";
+import type { EditorState, Text, Transaction } from "@codemirror/state";
+import type { EditorView } from "@codemirror/view";
 import * as LSP from "vscode-languageserver-protocol";
+import { positionToOffset } from "./positions";
 
 /// An action associated with a diagnostic.
 export interface Action {
@@ -29,7 +29,7 @@ const severityMapping = {
 
 export const diagnosticsMapping = (
   document: Text,
-  lspDiagnostics: LSP.Diagnostic[]
+  lspDiagnostics: LSP.Diagnostic[],
 ): Diagnostic[] =>
   lspDiagnostics
     .map(({ range, message, severity, tags }): Diagnostic | undefined => {
@@ -56,12 +56,12 @@ export const diagnosticsMapping = (
  */
 export function diagnosticToTransaction(
   editorState: EditorState,
-  lspDiagnostics: LSP.Diagnostic[]
+  lspDiagnostics: LSP.Diagnostic[],
 ): Transaction {
   const diagnostics = diagnosticsMapping(editorState.doc, lspDiagnostics);
 
   const diagnosticsTransaction = editorState.update(
-    setDiagnostics(editorState, diagnostics)
+    setDiagnostics(editorState, diagnostics),
   );
 
   return diagnosticsTransaction;

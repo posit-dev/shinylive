@@ -3,7 +3,7 @@ import { StateEffect } from "@codemirror/state";
 import type { EditorView } from "@codemirror/view";
 import * as React from "react";
 import * as fileio from "../../fileio";
-import type { LSPClient } from "../../language-server/lsp-client";
+import type { LanguageServerClient } from "../../language-server/client";
 import { inferFiletype } from "../../utils";
 import type { EditorFile } from "../Editor";
 import { fileContentsToEditorFiles, fileContentToEditorFile } from "../Editor";
@@ -22,7 +22,7 @@ export function useTabbedCodeMirror({
   cmView: EditorView | undefined;
   inferEditorExtensions: (f: FileContent | EditorFile) => Extension;
   setFilesHaveChanged: (value: boolean) => void;
-  lspClient: LSPClient;
+  lspClient: LanguageServerClient;
   lspPathPrefix: string;
 }) {
   const [files, setFiles] = React.useState<EditorFile[]>([]);
@@ -63,7 +63,29 @@ export function useTabbedCodeMirror({
     setActiveFileIdx(0);
 
     setNewFileCounter(1);
-  }, [currentFilesFromApp, inferEditorExtensions]);
+
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    (async () => {
+      for (const file of files) {
+        if (file.type === "text" && inferFiletype(file.name) === "python") {
+          await lspClient.deleteFile(lspPathPrefix + file.name);
+        }
+      }
+      for (const file of currentFilesFromApp) {
+        if (file.type === "text" && inferFiletype(file.name) === "python") {
+          await lspClient.createFile(lspPathPrefix + file.name, file.content);
+        }
+      }
+    })();
+  }, [
+    // Note that the linter thinks we need to depend on `files`, but we don't --
+    // if we did, this would result in an infinite loop. We only want to remove
+    // `files` if `currentFilesFromApp` changes.
+    lspClient,
+    lspPathPrefix,
+    currentFilesFromApp,
+    inferEditorExtensions,
+  ]);
 
   // ===========================================================================
   // File adding/removing/renaming
@@ -84,6 +106,7 @@ export function useTabbedCodeMirror({
 
     setFilesHaveChanged(true);
 
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     lspClient.deleteFile(lspPathPrefix + filename);
   }
 
@@ -105,6 +128,7 @@ export function useTabbedCodeMirror({
     setFilesHaveChanged(true);
     setFocusOnEditor(false);
 
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     lspClient.createFile(lspPathPrefix + fileContent.name, fileContent.content);
   }
 
@@ -160,15 +184,18 @@ export function useTabbedCodeMirror({
     setEditingFilename(null);
     setFilesHaveChanged(true);
 
-    if (inferFiletype(oldFileName) === "python") {
-      lspClient.deleteFile(lspPathPrefix + oldFileName);
-    }
-    if (inferFiletype(newFileName) === "python") {
-      lspClient.createFile(
-        lspPathPrefix + newFileName,
-        updatedFiles[fileIndex].ref.editorState.doc.toString(),
-      );
-    }
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    async () => {
+      if (inferFiletype(oldFileName) === "python") {
+        await lspClient.deleteFile(lspPathPrefix + oldFileName);
+      }
+      if (inferFiletype(newFileName) === "python") {
+        await lspClient.createFile(
+          lspPathPrefix + newFileName,
+          updatedFiles[fileIndex].ref.editorState.doc.toString(),
+        );
+      }
+    };
   }
 
   function selectFile(fileName: string) {

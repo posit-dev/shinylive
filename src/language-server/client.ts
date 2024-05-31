@@ -1,32 +1,33 @@
 /**
  * (c) 2021, Micro:bit Educational Foundation and contributors
+ * (c) 2024, Posit Software, PBC
  *
  * SPDX-License-Identifier: MIT
  */
 import { EventEmitter } from "events";
 import {
-  CompletionList,
-  CompletionParams,
   CompletionRequest,
-  Diagnostic,
   DiagnosticSeverity,
   DiagnosticTag,
   DidChangeTextDocumentNotification,
   DidCloseTextDocumentNotification,
-  DidCloseTextDocumentParams,
   DidOpenTextDocumentNotification,
-  InitializeParams,
   InitializeRequest,
   InitializedNotification,
-  LogMessageNotification,
-  MessageConnection,
   PublishDiagnosticsNotification,
-  PublishDiagnosticsParams,
   RegistrationRequest,
-  ServerCapabilities,
-  TextDocumentContentChangeEvent,
-  TextDocumentItem,
+  type CompletionList,
+  type CompletionParams,
+  type Diagnostic,
+  type DidCloseTextDocumentParams,
+  type InitializeParams,
+  type MessageConnection,
+  type PublishDiagnosticsParams,
+  type ServerCapabilities,
+  type TextDocumentContentChangeEvent,
+  type TextDocumentItem,
 } from "vscode-languageserver-protocol";
+import { inferFiletype } from "../utils";
 
 /**
  * Create a URI for a source document under the default root of file:///src/.
@@ -41,54 +42,23 @@ export const createUri = (name: string) => `file:///src/${name}`;
  *
  * Tracks and exposes the diagnostics.
  */
-export class LanguageServerClient extends EventEmitter {
+export abstract class LanguageServerClient extends EventEmitter {
+  initPromise: Promise<void>;
   /**
    * The capabilities of the server we're connected to.
-   * Populated after initialize.
    */
   capabilities: ServerCapabilities | undefined;
   private versions: Map<string, number> = new Map();
   private diagnostics: Map<string, Diagnostic[]> = new Map();
-  private initializePromise: Promise<void> | undefined;
 
   constructor(
     public connection: MessageConnection,
     private locale: string,
-    public rootUri: string
+    public rootUri: string,
   ) {
     super();
-  }
 
-  on(
-    event: "diagnostics",
-    listener: (params: PublishDiagnosticsParams) => void
-  ): this {
-    super.on(event, listener);
-    return this;
-  }
-
-  currentDiagnostics(uri: string): Diagnostic[] {
-    return this.diagnostics.get(uri) ?? [];
-  }
-
-  allDiagnostics(): Diagnostic[] {
-    return Array.from(this.diagnostics.values()).flat();
-  }
-
-  errorCount(): number {
-    return this.allDiagnostics().filter(
-      (e) => e.severity === DiagnosticSeverity.Error
-    ).length;
-  }
-
-  /**
-   * Initialize or wait for in-progress initialization.
-   */
-  async initialize(): Promise<void> {
-    if (this.initializePromise) {
-      return this.initializePromise;
-    }
-    this.initializePromise = (async () => {
+    this.initPromise = (async () => {
       // this.connection.onNotification(LogMessageNotification.type, (params) =>
       //   console.log("[LS]", params.message)
       // );
@@ -99,7 +69,7 @@ export class LanguageServerClient extends EventEmitter {
           this.diagnostics.set(params.uri, params.diagnostics);
           // Republish as you can't listen twice.
           this.emit("diagnostics", params);
-        }
+        },
       );
       this.connection.onRequest(RegistrationRequest.type, () => {
         // Ignore. I don't think we should get these at all given our
@@ -152,8 +122,7 @@ export class LanguageServerClient extends EventEmitter {
         },
         initializationOptions: await this.getInitializationOptions(),
         processId: null,
-        // Do we need both of these?
-        rootUri: this.rootUri,
+        rootUri: null,
         workspaceFolders: [
           {
             name: "src",
@@ -161,39 +130,98 @@ export class LanguageServerClient extends EventEmitter {
           },
         ],
       };
+
       const { capabilities } = await this.connection.sendRequest(
         InitializeRequest.type,
-        initializeParams
+        initializeParams,
       );
       this.capabilities = capabilities;
+
       await this.connection.sendNotification(InitializedNotification.type, {});
     })();
-    return this.initializePromise;
   }
 
-  private async getInitializationOptions(): Promise<any> {
-    // This is commented out because we have shimmed in our own version of this
-    // function. When this code is run through esbuild, esbuild will include the
-    // json file in the bundle. The shimmed version effectively does the same
-    // thing, but it loads the json file dynamically.
-    //
-    // const typeshed = await retryAsyncLoad(() => {
-    //   switch (this.locale) {
-    //     // New languages go here.
-    //     default:
-    //       return import(`./typeshed.en.json`);
-    //   }
-    // });
-    // return {
-    //   files: typeshed,
-    //   // Custom option in our Pyright version
-    //   diagnosticStyle: "simplified",
-    // };
+  on(
+    event: "diagnostics",
+    listener: (params: PublishDiagnosticsParams) => void,
+  ): this {
+    this.initPromise
+      .then(() => {
+        super.on(event, listener);
+      })
+      .catch(() => {});
+    return this;
+  }
+
+  off(
+    event: "diagnostics",
+    listener: (params: PublishDiagnosticsParams) => void,
+  ): this {
+    this.initPromise
+      .then(() => {
+        super.off(event, listener);
+      })
+      .catch(() => {});
+    return this;
+  }
+
+  currentDiagnostics(uri: string): Diagnostic[] {
+    return this.diagnostics.get(uri) ?? [];
+  }
+
+  allDiagnostics(): Diagnostic[] {
+    return Array.from(this.diagnostics.values()).flat();
+  }
+
+  errorCount(): number {
+    return this.allDiagnostics().filter(
+      (e) => e.severity === DiagnosticSeverity.Error,
+    ).length;
+  }
+
+  // This can be overridden by subclasses. It's used to pass initialization
+  // options to the server.
+  async getInitializationOptions(): Promise<any> {
+    return null;
+  }
+
+  public async createFile(filename: string, content: string): Promise<void> {
+    const languageId = inferFiletype(filename);
+    if (!languageId) {
+      console.log(
+        `LanguageServerClientExtended: Could not infer language for ${filename}`,
+      );
+      return;
+    }
+
+    await this.didOpenTextDocument({
+      textDocument: {
+        languageId: languageId,
+        text: content,
+        uri: createUri(filename),
+      },
+    });
+  }
+
+  public async deleteFile(filename: string): Promise<void> {
+    await this.didCloseTextDocument({
+      textDocument: {
+        uri: createUri(filename),
+      },
+    });
+  }
+
+  public async changeFile(
+    filename: string,
+    changeEvent: TextDocumentContentChangeEvent,
+  ): Promise<void> {
+    await this.didChangeTextDocument(createUri(filename), [changeEvent]);
   }
 
   async didOpenTextDocument(params: {
     textDocument: Omit<TextDocumentItem, "version">;
   }): Promise<void> {
+    await this.initPromise;
     await this.connection.sendNotification(
       DidOpenTextDocumentNotification.type,
       {
@@ -201,25 +229,27 @@ export class LanguageServerClient extends EventEmitter {
           ...params.textDocument,
           version: this.nextVersion(params.textDocument.uri),
         },
-      }
+      },
     );
   }
 
   // We close Python files that are deleted. We never write to the file system,
   // so that way they're effectively deleted.
   async didCloseTextDocument(
-    params: DidCloseTextDocumentParams
+    params: DidCloseTextDocumentParams,
   ): Promise<void> {
+    await this.initPromise;
     await this.connection.sendNotification(
       DidCloseTextDocumentNotification.type,
-      params
+      params,
     );
   }
 
   async didChangeTextDocument(
     uri: string,
-    contentChanges: TextDocumentContentChangeEvent[]
+    contentChanges: TextDocumentContentChangeEvent[],
   ): Promise<void> {
+    await this.initPromise;
     await this.connection.sendNotification(
       DidChangeTextDocumentNotification.type,
       {
@@ -228,14 +258,15 @@ export class LanguageServerClient extends EventEmitter {
           version: this.nextVersion(uri),
         },
         contentChanges,
-      }
+      },
     );
   }
 
   async completionRequest(params: CompletionParams): Promise<CompletionList> {
+    await this.initPromise;
     const results = await this.connection.sendRequest(
       CompletionRequest.type,
-      params
+      params,
     );
     if (!results) {
       // Not clear how this should be handled.

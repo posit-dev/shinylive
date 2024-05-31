@@ -1,18 +1,24 @@
+import { createMessageConnection } from "vscode-jsonrpc";
+import {
+  BrowserMessageReader,
+  BrowserMessageWriter,
+} from "vscode-jsonrpc/browser";
 import type * as LSP from "vscode-languageserver-protocol";
+import * as utils from "../utils";
 import { currentScriptDir } from "../utils";
-import { createUri } from "./client";
-import { LSPClient } from "./lsp-client";
-import { pyright } from "./pyright";
+import { LanguageServerClient, createUri } from "./client";
 
-let pyrightClient: PyrightClient | null = null;
+const workerScriptName = "pyright.worker.js";
+
+let pyrightClient: PyrightLspClient | null = null;
 
 /**
  * This returns a PyrightClient object. If this is called multiple times, it
  * will return the same object each time.
  */
-export function ensurePyrightClient(): PyrightClient {
+export function ensurePyrightClient(): PyrightLspClient {
   if (!pyrightClient) {
-    pyrightClient = new PyrightClient();
+    pyrightClient = new PyrightLspClient();
   }
   return pyrightClient;
 }
@@ -22,14 +28,27 @@ export function ensurePyrightClient(): PyrightClient {
  * messages over and above the standard Language Server Protocol. This class
  * sends those messages.
  */
-export class PyrightClient extends LSPClient {
+export class PyrightLspClient extends LanguageServerClient {
   constructor() {
-    const locale = "en";
-    const client = pyright(locale)!;
-    // @ts-ignore: LanguageServerClient.getInitializationOptions() is marked
-    // as private for TS, but we can just replace it.
-    client.getInitializationOptions = getInitializationOptions;
-    super(client);
+    const workerScript =
+      utils.currentScriptDir() + `/pyright/${workerScriptName}`;
+
+    const foreground = new Worker(workerScript, {
+      name: "pyright-foreground",
+    });
+    const connection = createMessageConnection(
+      new BrowserMessageReader(foreground),
+      new BrowserMessageWriter(foreground),
+    );
+    // TODO: Add a way to shut down background thread
+    const workers: Worker[] = [foreground];
+    connection.onDispose(() => {
+      workers.forEach((w) => w.terminate());
+    });
+
+    connection.listen();
+
+    super(connection, "en", createUri(""));
   }
 
   public override async createFile(
@@ -40,7 +59,7 @@ export class PyrightClient extends LSPClient {
       uri: createUri(filename),
       kind: "create",
     };
-    await this.client.connection.sendNotification("pyright/createFile", params);
+    await this.connection.sendNotification("$/createFile", params);
     await super.createFile(filename, content);
   }
 
@@ -49,23 +68,22 @@ export class PyrightClient extends LSPClient {
       uri: createUri(filename),
       kind: "delete",
     };
-    await this.client.connection.sendNotification("pyright/deleteFile", params);
+    await this.connection.sendNotification("$/deleteFile", params);
     await super.deleteFile(filename);
   }
-}
 
-/**
- * This is a replacement for LanguageServerClient.getInitializationOptions().
- * The primary purpose of this version is so that esbuild won't include the json
- * file in .js bundle. This works because uses fetch() instead of import().
- */
-async function getInitializationOptions(): Promise<any> {
-  const response = await fetch(
-    currentScriptDir() + "/pyright/typeshed.en.json",
-  );
-  const typeshed = await response.json();
+  /**
+   * This uses fetch() instead of import() so that esbuild will not inline the
+   * entire JSON file into the .js bundle.
+   */
+  override async getInitializationOptions(): Promise<any> {
+    const response = await fetch(
+      currentScriptDir() + "/pyright/typeshed.en.json",
+    );
+    const typeshed = await response.json();
 
-  return {
-    files: typeshed,
-  };
+    return {
+      files: typeshed,
+    };
+  }
 }

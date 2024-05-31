@@ -1,16 +1,16 @@
-import { LSPClient } from "../../../language-server/lsp-client";
+import type { Extension } from "@codemirror/state";
+import { EditorView, type ViewUpdate } from "@codemirror/view";
+import type { TextDocumentContentChangeEvent } from "vscode-languageserver-protocol";
+import type { LanguageServerClient } from "../../../language-server/client";
 import { inferFiletype } from "../../../utils";
 import { autocompletion } from "./autocompletion";
 import { hover } from "./hover";
 import { offsetToPosition } from "./positions";
 import { signatureHelp } from "./signatureHelp";
-import { Extension } from "@codemirror/state";
-import { EditorView, ViewUpdate } from "@codemirror/view";
-import { TextDocumentContentChangeEvent } from "vscode-languageserver-protocol";
 
 export function languageServerExtensions(
-  lspClient: LSPClient,
-  filename: string
+  lspClient: LanguageServerClient,
+  filename: string,
 ): Extension[] {
   if (inferFiletype(filename) !== "python") {
     return [];
@@ -44,6 +44,7 @@ export function languageServerExtensions(
 
         if (nChanges === 1) {
           // If we had exactly one change, send it to the Language Server.
+          // eslint-disable-next-line @typescript-eslint/no-floating-promises
           lspClient.changeFile(filename, changeEvent);
         } else {
           // If we had more than one change (because of multiple cursors), don't
@@ -54,6 +55,7 @@ export function languageServerExtensions(
           // expects the changes to be recordered in order, which means that it
           // expects the cursor positions at t0, t1, t2, etc. These two schemes
           // aren't compatible, so we'll just send the entire document.
+          // eslint-disable-next-line @typescript-eslint/no-floating-promises
           lspClient.changeFile(filename, { text: u.view.state.doc.toString() });
         }
       }

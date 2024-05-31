@@ -7,31 +7,31 @@
  *
  * SPDX-License-Identifier: MIT
  */
+import { StateEffect, StateField, type Extension } from "@codemirror/state";
 import {
-  createUri,
-  LanguageServerClient,
-} from "../../../language-server/client";
-import { LSPClient } from "../../../language-server/lsp-client";
-import { nameFromSignature, removeFullyQualifiedName } from "./names";
-import { offsetToPosition } from "./positions";
-import { Extension, StateEffect, StateField } from "@codemirror/state";
-import { showTooltip, Tooltip } from "@codemirror/view";
-import {
-  Command,
   EditorView,
-  KeyBinding,
+  ViewPlugin,
   keymap,
   logException,
-  PluginValue,
-  ViewPlugin,
-  ViewUpdate,
+  showTooltip,
+  type Command,
+  type KeyBinding,
+  type PluginValue,
+  type Tooltip,
+  type ViewUpdate,
 } from "@codemirror/view";
 import {
-  MarkupContent,
-  SignatureHelp,
-  SignatureHelpParams,
   SignatureHelpRequest,
+  type MarkupContent,
+  type SignatureHelp,
+  type SignatureHelpParams,
 } from "vscode-languageserver-protocol";
+import {
+  createUri,
+  type LanguageServerClient,
+} from "../../../language-server/client";
+import { nameFromSignature, removeFullyQualifiedName } from "./names";
+import { offsetToPosition } from "./positions";
 
 interface SignatureChangeEffect {
   pos: number;
@@ -39,7 +39,7 @@ interface SignatureChangeEffect {
 }
 
 export const setSignatureHelpEffect = StateEffect.define<SignatureChangeEffect>(
-  {}
+  {},
 );
 
 interface SignatureHelpState {
@@ -71,9 +71,9 @@ const closeSignatureHelp: Command = (view: EditorView) => {
 const triggerSignatureHelpRequest = async (
   view: EditorView,
   client: LanguageServerClient,
-  uri: string
+  uri: string,
 ): Promise<void> => {
-  await client.initialize();
+  await client.initPromise;
   const pos = view.state.selection.main.from;
   const params: SignatureHelpParams = {
     textDocument: { uri },
@@ -88,7 +88,7 @@ const triggerSignatureHelpRequest = async (
     // console.log("SignatureHelpRequest");
     const result = await client.connection.sendRequest(
       SignatureHelpRequest.type,
-      params
+      params,
     );
     // console.log("result:", result);
     view.dispatch({
@@ -104,9 +104,10 @@ const triggerSignatureHelpRequest = async (
 
 function createSignatureHelpKeymap(
   client: LanguageServerClient,
-  filename: string
+  filename: string,
 ) {
   const openSignatureHelp: Command = (view: EditorView) => {
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     triggerSignatureHelpRequest(view, client, createUri(filename));
     return true;
   };
@@ -143,7 +144,7 @@ const signatureHelpTooltipField = StateField.define<SignatureHelpState>({
 
 const reduceSignatureHelpState = (
   state: SignatureHelpState,
-  effect: SignatureChangeEffect
+  effect: SignatureChangeEffect,
 ): SignatureHelpState => {
   // console.log("reduceSignatureHelpState", effect);
   if (state.tooltip && !effect.result) {
@@ -208,7 +209,7 @@ const formatSignatureHelp = (help: SignatureHelp): Node => {
     from,
     to,
     signatureDoc,
-    activeParameterDoc
+    activeParameterDoc,
   );
 };
 
@@ -217,7 +218,7 @@ const formatHighlightedParameter = (
   from: number,
   to: number,
   signatureDoc: string | MarkupContent | undefined,
-  activeParameterDoc: string | MarkupContent | undefined
+  activeParameterDoc: string | MarkupContent | undefined,
 ): Node => {
   let before = label.substring(0, from);
   const id = nameFromSignature(before);
@@ -248,20 +249,24 @@ const formatHighlightedParameter = (
  * Create a signatureHelp Extension.
  */
 export const signatureHelp = (
-  lspClient: LSPClient,
+  lspClient: LanguageServerClient,
   filename: string,
-  automatic: boolean
+  automatic: boolean,
 ): Extension => {
-  const client = lspClient.client;
+  const client = lspClient;
   const uri = createUri(filename);
 
   class SignatureHelpView implements PluginValue {
-    constructor(protected view: EditorView, private automatic: boolean) {}
+    constructor(
+      protected view: EditorView,
+      private automatic: boolean,
+    ) {}
     update({ docChanged, selectionSet, transactions }: ViewUpdate) {
       if (
         (docChanged || selectionSet) &&
         this.view.state.field(signatureHelpTooltipField).tooltip
       ) {
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         triggerSignatureHelpRequest(this.view, client, uri);
       } else if (this.automatic && docChanged) {
         const last = transactions[transactions.length - 1];
@@ -272,6 +277,7 @@ export const signatureHelp = (
         if (last.isUserEvent("input") || last.isUserEvent("dnd.drop.call")) {
           last.changes.iterChanges((_fromA, _toA, _fromB, _toB, inserted) => {
             if (inserted.sliceString(0).trim().endsWith("()")) {
+              // eslint-disable-next-line @typescript-eslint/no-floating-promises
               triggerSignatureHelpRequest(this.view, client, uri);
             }
           });
