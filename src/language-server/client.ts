@@ -1,5 +1,6 @@
 /**
  * (c) 2021, Micro:bit Educational Foundation and contributors
+ * (c) 2024, Posit Software, PBC
  *
  * SPDX-License-Identifier: MIT
  */
