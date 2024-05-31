@@ -1,2 +1,4 @@
-The files in this directory are originally from:
-https://github.com/microbit-foundation/python-editor-v3/tree/7947f5c9368d9c22ff8fc55088fcf1bbb4cd3eda/public/workers
+This is a special build of Pyright that can run in a Web Worker in a browser.
+
+Built from sources at: https://github.com/posit-dev/pyright/
+Commit bca118334c42069ee007c63caf1287ae1f733d53
