@@ -9,7 +9,7 @@ from typing import Optional
 import pyright
 
 # TODO: Automate version detection
-PYODIDE_PYTHON_VERSION = "3.11"
+PYODIDE_PYTHON_VERSION = "3.12"
 
 # Packages that we'll create type stubs for.
 PACKAGES = ("htmltools", "shiny", "shinywidgets", "shinyswatch")
