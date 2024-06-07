@@ -185,7 +185,7 @@ export function useTabbedCodeMirror({
     setFilesHaveChanged(true);
 
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    async () => {
+    (async () => {
       if (inferFiletype(oldFileName) === "python") {
         await lspClient.deleteFile(lspPathPrefix + oldFileName);
       }
@@ -195,7 +195,7 @@ export function useTabbedCodeMirror({
           updatedFiles[fileIndex].ref.editorState.doc.toString(),
         );
       }
-    };
+    })();
   }
 
   function selectFile(fileName: string) {
