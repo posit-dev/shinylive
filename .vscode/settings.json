@@ -37,5 +37,8 @@
     "isort.args":["--profile", "black"],
     "flake8.args": [
         "--ignore=E501,W503"
-    ]
+    ],
+    "eslint.options": {
+        "reportUnusedDisableDirectives": "error"
+    },
 }
