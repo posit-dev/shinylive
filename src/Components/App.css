@@ -114,5 +114,9 @@ for it. */
 }
 
 .shinylive-container.editor-cell .editor-container {
+  padding: 0;
+}
+
+.shinylive-container.editor-cell .cm-scroller {
   padding: 12px 12px 4px 12px;
 }

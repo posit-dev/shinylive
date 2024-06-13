@@ -477,6 +477,7 @@ export function App({
             floatingButtons={true}
             updateUrlHashOnRerun={appOptions.updateUrlHashOnRerun}
             appEngine={appEngine}
+            style={{ height: asCssLengthUnit(appOptions.editorHeight) }}
           />
         </React.Suspense>
         <OutputCell
