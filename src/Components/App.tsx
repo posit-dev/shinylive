@@ -437,7 +437,7 @@ export function App({
       <ResizableGrid
         className="shinylive-container"
         areas={[["editor", "terminal"]]}
-        rowSizes={["1fr"]}
+        rowSizes={[asCssLengthUnit(appOptions.editorHeight) || "1fr"]}
         colSizes={["1fr", "1fr"]}
       >
         <React.Suspense fallback={<div>Loading...</div>}>
