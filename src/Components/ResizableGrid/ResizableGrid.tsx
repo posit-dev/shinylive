@@ -9,15 +9,17 @@ export function ResizableGrid({
   areas,
   rowSizes,
   colSizes,
+  style = {},
 }: {
   className?: string;
   children?: React.ReactNode;
   areas: string[][];
   rowSizes: string[];
   colSizes: string[];
+  style?: React.CSSProperties;
 }) {
   const containerRef = React.useRef<HTMLDivElement>(null);
-  const styles = {
+  const styleGrid = {
     gridTemplateAreas: areas.map((x) => `"${x.join(" ")}"`).join(" \n "),
     gridTemplateRows: rowSizes.join(" "),
     gridTemplateColumns: colSizes.join(" "),
@@ -42,7 +44,11 @@ export function ResizableGrid({
   if (className) classes.push(className);
 
   return (
-    <div className={classes.join(" ")} ref={containerRef} style={styles}>
+    <div
+      className={classes.join(" ")}
+      ref={containerRef}
+      style={{ ...style, ...styleGrid }}
+    >
       {columnSizers.map((gap_index) => (
         <div
           key={"col" + gap_index}

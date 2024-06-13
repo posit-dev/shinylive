@@ -25,7 +25,7 @@ import type { FileContent, FileContentJson } from "./filecontent";
 import { FCorFCJSONtoFC } from "./filecontent";
 import { fetchGist, gistApiResponseToFileContents } from "./gist";
 import { editorUrlPrefix, fileContentsToUrlString } from "./share";
-import { asCssLengthUnit } from "./utils";
+import { asCssLengthUnit, minCssLengthUnit } from "./utils";
 
 // Load Editor component dynamically and lazily because it's large and not
 // needed for all configurations.
@@ -85,6 +85,9 @@ type AppOptions = {
 
   // Height of viewer in pixels (number) or as a CSS string (e.g. 3rem).
   viewerHeight?: number | string;
+
+  // Height of the editor in pixels (number) or as a CSS string (e.g. 3rem).
+  editorHeight?: number | string;
 
   // If the ExampleSelector component is present, which example, if any, should
   // start selected?
@@ -384,6 +387,12 @@ export function App({
         ></HeaderBar>
         <ResizableGrid
           className="shinylive-container"
+          style={{
+            height: minCssLengthUnit(
+              appOptions.editorHeight,
+              appOptions.viewerHeight,
+            ),
+          }}
           areas={[
             ["editor", "viewer"],
             ["terminal", "viewer"],
@@ -478,20 +487,24 @@ export function App({
     );
   } else if (appMode === "editor-viewer") {
     const layout = appOptions.layout ?? "horizontal";
-    const viewerHeight = asCssLengthUnit(appOptions.viewerHeight) || "200px";
+    const viewerHeight = asCssLengthUnit(appOptions.viewerHeight);
+    const editorHeight = asCssLengthUnit(appOptions.editorHeight);
 
-    const gridDef =
-      layout === "horizontal"
-        ? {
-            areas: [["editor", "viewer"]],
-            rowSizes: ["1fr"],
-            colSizes: ["1fr", "1fr"],
-          }
-        : {
-            areas: [["editor"], ["viewer"]],
-            rowSizes: ["auto", viewerHeight],
-            colSizes: ["1fr"],
-          };
+    let gridDef;
+    if (layout === "vertical") {
+      gridDef = {
+        areas: [["editor"], ["viewer"]],
+        rowSizes: [editorHeight || "auto", viewerHeight || "200px"],
+        colSizes: ["1fr"],
+      };
+    } else {
+      // horizontal layout
+      gridDef = {
+        areas: [["editor", "viewer"]],
+        rowSizes: [minCssLengthUnit(editorHeight, viewerHeight) || "1fr"],
+        colSizes: ["1fr", "1fr"],
+      };
+    }
 
     return (
       <ResizableGrid className="shinylive-container editor-viewer" {...gridDef}>
