@@ -173,11 +173,23 @@ export default function Editor({
         }),
         languageServerExtensions(lspClient, lspPathPrefix + file.name),
         Prec.high(
-          keymap.of(keyBindings({ runSelectedTextOrCurrentLine, runAllAuto })),
+          keymap.of(
+            keyBindings({
+              runSelectedTextOrCurrentLine,
+              runAllAuto,
+              appEngine,
+            }),
+          ),
         ),
       ];
     },
-    [lineNumbers, setFilesHaveChangedCombined, lspClient, lspPathPrefix],
+    [
+      lineNumbers,
+      appEngine,
+      setFilesHaveChangedCombined,
+      lspClient,
+      lspPathPrefix,
+    ],
   );
 
   const [cmView, setCmView] = React.useState<EditorView>();
@@ -774,11 +786,13 @@ function useInstanceCounter() {
 function keyBindings({
   runSelectedTextOrCurrentLine,
   runAllAuto,
+  appEngine,
 }: {
   runSelectedTextOrCurrentLine: React.RefObject<() => void>;
   runAllAuto: React.RefObject<() => void>;
+  appEngine: AppEngine;
 }): KeyBinding[] {
-  return [
+  const bindings = [
     {
       key: "Mod-Enter",
       run: (view: EditorView) => {
@@ -796,6 +810,48 @@ function keyBindings({
       },
     },
   ];
+
+  if (appEngine === "r") {
+    const maybeAddWhiteSpace = (view: EditorView, text: string): string => {
+      const pos = view.state.selection.main.head;
+      const line = view.state.doc.lineAt(pos);
+      const before = view.state.doc.sliceString(line.from, pos);
+      const after = view.state.doc.sliceString(pos, line.to);
+
+      if (!before.endsWith(" ") && !before.endsWith("\n")) {
+        text = " " + text;
+      }
+      if (!after.startsWith(" ") && !after.startsWith("\n")) {
+        text = text + " ";
+      }
+
+      return text;
+    };
+
+    const insertText = (view: EditorView, text: string): boolean => {
+      text = maybeAddWhiteSpace(view, text);
+      const pos = view.state.selection.main.head;
+      view.dispatch({
+        changes: { from: pos, insert: text },
+        selection: {
+          anchor: pos + text.length,
+          head: pos + text.length,
+        },
+      });
+      return true;
+    };
+
+    bindings.push({
+      key: "Alt--",
+      run: (view: EditorView) => insertText(view, "<-"),
+    });
+    bindings.push({
+      key: "Mod-Shift-m",
+      run: (view: EditorView) => insertText(view, "|>"),
+    });
+  }
+
+  return bindings;
 }
 /**
  * Update the browser URL hash with the current contents of the Editor.
