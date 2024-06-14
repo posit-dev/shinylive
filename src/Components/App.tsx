@@ -25,6 +25,7 @@ import type { FileContent, FileContentJson } from "./filecontent";
 import { FCorFCJSONtoFC } from "./filecontent";
 import { fetchGist, gistApiResponseToFileContents } from "./gist";
 import { editorUrlPrefix, fileContentsToUrlString } from "./share";
+import { asCssLengthUnit } from "./utils";
 
 // Load Editor component dynamically and lazily because it's large and not
 // needed for all configurations.
@@ -82,8 +83,8 @@ type AppOptions = {
   // to the editor-viewer app mode.
   layout?: "horizontal" | "vertical";
 
-  // Height of viewer in pixels.
-  viewerHeight?: number;
+  // Height of viewer in pixels (number) or as a CSS string (e.g. 3rem).
+  viewerHeight?: number | string;
 
   // If the ExampleSelector component is present, which example, if any, should
   // start selected?
@@ -477,7 +478,7 @@ export function App({
     );
   } else if (appMode === "editor-viewer") {
     const layout = appOptions.layout ?? "horizontal";
-    const viewerHeight = Number(appOptions.viewerHeight ?? 200);
+    const viewerHeight = asCssLengthUnit(appOptions.viewerHeight) || "200px";
 
     const gridDef =
       layout === "horizontal"
@@ -488,7 +489,7 @@ export function App({
           }
         : {
             areas: [["editor"], ["viewer"]],
-            rowSizes: ["auto", `${viewerHeight}px`],
+            rowSizes: ["auto", viewerHeight],
             colSizes: ["1fr"],
           };
 
@@ -526,9 +527,7 @@ export function App({
         <div
           className="shinylive-container viewer"
           style={{
-            height: appOptions.viewerHeight
-              ? `${appOptions.viewerHeight}px`
-              : undefined,
+            height: asCssLengthUnit(appOptions.viewerHeight),
           }}
         >
           <Viewer
