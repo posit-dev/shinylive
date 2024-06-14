@@ -3,8 +3,8 @@
 // released; when it's released, we can remove this.
 // https://github.com/microsoft/vscode/issues/141908
 /// <reference types="wicg-file-system-access" />
-import type { Extension } from "@codemirror/state";
-import { EditorState, Prec } from "@codemirror/state";
+import type { Extension, SelectionRange } from "@codemirror/state";
+import { EditorSelection, EditorState, Prec } from "@codemirror/state";
 import type { KeyBinding, ViewUpdate } from "@codemirror/view";
 import { EditorView, keymap } from "@codemirror/view";
 import "balloon-css";
@@ -812,11 +812,14 @@ function keyBindings({
   ];
 
   if (appEngine === "r") {
-    const maybeAddWhiteSpace = (view: EditorView, text: string): string => {
-      const pos = view.state.selection.main.head;
-      const line = view.state.doc.lineAt(pos);
-      const before = view.state.doc.sliceString(line.from, pos);
-      const after = view.state.doc.sliceString(pos, line.to);
+    const maybeAddWhiteSpace = (
+      view: EditorView,
+      range: SelectionRange,
+      text: string,
+    ): string => {
+      const line = view.state.doc.lineAt(range.head);
+      const before = view.state.doc.sliceString(line.from, range.from);
+      const after = view.state.doc.sliceString(range.to, line.to);
 
       if (!before.endsWith(" ") && !before.endsWith("\n")) {
         text = " " + text;
@@ -829,15 +832,17 @@ function keyBindings({
     };
 
     const insertText = (view: EditorView, text: string): boolean => {
-      text = maybeAddWhiteSpace(view, text);
-      const pos = view.state.selection.main.head;
-      view.dispatch({
-        changes: { from: pos, insert: text },
-        selection: {
-          anchor: pos + text.length,
-          head: pos + text.length,
-        },
+      const result = view.state.changeByRange((range) => {
+        const adjustedText = maybeAddWhiteSpace(view, range, text);
+        const cursorPosAfter =
+          Math.min(range.from, range.to) + adjustedText.length;
+        return {
+          range: EditorSelection.range(cursorPosAfter, cursorPosAfter),
+          changes: { from: range.from, to: range.to, insert: adjustedText },
+        };
       });
+
+      view.dispatch(result);
       return true;
     };
 
