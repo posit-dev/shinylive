@@ -88,6 +88,7 @@ export default function Editor({
   floatingButtons = false,
   updateUrlHashOnRerun = false,
   appEngine,
+  style,
 }: {
   currentFilesFromApp: FileContent[];
   setCurrentFiles: React.Dispatch<React.SetStateAction<FileContent[]>>;
@@ -105,6 +106,7 @@ export default function Editor({
   floatingButtons?: boolean;
   updateUrlHashOnRerun?: boolean;
   appEngine: AppEngine;
+  style?: React.CSSProperties;
 }) {
   // In the future, instead of directly instantiating the PyrightClient, it
   // would make sense to abstract it out to a class which in turn can run
@@ -627,7 +629,7 @@ export default function Editor({
   // ===========================================================================
 
   return (
-    <div className="shinylive-editor">
+    <div className="shinylive-editor" style={style}>
       {shareModal}
       {showHeaderBar ? (
         <div className="editor-header">
