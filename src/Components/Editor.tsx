@@ -3,8 +3,8 @@
 // released; when it's released, we can remove this.
 // https://github.com/microsoft/vscode/issues/141908
 /// <reference types="wicg-file-system-access" />
-import type { Extension } from "@codemirror/state";
-import { EditorState, Prec } from "@codemirror/state";
+import type { Extension, SelectionRange } from "@codemirror/state";
+import { EditorSelection, EditorState, Prec } from "@codemirror/state";
 import type { KeyBinding, ViewUpdate } from "@codemirror/view";
 import { EditorView, keymap } from "@codemirror/view";
 import "balloon-css";
@@ -173,11 +173,23 @@ export default function Editor({
         }),
         languageServerExtensions(lspClient, lspPathPrefix + file.name),
         Prec.high(
-          keymap.of(keyBindings({ runSelectedTextOrCurrentLine, runAllAuto })),
+          keymap.of(
+            keyBindings({
+              runSelectedTextOrCurrentLine,
+              runAllAuto,
+              appEngine,
+            }),
+          ),
         ),
       ];
     },
-    [lineNumbers, setFilesHaveChangedCombined, lspClient, lspPathPrefix],
+    [
+      lineNumbers,
+      appEngine,
+      setFilesHaveChangedCombined,
+      lspClient,
+      lspPathPrefix,
+    ],
   );
 
   const [cmView, setCmView] = React.useState<EditorView>();
@@ -774,11 +786,13 @@ function useInstanceCounter() {
 function keyBindings({
   runSelectedTextOrCurrentLine,
   runAllAuto,
+  appEngine,
 }: {
   runSelectedTextOrCurrentLine: React.RefObject<() => void>;
   runAllAuto: React.RefObject<() => void>;
+  appEngine: AppEngine;
 }): KeyBinding[] {
-  return [
+  const bindings = [
     {
       key: "Mod-Enter",
       run: (view: EditorView) => {
@@ -796,6 +810,53 @@ function keyBindings({
       },
     },
   ];
+
+  if (appEngine === "r") {
+    const maybeAddWhiteSpace = (
+      view: EditorView,
+      range: SelectionRange,
+      text: string,
+    ): string => {
+      const line = view.state.doc.lineAt(range.head);
+      const before = view.state.doc.sliceString(line.from, range.from);
+      const after = view.state.doc.sliceString(range.to, line.to);
+
+      if (!before.endsWith(" ") && !before.endsWith("\n")) {
+        text = " " + text;
+      }
+      if (!after.startsWith(" ") && !after.startsWith("\n")) {
+        text = text + " ";
+      }
+
+      return text;
+    };
+
+    const insertText = (view: EditorView, text: string): boolean => {
+      const result = view.state.changeByRange((range) => {
+        const adjustedText = maybeAddWhiteSpace(view, range, text);
+        const cursorPosAfter =
+          Math.min(range.from, range.to) + adjustedText.length;
+        return {
+          range: EditorSelection.range(cursorPosAfter, cursorPosAfter),
+          changes: { from: range.from, to: range.to, insert: adjustedText },
+        };
+      });
+
+      view.dispatch(result);
+      return true;
+    };
+
+    bindings.push({
+      key: "Alt--",
+      run: (view: EditorView) => insertText(view, "<-"),
+    });
+    bindings.push({
+      key: "Mod-Shift-m",
+      run: (view: EditorView) => insertText(view, "|>"),
+    });
+  }
+
+  return bindings;
 }
 /**
  * Update the browser URL hash with the current contents of the Editor.
