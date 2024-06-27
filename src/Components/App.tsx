@@ -75,6 +75,15 @@ export type AppMode =
   | "editor-cell"
   | "viewer";
 
+const AppModes = [
+  "examples-editor-terminal-viewer",
+  "editor-terminal-viewer",
+  "editor-terminal",
+  "editor-viewer",
+  "editor-cell",
+  "viewer",
+];
+
 type AppOptions = {
   // An optional set of files to start with.
   startFiles?: FileContentJson[] | FileContent[];
@@ -555,6 +564,55 @@ export function App({
   } else {
     throw new Error("Have yet to setup this view mode");
   }
+}
+
+// This function helps launch apps exported with the shinylive Python and R
+// packages and is used by `export_template/index.html`.
+export async function runExportedApp(
+  id: string,
+  appEngine: AppEngine,
+  relPath = "",
+) {
+  const response = await fetch("./app.json");
+  if (!response.ok) {
+    throw new Error("HTTP error loading app.json: " + response.status);
+  }
+  const appFiles = await response.json();
+
+  const appRoot = document.getElementById(id);
+  if (!appRoot) {
+    throw new Error(`Could not find app root element with id "${id}"`);
+  }
+
+  // Get `appMode` from the URL query string
+  const urlParams = new URLSearchParams(window.location.search);
+  let appMode = urlParams.get("mode") ?? "viewer";
+
+  if (!AppModes.includes(appMode)) {
+    console.log(`[shinylive] Unrecognized app mode: ${appMode}`);
+    appMode = "viewer";
+  }
+
+  if (appMode.includes("terminal")) {
+    // Load additional dependencies for the terminal
+    // jQuery
+    const jQueryScript = document.createElement("script");
+    jQueryScript.src = `./${relPath}shinylive/jquery.min.js`;
+    document.head.appendChild(jQueryScript);
+
+    // jquery.terminal
+    const terminalJs = document.createElement("script");
+    terminalJs.src = `./${relPath}shinylive/jquery.terminal/js/jquery.terminal.min.js`;
+    document.head.appendChild(terminalJs);
+
+    // terminal CSS
+    const terminalCss = document.createElement("link");
+    terminalCss.rel = "stylesheet";
+    terminalCss.href = `./${relPath}shinylive/jquery.terminal/css/jquery.terminal.min.css`;
+    document.head.appendChild(terminalCss);
+  }
+
+  runApp(appRoot, appMode as AppMode, { startFiles: appFiles }, appEngine);
 }
 
 // The exported function that can be used for embedding into a web page.

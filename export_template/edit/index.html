@@ -1,34 +1,11 @@
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Shiny examples browser</title>
-    <script
-      src="../{{REL_PATH}}shinylive/load-shinylive-sw.js"
-      type="module"
-    ></script>
-    <script src="../{{REL_PATH}}shinylive/jquery.min.js"></script>
-    <script src="../{{REL_PATH}}shinylive/jquery.terminal/js/jquery.terminal.min.js"></script>
-    <link
-      href="../{{REL_PATH}}shinylive/jquery.terminal/css/jquery.terminal.min.css"
-      rel="stylesheet"
+    <title>Redirect to editable app</title>
+    <meta
+      http-equiv="refresh"
+      content="0;URL='../index.html?mode=editor-terminal-viewer'"
     />
-    <script type="module">
-      import { runApp } from "../{{REL_PATH}}shinylive/shinylive.js";
-      const response = await fetch("../app.json");
-      if (!response.ok) {
-        throw new Error("HTTP error loading app.json: " + response.status);
-      }
-      const appFiles = await response.json();
-
-      const appRoot = document.getElementById("root");
-      runApp(appRoot, "editor-terminal-viewer", {startFiles: appFiles}, "{{APP_ENGINE}}");
-    </script>
-    <link rel="stylesheet" href="../{{REL_PATH}}shinylive/style-resets.css" />
-    <link rel="stylesheet" href="../{{REL_PATH}}shinylive/shinylive.css" />
   </head>
-  <body>
-    <div style="height: 100vh; width: 100vw" id="root"></div>
-  </body>
+  <body></body>
 </html>
