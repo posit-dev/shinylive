@@ -12,7 +12,11 @@
     ></script>
     <script type="module">
       import { runExportedApp } from "./{{REL_PATH}}shinylive/shinylive.js";
-      runExportedApp("root", "{{APP_ENGINE}}", "{{REL_PATH}}");
+      runExportedApp({
+        id: "root",
+        appEngine: "{{APP_ENGINE}}",
+        relPath: "{{REL_PATH}}",
+      });
     </script>
     <link rel="stylesheet" href="./{{REL_PATH}}shinylive/style-resets.css" />
     <link rel="stylesheet" href="./{{REL_PATH}}shinylive/shinylive.css" />

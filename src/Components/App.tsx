@@ -568,11 +568,15 @@ export function App({
 
 // This function helps launch apps exported with the shinylive Python and R
 // packages and is used by `export_template/index.html`.
-export async function runExportedApp(
-  id: string,
-  appEngine: AppEngine,
+export async function runExportedApp({
+  id,
+  appEngine,
   relPath = "",
-) {
+}: {
+  id: string;
+  appEngine: AppEngine;
+  relPath: string;
+}) {
   const response = await fetch("./app.json");
   if (!response.ok) {
     throw new Error("HTTP error loading app.json: " + response.status);
