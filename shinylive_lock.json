@@ -15,8 +15,8 @@
   },
   "shiny": {
     "name": "shiny",
-    "version": "0.10.2",
-    "filename": "shiny-0.10.2-py3-none-any.whl",
+    "version": "0.10.2.9000",
+    "filename": "shiny-0.10.2.9000-py3-none-any.whl",
     "sha256": null,
     "url": null,
     "depends": [
@@ -232,10 +232,10 @@
   },
   "starlette": {
     "name": "starlette",
-    "version": "0.32.0.post1",
-    "filename": "starlette-0.32.0.post1-py3-none-any.whl",
-    "sha256": "cd0cb10ddb49313f609cedfac62c8c12e56c7314b66d89bb077ba228bada1b09",
-    "url": "https://files.pythonhosted.org/packages/40/9e/6bfa6be40034fa04cc50e2a81d24a4e5b89279c688b51380d70ac31c0556/starlette-0.32.0.post1-py3-none-any.whl",
+    "version": "0.37.2",
+    "filename": "starlette-0.37.2-py3-none-any.whl",
+    "sha256": "6fe59f29268538e5d0d182f2791a479a0c64638e6935d1c6989e63fb2699c6ee",
+    "url": "https://files.pythonhosted.org/packages/fd/18/31fa32ed6c68ba66220204ef0be798c349d0a20c1901f9d4a794e08c76d8/starlette-0.37.2-py3-none-any.whl",
     "depends": [
       {"name": "anyio", "specs": [["<", "5"], [">=", "3.4.0"]]}
     ],
