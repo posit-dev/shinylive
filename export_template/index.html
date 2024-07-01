@@ -1,28 +1,30 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Shiny App</title>
+    {{#title}}
+    <title>{{.}}</title>
+    {{/title}}
     <script
       src="./{{REL_PATH}}shinylive/load-shinylive-sw.js"
       type="module"
     ></script>
     <script type="module">
-      import { runApp } from "./{{REL_PATH}}shinylive/shinylive.js";
-      const response = await fetch("./app.json");
-      if (!response.ok) {
-        throw new Error("HTTP error loading app.json: " + response.status);
-      }
-      const appFiles = await response.json();
-
-      const appRoot = document.getElementById("root");
-      runApp(appRoot, "viewer", {startFiles: appFiles}, "{{APP_ENGINE}}");
+      import { runExportedApp } from "./{{REL_PATH}}shinylive/shinylive.js";
+      runExportedApp({
+        id: "root",
+        appEngine: "{{APP_ENGINE}}",
+        relPath: "{{REL_PATH}}",
+      });
     </script>
     <link rel="stylesheet" href="./{{REL_PATH}}shinylive/style-resets.css" />
     <link rel="stylesheet" href="./{{REL_PATH}}shinylive/shinylive.css" />
+    {{{ include_in_head }}}
   </head>
   <body>
+    {{{ include_before_body }}}
     <div style="height: 100vh; width: 100vw" id="root"></div>
+    {{{ include_after_body }}}
   </body>
 </html>
