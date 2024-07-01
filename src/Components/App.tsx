@@ -597,25 +597,6 @@ export async function runExportedApp({
     appMode = "viewer";
   }
 
-  if (appMode.includes("terminal")) {
-    // Load additional dependencies for the terminal
-    // jQuery
-    const jQueryScript = document.createElement("script");
-    jQueryScript.src = `./${relPath}shinylive/jquery.min.js`;
-    document.head.appendChild(jQueryScript);
-
-    // jquery.terminal
-    const terminalJs = document.createElement("script");
-    terminalJs.src = `./${relPath}shinylive/jquery.terminal/js/jquery.terminal.min.js`;
-    document.head.appendChild(terminalJs);
-
-    // terminal CSS
-    const terminalCss = document.createElement("link");
-    terminalCss.rel = "stylesheet";
-    terminalCss.href = `./${relPath}shinylive/jquery.terminal/css/jquery.terminal.min.css`;
-    document.head.appendChild(terminalCss);
-  }
-
   runApp(appRoot, appMode as AppMode, { startFiles: appFiles }, appEngine);
 }
 
