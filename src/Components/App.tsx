@@ -517,7 +517,10 @@ export function App({
     }
 
     return (
-      <ResizableGrid className="shinylive-container editor-viewer" {...gridDef}>
+      <ResizableGrid
+        className={`shinylive-container editor-viewer layout-${layout}`}
+        {...gridDef}
+      >
         <React.Suspense fallback={<div>Loading...</div>}>
           <Editor
             currentFilesFromApp={currentFiles}
