@@ -16,7 +16,8 @@
 
 /* Enforce a max height for the editor-viewer mode unless the user has dragged
 the size bigger.  */
-.ResizableGrid.editor-viewer:not(.been-dragged) > .shinylive-editor {
+.ResizableGrid.editor-viewer.layout-vertical:not(.been-dragged)
+  > .shinylive-editor {
   max-height: 800px;
 }
 
