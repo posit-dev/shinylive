@@ -593,7 +593,7 @@ export async function runExportedApp({
   let appMode = urlParams.get("mode") ?? "viewer";
 
   if (!AppModes.includes(appMode)) {
-    console.log(`[shinylive] Unrecognized app mode: ${appMode}`);
+    console.warn(`[shinylive] Unrecognized app mode: ${appMode}`);
     appMode = "viewer";
   }
 
