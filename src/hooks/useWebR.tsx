@@ -49,8 +49,10 @@ export async function initWebR({
 
   let initError = false;
   try {
-    await webRProxy.webR.objs.globalEnv.bind('.base_url', baseUrl);
-    await webRProxy.runRAsync(`webr::mount("/shinylive/library", "${baseUrl}library.data")`);
+    await webRProxy.webR.objs.globalEnv.bind(".base_url", baseUrl);
+    await webRProxy.runRAsync(
+      `webr::mount("/shinylive/library", "${baseUrl}library.data")`,
+    );
     await webRProxy.runRAsync(load_r_pre);
   } catch (e) {
     initError = true;
@@ -147,6 +149,9 @@ function ensureOpenChannelListener(webRProxy: WebRProxy): void {
 const load_r_pre = `
 # Force internal tar - silence renv warning
 Sys.setenv(TAR = "internal")
+
+# Set {config} envvar for shinylive
+Sys.setenv(R_CONFIG_ACTIVE = "shinylive")
 
 # Use shinylive R package libraries
 dir.create("/shinylive/webr/packages", showWarnings = FALSE, recursive = TRUE)
@@ -316,7 +321,7 @@ webr::shim_install()
     # Enable client-side dev mode features, namely the error console
     options(shiny.client_devmode = TRUE)
   }
-  
+
   app <- .shiny_to_httpuv(appDir)
   assign(appName, app, envir = .shiny_app_registry)
   invisible(0)
