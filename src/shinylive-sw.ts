@@ -186,16 +186,14 @@ self.addEventListener("fetch", function (event): void {
     return;
   }
 
-  event.respondWith(
-    (async (): Promise<Response> => {
-      const resp = await fetch(request);
-      if (coiRequested) {
+  if (coiRequested) {
+    event.respondWith(
+      (async (): Promise<Response> => {
+        const resp = await fetch(request);
         return addCoiHeaders(resp);
-      } else {
-        return resp;
-      }
-    })(),
-  );
+      })(),
+    );
+  }
 });
 
 // =============================================================================
