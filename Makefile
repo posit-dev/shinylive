@@ -145,6 +145,10 @@ webr:
 	cp -r node_modules/webr/dist/. $(BUILD_DIR)/shinylive/webr
 	curl --fail -L https://github.com/r-wasm/shiny/releases/download/v$(R_SHINY_VERSION)/library.data -o $(BUILD_DIR)/shinylive/webr/library.data
 	curl --fail -L https://github.com/r-wasm/shiny/releases/download/v$(R_SHINY_VERSION)/library.js.metadata -o $(BUILD_DIR)/shinylive/webr/library.js.metadata
+# FIXME: GitHub Pages does not cache Partial Content downloads. Here, we reduce
+# the damage by forcing entire file downloads with Emscripten's lazy filesystem.
+# Potentially, we can add a switch to Emscripten to disable the mechanism.
+	sed -i.bak 's/if(!hasByteServing)//' $(BUILD_DIR)/shinylive/webr/R.bin.js
 
 # Copy pyodide.js and .d.ts to src/pyodide/. This is a little weird in that in
 # `make all`, it comes after downloading pyodide. In the future we may be able
