@@ -310,7 +310,7 @@ async function handleHttpuvRequests(
     // send it to httpuv
     if (!request.more_body) {
       try {
-        const bytes = await new shelter.RRaw(Array.from(body));
+        const bytes = await new shelter.RRaw(body);
         const env = await new shelter.REnvironment({ bytes, appName });
         const httpuvResp = await webRProxy.webR.evalR(
           `
@@ -354,7 +354,7 @@ async function handleHttpuvRequests(
           if (file) {
             const filename = await file.toString();
             const content = await webRProxy.webR.FS.readFile(filename);
-            const raw = await new shelter.RRaw(Array.from(content));
+            const raw = await new shelter.RRaw(content);
             resp = (await httpuvResp.set("body", raw)) as RList;
           }
         }
