@@ -15,15 +15,15 @@
   },
   "shiny": {
     "name": "shiny",
-    "version": "0.10.2.9000",
-    "filename": "shiny-0.10.2.9000-py3-none-any.whl",
+    "version": "0.10.2.9003",
+    "filename": "shiny-0.10.2.9003-py3-none-any.whl",
     "sha256": null,
     "url": null,
     "depends": [
       {"name": "typing-extensions", "specs": [[">=", "4.0.1"]]},
       {"name": "starlette", "specs": []},
       {"name": "python-multipart", "specs": []},
-      {"name": "htmltools", "specs": [[">=", "0.5.1"]]},
+      {"name": "htmltools", "specs": [[">=", "0.5.2"]]},
       {"name": "markdown-it-py", "specs": [[">=", "1.1.0"]]},
       {"name": "mdit-py-plugins", "specs": [[">=", "0.3.0"]]},
       {"name": "linkify-it-py", "specs": [[">=", "1.0"]]},
