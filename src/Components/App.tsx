@@ -295,6 +295,26 @@ export function App({
     })();
   }, [proxyHandle.ready, currentFiles]);
 
+  // Set up the listener for file messages posted from the parent window.
+  // The useRef is used to ensure that the listener is only set up once.
+  const fileMessageListenerInitialized = React.useRef(false);
+
+  React.useEffect(() => {
+    if (fileMessageListenerInitialized.current) {
+      return;
+    }
+    fileMessageListenerInitialized.current = true;
+
+    window.addEventListener("message", (event) => {
+      if (event.source !== window.parent) {
+        return;
+      }
+      if (event.data.files) {
+        setCurrentFiles(event.data.files);
+      }
+    });
+  }, []);
+
   const [utilityMethods, setUtilityMethods] = React.useState<UtilityMethods>({
     formatCode: async (code: string) => {
       return code;
