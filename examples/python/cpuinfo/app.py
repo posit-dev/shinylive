@@ -76,8 +76,8 @@ def reset_history():
 ui.tags.style(
     """
     /* Don't apply fade effect, it's constantly recalculating */
-    .recalculating {
-        opacity: 1;
+    .recalculating, .recalculating > * {
+        opacity: 1 !important;
     }
     """
 )
