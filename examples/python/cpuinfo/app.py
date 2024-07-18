@@ -7,6 +7,7 @@ else:
     from psutil import cpu_count, cpu_percent
 
 import matplotlib
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from helpers import plot_cpu
@@ -120,11 +121,17 @@ with ui.card():
                 latest = pd.DataFrame(history).transpose().tail(input.table_rows())
                 if latest.shape[0] == 0:
                     return latest
+
+                # Must set this globally to avoid a compatibility issue between
+                # matplotlib 3.5.2 and pandas 2.2.0. In newer versions of either,
+                # you can just call background_gradient(cmap=input.cmap()).
+                plt.rcParams["image.cmap"] = input.cmap()
+
                 return (
                     latest.style.format(precision=0)
                     .hide(axis="index")
                     .set_table_attributes(
                         'class="dataframe shiny-table table table-borderless font-monospace"'
                     )
-                    .background_gradient(cmap=input.cmap(), vmin=0, vmax=100)
+                    .background_gradient(cmap=None, vmin=0, vmax=100)
                 )
