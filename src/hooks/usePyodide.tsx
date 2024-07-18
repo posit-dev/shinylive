@@ -155,6 +155,8 @@ def _mock_ipykernel():
         def __init__(self):
             self.comm_manager = CommManager()
             self.events = MockKernel.Events()
+        def showtraceback(self, *args, **kwargs):
+            pass
     class Comm:
         pass
     class CommManager:
