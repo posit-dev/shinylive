@@ -1,8 +1,8 @@
 {
   "htmltools": {
     "name": "htmltools",
-    "version": "0.5.2",
-    "filename": "htmltools-0.5.2-py3-none-any.whl",
+    "version": "0.5.3",
+    "filename": "htmltools-0.5.3-py3-none-any.whl",
     "sha256": null,
     "url": null,
     "depends": [
@@ -15,12 +15,12 @@
   },
   "shiny": {
     "name": "shiny",
-    "version": "0.10.2.9003",
-    "filename": "shiny-0.10.2.9003-py3-none-any.whl",
+    "version": "1.0.0",
+    "filename": "shiny-1.0.0-py3-none-any.whl",
     "sha256": null,
     "url": null,
     "depends": [
-      {"name": "typing-extensions", "specs": [[">=", "4.0.1"]]},
+      {"name": "typing-extensions", "specs": [[">=", "4.10.0"]]},
       {"name": "starlette", "specs": []},
       {"name": "python-multipart", "specs": []},
       {"name": "htmltools", "specs": [[">=", "0.5.2"]]},
