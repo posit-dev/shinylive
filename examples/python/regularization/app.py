@@ -100,7 +100,7 @@ with ui.div(class_="col-lg-6 py-5 mx-auto"):
         """
     )
     # LaTeX
-    "$$MSE = \\frac{1}{n} \\sum_{i=1}^{n} (Y_i - \hat{Y}_i)^2$$"
+    "$$MSE = \\frac{1}{n} \\sum_{i=1}^{n} (Y_i - \\hat{Y}_i)^2$$"
 
     """
     Regularization works by adding a penalty to the loss function in order
@@ -118,9 +118,9 @@ with ui.div(class_="col-lg-6 py-5 mx-auto"):
     parameter/coefficient, and adding them all together.
     """
 
-    "$$LASSO = \\frac{1}{n} \\sum_{i=1}^{n} (Y_i - \hat{Y}_i)^2 + \\lambda \\underbrace{\\sum_{j=1}^{p} |\\beta_j|}_\\text{penalty}$$"
+    "$$LASSO = \\frac{1}{n} \\sum_{i=1}^{n} (Y_i - \\hat{Y}_i)^2 + \\lambda \\underbrace{\\sum_{j=1}^{p} |\\beta_j|}_\\text{penalty}$$"
 
-    "$$Ridge = \\frac{1}{n} \\sum_{i=1}^{n} (Y_i - \hat{Y}_i)^2 + \\lambda \\underbrace{\\sum_{j=1}^{p} \\beta_j^2}_\\text{penalty}$$"
+    "$$Ridge = \\frac{1}{n} \\sum_{i=1}^{n} (Y_i - \\hat{Y}_i)^2 + \\lambda \\underbrace{\\sum_{j=1}^{p} \\beta_j^2}_\\text{penalty}$$"
 
     """
     When using regularization, we must choose the regularization strength
