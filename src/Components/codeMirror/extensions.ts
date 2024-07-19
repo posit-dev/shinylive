@@ -14,7 +14,7 @@ import {
 import { css } from "@codemirror/lang-css";
 import { html } from "@codemirror/lang-html";
 import { javascript } from "@codemirror/lang-javascript";
-import { python } from "@codemirror/lang-python";
+import { python, pythonLanguage } from "@codemirror/lang-python";
 import {
   StreamLanguage,
   bracketMatching,
@@ -39,6 +39,7 @@ import {
   lineNumbers as lineNumbersExtension,
   rectangularSelection,
 } from "@codemirror/view";
+import { getShinySnippets } from "./customSnippets";
 
 export function getExtensions({
   indentSpaces = 4,
@@ -118,11 +119,35 @@ const LANG_EXTENSIONS: Record<string, () => Extension> = {
   r: () => StreamLanguage.define(r),
 };
 
-export function getLanguageExtension(filetype: string | null): Extension {
+export function getLanguageExtension(filetype: string | null): Extension[] {
   if (filetype === null) return [];
   if (!(filetype in LANG_EXTENSIONS)) return [];
 
-  return LANG_EXTENSIONS[filetype]();
+  const langExtension = LANG_EXTENSIONS[filetype];
+  const snippets = getShinySnippets(filetype);
+  if (!snippets) return [langExtension()];
+
+  console.log(
+    `${filetype} snippets: ${snippets.map((s) => s.label).join(", ")}`,
+  );
+
+  if (filetype === "r") {
+    return [
+      langExtension(),
+      StreamLanguage.define(r).data.of({
+        autocomplete: snippets,
+      }),
+    ];
+  } else if (filetype === "python") {
+    return [
+      langExtension(),
+      pythonLanguage.data.of({
+        autocomplete: snippets,
+      }),
+    ];
+  }
+
+  return [langExtension()];
 }
 
 function lintGutterWithCustomTheme() {
