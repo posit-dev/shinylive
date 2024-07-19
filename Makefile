@@ -34,11 +34,13 @@ SHINYLIVE_DIR = ./_shinylive
 HTMLTOOLS_VERSION = $(shell grep '^__version__ = ' $(PACKAGE_DIR)/py-htmltools/htmltools/__init__.py | sed -E -e 's/^__version__ = "(.*)"/\1/')
 SHINY_VERSION = $(shell grep '^__version__ = ' $(PACKAGE_DIR)/py-shiny/shiny/__init__.py | sed -E -e 's/^__version__ = "(.*)"/\1/')
 SHINYWIDGETS_VERSION = $(shell grep '^__version__ = ' $(PACKAGE_DIR)/py-shinywidgets/shinywidgets/__init__.py | sed -E -e 's/^__version__ = "(.*)"/\1/')
+SHINYSWATCH_VERSION = $(shell grep '^__version__ = ' $(PACKAGE_DIR)/py-shinyswatch/shinyswatch/__init__.py | sed -E -e 's/^__version__ = "(.*)"/\1/')
 FAICONS_VERSION = $(shell grep '^__version__ = ' $(PACKAGE_DIR)/py-faicons/faicons/__init__.py | sed -E -e 's/^__version__ = "(.*)"/\1/')
 
 HTMLTOOLS_WHEEL = htmltools-$(HTMLTOOLS_VERSION)-py3-none-any.whl
 SHINY_WHEEL = shiny-$(SHINY_VERSION)-py3-none-any.whl
 SHINYWIDGETS_WHEEL = shinywidgets-$(SHINYWIDGETS_VERSION)-py3-none-any.whl
+SHINYSWATCH_WHEEL = shinyswatch-$(SHINYSWATCH_VERSION)-py3-none-any.whl
 FAICONS_WHEEL = faicons-$(FAICONS_VERSION)-py3-none-any.whl
 
 # Hard code these versions for now
@@ -163,6 +165,7 @@ pyodide_js:
 pyodide_packages_local: $(BUILD_DIR)/shinylive/pyodide/$(HTMLTOOLS_WHEEL) \
 	$(BUILD_DIR)/shinylive/pyodide/$(SHINY_WHEEL) \
 	$(BUILD_DIR)/shinylive/pyodide/$(SHINYWIDGETS_WHEEL) \
+	$(BUILD_DIR)/shinylive/pyodide/$(SHINYSWATCH_WHEEL) \
 	$(BUILD_DIR)/shinylive/pyodide/$(FAICONS_WHEEL) \
 	$(BUILD_DIR)/shinylive/pyodide/$(PLOTNINE_WHEEL)
 
@@ -183,6 +186,12 @@ $(BUILD_DIR)/shinylive/pyodide/$(SHINYWIDGETS_WHEEL): $(PACKAGE_DIR)/$(SHINYWIDG
 	# Remove any old copies of shinywidgets
 	rm -f $(BUILD_DIR)/shinylive/pyodide/shinywidgets*.whl
 	cp $(PACKAGE_DIR)/$(SHINYWIDGETS_WHEEL) $(BUILD_DIR)/shinylive/pyodide/$(SHINYWIDGETS_WHEEL)
+
+$(BUILD_DIR)/shinylive/pyodide/$(SHINYSWATCH_WHEEL): $(PACKAGE_DIR)/$(SHINYSWATCH_WHEEL)
+	mkdir -p $(BUILD_DIR)/shinylive/pyodide
+	# Remove any old copies of shinyswatch
+	rm -f $(BUILD_DIR)/shinylive/pyodide/shinyswatch*.whl
+	cp $(PACKAGE_DIR)/$(SHINYSWATCH_WHEEL) $(BUILD_DIR)/shinylive/pyodide/$(SHINYSWATCH_WHEEL)
 
 $(BUILD_DIR)/shinylive/pyodide/$(FAICONS_WHEEL): $(PACKAGE_DIR)/$(FAICONS_WHEEL)
 	mkdir -p $(BUILD_DIR)/shinylive/pyodide
@@ -255,6 +264,7 @@ packages: clean-packages \
 	package-htmltools \
 	package-shiny \
 	package-shinywidgets \
+	package-shinyswatch \
 	package-faicons \
 	package-plotnine
 
@@ -264,6 +274,8 @@ package-htmltools: $(PACKAGE_DIR)/$(HTMLTOOLS_WHEEL)
 package-shiny: $(PACKAGE_DIR)/$(SHINY_WHEEL)
 
 package-shinywidgets: $(PACKAGE_DIR)/$(SHINYWIDGETS_WHEEL)
+
+package-shinyswatch: $(PACKAGE_DIR)/$(SHINYSWATCH_WHEEL)
 
 package-faicons: $(PACKAGE_DIR)/$(FAICONS_WHEEL)
 
@@ -285,6 +297,11 @@ $(PACKAGE_DIR)/$(SHINYWIDGETS_WHEEL): $(PYBIN) $(PACKAGE_DIR)/py-shinywidgets
 	# Remove any old copies of the package
 	rm -f $(PACKAGE_DIR)/shinywidgets*.whl
 	. $(PYBIN)/activate && cd $(PACKAGE_DIR)/py-shinywidgets && make install && mv dist/*.whl ../
+
+$(PACKAGE_DIR)/$(SHINYSWATCH_WHEEL): $(PYBIN) $(PACKAGE_DIR)/py-shinyswatch
+	# Remove any old copies of the package
+	rm -f $(PACKAGE_DIR)/shinyswatch*.whl
+	. $(PYBIN)/activate && cd $(PACKAGE_DIR)/py-shinyswatch && make install && mv dist/*.whl ../
 
 $(PACKAGE_DIR)/$(FAICONS_WHEEL): $(PYBIN) $(PACKAGE_DIR)/py-faicons
 	# Remove any old copies of the package
@@ -311,6 +328,7 @@ retrieve_packages: $(PYBIN) $(BUILD_DIR)/shinylive/pyodide \
 		$(BUILD_DIR)/shinylive/pyodide/$(HTMLTOOLS_WHEEL) \
 		$(BUILD_DIR)/shinylive/pyodide/$(SHINY_WHEEL) \
 		$(BUILD_DIR)/shinylive/pyodide/$(SHINYWIDGETS_WHEEL) \
+		$(BUILD_DIR)/shinylive/pyodide/$(SHINYSWATCH_WHEEL) \
 		$(BUILD_DIR)/shinylive/pyodide/$(FAICONS_WHEEL)
 	$(PYBIN)/pip install -r requirements-dev.txt
 	mkdir -p $(BUILD_DIR)/shinylive/pyodide

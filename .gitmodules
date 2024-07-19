@@ -16,3 +16,6 @@
 [submodule "packages/plotnine"]
 	path = packages/plotnine
 	url = https://github.com/wch/plotnine.git
+[submodule "packages/py-shinyswatch"]
+	path = packages/py-shinyswatch
+	url = https://github.com/posit-dev/py-shinyswatch.git
