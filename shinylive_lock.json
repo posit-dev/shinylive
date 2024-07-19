@@ -53,15 +53,15 @@
   },
   "shinyswatch": {
     "name": "shinyswatch",
-    "version": "0.6.0",
-    "filename": "shinyswatch-0.6.0-py3-none-any.whl",
-    "sha256": "8de7153f84d533bc8252bf47674c622351a8cb0ae6b2afaf81f167b7af1b417f",
-    "url": "https://files.pythonhosted.org/packages/f0/22/ee61c29ae02dd6f9cb5bd80804ade3d85b9b0c9782c930d8c061fcc863a8/shinyswatch-0.6.0-py3-none-any.whl",
+    "version": "0.7.0",
+    "filename": "shinyswatch-0.7.0-py3-none-any.whl",
+    "sha256": "c1f8409206abf0d4cd6bf46d7daa481b9ddf1e98a7ca4cf439bb674c371810ae",
+    "url": "https://files.pythonhosted.org/packages/ac/51/f6e337ebd72694fdc925828ad3b6b7a7a57164699493d6f87a547f870069/shinyswatch-0.7.0-py3-none-any.whl",
     "depends": [
       {"name": "typing-extensions", "specs": [[">=", "3.10.0.0"]]},
       {"name": "packaging", "specs": [[">=", "20.9"]]},
       {"name": "htmltools", "specs": [[">=", "0.2.0"]]},
-      {"name": "shiny", "specs": [[">=", "0.8.1"]]}
+      {"name": "shiny", "specs": [[">=", "1.0.0"]]}
     ],
     "imports": [
       "shinyswatch"
