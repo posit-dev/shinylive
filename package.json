@@ -22,6 +22,7 @@
     "@codemirror/lang-html": "^6.4.2",
     "@codemirror/lang-javascript": "^6.1.4",
     "@codemirror/lang-python": "^6.1.1",
+    "@codemirror/lang-sql": "^6.7.0",
     "@codemirror/language": "^6.6.0",
     "@codemirror/legacy-modes": "^6.3.1",
     "@codemirror/lint": "^6.1.1",
