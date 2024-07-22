@@ -85,6 +85,7 @@ const FILE_EXTENSIONS: Record<string, string> = {
   css: "css",
   csv: "csv",
   r: "r",
+  sql: "sql",
 };
 
 export function isApplePlatform(): boolean {
@@ -147,7 +148,7 @@ export function stringToUint8Array(s: string): Uint8Array {
 export function engineSwitch(
   engine: AppEngine,
   rValue: string,
-  pythonValue: string
+  pythonValue: string,
 ): string {
   switch (engine) {
     case "r":

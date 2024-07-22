@@ -15,6 +15,7 @@ import { css } from "@codemirror/lang-css";
 import { html } from "@codemirror/lang-html";
 import { javascript } from "@codemirror/lang-javascript";
 import { python } from "@codemirror/lang-python";
+import { sql } from "@codemirror/lang-sql";
 import {
   StreamLanguage,
   bracketMatching,
@@ -115,6 +116,7 @@ const LANG_EXTENSIONS: Record<string, () => Extension> = {
   javascript: javascript,
   html: html,
   css: css,
+  sql: sql,
   r: () => StreamLanguage.define(r),
 };
 
