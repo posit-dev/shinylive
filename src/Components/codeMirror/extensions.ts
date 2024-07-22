@@ -123,7 +123,6 @@ const LANG_EXTENSIONS: Record<string, () => Extension> = {
 export function getLanguageExtension(filetype: string | null): Extension {
   if (filetype === null) return [];
   if (!(filetype in LANG_EXTENSIONS)) return [];
-  console.log(`Loading language extension for ${filetype}`);
 
   return LANG_EXTENSIONS[filetype]();
 }
