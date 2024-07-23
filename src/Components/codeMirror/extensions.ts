@@ -111,12 +111,13 @@ export function getMinimalExtensions(): Extension {
   return [history()];
 }
 
+const rLanguage = StreamLanguage.define(r);
 const LANG_EXTENSIONS: Record<string, () => Extension> = {
   python: python,
   javascript: javascript,
   html: html,
   css: css,
-  r: () => StreamLanguage.define(r),
+  r: () => rLanguage,
 };
 
 export function getLanguageExtension(filetype: string | null): Extension[] {
@@ -134,7 +135,7 @@ export function getLanguageExtension(filetype: string | null): Extension[] {
   if (filetype === "r") {
     return [
       langExtension(),
-      StreamLanguage.define(r).data.of({
+      rLanguage.data.of({
         autocomplete: snippets,
       }),
     ];

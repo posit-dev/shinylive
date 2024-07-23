@@ -60,7 +60,6 @@ export function languageServerExtensions(
         }
       }
     }),
-    autocompletion(lspClient, filename),
     signatureHelp(lspClient, filename, true),
     hover(lspClient, filename),
   ];
