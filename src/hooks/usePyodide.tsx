@@ -171,40 +171,6 @@ def _mock_ipykernel():
     mods["ipykernel.comm"] = m
 
 
-def _mock_ipython():
-    import sys
-    import types
-    mods = sys.modules
-
-    def get_ipython():
-        import ipykernel
-        return ipykernel.kernel
-
-    m = types.ModuleType("IPython")
-    m.get_ipython = get_ipython
-    mods["IPython"] = m
-
-    mods["IPython.core"] = types.ModuleType("IPython.core")
-
-    m = types.ModuleType("IPython.core.getipython")
-    m.get_ipython = get_ipython
-    mods["IPython.core.getipython"] = m
-
-    m = types.ModuleType("IPython.core.interactiveshell")
-    m.InteractiveShell = "Mock"
-    mods["IPython.core.interactiveshell"] = m
-
-    m = types.ModuleType("IPython.display")
-    m.display = "Mock"
-    m.clear_output = "Mock"
-    mods["IPython.display"] = m
-
-    # Needed for matplotlib - if IPython is present, it'll look for this.
-    m = types.ModuleType("IPython.core.pylabtools")
-    m.backend2gui = {}
-    mods["IPython.core.pylabtools"] = m
-
-
 # A shim for the seaborn.load_dataset() function to work in Pyodide. Normally
 # that function won't work in Pyodide because it uses the urllib module, which
 # doesn't work in Pyodide. This shim replaces the uses of urllib with a wrapper
@@ -366,7 +332,6 @@ def _shim_seaborn_load_dataset():
 
 _mock_multiprocessing()
 _mock_ipykernel()
-_mock_ipython()
 _shim_seaborn_load_dataset()
 
 def _pyodide_env_init():
