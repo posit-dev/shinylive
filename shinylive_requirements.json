@@ -18,20 +18,9 @@
   },
   { "name": "plotly", "source": "pypi", "version": "latest" },
   { "name": "seaborn", "source": "pypi", "version": "latest" },
-  {
-    "name": "ipywidgets",
-    "source": "pypi",
-    "version": "8.0.6",
-    "comment": "Using 8.1.1 causes problems when loading. Related to `comm`. "
-  },
+  { "name": "ipywidgets", "source": "pypi", "version": "latest" },
   { "name": "ipyleaflet", "source": "pypi", "version": "latest" },
   { "name": "siuba", "source": "pypi", "version": "latest" },
   { "name": "palmerpenguins", "source": "pypi", "version": "latest" },
-  { "name": "black", "source": "pypi", "version": "latest" },
-  {
-    "name": "tomli",
-    "source": "pypi",
-    "version": "latest",
-    "comment": "Needed to load black on Python<3.11. Once we upgrade to Python>=3.11, we should be able to remove this."
-  }
+  { "name": "black", "source": "pypi", "version": "latest" }
 ]
