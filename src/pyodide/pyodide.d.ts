@@ -1410,6 +1410,7 @@ type ConfigType = {
 	};
 	packages: string[];
 	_makeSnapshot: boolean;
+	enableRunUntilComplete: boolean;
 };
 /**
  * Load the main Pyodide wasm module and initialize it.
@@ -1527,6 +1528,10 @@ export declare function loadPyodide(options?: {
 	 * @deprecated
 	 */
 	pyproxyToStringRepr?: boolean;
+	/**
+	 * Make loop.run_until_complete() function correctly using stack switching
+	 */
+	enableRunUntilComplete?: boolean;
 	/**
 	 * @ignore
 	 */
