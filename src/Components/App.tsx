@@ -12,6 +12,7 @@ import type { WebRProxyHandle } from "../hooks/useWebR";
 import { initRShiny, initWebR, useWebR } from "../hooks/useWebR";
 import type { ProxyType } from "../pyodide-proxy";
 import "./App.css";
+import { type EditorHandle } from "./Editor";
 import { ExampleSelector } from "./ExampleSelector";
 import type { HeaderBarCallbacks } from "./HeaderBar";
 import HeaderBar from "./HeaderBar";
@@ -295,25 +296,36 @@ export function App({
     })();
   }, [proxyHandle.ready, currentFiles]);
 
-  // Set up the listener for file messages posted from the parent window.
-  // The useRef is used to ensure that the listener is only set up once.
-  const fileMessageListenerInitialized = React.useRef(false);
+  const editorRef = React.useRef<EditorHandle>(null);
 
+  // Set up message listener for communication with parent window.
   React.useEffect(() => {
-    if (fileMessageListenerInitialized.current) {
-      return;
-    }
-    fileMessageListenerInitialized.current = true;
-
-    window.addEventListener("message", (event) => {
+    const listener = (event: MessageEvent) => {
       if (event.source !== window.parent) {
         return;
       }
-      if (event.data.files) {
+
+      if (event.data.type === "setFiles" && event.data.files) {
+        // Set the current files.
         setCurrentFiles(event.data.files);
+      } else if (event.data.type === "getFiles") {
+        // Request files from Editor component and send them back to parent.
+        let files: FileContent[] = [];
+        if (editorRef.current) {
+          files = editorRef.current.getActiveFileContents();
+        }
+
+        event.ports[0].postMessage({ files: files });
       }
-    });
-  }, []);
+    };
+
+    window.addEventListener("message", listener);
+
+    // Cleanup function
+    () => {
+      window.removeEventListener("message", listener);
+    };
+  }, [currentFiles, setCurrentFiles]);
 
   const [utilityMethods, setUtilityMethods] = React.useState<UtilityMethods>({
     formatCode: async (code: string) => {
@@ -392,6 +404,7 @@ export function App({
               )}
               updateUrlHashOnRerun={appOptions.updateUrlHashOnRerun}
               appEngine={appEngine}
+              ref={editorRef}
             />
           </React.Suspense>
           <Terminal
@@ -446,6 +459,7 @@ export function App({
               )}
               updateUrlHashOnRerun={appOptions.updateUrlHashOnRerun}
               appEngine={appEngine}
+              ref={editorRef}
             />
           </React.Suspense>
           <Terminal
@@ -480,6 +494,7 @@ export function App({
             runOnLoad={false}
             updateUrlHashOnRerun={appOptions.updateUrlHashOnRerun}
             appEngine={appEngine}
+            ref={editorRef}
           />
         </React.Suspense>
         <Terminal
@@ -507,6 +522,7 @@ export function App({
             updateUrlHashOnRerun={appOptions.updateUrlHashOnRerun}
             appEngine={appEngine}
             style={{ height: asCssLengthUnit(appOptions.editorHeight) }}
+            ref={editorRef}
           />
         </React.Suspense>
         <OutputCell
@@ -552,6 +568,7 @@ export function App({
             viewerMethods={viewerMethods}
             updateUrlHashOnRerun={appOptions.updateUrlHashOnRerun}
             appEngine={appEngine}
+            ref={editorRef}
           />
         </React.Suspense>
         <Viewer
