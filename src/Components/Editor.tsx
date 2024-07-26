@@ -73,48 +73,48 @@ export type EditorFile =
       };
     };
 
-export type EditorHandle = {
-  getActiveFileContents: () => FileContent[];
+export type EditorMethods = {
+  // This function returns the current contents of the files in the editor.
+  getActiveFileContents: (() => FileContent[]) | null;
 };
 
-const Editor = React.forwardRef(function Editor(
-  {
-    currentFilesFromApp,
-    setCurrentFiles,
-    setFilesHaveChanged,
-    setHeaderBarCallbacks,
-    terminalMethods,
-    viewerMethods = null,
-    utilityMethods = null,
-    showFileTabs = true,
-    runOnLoad = true,
-    lineNumbers = true,
-    showHeaderBar = true,
-    floatingButtons = false,
-    updateUrlHashOnRerun = false,
-    appEngine,
-    style,
-  }: {
-    currentFilesFromApp: FileContent[];
-    setCurrentFiles: React.Dispatch<React.SetStateAction<FileContent[]>>;
-    setFilesHaveChanged: React.Dispatch<React.SetStateAction<boolean>>;
-    setHeaderBarCallbacks: React.Dispatch<
-      React.SetStateAction<HeaderBarCallbacks>
-    >;
-    terminalMethods: TerminalMethods;
-    viewerMethods?: ViewerMethods | null;
-    utilityMethods?: UtilityMethods | null;
-    showFileTabs?: boolean;
-    runOnLoad?: boolean;
-    lineNumbers?: boolean;
-    showHeaderBar?: boolean;
-    floatingButtons?: boolean;
-    updateUrlHashOnRerun?: boolean;
-    appEngine: AppEngine;
-    style?: React.CSSProperties;
-  },
-  ref: React.Ref<EditorHandle>,
-) {
+export default function Editor({
+  currentFilesFromApp,
+  setCurrentFiles,
+  setFilesHaveChanged,
+  setHeaderBarCallbacks,
+  setEditorMethods,
+  terminalMethods,
+  viewerMethods = null,
+  utilityMethods = null,
+  showFileTabs = true,
+  runOnLoad = true,
+  lineNumbers = true,
+  showHeaderBar = true,
+  floatingButtons = false,
+  updateUrlHashOnRerun = false,
+  appEngine,
+  style,
+}: {
+  currentFilesFromApp: FileContent[];
+  setCurrentFiles: React.Dispatch<React.SetStateAction<FileContent[]>>;
+  setFilesHaveChanged: React.Dispatch<React.SetStateAction<boolean>>;
+  setHeaderBarCallbacks: React.Dispatch<
+    React.SetStateAction<HeaderBarCallbacks>
+  >;
+  setEditorMethods: React.Dispatch<React.SetStateAction<EditorMethods>>;
+  terminalMethods: TerminalMethods;
+  viewerMethods?: ViewerMethods | null;
+  utilityMethods?: UtilityMethods | null;
+  showFileTabs?: boolean;
+  runOnLoad?: boolean;
+  lineNumbers?: boolean;
+  showHeaderBar?: boolean;
+  floatingButtons?: boolean;
+  updateUrlHashOnRerun?: boolean;
+  appEngine: AppEngine;
+  style?: React.CSSProperties;
+}) {
   // In the future, instead of directly instantiating the PyrightClient, it
   // would make sense to abstract it out to a class which in turn can run
   // multiple language server clients behind the scenes. In this file,
@@ -351,14 +351,14 @@ const Editor = React.forwardRef(function Editor(
     })();
   }, [runOnLoad, currentFilesFromApp, terminalMethods, runCodeInTerminal]);
 
-  React.useImperativeHandle(ref, () => ({
-    getActiveFileContents: () => {
-      syncActiveFileState();
-      const fileContents = editorFilesToFileContents(files);
-
-      return fileContents;
-    },
-  }));
+  React.useEffect(() => {
+    setEditorMethods({
+      getActiveFileContents: () => {
+        syncActiveFileState();
+        return editorFilesToFileContents(files);
+      },
+    });
+  }, [syncActiveFileState, setEditorMethods, files]);
 
   // ===========================================================================
   // CodeMirror setup
@@ -669,9 +669,7 @@ const Editor = React.forwardRef(function Editor(
       ) : null}
     </div>
   );
-});
-
-export default Editor;
+}
 
 // =============================================================================
 // Conversion between FileContent and EditorFile

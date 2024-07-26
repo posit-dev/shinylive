@@ -12,7 +12,7 @@ import type { WebRProxyHandle } from "../hooks/useWebR";
 import { initRShiny, initWebR, useWebR } from "../hooks/useWebR";
 import type { ProxyType } from "../pyodide-proxy";
 import "./App.css";
-import { type EditorHandle } from "./Editor";
+import { type EditorMethods } from "./Editor";
 import { ExampleSelector } from "./ExampleSelector";
 import type { HeaderBarCallbacks } from "./HeaderBar";
 import HeaderBar from "./HeaderBar";
@@ -246,6 +246,10 @@ export function App({
 
   const proxyHandle = useWasmEngine();
 
+  const [editorMethods, setEditorMethods] = React.useState<EditorMethods>({
+    getActiveFileContents: null,
+  });
+
   const [viewerMethods, setViewerMethods] = React.useState<ViewerMethods>({
     ready: false,
   });
@@ -296,8 +300,6 @@ export function App({
     })();
   }, [proxyHandle.ready, currentFiles]);
 
-  const editorRef = React.useRef<EditorHandle>(null);
-
   // Set up message listener for communication with parent window.
   React.useEffect(() => {
     const listener = (event: MessageEvent) => {
@@ -311,8 +313,8 @@ export function App({
       } else if (event.data.type === "getFiles") {
         // Request files from Editor component and send them back to parent.
         let files: FileContent[] = [];
-        if (editorRef.current) {
-          files = editorRef.current.getActiveFileContents();
+        if (editorMethods.getActiveFileContents) {
+          files = editorMethods.getActiveFileContents();
         }
 
         event.ports[0].postMessage({ files: files });
@@ -322,10 +324,10 @@ export function App({
     window.addEventListener("message", listener);
 
     // Cleanup function
-    () => {
+    return () => {
       window.removeEventListener("message", listener);
     };
-  }, [currentFiles, setCurrentFiles]);
+  }, [currentFiles, setCurrentFiles, editorMethods]);
 
   const [utilityMethods, setUtilityMethods] = React.useState<UtilityMethods>({
     formatCode: async (code: string) => {
@@ -393,6 +395,7 @@ export function App({
               setCurrentFiles={setCurrentFiles}
               setFilesHaveChanged={setFilesHaveChanged}
               setHeaderBarCallbacks={setHeaderBarCallbacks}
+              setEditorMethods={setEditorMethods}
               terminalMethods={terminalMethods}
               viewerMethods={viewerMethods}
               utilityMethods={utilityMethods}
@@ -404,7 +407,6 @@ export function App({
               )}
               updateUrlHashOnRerun={appOptions.updateUrlHashOnRerun}
               appEngine={appEngine}
-              ref={editorRef}
             />
           </React.Suspense>
           <Terminal
@@ -448,6 +450,7 @@ export function App({
               setCurrentFiles={setCurrentFiles}
               setFilesHaveChanged={setFilesHaveChanged}
               setHeaderBarCallbacks={setHeaderBarCallbacks}
+              setEditorMethods={setEditorMethods}
               terminalMethods={terminalMethods}
               viewerMethods={viewerMethods}
               utilityMethods={utilityMethods}
@@ -459,7 +462,6 @@ export function App({
               )}
               updateUrlHashOnRerun={appOptions.updateUrlHashOnRerun}
               appEngine={appEngine}
-              ref={editorRef}
             />
           </React.Suspense>
           <Terminal
@@ -489,12 +491,12 @@ export function App({
             setCurrentFiles={setCurrentFiles}
             setFilesHaveChanged={setFilesHaveChanged}
             setHeaderBarCallbacks={setHeaderBarCallbacks}
+            setEditorMethods={setEditorMethods}
             terminalMethods={terminalMethods}
             utilityMethods={utilityMethods}
             runOnLoad={false}
             updateUrlHashOnRerun={appOptions.updateUrlHashOnRerun}
             appEngine={appEngine}
-            ref={editorRef}
           />
         </React.Suspense>
         <Terminal
@@ -513,6 +515,7 @@ export function App({
             setCurrentFiles={setCurrentFiles}
             setFilesHaveChanged={setFilesHaveChanged}
             setHeaderBarCallbacks={setHeaderBarCallbacks}
+            setEditorMethods={setEditorMethods}
             terminalMethods={terminalMethods}
             utilityMethods={utilityMethods}
             showFileTabs={false}
@@ -522,7 +525,6 @@ export function App({
             updateUrlHashOnRerun={appOptions.updateUrlHashOnRerun}
             appEngine={appEngine}
             style={{ height: asCssLengthUnit(appOptions.editorHeight) }}
-            ref={editorRef}
           />
         </React.Suspense>
         <OutputCell
@@ -563,12 +565,12 @@ export function App({
             setCurrentFiles={setCurrentFiles}
             setFilesHaveChanged={setFilesHaveChanged}
             setHeaderBarCallbacks={setHeaderBarCallbacks}
+            setEditorMethods={setEditorMethods}
             terminalMethods={terminalMethods}
             utilityMethods={utilityMethods}
             viewerMethods={viewerMethods}
             updateUrlHashOnRerun={appOptions.updateUrlHashOnRerun}
             appEngine={appEngine}
-            ref={editorRef}
           />
         </React.Suspense>
         <Viewer
