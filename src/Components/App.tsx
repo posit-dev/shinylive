@@ -399,12 +399,7 @@ export function App({
               terminalMethods={terminalMethods}
               viewerMethods={viewerMethods}
               utilityMethods={utilityMethods}
-              runOnLoad={currentFiles.some(
-                (file) =>
-                  file.name === "app.py" ||
-                  file.name === "app.R" ||
-                  file.name === "server.R",
-              )}
+              runOnLoad={isRunnableApp(currentFiles)}
               updateUrlHashOnRerun={appOptions.updateUrlHashOnRerun}
               appEngine={appEngine}
             />
@@ -454,12 +449,7 @@ export function App({
               terminalMethods={terminalMethods}
               viewerMethods={viewerMethods}
               utilityMethods={utilityMethods}
-              runOnLoad={currentFiles.some(
-                (file) =>
-                  file.name === "app.py" ||
-                  file.name === "app.R" ||
-                  file.name === "server.R",
-              )}
+              runOnLoad={isRunnableApp(currentFiles)}
               updateUrlHashOnRerun={appOptions.updateUrlHashOnRerun}
               appEngine={appEngine}
             />
@@ -773,6 +763,18 @@ export function runApp(
 const propertyOfAppOptions = function <AppOptions>(name: keyof AppOptions) {
   return name;
 };
+
+// Return true if the FileContent[] contains an app.py, app.R, or server.R that
+// is non-empty.
+function isRunnableApp(files: FileContent[]): boolean {
+  return files.some(
+    (file) =>
+      (file.name === "app.py" ||
+        file.name === "app.R" ||
+        file.name === "server.R") &&
+      file.content !== "",
+  );
+}
 
 // =============================================================================
 // Code templates
