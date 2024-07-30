@@ -333,7 +333,7 @@ export function App({
   useRunOnceOnMount(() => {
     if (window.parent === window) return;
 
-    window.parent.postMessage({ type: "shinyliveAppReady" }, "*");
+    window.parent.postMessage({ type: "shinyliveReady" }, "*");
   });
 
   const [utilityMethods, setUtilityMethods] = React.useState<UtilityMethods>({
