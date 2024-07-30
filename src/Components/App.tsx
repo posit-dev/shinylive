@@ -8,6 +8,7 @@ import {
 } from "../examples";
 import type { PyodideProxyHandle } from "../hooks/usePyodide";
 import { initPyodide, initShiny, usePyodide } from "../hooks/usePyodide";
+import { useRunOnceOnMount } from "../hooks/useRunOnceOnMount";
 import type { WebRProxyHandle } from "../hooks/useWebR";
 import { initRShiny, initWebR, useWebR } from "../hooks/useWebR";
 import type { ProxyType } from "../pyodide-proxy";
@@ -328,6 +329,12 @@ export function App({
       window.removeEventListener("message", listener);
     };
   }, [currentFiles, setCurrentFiles, editorMethods]);
+
+  useRunOnceOnMount(() => {
+    if (window.parent === window) return;
+
+    window.parent.postMessage({ type: "shinyliveAppReady" }, "*");
+  });
 
   const [utilityMethods, setUtilityMethods] = React.useState<UtilityMethods>({
     formatCode: async (code: string) => {
