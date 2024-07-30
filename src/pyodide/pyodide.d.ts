@@ -1411,6 +1411,7 @@ type ConfigType = {
 	packages: string[];
 	_makeSnapshot: boolean;
 	enableRunUntilComplete: boolean;
+	checkAPIVersion: boolean;
 };
 /**
  * Load the main Pyodide wasm module and initialize it.
@@ -1533,6 +1534,16 @@ export declare function loadPyodide(options?: {
 	 */
 	enableRunUntilComplete?: boolean;
 	/**
+	 * If true (default), throw an error if the version of Pyodide core does not
+	 * match the version of the Pyodide js package.
+	 */
+	checkAPIVersion?: boolean;
+	/**
+	 * Used by the cli runner. If we want to detect a virtual environment from
+	 * the host file system, it needs to be visible from when `main()` is
+	 * called. The directories in this list will be mounted at the same address
+	 * into the Emscripten file system so that virtual environments work in the
+	 * cli runner.
 	 * @ignore
 	 */
 	_node_mounts?: string[];
