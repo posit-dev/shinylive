@@ -282,17 +282,19 @@ webr::shim_install()
       available <- data$cached
       mountpoint <- glue::glue("/shinylive/webr/packages/{name}")
 
-      # Mount the virtual filesystem image, unless we already have done so
-      if (available && !file.exists(mountpoint)) {
-        webr::mount(mountpoint, glue::glue("{.base_url}{path}"))
-      }
+      try({
+        # Mount the virtual filesystem image, unless we already have done so
+        if (available && !file.exists(mountpoint)) {
+          webr::mount(mountpoint, glue::glue("{.base_url}{path}"))
+        }
 
-      # If this is a full library, add it to .libPaths()
-      if(data$type == "library") {
-        paths <- .libPaths()
-        paths <- append(paths, mountpoint , after = length(paths) - 1)
-        .libPaths(paths)
-      }
+        # If this is a full library, add it to .libPaths()
+        if(data$type == "library") {
+          paths <- .libPaths()
+          paths <- append(paths, mountpoint , after = length(paths) - 1)
+          .libPaths(paths)
+        }
+      })
     })
   }
 
