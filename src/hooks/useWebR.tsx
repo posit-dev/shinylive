@@ -279,7 +279,7 @@ webr::shim_install()
     lapply(metadata, function(data) {
       name <- data$name
       path <- data$path
-      available <- data$cached
+      available <- data$cached && length(data$assets) > 0
       mountpoint <- glue::glue("/shinylive/webr/packages/{name}")
 
       try({
