@@ -328,7 +328,7 @@ export function App({
     return () => {
       window.removeEventListener("message", listener);
     };
-  }, [currentFiles, setCurrentFiles, editorMethods]);
+  }, [setCurrentFiles, editorMethods]);
 
   useRunOnceOnMount(() => {
     if (window.parent === window) return;
