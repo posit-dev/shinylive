@@ -632,7 +632,7 @@ export default function Editor({
       className="code-run-button"
       aria-label={`Re-run ${
         isShinyApp ? "app" : "code"
-      } (${modKeySymbol()})-Shift-Enter`}
+      } (${modKeySymbol()}-Shift-Enter)`}
       data-balloon-pos="down"
       onClick={() => runAllAuto.current()}
     >
