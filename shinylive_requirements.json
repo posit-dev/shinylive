@@ -22,5 +22,6 @@
   { "name": "ipyleaflet", "source": "pypi", "version": "latest" },
   { "name": "siuba", "source": "pypi", "version": "latest" },
   { "name": "palmerpenguins", "source": "pypi", "version": "latest" },
-  { "name": "black", "source": "pypi", "version": "latest" }
+  { "name": "black", "source": "pypi", "version": "latest" },
+  { "name": "qrcode", "source": "pypi", "version": "latest" }
 ]

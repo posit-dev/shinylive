@@ -206,10 +206,10 @@
   },
   "black": {
     "name": "black",
-    "version": "24.4.2",
-    "filename": "black-24.4.2-py3-none-any.whl",
-    "sha256": "d36ed1124bb81b32f8614555b34cc4259c3fbc7eec17870e8ff8ded335b58d8c",
-    "url": "https://files.pythonhosted.org/packages/0f/89/294c9a6b6c75a08da55e9d05321d0707e9418735e3062b12ef0f54c33474/black-24.4.2-py3-none-any.whl",
+    "version": "24.8.0",
+    "filename": "black-24.8.0-py3-none-any.whl",
+    "sha256": "972085c618ee94f402da1af548a4f218c754ea7e5dc70acb168bfaca4c2542ed",
+    "url": "https://files.pythonhosted.org/packages/27/1e/83fa8a787180e1632c3d831f7e58994d7aaf23a0961320d21e84f922f919/black-24.8.0-py3-none-any.whl",
     "depends": [
       {"name": "click", "specs": [[">=", "8.0.0"]]},
       {"name": "mypy-extensions", "specs": [[">=", "0.4.3"]]},
@@ -219,6 +219,20 @@
     ],
     "imports": [
       "black"
+    ]
+  },
+  "qrcode": {
+    "name": "qrcode",
+    "version": "7.4.2",
+    "filename": "qrcode-7.4.2-py3-none-any.whl",
+    "sha256": "581dca7a029bcb2deef5d01068e39093e80ef00b4a61098a2182eac59d01643a",
+    "url": "https://files.pythonhosted.org/packages/24/79/aaf0c1c7214f2632badb2771d770b1500d3d7cbdf2590ae62e721ec50584/qrcode-7.4.2-py3-none-any.whl",
+    "depends": [
+      {"name": "typing-extensions", "specs": []},
+      {"name": "pypng", "specs": []}
+    ],
+    "imports": [
+      "qrcode"
     ]
   },
   "starlette": {
@@ -426,6 +440,17 @@
     "depends": [],
     "imports": [
       "platformdirs"
+    ]
+  },
+  "pypng": {
+    "name": "pypng",
+    "version": "0.20220715.0",
+    "filename": "pypng-0.20220715.0-py3-none-any.whl",
+    "sha256": "4a43e969b8f5aaafb2a415536c1a8ec7e341cd6a3f957fd5b5f32a4cfeed902c",
+    "url": "https://files.pythonhosted.org/packages/3e/b9/3766cc361d93edb2ce81e2e1f87dd98f314d7d513877a342d31b30741680/pypng-0.20220715.0-py3-none-any.whl",
+    "depends": [],
+    "imports": [
+      "pypng"
     ]
   },
   "anyio": {
