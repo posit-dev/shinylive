@@ -128,9 +128,12 @@ export default function HeaderBar({
 
   return (
     <div className="HeaderBar">
-      <a className="page-title" href={mainUrl[appEngine]}>
-        <img className="shiny-logo" src={shinyLogo} alt="Shiny" />
-      </a>
+      {
+        // eslint-disable-next-line react/jsx-no-target-blank
+        <a className="page-title" href={mainUrl[appEngine]} target="_blank">
+          <img className="shiny-logo" src={shinyLogo} alt="Shiny" />
+        </a>
+      }
       <div>
         {loadButton}
         {saveButton}
