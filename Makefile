@@ -143,7 +143,7 @@ $(BUILD_DIR)/shinylive/webr: webr
 webr:
 	mkdir -p $(BUILD_DIR)/shinylive/webr
 	cp -r node_modules/webr/dist/. $(BUILD_DIR)/shinylive/webr
-	curl --fail -L https://github.com/r-wasm/shiny/releases/download/v$(R_SHINY_VERSION)/library.data -o $(BUILD_DIR)/shinylive/webr/library.data
+	curl --fail -L https://github.com/r-wasm/shiny/releases/download/v$(R_SHINY_VERSION)/library.data.gz -o $(BUILD_DIR)/shinylive/webr/library.data.gz
 	curl --fail -L https://github.com/r-wasm/shiny/releases/download/v$(R_SHINY_VERSION)/library.js.metadata -o $(BUILD_DIR)/shinylive/webr/library.js.metadata
 # FIXME: GitHub Pages does not cache Partial Content downloads. Here, we reduce
 # the damage by forcing entire file downloads with Emscripten's lazy filesystem.
