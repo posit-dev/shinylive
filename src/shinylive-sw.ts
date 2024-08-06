@@ -14,7 +14,7 @@ export type {};
 declare const self: ServiceWorkerGlobalScope;
 
 const cacheName = "::shinyliveServiceworker";
-const version = "v8";
+const version = "v9";
 
 // Modify a response so that the required CORP/COOP/COEP headers are in place
 // for cross-origin isolation. Required when using webR.
