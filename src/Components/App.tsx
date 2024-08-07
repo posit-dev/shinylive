@@ -388,7 +388,7 @@ export function App({
             ["exampleselector", "terminal", "viewer"],
           ]}
           rowSizes={["2fr", "1fr"]}
-          colSizes={["180px", "1.5fr", "1fr"]}
+          colSizes={["180px", "1fr", "1fr"]}
         >
           <ExampleSelector
             setCurrentFiles={setCurrentFiles}
@@ -444,7 +444,7 @@ export function App({
             ["terminal", "viewer"],
           ]}
           rowSizes={["2fr", "1fr"]}
-          colSizes={["1.5fr", "1fr"]}
+          colSizes={["1fr", "1fr"]}
         >
           <React.Suspense fallback={<div>Loading...</div>}>
             <Editor
