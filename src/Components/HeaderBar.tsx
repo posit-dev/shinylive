@@ -132,6 +132,16 @@ export default function HeaderBar({
         // eslint-disable-next-line react/jsx-no-target-blank
         <a className="page-title" href={mainUrl[appEngine]} target="_blank">
           <img className="shiny-logo" src={shinyLogo} alt="Shiny" />
+          {appEngine === "r" ? (
+            <span>
+              <span style={{ fontSize: "0.65em", marginLeft: "-2px" }}>
+                for
+              </span>{" "}
+              R
+            </span>
+          ) : (
+            ""
+          )}
         </a>
       }
       <div>
