@@ -145,11 +145,11 @@ export function stringToUint8Array(s: string): Uint8Array {
   return bytes;
 }
 
-export function engineSwitch(
+export function engineSwitch<T>(
   engine: AppEngine,
-  rValue: string,
-  pythonValue: string,
-): string {
+  rValue: T,
+  pythonValue: T,
+): T {
   switch (engine) {
     case "r":
       return rValue;
