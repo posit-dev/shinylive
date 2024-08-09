@@ -1,6 +1,5 @@
 import * as React from "react";
-import shinyPyLogo from "../assets/shiny-for-python.svg";
-import shinyRLogo from "../assets/shiny-logo.svg";
+import shinyLogo from "../assets/shiny-logo.svg";
 import { engineSwitch } from "../utils";
 import type { AppEngine } from "./App";
 import "./HeaderBar.css";
@@ -124,7 +123,6 @@ export default function HeaderBar({
     python: "https://shiny.posit.co/py/",
     r: "https://shiny.posit.co/",
   };
-  const shinyLogo = engineSwitch(appEngine, shinyRLogo, shinyPyLogo);
 
   return (
     <div className="HeaderBar">
@@ -132,16 +130,10 @@ export default function HeaderBar({
         // eslint-disable-next-line react/jsx-no-target-blank
         <a className="page-title" href={mainUrl[appEngine]} target="_blank">
           <img className="shiny-logo" src={shinyLogo} alt="Shiny" />
-          {appEngine === "r" ? (
-            <span>
-              <span style={{ fontSize: "0.65em", marginLeft: "-2px" }}>
-                for
-              </span>{" "}
-              R
-            </span>
-          ) : (
-            ""
-          )}
+          <span>
+            <span style={{ fontSize: "0.65em", marginLeft: "-2px" }}>for</span>{" "}
+            {engineSwitch(appEngine, "R", "Python")}
+          </span>
         </a>
       }
       <div>
