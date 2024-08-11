@@ -1,15 +1,23 @@
+@font-face {
+  font-family: "Source Sans Pro";
+  src: url("../fonts/SourceSansPro-Regular.otf.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+}
+
 :root {
   --colors-grey: grey;
-  --colors-blue: #007BC2;
+  --colors-blue: #007bc2;
   --colors-blue-dark: hsl(207, 69%, 35%);
-  --colors-red: #C10000;
+  --colors-red: #c10000;
   --colors-white: white;
   --colors-bg: white;
   --colors-fg: #333;
 
   --font-face: "Source Sans Pro", Arial, Helvetica, sans-serif;
   --font-size: 14px;
-  --font-mono-face: Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  --font-mono-face: Menlo, Monaco, Consolas, "Liberation Mono", "Courier New",
+    monospace;
   --font-mono-size: 12px;
 
   --panel-roundness: 5px;

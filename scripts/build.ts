@@ -139,6 +139,7 @@ const buildmap = {
     },
     loader: {
       ".svg": "dataurl",
+      ".woff2": "file",
     },
     plugins: [
       createRebuildLoggerPlugin("shinylive and Editor"),
