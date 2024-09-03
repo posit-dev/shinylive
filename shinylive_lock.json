@@ -15,8 +15,8 @@
   },
   "shiny": {
     "name": "shiny",
-    "version": "1.0.0",
-    "filename": "shiny-1.0.0-py3-none-any.whl",
+    "version": "1.1.0",
+    "filename": "shiny-1.1.0-py3-none-any.whl",
     "sha256": null,
     "url": null,
     "depends": [
@@ -95,7 +95,7 @@
   },
   "plotnine": {
     "name": "plotnine",
-    "version": "0.0.post20+g64295e1",
+    "version": "0.0.post1930+g64295e1",
     "filename": "plotnine-0.0.0-py3-none-any.whl",
     "sha256": null,
     "url": null,
