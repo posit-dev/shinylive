@@ -1,9 +1,10 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Shiny App</title>
+    {{GOOGLE_TAG_MANAGER_SCRIPT}}
     <script src="../shinylive/load-shinylive-sw.js" type="module"></script>
     <script type="module">
       import { runApp } from "../shinylive/shinylive.js";
@@ -15,11 +16,16 @@
       // reasons, if you enable any of these, then this site should be hosted on
       // a separate domain or subdomain from other content. Otherwise the
       // running of arbitrary code could be used, for example, to steal cookies.
-      runApp(appRoot, "viewer", {
-        allowCodeUrl: true,
-        allowGistUrl: true,
-        allowExampleUrl: true,
-      }, "{{APP_ENGINE}}");
+      runApp(
+        appRoot,
+        "viewer",
+        {
+          allowCodeUrl: true,
+          allowGistUrl: true,
+          allowExampleUrl: true,
+        },
+        "{{APP_ENGINE}}",
+      );
     </script>
     <link rel="stylesheet" href="../shinylive/style-resets.css" />
     <link rel="stylesheet" href="../shinylive/shinylive.css" />

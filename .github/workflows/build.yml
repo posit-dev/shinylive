@@ -38,6 +38,8 @@ jobs:
           make submodules
 
       - name: Build shinylive
+        env:
+          GOOGLE_TAG_MANAGER_ID: "GTM-KHBDBW7"
         run: |
           make all
 

@@ -27,6 +27,11 @@ let openBrowser = true;
 let minify = false;
 let reactProductionMode = false;
 let appEngine: AppEngine = "python";
+// If GOOGLE_TAG_MANAGER_ID is set, then we'll add the Google Tag Manager script
+// to the HTML.
+const googleTagManagerId: string | undefined =
+  process.env.GOOGLE_TAG_MANAGER_ID;
+
 // Set this to true to generate a metadata file that can be analyzed for size of
 // modules in the bundle, like with Bundle-Buddy.
 const metafile = process.argv.includes("--metafile");
@@ -89,11 +94,26 @@ function readdirSyncRecursive(dir: string, root: string = dir): string[] {
   }, []);
 }
 
-function buildSiteHtml(appEngine: AppEngine) {
+function buildSiteHtml(
+  appEngine: AppEngine,
+  googleTagManagerId: string | undefined,
+) {
   console.log(`[${new Date().toISOString()}] Copying HTML templates...`);
   readdirSyncRecursive("site_template").forEach((file) => {
     const tmpl = fs.readFileSync(`site_template/${file}`, "utf8");
-    const html = tmpl.replace("{{APP_ENGINE}}", appEngine);
+    let html = tmpl.replace("{{APP_ENGINE}}", appEngine);
+
+    const gtmScript = googleTagManagerId
+      ? `
+    <!-- Google Tag Manager -->
+    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start': new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','${googleTagManagerId}');</script>
+    <!-- End Google Tag Manager -->
+    `
+      : "";
+
+    html = html.replace("{{GOOGLE_TAG_MANAGER_SCRIPT}}", gtmScript);
+    console.log("html", html);
+
     fs.writeFileSync(`${SITE_DIR}/${file}`, html);
   });
 }
@@ -236,7 +256,7 @@ const buildmap = {
 };
 
 // Build shinylive website HTML in /site for R or Python as requested
-buildSiteHtml(appEngine);
+buildSiteHtml(appEngine, googleTagManagerId);
 
 Object.values(buildmap).forEach((build) =>
   build
