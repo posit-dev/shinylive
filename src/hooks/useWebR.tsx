@@ -259,6 +259,19 @@ webr::shim_install()
 
 .webr_pkg_cache <- list()
 
+.install_pkg_tgz <- function(path, lib) {
+  tmp <- tempfile()
+  on.exit(unlink(tmp, recursive = TRUE))
+
+  utils::download.file(path, tmp, quiet = TRUE)
+  utils::untar(
+    tmp,
+    exdir = lib,
+    tar = "internal",
+    extras = "--no-same-permissions"
+  )
+}
+
 .mount_vfs_images <- function() {
   metadata_url <- glue::glue("{.base_url}packages/metadata.rds")
   metadata_path <- glue::glue("/shinylive/webr/packages/metadata.rds")
@@ -285,7 +298,16 @@ webr::shim_install()
       try({
         # Mount the virtual filesystem image, unless we already have done so
         if (available && !file.exists(mountpoint)) {
-          webr::mount(mountpoint, glue::glue("{.base_url}{path}"))
+          tryCatch({
+            webr::mount(mountpoint, glue::glue("{.base_url}{path}"))
+          }, error = function(cnd) {
+            # File extraction fallback for .tgz with no filesystem metadata
+            if (grepl(".tgz$", path)) {
+              .install_pkg_tgz(path, "/shinylive/webr/packages/")
+            } else {
+              stop(cnd)
+            }
+          })
         }
 
         # If this is a full library, add it to .libPaths()
