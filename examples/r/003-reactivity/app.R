@@ -14,7 +14,7 @@ ui <- page_sidebar(
     # Note: Changes made to the caption in the textInput control
     # are updated in the output area immediately as you type
     textInput(
-      inputId = "caption",
+      inputId = "caption_text",
       label = "Caption:",
       value = "Data Summary"
     ),
@@ -72,10 +72,10 @@ server <- function(input, output) {
   # 2. New caption is pushed back to the browser for re-display
   #
   # Note that because the data-oriented reactive expressions
-  # below don't depend on input$caption, those expressions are
-  # NOT called when input$caption changes
+  # below don't depend on input$caption_text, those expressions are
+  # NOT called when input$caption_text changes
   output$caption <- renderText({
-    input$caption
+    input$caption_text
   })
 
   # Generate a summary of the dataset ----
