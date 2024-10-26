@@ -26,6 +26,10 @@
         // viewer embedded in a larger page, it does not make sense to set
         // this to true.
         updateUrlHashOnRerun: true,
+        setWindowTitle: {
+          prefix: "Shiny - ",
+          defaultTitle: document.title,
+        },
       };
 
       const appRoot = document.getElementById("root");

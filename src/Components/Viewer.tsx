@@ -127,10 +127,17 @@ export function Viewer({
   proxyHandle,
   setViewerMethods,
   devMode = false,
+  setWindowTitle = false,
 }: {
   proxyHandle: ProxyHandle;
   setViewerMethods: React.Dispatch<React.SetStateAction<ViewerMethods>>;
   devMode?: boolean;
+  setWindowTitle?:
+    | {
+        prefix: string;
+        defaultTitle: string;
+      }
+    | false;
 }) {
   const viewerFrameRef = React.useRef<HTMLIFrameElement>(null);
   const [appRunningState, setAppRunningState] = React.useState<
@@ -140,6 +147,38 @@ export function Viewer({
   const [lastErrorMessage, setLastErrorMessage] = React.useState<string | null>(
     null,
   );
+
+  // Add effect to monitor iframe title changes
+  React.useEffect(() => {
+    if (!setWindowTitle || !viewerFrameRef.current) return;
+
+    const iframe = viewerFrameRef.current;
+    const observer = new MutationObserver(() => {
+      if (iframe.contentDocument?.title) {
+        document.title = setWindowTitle.prefix + iframe.contentDocument.title;
+      } else {
+        document.title = setWindowTitle.defaultTitle;
+      }
+    });
+
+    // Start observing once the iframe loads
+    const onLoad = () => {
+      if (iframe.contentDocument) {
+        observer.observe(iframe.contentDocument, {
+          subtree: true,
+          childList: true,
+          characterData: true,
+        });
+      }
+    };
+
+    iframe.addEventListener("load", onLoad);
+
+    return () => {
+      observer.disconnect();
+      iframe.removeEventListener("load", onLoad);
+    };
+  }, [setWindowTitle]);
 
   // Shiny for R
   React.useEffect(() => {
