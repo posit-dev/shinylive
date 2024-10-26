@@ -110,6 +110,17 @@ type AppOptions = {
   // When the app is re-run from the Editor, should the URL hash be updated with
   // the encoded version of the app?
   updateUrlHashOnRerun?: boolean;
+
+  // Set window title based on the application iframe's title? If this is
+  // not false, then the title from the Viewer iframe will be applied to the
+  // window, with the prefix prepended. If the Viewer iframe's title is empty,
+  // then the default title will be used instead.
+  setWindowTitle?:
+    | {
+        prefix: string;
+        defaultTitle: string;
+      }
+    | false;
 };
 
 export type ProxyHandle = PyodideProxyHandle | WebRProxyHandle;
@@ -420,6 +431,7 @@ export function App({
             proxyHandle={proxyHandle}
             setViewerMethods={setViewerMethods}
             devMode={true}
+            setWindowTitle={appOptions.setWindowTitle}
           />
         </ResizableGrid>
       </>
@@ -470,6 +482,7 @@ export function App({
             proxyHandle={proxyHandle}
             setViewerMethods={setViewerMethods}
             devMode={true}
+            setWindowTitle={appOptions.setWindowTitle}
           />
         </ResizableGrid>
       </>
@@ -574,6 +587,7 @@ export function App({
           proxyHandle={proxyHandle}
           setViewerMethods={setViewerMethods}
           devMode={true}
+          setWindowTitle={appOptions.setWindowTitle}
         />
       </ResizableGrid>
     );
@@ -596,6 +610,7 @@ export function App({
             proxyHandle={proxyHandle}
             setViewerMethods={setViewerMethods}
             devMode={false}
+            setWindowTitle={appOptions.setWindowTitle}
           />
         </div>
       </>
