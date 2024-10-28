@@ -102,7 +102,7 @@ EXTRA_DEPENDENCIES = {
 
 
 # =============================================
-# Data structures used in our requirements.json
+# Data structures used in our shinylive_requirements.json
 # =============================================
 class RequirementsPackage(TypedDict):
     name: str
@@ -111,7 +111,7 @@ class RequirementsPackage(TypedDict):
 
 
 # ====================================================
-# Data structures used in our extra_packages_lock.json
+# Data structures used in our shinylive_lock.json
 # ====================================================
 class LockfileDependency(TypedDict):
     name: str
@@ -214,6 +214,15 @@ class PyodidePackagesFile(TypedDict):
     packages: dict[str, PyodidePackageInfo]
 
 
+# =================================================
+# Internal data structures
+# =================================================
+# This BasicPackageInfo type is used internally for package resolution.
+class BasicPackageInfo(TypedDict):
+    name: str
+    depends: list[str]
+
+
 # =============================================================================
 # Functions for generating the lockfile from the requirements file.
 # =============================================================================
@@ -241,6 +250,16 @@ def update_lockfile_local() -> None:
 
     lockfile_info.update(required_package_info)
 
+    # If any dependencies in the lockfile_info are not in the union of {lockfile_info,
+    # orig_pyodide_lock()["packages"]}, then we need to add them to the lockfile_info.
+    # This can happen when a local package adds a new dependency.
+    print("Searching for new dependencies")
+    # basic_package_info is the union of lockfile_info and original pyodide packages.
+    basic_package_info = _to_basic_package_info(lockfile_info)
+    basic_package_info.update(_to_basic_package_info(orig_pyodide_lock()["packages"]))
+    _recurse_dependencies_lockfile(lockfile_info, basic_package_info)
+
+    print(f"Writing {package_lock_file}")
     with open(package_lock_file, "w") as f:
         json.dump(
             _mark_no_indent(lockfile_info, _is_lockfile_dependency),
@@ -277,12 +296,15 @@ def generate_lockfile() -> None:
 
 def _recurse_dependencies_lockfile(
     pkgs: dict[str, LockfilePackageInfo],
+    pyodide_packages_info: dict[str, BasicPackageInfo] | None = None,
 ) -> None:
     """
     Recursively find all dependencies of the given packages. This will mutate the object
     passed in.
     """
-    pyodide_packages_info = orig_pyodide_lock()["packages"]
+    if pyodide_packages_info is None:
+        pyodide_packages_info = _to_basic_package_info(orig_pyodide_lock()["packages"])
+
     i = 0
     while i < len(pkgs):
         pkg_info = pkgs[list(pkgs.keys())[i]]
@@ -504,6 +526,35 @@ def _filter_requires(requires: Union[list[str], None]) -> list[LockfileDependenc
     # Filter out packages that cause problems.
     res = filter(lambda x: x["name"] not in AVOID_DEPEND_PACKAGES, res)
     return list(res)
+
+
+def _to_basic_package_info(
+    packages: dict[str, PyodidePackageInfo] | dict[str, LockfilePackageInfo]
+) -> dict[str, BasicPackageInfo]:
+    """
+    Convert Pyodide package information to a simplified format.
+
+    Args:
+        packages (dict[str, PyodidePackageInfo]): Original package information from Pyodide lock file
+
+    Returns:
+        dict[str, BasicPackageInfo]: Simplified package information with name and depends
+    """
+    basic_info: dict[str, BasicPackageInfo] = {}
+    for pkg_name, pkg_data in packages.items():
+        depends = pkg_data["depends"]
+        depends_str_list: list[str] = []
+        for dep in depends:
+            if isinstance(dep, str):
+                depends_str_list.append(dep)
+            else:
+                depends_str_list.append(dep["name"])
+
+        basic_info[pkg_name.lower()] = {
+            "name": pkg_name,
+            "depends": depends_str_list,
+        }
+    return basic_info
 
 
 # =============================================================================
