@@ -1,8 +1,8 @@
 {
   "htmltools": {
     "name": "htmltools",
-    "version": "0.5.3",
-    "filename": "htmltools-0.5.3-py3-none-any.whl",
+    "version": "0.6.0",
+    "filename": "htmltools-0.6.0-py3-none-any.whl",
     "sha256": null,
     "url": null,
     "depends": [
@@ -15,21 +15,23 @@
   },
   "shiny": {
     "name": "shiny",
-    "version": "1.1.0",
-    "filename": "shiny-1.1.0-py3-none-any.whl",
+    "version": "1.2.0",
+    "filename": "shiny-1.2.0-py3-none-any.whl",
     "sha256": null,
     "url": null,
     "depends": [
       {"name": "typing-extensions", "specs": [[">=", "4.10.0"]]},
       {"name": "starlette", "specs": []},
       {"name": "python-multipart", "specs": []},
-      {"name": "htmltools", "specs": [[">=", "0.5.2"]]},
+      {"name": "htmltools", "specs": [[">=", "0.6.0"]]},
       {"name": "markdown-it-py", "specs": [[">=", "1.1.0"]]},
       {"name": "mdit-py-plugins", "specs": [[">=", "0.3.0"]]},
       {"name": "linkify-it-py", "specs": [[">=", "1.0"]]},
       {"name": "appdirs", "specs": [[">=", "1.4.4"]]},
       {"name": "asgiref", "specs": [[">=", "3.5.2"]]},
-      {"name": "packaging", "specs": [[">=", "20.9"]]}
+      {"name": "packaging", "specs": [[">=", "20.9"]]},
+      {"name": "narwhals", "specs": [[">=", "1.10.0"]]},
+      {"name": "orjson", "specs": [[">=", "3.10.7"]]}
     ],
     "imports": [
       "shiny"
@@ -37,8 +39,8 @@
   },
   "shinywidgets": {
     "name": "shinywidgets",
-    "version": "0.3.2",
-    "filename": "shinywidgets-0.3.2-py3-none-any.whl",
+    "version": "0.3.4",
+    "filename": "shinywidgets-0.3.4-py3-none-any.whl",
     "sha256": null,
     "url": null,
     "depends": [
@@ -95,7 +97,7 @@
   },
   "plotnine": {
     "name": "plotnine",
-    "version": "0.0.post1930+g64295e1",
+    "version": "0.0.post20+g64295e1",
     "filename": "plotnine-0.0.0-py3-none-any.whl",
     "sha256": null,
     "url": null,
@@ -498,6 +500,17 @@
     "depends": [],
     "imports": [
       "sniffio"
+    ]
+  },
+  "narwhals": {
+    "name": "narwhals",
+    "version": "1.12.1",
+    "filename": "narwhals-1.12.1-py3-none-any.whl",
+    "sha256": "e251cb5fe4cabdcabb847d359f5de2b81df773df47e46f858fd5570c936919c4",
+    "url": "https://files.pythonhosted.org/packages/05/a8/22981ae479f9fc8d8f2d2bae3e399222887693c08fadeb575c3e220d1179/narwhals-1.12.1-py3-none-any.whl",
+    "depends": [],
+    "imports": [
+      "narwhals"
     ]
   }
 }
