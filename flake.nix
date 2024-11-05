@@ -40,8 +40,8 @@
             nativeBuildInputs = with pkgs; [
               nodejs_20
 
-              python311
-              (with python311Packages; [
+              python312
+              (with python312Packages; [
                 pip
                 virtualenv
               ])
