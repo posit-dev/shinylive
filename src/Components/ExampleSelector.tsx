@@ -1,4 +1,3 @@
-import DOMPurify from "dompurify";
 import * as React from "react";
 import type {
   ExampleCategory,
@@ -83,14 +82,6 @@ export function ExampleSelector({
     setFilesForApp(currentSelection);
   }, [currentSelection, setFilesForApp]);
 
-  function sanitizeHTML(html: string): string {
-    const doc = new DOMParser().parseFromString(html, "text/html");
-    doc.querySelectorAll("a").forEach((link) => {
-      link.setAttribute("target", "_blank");
-    });
-    return DOMPurify.sanitize(doc.body.innerHTML);
-  }
-
   function renderExampleItem({
     item,
     index,
@@ -124,9 +115,7 @@ export function ExampleSelector({
 
               // Given this is a normal click we want to override the defaults
               // of the link so we don't trigger a page refresh
-              if ((e.target as HTMLElement).tagName != "A") {
-                e.preventDefault();
-              }
+              e.preventDefault();
 
               // Clicking on a selected example wont do anything so don't even
               // mess with the state
@@ -135,12 +124,7 @@ export function ExampleSelector({
             }}
           >
             <h4 className="title">{item.title}</h4>
-            {item.about && (
-              <p
-                className="about"
-                dangerouslySetInnerHTML={{ __html: sanitizeHTML(item.about) }}
-              ></p>
-            )}
+            <p className="about">{item.about}</p>
           </a>
         </div>
         <div className="divider" />
