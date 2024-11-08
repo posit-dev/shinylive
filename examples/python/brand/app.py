@@ -5,6 +5,7 @@ import numpy as np
 from shiny import App, render, ui
 from shiny.ui._theme_brand import bootstrap_colors
 
+# Learn more: https://posit-dev.github.io/brand-yml
 theme = ui.Theme.from_brand(__file__)
 
 # theme = ui.Theme() # Uncomment this line to compare with the standard Shiny theme
@@ -26,6 +27,14 @@ app_ui = ui.page_navbar(
                     choices=["Option A", "Option B", "Option C", "Option D"],
                 ),
                 ui.input_action_button("action1", "Action Button"),
+            ),
+            ui.div(
+                "This example uses ",
+                ui.tags.a("brand.yml", href="https://posit-dev.github.io/brand-yml"),
+                " for a brand-themed app. Try editing the ",
+                ui.tags.code("_brand.yml"),
+                " file to change the theme.",
+                class_="alert alert-info",
             ),
             ui.layout_columns(
                 ui.value_box(
