@@ -22,7 +22,7 @@ export default function buildExamples(examplesDir: string, buildDir: string) {
   console.log("Regenerating examples.json");
 
   const ordering: ExampleCategoryIndexJson[] = JSON.parse(
-    fs.readFileSync(orderingFile).toString()
+    fs.readFileSync(orderingFile).toString(),
   );
 
   function parseApp(exampleDir: string, engine: string) {
@@ -30,7 +30,7 @@ export default function buildExamples(examplesDir: string, buildDir: string) {
 
     if (!fs.existsSync(appPath)) {
       throw new Error(
-        `The requested example directory: ${appPath} does not exist. Check spelling.`
+        `The requested example directory: ${appPath} does not exist. Check spelling.`,
       );
     }
 
@@ -59,10 +59,20 @@ export default function buildExamples(examplesDir: string, buildDir: string) {
           return true;
         })
         .sort((a: string, b: string) => {
-          // Sort files, with "app.py" first, and other files in normal sorted
-          // order.
-          if (a === "app.py" || a === "app.R" || a === "server.R") return -1;
-          if (b === "app.py" || b === "app.R" || b === "server.R") return 1;
+          // Sort files, with app related files first, followed by common
+          // support files, other files in normal sorted order.
+          const primary = ["app.py", "app.R", "server.R"];
+          const secondary = ["_brand.yml", "requirements.txt"];
+
+          const aPrimary = primary.includes(a);
+          const bPrimary = primary.includes(b);
+          if (aPrimary && !bPrimary) return -1;
+          if (!aPrimary && bPrimary) return 1;
+
+          const aSecondary = secondary.includes(a);
+          const bSecondary = secondary.includes(b);
+          if (aSecondary && !bSecondary) return -1;
+          if (!aSecondary && bSecondary) return 1;
 
           if (a < b) return -1;
           if (a > b) return 1;
@@ -101,8 +111,8 @@ export default function buildExamples(examplesDir: string, buildDir: string) {
         }),
       })),
       null,
-      2
-    )
+      2,
+    ),
   );
 }
 
