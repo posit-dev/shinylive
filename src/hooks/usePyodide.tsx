@@ -443,11 +443,11 @@ async def _install_requirements_from_dir(dir: str) -> None:
                     or f"extra == '{extra}'" in str(r)
                 ]
 
-                for pkg_req in extra_reqs:
-                    pkg_req_name = re.sub(r"([a-zA-Z0-9._,-]+)(.*)", r"\\1", pkg_req).strip()
-                    if pkg_req_name not in micropip.list():
-                        print(f"Installing {pkg_req_name} for {pkg_name}[{extra}]")
-                        await micropip.install(pkg_req_name)
+                for extra_req in extra_reqs:
+                    extra_req_name = re.sub(r"([a-zA-Z0-9._,-]+)(.*)", r"\\1", extra_req).strip()
+                    if extra_req_name not in micropip.list():
+                        print(f"Installing {extra_req_name} for {pkg_name}[{extra}]")
+                        await micropip.install(extra_req_name)
 
 
 async def _load_packages_from_dir(dir: str) -> None:
