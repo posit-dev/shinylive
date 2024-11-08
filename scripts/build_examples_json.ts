@@ -69,6 +69,11 @@ export default function buildExamples(examplesDir: string, buildDir: string) {
           if (aPrimary && !bPrimary) return -1;
           if (!aPrimary && bPrimary) return 1;
 
+          const aIsScript = a.endsWith(".py") || a.endsWith(".R");
+          const bIsScript = b.endsWith(".py") || b.endsWith(".R");
+          if (aIsScript && !bIsScript) return -1;
+          if (!aIsScript && bIsScript) return 1;
+
           const aSecondary = secondary.includes(a);
           const bSecondary = secondary.includes(b);
           if (aSecondary && !bSecondary) return -1;
