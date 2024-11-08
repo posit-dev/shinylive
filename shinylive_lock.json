@@ -97,7 +97,7 @@
   },
   "plotnine": {
     "name": "plotnine",
-    "version": "0.0.post20+g64295e1",
+    "version": "0.0.post1930+g64295e1",
     "filename": "plotnine-0.0.0-py3-none-any.whl",
     "sha256": null,
     "url": null,
@@ -511,6 +511,17 @@
     "depends": [],
     "imports": [
       "narwhals"
+    ]
+  },
+  "libsass": {
+    "name": "libsass",
+    "version": "0.23.0",
+    "filename": "libsass-0.23.0-cp312-abi3-pyodide_2024_0_wasm32.whl",
+    "sha256": null,
+    "url": null,
+    "depends": [],
+    "imports": [
+      "libsass"
     ]
   }
 }

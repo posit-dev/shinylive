@@ -45,6 +45,11 @@ FAICONS_WHEEL = faicons-$(FAICONS_VERSION)-py3-none-any.whl
 PLOTNINE_VERSION=0.0.0
 PLOTNINE_WHEEL=plotnine-$(PLOTNINE_VERSION)-py3-none-any.whl
 
+# libsass is built in gadenbuie/libsass-python
+# NOTE: Update https://github.com/gadenbuie/libsass-python/blob/dev/.github/workflows/pyodide.yml
+# Pyodide, Emscripten, or Python versions change here.
+LIBSASS_WHEEL=libsass-0.23.0-cp312-abi3-pyodide_2024_0_wasm32.whl
+
 VENV = venv
 PYBIN = $(VENV)/bin
 
@@ -169,7 +174,8 @@ pyodide_packages_local: $(BUILD_DIR)/shinylive/pyodide/$(HTMLTOOLS_WHEEL) \
 	$(BUILD_DIR)/shinylive/pyodide/$(SHINY_WHEEL) \
 	$(BUILD_DIR)/shinylive/pyodide/$(SHINYWIDGETS_WHEEL) \
 	$(BUILD_DIR)/shinylive/pyodide/$(FAICONS_WHEEL) \
-	$(BUILD_DIR)/shinylive/pyodide/$(PLOTNINE_WHEEL)
+	$(BUILD_DIR)/shinylive/pyodide/$(PLOTNINE_WHEEL) \
+	$(BUILD_DIR)/shinylive/pyodide/$(LIBSASS_WHEEL)
 
 $(BUILD_DIR)/shinylive/pyodide/$(HTMLTOOLS_WHEEL): $(PACKAGE_DIR)/$(HTMLTOOLS_WHEEL)
 	mkdir -p $(BUILD_DIR)/shinylive/pyodide
@@ -199,6 +205,11 @@ $(BUILD_DIR)/shinylive/pyodide/$(PLOTNINE_WHEEL): $(PACKAGE_DIR)/$(PLOTNINE_WHEE
 	mkdir -p $(BUILD_DIR)/shinylive/pyodide
 	rm -f $(BUILD_DIR)/shinylive/pyodide/plotnine*.whl
 	cp $(PACKAGE_DIR)/$(PLOTNINE_WHEEL) $(BUILD_DIR)/shinylive/pyodide/$(PLOTNINE_WHEEL)
+
+$(BUILD_DIR)/shinylive/pyodide/$(LIBSASS_WHEEL): $(PACKAGE_DIR)/$(LIBSASS_WHEEL)
+	mkdir -p $(BUILD_DIR)/shinylive/pyodide
+	rm -f $(BUILD_DIR)/shinylive/pyodide/libsass*.whl
+	cp $(PACKAGE_DIR)/$(LIBSASS_WHEEL) $(BUILD_DIR)/shinylive/pyodide/$(LIBSASS_WHEEL)
 
 $(BUILD_DIR)/export_template/index.html: export_template/index.html
 	mkdir -p $(BUILD_DIR)/export_template
@@ -300,6 +311,10 @@ $(PACKAGE_DIR)/$(PLOTNINE_WHEEL): $(PYBIN) $(PACKAGE_DIR)/plotnine
 	rm -f $(PACKAGE_DIR)/plotnine*.whl
 	$(PYBIN)/pip install -e $(PACKAGE_DIR)/plotnine[build]
 	. $(PYBIN)/activate && cd $(PACKAGE_DIR)/plotnine && make dist && mv dist/*.whl ../$(PLOTNINE_WHEEL)
+
+$(PACKAGE_DIR)/$(LIBSASS_WHEEL): $(PYBIN) $(PACKAGE_DIR)/$(LIBSASS_WHEEL)
+	rm -f $(PACKAGE_DIR)/libsass*.whl
+	curl --fail -L https://pkg.garrickadenbuie.com/libsass-python/$(LIBSASS_WHEEL) -o $(PACKAGE_DIR)/$(LIBSASS_WHEEL)
 
 ## Update the shinylive_lock.json file, based on shinylive_requirements.json
 update_packages_lock: $(PYBIN) $(BUILD_DIR)/shinylive/pyodide
