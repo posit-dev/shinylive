@@ -10,23 +10,9 @@ meta:
     twitter: https://twitter.com/retroarc
     facebook: https://facebook.com/retroarc
 
-# logo:
-#   images:
-#     icon-light: logos/retroarc-icon-light.png
-#     icon-dark: logos/retroarc-icon-dark.png
-#     wide-light: logos/retroarc-wide-light.png
-#     wide-dark: logos/retroarc-wide-dark.png
-#     tall-light: logos/retroarc-tall-light.png
-#     tall-dark: logos/retroarc-tall-dark.png
-#   small:
-#     light: logos/retroarc-icon-light.png
-#     dark: logos/retroarc-icon-dark.png
-#   medium:
-#     light: logos/retroarc-wide-light.png
-#     dark: logos/retroarc-wide-dark.png
-#   large:
-#     light: logos/retroarc-tall-light.png
-#     dark: logos/retroarc-tall-dark.png
+# This example doesn't include a brand logo
+# See: https://posit-dev.github.io/brand-yml/brand/logo.html
+# logo: brand-yml.png
 
 color:
   palette:
@@ -111,5 +97,3 @@ defaults:
       preset: shiny
       rules: |
         .navbar-brand { color: $my-pink }
-      # TODO: Find an appropriate theme variable to set
-      # navbar-bg: $brand-purple
