@@ -19,7 +19,8 @@
           "insert_ui",
           "input_update",
           "extra_packages",
-          "fetch"
+          "fetch",
+          "brand"
         ]
       },
       {
