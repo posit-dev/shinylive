@@ -86,6 +86,10 @@ const FILE_EXTENSIONS: Record<string, string> = {
   csv: "csv",
   r: "r",
   sql: "sql",
+  sass: "sass",
+  scss: "sass",
+  yaml: "yaml",
+  yml: "yaml",
 };
 
 export function isApplePlatform(): boolean {

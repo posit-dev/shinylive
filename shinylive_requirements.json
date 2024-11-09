@@ -23,5 +23,11 @@
   { "name": "siuba", "source": "pypi", "version": "latest" },
   { "name": "palmerpenguins", "source": "pypi", "version": "latest" },
   { "name": "black", "source": "pypi", "version": "latest" },
-  { "name": "qrcode", "source": "pypi", "version": "latest" }
+  { "name": "qrcode", "source": "pypi", "version": "latest" },
+  {
+    "name": "libsass",
+    "source": "local",
+    "version": "latest",
+    "comment": "Built for pyodide in https://github.com/gadenbuie/libsass-python/tree/dev"
+  }
 ]
