@@ -514,7 +514,7 @@ export default function Editor({
   }, [files, syncActiveFileState, localDirHandle]);
 
   const downloadFiles = React.useCallback(async () => {
-    if (!window.confirm("Downlad all project files?")) return;
+    if (!window.confirm("Download all project files?")) return;
 
     syncActiveFileState();
     const fileContents = editorFilesToFileContents(files);
