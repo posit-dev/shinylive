@@ -413,7 +413,7 @@ async def _install_requirements_from_dir(dir: str) -> None:
 
         if pkg_name not in micropip.list():
             print(f"Installing {pkg_name} ...")
-            await micropip.install(pkg_name)
+            await micropip.install(req)
 
         if len(extras) == 0:
             continue
