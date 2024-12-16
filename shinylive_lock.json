@@ -39,13 +39,13 @@
   },
   "shinywidgets": {
     "name": "shinywidgets",
-    "version": "0.3.4",
-    "filename": "shinywidgets-0.3.4-py3-none-any.whl",
+    "version": "0.4.0",
+    "filename": "shinywidgets-0.4.0-py3-none-any.whl",
     "sha256": null,
     "url": null,
     "depends": [
       {"name": "ipywidgets", "specs": [[">=", "7.6.5"]]},
-      {"name": "jupyter-core", "specs": []},
+      {"name": "jupyter_core", "specs": []},
       {"name": "shiny", "specs": [[">=", "0.6.1.9005"]]},
       {"name": "python-dateutil", "specs": [[">=", "2.8.2"]]}
     ],
@@ -522,6 +522,20 @@
     "depends": [],
     "imports": [
       "libsass"
+    ]
+  },
+  "jupyter_core": {
+    "name": "jupyter_core",
+    "version": "5.7.2",
+    "filename": "jupyter_core-5.7.2-py3-none-any.whl",
+    "sha256": "4f7315d2f6b4bcf2e3e7cb6e46772eba760ae459cd1f59d29eb57b0a01bd7409",
+    "url": "https://files.pythonhosted.org/packages/c9/fb/108ecd1fe961941959ad0ee4e12ee7b8b1477247f30b1fdfd83ceaf017f0/jupyter_core-5.7.2-py3-none-any.whl",
+    "depends": [
+      {"name": "platformdirs", "specs": [[">=", "2.5"]]},
+      {"name": "traitlets", "specs": [[">=", "5.3"]]}
+    ],
+    "imports": [
+      "jupyter_core"
     ]
   }
 }
