@@ -412,8 +412,8 @@ async def _install_requirements_from_dir(dir: str) -> None:
                 extras.update({e.strip() for e in match_extras.group(2).split(",")})
 
         if pkg_name not in micropip.list():
-            print(f"Installing {pkg_name} ...")
-            await micropip.install(pkg_name)
+            print(f"Installing {req} ...")
+            await micropip.install(req)
 
         if len(extras) == 0:
             continue
