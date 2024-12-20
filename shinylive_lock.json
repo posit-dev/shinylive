@@ -45,7 +45,7 @@
     "url": null,
     "depends": [
       {"name": "ipywidgets", "specs": [[">=", "7.6.5"]]},
-      {"name": "jupyter_core", "specs": []},
+      {"name": "jupyter-core", "specs": []},
       {"name": "shiny", "specs": [[">=", "0.6.1.9005"]]},
       {"name": "python-dateutil", "specs": [[">=", "2.8.2"]]}
     ],
@@ -536,6 +536,17 @@
     ],
     "imports": [
       "jupyter_core"
+    ]
+  },
+  "polars": {
+    "name": "polars",
+    "version": "1.17.1",
+    "filename": "polars-1.17.1-cp39-abi3-emscripten_3_1_58_wasm32.whl",
+    "sha256": null,
+    "url": null,
+    "depends": [],
+    "imports": [
+      "polars"
     ]
   }
 }

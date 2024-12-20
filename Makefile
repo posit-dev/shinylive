@@ -50,6 +50,10 @@ PLOTNINE_WHEEL=plotnine-$(PLOTNINE_VERSION)-py3-none-any.whl
 # Pyodide, Emscripten, or Python versions change here.
 LIBSASS_WHEEL=libsass-0.23.0-cp312-abi3-pyodide_2024_0_wasm32.whl
 
+# polars is built in georgestagg/polars
+# When pyodide includes polars, we will be able to remove this.
+POLARS_WHEEL=polars-1.17.1-cp39-abi3-emscripten_3_1_58_wasm32.whl
+
 VENV = venv
 PYBIN = $(VENV)/bin
 
@@ -175,7 +179,8 @@ pyodide_packages_local: $(BUILD_DIR)/shinylive/pyodide/$(HTMLTOOLS_WHEEL) \
 	$(BUILD_DIR)/shinylive/pyodide/$(SHINYWIDGETS_WHEEL) \
 	$(BUILD_DIR)/shinylive/pyodide/$(FAICONS_WHEEL) \
 	$(BUILD_DIR)/shinylive/pyodide/$(PLOTNINE_WHEEL) \
-	$(BUILD_DIR)/shinylive/pyodide/$(LIBSASS_WHEEL)
+	$(BUILD_DIR)/shinylive/pyodide/$(LIBSASS_WHEEL) \
+	$(BUILD_DIR)/shinylive/pyodide/$(POLARS_WHEEL)
 
 $(BUILD_DIR)/shinylive/pyodide/$(HTMLTOOLS_WHEEL): $(PACKAGE_DIR)/$(HTMLTOOLS_WHEEL)
 	mkdir -p $(BUILD_DIR)/shinylive/pyodide
@@ -210,6 +215,11 @@ $(BUILD_DIR)/shinylive/pyodide/$(LIBSASS_WHEEL): $(PACKAGE_DIR)/$(LIBSASS_WHEEL)
 	mkdir -p $(BUILD_DIR)/shinylive/pyodide
 	rm -f $(BUILD_DIR)/shinylive/pyodide/libsass*.whl
 	cp $(PACKAGE_DIR)/$(LIBSASS_WHEEL) $(BUILD_DIR)/shinylive/pyodide/$(LIBSASS_WHEEL)
+
+$(BUILD_DIR)/shinylive/pyodide/$(POLARS_WHEEL): $(PACKAGE_DIR)/$(POLARS_WHEEL)
+	mkdir -p $(BUILD_DIR)/shinylive/pyodide
+	rm -f $(BUILD_DIR)/shinylive/pyodide/$(POLARS_WHEEL)
+	cp $(PACKAGE_DIR)/$(POLARS_WHEEL) $(BUILD_DIR)/shinylive/pyodide/$(POLARS_WHEEL)
 
 $(BUILD_DIR)/export_template/index.html: export_template/index.html
 	mkdir -p $(BUILD_DIR)/export_template
@@ -315,6 +325,10 @@ $(PACKAGE_DIR)/$(PLOTNINE_WHEEL): $(PYBIN) $(PACKAGE_DIR)/plotnine
 $(PACKAGE_DIR)/$(LIBSASS_WHEEL): $(PYBIN) $(PACKAGE_DIR)/$(LIBSASS_WHEEL)
 	rm -f $(PACKAGE_DIR)/libsass*.whl
 	curl --fail -L https://pkg.garrickadenbuie.com/libsass-python/$(LIBSASS_WHEEL) -o $(PACKAGE_DIR)/$(LIBSASS_WHEEL)
+
+$(PACKAGE_DIR)/$(POLARS_WHEEL): $(PYBIN) $(PACKAGE_DIR)/$(POLARS_WHEEL)
+	rm -f $(PACKAGE_DIR)/polars*.whl
+	curl --fail -L https://github.com/georgestagg/polars/releases/download/py-1.17.1/$(POLARS_WHEEL) -o $(PACKAGE_DIR)/$(POLARS_WHEEL)
 
 ## Update the shinylive_lock.json file, based on shinylive_requirements.json
 update_packages_lock: $(PYBIN) $(BUILD_DIR)/shinylive/pyodide
