@@ -412,9 +412,11 @@ async def _install_requirements_from_dir(dir: str) -> None:
                 extras.update({e.strip() for e in match_extras.group(2).split(",")})
 
         if pkg_name not in micropip.list():
+            print(f"\\nInstalling {req} ...", end=" ", flush=True)
             # Install package req without extras, which we handle ourselves
             # because micropip.install() doesn't actually install extras
             await micropip.install(re.sub(r"\\[[^\\]]*\\]", "", req))
+            print("done.", flush=True)
 
         if len(extras) == 0:
             continue
@@ -447,8 +449,9 @@ async def _install_requirements_from_dir(dir: str) -> None:
                 for extra_req in extra_reqs:
                     extra_req_name = re.sub(r"([a-zA-Z0-9._,-]+)(.*)", r"\\1", extra_req).strip()
                     if extra_req_name not in micropip.list():
-                        print(f"Installing {extra_req_name} for {pkg_name}[{extra}]")
+                        print(f"\\nInstalling {extra_req_name} for {pkg_name}[{extra}] ...", end=" ", flush = True)
                         await micropip.install(extra_req_name)
+                        print("done.", flush = True)
 
 
 async def _load_packages_from_dir(dir: str) -> None:
