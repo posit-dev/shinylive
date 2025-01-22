@@ -88,7 +88,7 @@ export function parseCodeBlock(
 
 /**
  *  Loop through all the lines and extract lines at the beginning which start
- *  with Quarto parameter comments and have the format "#| ", "# | " or "##|"
+ *  with Quarto parameter comments and have the format "#| ", "# | " or "##| "
  *  as `quartoArgs`, and strip those lines from the result. Also remove up to
  *  one empty line after any args.
  */
