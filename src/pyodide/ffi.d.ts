@@ -1086,8 +1086,11 @@ declare class PythonError extends Error {
 	constructor(type: string, message: string, error_address: number);
 }
 /**
- * See :ref:`js-api-pyodide-ffi`
+ * Foreign function interface classes. Can be used for typescript type
+ * annotations or at runtime for `instanceof` checks.
+ * @summaryLink :ref:`ffi <js-api-pyodide-ffi>`
  * @hidetype
+ * @omitFromAutoModule
  */
 declare const ffi: {
 	PyProxy: typeof PyProxy;
