@@ -41,10 +41,6 @@ SHINY_WHEEL = shiny-$(SHINY_VERSION)-py3-none-any.whl
 SHINYWIDGETS_WHEEL = shinywidgets-$(SHINYWIDGETS_VERSION)-py3-none-any.whl
 FAICONS_WHEEL = faicons-$(FAICONS_VERSION)-py3-none-any.whl
 
-# Hard code these versions for now
-PLOTNINE_VERSION=0.0.0
-PLOTNINE_WHEEL=plotnine-$(PLOTNINE_VERSION)-py3-none-any.whl
-
 # libsass is built in gadenbuie/libsass-python
 # NOTE: Update https://github.com/gadenbuie/libsass-python/blob/dev/.github/workflows/pyodide.yml
 # Pyodide, Emscripten, or Python versions change here.
@@ -97,13 +93,11 @@ submodules:
 	git submodule init
 	git submodule update --depth=20
 	cd packages/py-shiny && git fetch --tags --unshallow
-	cd packages/plotnine && git fetch --tags --unshallow
 
 ## Pull latest changes in git submodules
 submodules-pull:
 	git submodule update --recursive --remote
 	cd packages/py-shiny && git fetch --tags
-	cd packages/plotnine && git fetch --tags
 submodules-pull-shiny:
 	git submodule update --remote packages/py-shiny
 	cd packages/py-shiny && git fetch --tags
@@ -178,7 +172,6 @@ pyodide_packages_local: $(BUILD_DIR)/shinylive/pyodide/$(HTMLTOOLS_WHEEL) \
 	$(BUILD_DIR)/shinylive/pyodide/$(SHINY_WHEEL) \
 	$(BUILD_DIR)/shinylive/pyodide/$(SHINYWIDGETS_WHEEL) \
 	$(BUILD_DIR)/shinylive/pyodide/$(FAICONS_WHEEL) \
-	$(BUILD_DIR)/shinylive/pyodide/$(PLOTNINE_WHEEL) \
 	$(BUILD_DIR)/shinylive/pyodide/$(LIBSASS_WHEEL) \
 	$(BUILD_DIR)/shinylive/pyodide/$(POLARS_WHEEL)
 
@@ -205,11 +198,6 @@ $(BUILD_DIR)/shinylive/pyodide/$(FAICONS_WHEEL): $(PACKAGE_DIR)/$(FAICONS_WHEEL)
 	# Remove any old copies of faicons
 	rm -f $(BUILD_DIR)/shinylive/pyodide/faicons*.whl
 	cp $(PACKAGE_DIR)/$(FAICONS_WHEEL) $(BUILD_DIR)/shinylive/pyodide/$(FAICONS_WHEEL)
-
-$(BUILD_DIR)/shinylive/pyodide/$(PLOTNINE_WHEEL): $(PACKAGE_DIR)/$(PLOTNINE_WHEEL)
-	mkdir -p $(BUILD_DIR)/shinylive/pyodide
-	rm -f $(BUILD_DIR)/shinylive/pyodide/plotnine*.whl
-	cp $(PACKAGE_DIR)/$(PLOTNINE_WHEEL) $(BUILD_DIR)/shinylive/pyodide/$(PLOTNINE_WHEEL)
 
 $(BUILD_DIR)/shinylive/pyodide/$(LIBSASS_WHEEL): $(PACKAGE_DIR)/$(LIBSASS_WHEEL)
 	mkdir -p $(BUILD_DIR)/shinylive/pyodide
@@ -281,8 +269,7 @@ packages: clean-packages \
 	package-htmltools \
 	package-shiny \
 	package-shinywidgets \
-	package-faicons \
-	package-plotnine
+	package-faicons
 
 
 package-htmltools: $(PACKAGE_DIR)/$(HTMLTOOLS_WHEEL)
@@ -292,8 +279,6 @@ package-shiny: $(PACKAGE_DIR)/$(SHINY_WHEEL)
 package-shinywidgets: $(PACKAGE_DIR)/$(SHINYWIDGETS_WHEEL)
 
 package-faicons: $(PACKAGE_DIR)/$(FAICONS_WHEEL)
-
-package-plotnine: $(PACKAGE_DIR)/$(PLOTNINE_WHEEL)
 
 
 $(PACKAGE_DIR)/$(HTMLTOOLS_WHEEL): $(PYBIN) $(PACKAGE_DIR)/py-htmltools
@@ -316,11 +301,6 @@ $(PACKAGE_DIR)/$(FAICONS_WHEEL): $(PYBIN) $(PACKAGE_DIR)/py-faicons
 	# Remove any old copies of the package
 	rm -f $(PACKAGE_DIR)/faicons*.whl
 	. $(PYBIN)/activate && cd $(PACKAGE_DIR)/py-faicons && make install && mv dist/*.whl ../
-
-$(PACKAGE_DIR)/$(PLOTNINE_WHEEL): $(PYBIN) $(PACKAGE_DIR)/plotnine
-	rm -f $(PACKAGE_DIR)/plotnine*.whl
-	$(PYBIN)/pip install -e $(PACKAGE_DIR)/plotnine[build]
-	. $(PYBIN)/activate && cd $(PACKAGE_DIR)/plotnine && make dist && mv dist/*.whl ../$(PLOTNINE_WHEEL)
 
 $(PACKAGE_DIR)/$(LIBSASS_WHEEL): $(PYBIN) $(PACKAGE_DIR)/$(LIBSASS_WHEEL)
 	rm -f $(PACKAGE_DIR)/libsass*.whl
