@@ -24,11 +24,5 @@
     "source": "local",
     "version": "latest",
     "comment": "Built for pyodide in https://github.com/gadenbuie/libsass-python/tree/dev"
-  },
-  {
-    "name": "polars",
-    "source": "local",
-    "version": "latest",
-    "comment": "Built for pyodide in https://github.com/georgestagg/polars"
   }
 ]
