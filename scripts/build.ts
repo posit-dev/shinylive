@@ -112,7 +112,6 @@ function buildSiteHtml(
       : "";
 
     html = html.replace("{{GOOGLE_TAG_MANAGER_SCRIPT}}", gtmScript);
-    console.log("html", html);
 
     fs.writeFileSync(`${SITE_DIR}/${file}`, html);
   });
