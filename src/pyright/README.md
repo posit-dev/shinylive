@@ -1,4 +1,4 @@
 This is a special build of Pyright that can run in a Web Worker in a browser.
 
-Built from sources at: https://github.com/posit-dev/pyright/
-Commit bca118334c42069ee007c63caf1287ae1f733d53
+Built from sources at: https://github.com/posit-dev/pyright/ from branch `pyright-browser`
+Commit a011edf59efa3d88641ea704fafa578f70d5f7d8
