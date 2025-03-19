@@ -275,6 +275,7 @@ Object.values(buildmap).forEach((build) =>
 if (serve) {
   buildmap["app"]
     .then(async (context) => {
+      console.log("Serving ./site on port 3000");
       await context.serve({ servedir: SITE_DIR, port: 3001 }).then(() => {
         http
           .createServer((req, res) => {
