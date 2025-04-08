@@ -377,8 +377,23 @@ async def _start_app(app_name, scope = _shiny_app_registry, dev_mode = False):
     import os
     import sys
     import importlib
+    import shiny
     import shiny.express
     from pathlib import Path
+
+    if (
+        hasattr(shiny, "bookmark")
+        and hasattr(shiny.bookmark, "set_global_save_dir_fn")
+        and hasattr(shiny.bookmark, "set_global_restore_dir_fn")
+    ):
+
+        def not_configured(id):
+            raise NotImplementedError(
+                "shinylive is not configured to save sessions to disk."
+            )
+
+        shiny.bookmark.set_global_save_dir_fn(not_configured)
+        shiny.bookmark.set_global_restore_dir_fn(not_configured)
 
     app_dir = f"/home/pyodide/{app_name}"
     sys.path.insert(0, app_dir)
