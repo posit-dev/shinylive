@@ -17,7 +17,7 @@
 
 SHINYLIVE_VERSION = $(shell node -p "require('./package.json').version")
 
-PYODIDE_VERSION = 0.27.3
+PYODIDE_VERSION = 0.27.7
 PYODIDE_DIST_FILENAME = pyodide-$(PYODIDE_VERSION).tar.bz2
 DOWNLOAD_DIR = ./downloads
 R_SHINY_VERSION = 1.9.1.8002

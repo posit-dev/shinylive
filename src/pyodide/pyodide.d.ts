@@ -44,7 +44,9 @@ type FSNode = {
 	mode: number;
 };
 type FSStream = {
-	tty?: boolean;
+	tty?: {
+		ops: object;
+	};
 	seekable?: boolean;
 	stream_ops: FSStreamOps;
 	node: FSNode;
@@ -57,7 +59,7 @@ type FSStreamOpsGen<T> = {
 	read: (a: T, b: Uint8Array, offset: number, length: number, pos: number) => number;
 	write: (a: T, b: Uint8Array, offset: number, length: number, pos: number) => number;
 };
-interface FS {
+interface FSType {
 	unlink: (path: string) => void;
 	mkdirTree: (path: string, mode?: number) => void;
 	chdir: (path: string) => void;
@@ -173,7 +175,7 @@ declare class PyProxy {
 	 * @param options
 	 * @return The JavaScript object resulting from the conversion.
 	 */
-	toJs({ depth, pyproxies, create_pyproxies, dict_converter, default_converter, }?: {
+	toJs({ depth, pyproxies, create_pyproxies, dict_converter, default_converter, eager_converter, }?: {
 		/** How many layers deep to perform the conversion. Defaults to infinite */
 		depth?: number;
 		/**
@@ -208,6 +210,15 @@ declare class PyProxy {
 		 * documentation of :meth:`~pyodide.ffi.to_js`.
 		 */
 		default_converter?: (obj: PyProxy, convert: (obj: PyProxy) => any, cacheConversion: (obj: PyProxy, result: any) => void) => any;
+		/**
+		 * Optional callback to convert objects which gets called after ``str``,
+		 * ``int``, ``float``, ``bool``, ``None``, and ``JsProxy`` are converted but
+		 * *before* any default conversions are applied to standard data structures.
+		 *
+		 * Its arguments are the same as `dict_converter`.
+		 * See the documentation of :meth:`~pyodide.ffi.to_js`.
+		 */
+		eager_converter?: (obj: PyProxy, convert: (obj: PyProxy) => any, cacheConversion: (obj: PyProxy, result: any) => void) => any;
 	}): any;
 }
 declare class PyProxyWithLength extends PyProxy {
@@ -1127,7 +1138,7 @@ declare class PyodideAPI {
 	 * are available as members of ``FS.filesystems``:
 	 * ``IDBFS``, ``NODEFS``, ``PROXYFS``, ``WORKERFS``.
 	 */
-	static FS: FS;
+	static FS: FSType;
 	/**
 	 * An alias to the `Emscripten Path API
 	 * <https://github.com/emscripten-core/emscripten/blob/main/src/library_path.js>`_.
@@ -1467,8 +1478,11 @@ type ConfigType = {
 	stdout?: (msg: string) => void;
 	stderr?: (msg: string) => void;
 	jsglobals?: object;
+	_sysExecutable?: string;
 	args: string[];
-	_node_mounts: string[];
+	fsInit?: (FS: FSType, info: {
+		sitePackages: string;
+	}) => Promise<void>;
 	env: {
 		[key: string]: string;
 	};
@@ -1559,6 +1573,11 @@ export declare function loadPyodide(options?: {
 	 */
 	jsglobals?: object;
 	/**
+	 * Determine the value of ``sys.executable``.
+	 * @ignore
+	 */
+	_sysExecutable?: string;
+	/**
 	 * Command line arguments to pass to Python on startup. See `Python command
 	 * line interface options
 	 * <https://docs.python.org/3.10/using/cmdline.html#interface-options>`_ for
@@ -1593,7 +1612,8 @@ export declare function loadPyodide(options?: {
 	 */
 	pyproxyToStringRepr?: boolean;
 	/**
-	 * Make loop.run_until_complete() function correctly using stack switching
+	 * Make loop.run_until_complete() function correctly using stack switching.
+	 * Default: ``true``.
 	 */
 	enableRunUntilComplete?: boolean;
 	/**
@@ -1602,14 +1622,14 @@ export declare function loadPyodide(options?: {
 	 */
 	checkAPIVersion?: boolean;
 	/**
-	 * Used by the cli runner. If we want to detect a virtual environment from
-	 * the host file system, it needs to be visible from when `main()` is
-	 * called. The directories in this list will be mounted at the same address
-	 * into the Emscripten file system so that virtual environments work in the
-	 * cli runner.
-	 * @ignore
+	 * This is a hook that allows modification of the file system before the
+	 * main() function is called and the intereter is started. When this is
+	 * called, it is guaranteed that there is an empty site-packages directory.
+	 * @experimental
 	 */
-	_node_mounts?: string[];
+	fsInit?: (FS: FSType, info: {
+		sitePackages: string;
+	}) => Promise<void>;
 	/** @ignore */
 	_makeSnapshot?: boolean;
 	/** @ignore */
