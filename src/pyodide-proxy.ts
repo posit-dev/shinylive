@@ -192,6 +192,7 @@ class NormalPyodideProxy implements PyodideProxy {
 
   async init(config: LoadPyodideConfig) {
     this.pyodide = await loadPyodide(config);
+    window.pyodide = this.pyodide;
 
     this.pyUtils = await setupPythonEnv(this.pyodide, this.callJS);
   }
