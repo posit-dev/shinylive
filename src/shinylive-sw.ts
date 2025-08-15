@@ -17,12 +17,25 @@ const cacheName = "::shinyliveServiceworker";
 const version = "v9";
 
 // Modify a response so that the required CORP/COOP/COEP headers are in place
-// for cross-origin isolation. Required when using webR.
+// for cross-origin isolation. Required when using `browser()` or CURL in webR.
 function addCoiHeaders(resp: Response): Response {
   const headers = new Headers(resp.headers);
-  headers.set("Cross-Origin-Embedder-Policy", "credentialless");
+  headers.set("Cross-Origin-Embedder-Policy", "require-corp");
   headers.set("Cross-Origin-Resource-Policy", "cross-origin");
   headers.set("Cross-Origin-Opener-Policy", "same-origin");
+  return new Response(resp.body, {
+    status: resp.status,
+    statusText: resp.statusText,
+    headers,
+  });
+}
+
+// Add only the CORP header to the embedded Shiny app, as we set `require-corp`
+// above. We avoid setting `Cross-Origin-Embedder-Policy` here so that we can
+// still load resources from other origins inside the embedded app.
+function addCorpHeader(resp: Response): Response {
+  const headers = new Headers(resp.headers);
+  headers.set("Cross-Origin-Resource-Policy", "cross-origin");
   return new Response(resp.body, {
     status: resp.status,
     statusText: resp.statusText,
@@ -137,7 +150,7 @@ self.addEventListener("fetch", function (event): void {
           filter,
         );
         if (coiRequested) {
-          return addCoiHeaders(resp);
+          return addCorpHeader(resp);
         } else {
           return resp;
         }
