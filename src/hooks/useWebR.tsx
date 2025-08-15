@@ -204,7 +204,7 @@ webr::shim_install()
 .send_ws <- function (message) {
   webr::eval_js(
     paste0(
-        "chan.write({",
+        "Module.webr.channel.write({",
         "type: '_webR_httpuv_WSResponse', ",
         "data: ", jsonlite::serializeJSON(message),
       "});"
