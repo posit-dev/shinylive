@@ -20,7 +20,7 @@ SHINYLIVE_VERSION = $(shell node -p "require('./package.json').version")
 PYODIDE_VERSION = 0.27.7
 PYODIDE_DIST_FILENAME = pyodide-$(PYODIDE_VERSION).tar.bz2
 DOWNLOAD_DIR = ./downloads
-R_SHINY_VERSION = 1.9.1.8002
+R_SHINY_VERSION = 1.11.1.8000
 BUILD_DIR = ./build
 PACKAGE_DIR = ./packages
 DIST_DIR = ./dist
@@ -152,7 +152,7 @@ webr:
 # FIXME: GitHub Pages does not cache Partial Content downloads. Here, we reduce
 # the damage by forcing entire file downloads with Emscripten's lazy filesystem.
 # Potentially, we can add a switch to Emscripten to disable the mechanism.
-	sed -i.bak 's/if(!hasByteServing)//' $(BUILD_DIR)/shinylive/webr/R.bin.js
+	sed -i.bak 's/if(!hasByteServing)//' $(BUILD_DIR)/shinylive/webr/R.js
 
 # Copy pyodide.js and .d.ts to src/pyodide/. This is a little weird in that in
 # `make all`, it comes after downloading pyodide. In the future we may be able
