@@ -284,14 +284,12 @@ if (serve) {
               http.request(
                 { hostname: "0.0.0.0", port: 3001, path: url, method, headers },
                 (proxyRes) => {
-                  if (appEngine === "r") {
-                    proxyRes.headers = {
-                      ...proxyRes.headers,
-                      "cross-origin-opener-policy": "same-origin",
-                      "cross-origin-embedder-policy": "credentialless",
-                      "cross-origin-resource-policy": "cross-origin",
-                    };
-                  }
+                  proxyRes.headers = {
+                    ...proxyRes.headers,
+                    "cross-origin-opener-policy": "same-origin",
+                    "cross-origin-embedder-policy": "credentialless",
+                    "cross-origin-resource-policy": "cross-origin",
+                  };
                   if (url === "/shinylive/shinylive.js") {
                     // JS code for does auto-reloading. We'll inject it into
                     // shinylive.js as it's sent.
