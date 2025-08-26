@@ -37,6 +37,7 @@ const serviceWorkerPath = serviceWorkerDir + "/shinylive-sw.js";
 if ("serviceWorker" in navigator) {
   navigator.serviceWorker
     .register(serviceWorkerPath, { type: "module" })
+    .then((registration) => registration.update())
     .then(() => console.log("Service Worker registered"))
     .catch(() => console.log("Service Worker registration failed"));
 
