@@ -100,6 +100,14 @@ EXTRA_DEPENDENCIES = {
     "palmerpenguins": ["setuptools"],
 }
 
+# Some packages may have a circular dependency. For example, shiny (v1.5.0) depends on
+# shinychat, and shinychat depends on shiny. Python is okay with this (as long
+# as the imports aren't circular at runtime), but pyodide has trouble with it.
+# This hack breaks the circularity by removing shiny from shinychat's dependencies,
+# which is okay since shinylive will always come with shiny already installed.
+CIRCULAR_DEPENDENCIES = {
+    "shinychat": ["shiny"],
+}
 
 # =============================================
 # Data structures used in our shinylive_requirements.json
@@ -637,6 +645,11 @@ def update_pyodide_pyodide_lock_json():
     print("Injecting extra dependencies")
     for name in EXTRA_DEPENDENCIES:
         pyodide_packages["packages"][name]["depends"].extend(EXTRA_DEPENDENCIES[name])
+
+    print("Removing circular dependencies")
+    for key, val in CIRCULAR_DEPENDENCIES.items():
+        depends = set(pyodide_packages["packages"][key]["depends"])
+        pyodide_packages["packages"][key]["depends"] = list(depends.difference(val))
 
     print("Writing pyodide/pyodide-lock.json")
     with open(pyodide_lock_json_file, "w") as f:
