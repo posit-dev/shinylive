@@ -15,8 +15,8 @@
   },
   "shiny": {
     "name": "shiny",
-    "version": "1.4.0",
-    "filename": "shiny-1.4.0-py3-none-any.whl",
+    "version": "1.5.0",
+    "filename": "shiny-1.5.0-py3-none-any.whl",
     "sha256": null,
     "url": null,
     "depends": [
@@ -26,11 +26,12 @@
       {"name": "markdown-it-py", "specs": [[">=", "1.1.0"]]},
       {"name": "mdit-py-plugins", "specs": [[">=", "0.3.0"]]},
       {"name": "linkify-it-py", "specs": [[">=", "1.0"]]},
-      {"name": "appdirs", "specs": [[">=", "1.4.4"]]},
+      {"name": "platformdirs", "specs": [[">=", "2.1.0"]]},
       {"name": "asgiref", "specs": [[">=", "3.5.2"]]},
       {"name": "packaging", "specs": [[">=", "20.9"]]},
       {"name": "narwhals", "specs": [[">=", "1.10.0"]]},
-      {"name": "orjson", "specs": [[">=", "3.10.7"]]}
+      {"name": "orjson", "specs": [[">=", "3.10.7"]]},
+      {"name": "shinychat", "specs": [[">=", "0.1.0"]]}
     ],
     "imports": [
       "shiny"
@@ -44,7 +45,7 @@
     "url": null,
     "depends": [
       {"name": "ipywidgets", "specs": [[">=", "7.6.5"]]},
-      {"name": "jupyter-core", "specs": []},
+      {"name": "jupyter_core", "specs": []},
       {"name": "shiny", "specs": [[">=", "0.6.1.9005"]]},
       {"name": "python-dateutil", "specs": [[">=", "2.8.2"]]},
       {"name": "anywidget", "specs": []}
@@ -561,6 +562,20 @@
     "depends": [],
     "imports": [
       "psygnal"
+    ]
+  },
+  "shinychat": {
+    "name": "shinychat",
+    "version": "0.2.8",
+    "filename": "shinychat-0.2.8-py3-none-any.whl",
+    "sha256": "6742a2354257280458269a8b5675f1254e5583be34b6eb1a626de44c0323286a",
+    "url": "https://files.pythonhosted.org/packages/16/01/8658eaffa920f4c621f05acc42ea98248147706079287b3a7ab4e47e1ece/shinychat-0.2.8-py3-none-any.whl",
+    "depends": [
+      {"name": "htmltools", "specs": [[">=", "0.6.0"]]},
+      {"name": "shiny", "specs": [[">=", "1.4.0"]]}
+    ],
+    "imports": [
+      "shinychat"
     ]
   }
 }
