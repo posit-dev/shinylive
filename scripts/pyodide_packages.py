@@ -105,7 +105,7 @@ EXTRA_DEPENDENCIES = {
 # as the imports aren't circular at runtime), but pyodide has trouble with it.
 # This hack breaks the circularity by removing shiny from shinychat's dependencies,
 # which is okay since shinylive will always come with shiny already installed.
-CIRCULAR_DEPENDENCIES = {
+OMIT_DEPENDENCIES = {
     "shinychat": ["shiny"],
 }
 
@@ -647,7 +647,7 @@ def update_pyodide_pyodide_lock_json():
         pyodide_packages["packages"][name]["depends"].extend(EXTRA_DEPENDENCIES[name])
 
     print("Removing circular dependencies")
-    for key, val in CIRCULAR_DEPENDENCIES.items():
+    for key, val in OMIT_DEPENDENCIES.items():
         depends = set(pyodide_packages["packages"][key]["depends"])
         pyodide_packages["packages"][key]["depends"] = list(depends.difference(val))
 
