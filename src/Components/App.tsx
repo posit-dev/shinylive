@@ -650,6 +650,16 @@ export async function runExportedApp({
     console.warn(`[shinylive] Unrecognized app mode: ${appMode}`);
     appMode = "viewer";
   }
+  
+  const urlObj = {}; 
+  urlParams.forEach((v, k) => {
+    urlObj[k] = v;
+  }); 
+  
+  appFiles.push({
+    "name": ".urlParams", 
+    "content": JSON.stringify(urlObj)
+  });
 
   runApp(appRoot, appMode as AppMode, { startFiles: appFiles }, appEngine);
 }
