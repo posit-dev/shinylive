@@ -15,8 +15,8 @@
   },
   "shiny": {
     "name": "shiny",
-    "version": "1.5.1",
-    "filename": "shiny-1.5.1-py3-none-any.whl",
+    "version": "1.5.2.dev16",
+    "filename": "shiny-1.5.2.dev16-py3-none-any.whl",
     "sha256": null,
     "url": null,
     "depends": [
@@ -39,8 +39,8 @@
   },
   "shinywidgets": {
     "name": "shinywidgets",
-    "version": "0.5.2",
-    "filename": "shinywidgets-0.5.2-py3-none-any.whl",
+    "version": "0.7.1",
+    "filename": "shinywidgets-0.7.1-py3-none-any.whl",
     "sha256": null,
     "url": null,
     "depends": [
@@ -72,8 +72,8 @@
   },
   "faicons": {
     "name": "faicons",
-    "version": "0.2.2",
-    "filename": "faicons-0.2.2-py3-none-any.whl",
+    "version": "0.2.2.9000",
+    "filename": "faicons-0.2.2.9000-py3-none-any.whl",
     "sha256": null,
     "url": null,
     "depends": [
