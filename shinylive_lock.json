@@ -15,8 +15,8 @@
   },
   "shiny": {
     "name": "shiny",
-    "version": "1.5.1",
-    "filename": "shiny-1.5.1-py3-none-any.whl",
+    "version": "1.6.0",
+    "filename": "shiny-1.6.0-py3-none-any.whl",
     "sha256": null,
     "url": null,
     "depends": [
@@ -31,7 +31,8 @@
       {"name": "packaging", "specs": [[">=", "20.9"]]},
       {"name": "narwhals", "specs": [[">=", "1.10.0"]]},
       {"name": "orjson", "specs": [[">=", "3.10.7"]]},
-      {"name": "shinychat", "specs": [[">=", "0.1.0"]]}
+      {"name": "shinychat", "specs": [[">=", "0.1.0"]]},
+      {"name": "opentelemetry-api", "specs": [[">=", "1.20.0"]]}
     ],
     "imports": [
       "shiny"
@@ -576,6 +577,44 @@
     ],
     "imports": [
       "shinychat"
+    ]
+  },
+  "opentelemetry-api": {
+    "name": "opentelemetry-api",
+    "version": "1.40.0",
+    "filename": "opentelemetry_api-1.40.0-py3-none-any.whl",
+    "sha256": "82dd69331ae74b06f6a874704be0cfaa49a1650e1537d4a813b86ecef7d0ecf9",
+    "url": "https://files.pythonhosted.org/packages/5f/bf/93795954016c522008da367da292adceed71cca6ee1717e1d64c83089099/opentelemetry_api-1.40.0-py3-none-any.whl",
+    "depends": [
+      {"name": "importlib-metadata", "specs": [["<", "8.8.0"], [">=", "6.0"]]},
+      {"name": "typing-extensions", "specs": [[">=", "4.5.0"]]}
+    ],
+    "imports": [
+      "opentelemetry_api"
+    ]
+  },
+  "importlib-metadata": {
+    "name": "importlib-metadata",
+    "version": "9.0.0",
+    "filename": "importlib_metadata-9.0.0-py3-none-any.whl",
+    "sha256": "2d21d1cc5a017bd0559e36150c21c830ab1dc304dedd1b7ea85d20f45ef3edd7",
+    "url": "https://files.pythonhosted.org/packages/38/3d/2d244233ac4f76e38533cfcb2991c9eb4c7bf688ae0a036d30725b8faafe/importlib_metadata-9.0.0-py3-none-any.whl",
+    "depends": [
+      {"name": "zipp", "specs": [[">=", "3.20"]]}
+    ],
+    "imports": [
+      "importlib_metadata"
+    ]
+  },
+  "zipp": {
+    "name": "zipp",
+    "version": "3.23.0",
+    "filename": "zipp-3.23.0-py3-none-any.whl",
+    "sha256": "071652d6115ed432f5ce1d34c336c0adfd6a884660d1e9712a256d3d3bd4b14e",
+    "url": "https://files.pythonhosted.org/packages/2e/54/647ade08bf0db230bfea292f893923872fd20be6ac6f53b2b936ba839d75/zipp-3.23.0-py3-none-any.whl",
+    "depends": [],
+    "imports": [
+      "zipp"
     ]
   }
 }
