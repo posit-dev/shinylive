@@ -27,14 +27,14 @@ DIST_DIR = ./dist
 SITE_DIR = ./site
 SHINYLIVE_DIR = ./_shinylive
 
-# Read htmltools and shiny versions from the package code. It's done with grep
-# because if we try to load the package and read shiny.__version__, it requires
-# the packages to be loadable first, which isn't possible without their
-# dependencies being installed first.
-HTMLTOOLS_VERSION = $(shell grep '^__version__ = ' $(PACKAGE_DIR)/py-htmltools/htmltools/__init__.py | sed -E -e 's/^__version__ = "(.*)"/\1/')
-SHINY_VERSION = $(shell grep '^__version__ = ' $(PACKAGE_DIR)/py-shiny/shiny/_version.py | sed -E "s/.*['\"]([^'\"]+)['\"]/\1/")
-SHINYWIDGETS_VERSION = $(shell grep '^__version__ = ' $(PACKAGE_DIR)/py-shinywidgets/shinywidgets/__init__.py | sed -E -e 's/^__version__ = "(.*)"/\1/')
-FAICONS_VERSION = $(shell grep '^__version__ = ' $(PACKAGE_DIR)/py-faicons/faicons/__init__.py | sed -E -e 's/^__version__ = "(.*)"/\1/')
+# Extract package versions by grepping source files. Each package may define
+# __version__ in __init__.py, _version.py, or __version.py (hatch-vcs).
+# We use a consistent helper that checks all three locations.
+_get_version = $(shell grep '^__version__ = ' $(1)/__version.py $(1)/__init__.py $(1)/_version.py 2>/dev/null | head -1 | sed -E "s/.*['\"]([^'\"]+)['\"]/\1/")
+HTMLTOOLS_VERSION = $(call _get_version,$(PACKAGE_DIR)/py-htmltools/htmltools)
+SHINY_VERSION = $(call _get_version,$(PACKAGE_DIR)/py-shiny/shiny)
+SHINYWIDGETS_VERSION = $(call _get_version,$(PACKAGE_DIR)/py-shinywidgets/shinywidgets)
+FAICONS_VERSION = $(call _get_version,$(PACKAGE_DIR)/py-faicons/faicons)
 
 HTMLTOOLS_WHEEL = htmltools-$(HTMLTOOLS_VERSION)-py3-none-any.whl
 SHINY_WHEEL = shiny-$(SHINY_VERSION)-py3-none-any.whl
@@ -274,23 +274,22 @@ package-faicons: $(PACKAGE_DIR)/$(FAICONS_WHEEL)
 $(PACKAGE_DIR)/$(HTMLTOOLS_WHEEL): $(PYBIN) $(PACKAGE_DIR)/py-htmltools
 	# Remove any old copies of the package
 	rm -f $(PACKAGE_DIR)/htmltools*.whl
-	$(PYBIN)/pip install -e $(PACKAGE_DIR)/py-htmltools[dev]
-	. $(PYBIN)/activate && cd $(PACKAGE_DIR)/py-htmltools && make install && mv dist/*.whl ../
+	. $(PYBIN)/activate && cd $(PACKAGE_DIR)/py-htmltools && pip wheel --no-deps -w ../  .
 
 $(PACKAGE_DIR)/$(SHINY_WHEEL): $(PYBIN) $(PACKAGE_DIR)/py-shiny
 	# Remove any old copies of the package
 	rm -f $(PACKAGE_DIR)/shiny*.whl
-	. $(PYBIN)/activate && cd $(PACKAGE_DIR)/py-shiny && make install && mv dist/*.whl ../
+	. $(PYBIN)/activate && cd $(PACKAGE_DIR)/py-shiny && pip wheel --no-deps -w ../ .
 
 $(PACKAGE_DIR)/$(SHINYWIDGETS_WHEEL): $(PYBIN) $(PACKAGE_DIR)/py-shinywidgets
 	# Remove any old copies of the package
 	rm -f $(PACKAGE_DIR)/shinywidgets*.whl
-	. $(PYBIN)/activate && cd $(PACKAGE_DIR)/py-shinywidgets && make install && mv dist/*.whl ../
+	. $(PYBIN)/activate && cd $(PACKAGE_DIR)/py-shinywidgets && pip wheel --no-deps -w ../ .
 
 $(PACKAGE_DIR)/$(FAICONS_WHEEL): $(PYBIN) $(PACKAGE_DIR)/py-faicons
 	# Remove any old copies of the package
 	rm -f $(PACKAGE_DIR)/faicons*.whl
-	. $(PYBIN)/activate && cd $(PACKAGE_DIR)/py-faicons && make install && mv dist/*.whl ../
+	. $(PYBIN)/activate && cd $(PACKAGE_DIR)/py-faicons && pip wheel --no-deps -w ../ .
 
 $(PACKAGE_DIR)/$(LIBSASS_WHEEL): $(PYBIN) $(PACKAGE_DIR)/$(LIBSASS_WHEEL)
 	rm -f $(PACKAGE_DIR)/libsass*.whl
