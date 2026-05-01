@@ -33,7 +33,7 @@ SHINYLIVE_DIR = ./_shinylive
 # dependencies being installed first.
 HTMLTOOLS_VERSION = $(shell grep '^__version__ = ' $(PACKAGE_DIR)/py-htmltools/htmltools/__init__.py | sed -E -e 's/^__version__ = "(.*)"/\1/')
 SHINY_VERSION = $(shell grep '^__version__ = ' $(PACKAGE_DIR)/py-shiny/shiny/_version.py | sed -E "s/.*['\"]([^'\"]+)['\"]/\1/")
-SHINYWIDGETS_VERSION = $(shell grep '^__version__ = ' $(PACKAGE_DIR)/py-shinywidgets/shinywidgets/__init__.py | sed -E -e 's/^__version__ = "(.*)"/\1/')
+SHINYWIDGETS_VERSION = $(shell grep '^__version__ = ' $(PACKAGE_DIR)/py-shinywidgets/shinywidgets/__version.py 2>/dev/null | sed -E "s/.*['\"]([^'\"]+)['\"]/\1/" || grep '^__version__ = ' $(PACKAGE_DIR)/py-shinywidgets/shinywidgets/__init__.py | sed -E -e 's/^__version__ = "(.*)"/\1/')
 FAICONS_VERSION = $(shell grep '^__version__ = ' $(PACKAGE_DIR)/py-faicons/faicons/__init__.py | sed -E -e 's/^__version__ = "(.*)"/\1/')
 
 HTMLTOOLS_WHEEL = htmltools-$(HTMLTOOLS_VERSION)-py3-none-any.whl
