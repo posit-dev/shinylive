@@ -274,23 +274,22 @@ package-faicons: $(PACKAGE_DIR)/$(FAICONS_WHEEL)
 $(PACKAGE_DIR)/$(HTMLTOOLS_WHEEL): $(PYBIN) $(PACKAGE_DIR)/py-htmltools
 	# Remove any old copies of the package
 	rm -f $(PACKAGE_DIR)/htmltools*.whl
-	$(PYBIN)/pip install -e $(PACKAGE_DIR)/py-htmltools[dev]
-	. $(PYBIN)/activate && cd $(PACKAGE_DIR)/py-htmltools && make install && mv dist/*.whl ../
+	. $(PYBIN)/activate && cd $(PACKAGE_DIR)/py-htmltools && pip wheel --no-deps -w ../  .
 
 $(PACKAGE_DIR)/$(SHINY_WHEEL): $(PYBIN) $(PACKAGE_DIR)/py-shiny
 	# Remove any old copies of the package
 	rm -f $(PACKAGE_DIR)/shiny*.whl
-	. $(PYBIN)/activate && cd $(PACKAGE_DIR)/py-shiny && make install && mv dist/*.whl ../
+	. $(PYBIN)/activate && cd $(PACKAGE_DIR)/py-shiny && pip wheel --no-deps -w ../ .
 
 $(PACKAGE_DIR)/$(SHINYWIDGETS_WHEEL): $(PYBIN) $(PACKAGE_DIR)/py-shinywidgets
 	# Remove any old copies of the package
 	rm -f $(PACKAGE_DIR)/shinywidgets*.whl
-	. $(PYBIN)/activate && cd $(PACKAGE_DIR)/py-shinywidgets && pip wheel --no-deps -w dist . && mv dist/*.whl ../
+	. $(PYBIN)/activate && cd $(PACKAGE_DIR)/py-shinywidgets && pip wheel --no-deps -w ../ .
 
 $(PACKAGE_DIR)/$(FAICONS_WHEEL): $(PYBIN) $(PACKAGE_DIR)/py-faicons
 	# Remove any old copies of the package
 	rm -f $(PACKAGE_DIR)/faicons*.whl
-	. $(PYBIN)/activate && cd $(PACKAGE_DIR)/py-faicons && make install && mv dist/*.whl ../
+	. $(PYBIN)/activate && cd $(PACKAGE_DIR)/py-faicons && pip wheel --no-deps -w ../ .
 
 $(PACKAGE_DIR)/$(LIBSASS_WHEEL): $(PYBIN) $(PACKAGE_DIR)/$(LIBSASS_WHEEL)
 	rm -f $(PACKAGE_DIR)/libsass*.whl
