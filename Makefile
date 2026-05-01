@@ -285,7 +285,7 @@ $(PACKAGE_DIR)/$(SHINY_WHEEL): $(PYBIN) $(PACKAGE_DIR)/py-shiny
 $(PACKAGE_DIR)/$(SHINYWIDGETS_WHEEL): $(PYBIN) $(PACKAGE_DIR)/py-shinywidgets
 	# Remove any old copies of the package
 	rm -f $(PACKAGE_DIR)/shinywidgets*.whl
-	. $(PYBIN)/activate && cd $(PACKAGE_DIR)/py-shinywidgets && make install && mv dist/*.whl ../
+	. $(PYBIN)/activate && cd $(PACKAGE_DIR)/py-shinywidgets && pip wheel --no-deps -w dist . && mv dist/*.whl ../
 
 $(PACKAGE_DIR)/$(FAICONS_WHEEL): $(PYBIN) $(PACKAGE_DIR)/py-faicons
 	# Remove any old copies of the package
