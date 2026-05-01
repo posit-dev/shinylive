@@ -27,14 +27,14 @@ DIST_DIR = ./dist
 SITE_DIR = ./site
 SHINYLIVE_DIR = ./_shinylive
 
-# Read htmltools and shiny versions from the package code. It's done with grep
-# because if we try to load the package and read shiny.__version__, it requires
-# the packages to be loadable first, which isn't possible without their
-# dependencies being installed first.
-HTMLTOOLS_VERSION = $(shell grep '^__version__ = ' $(PACKAGE_DIR)/py-htmltools/htmltools/__init__.py | sed -E -e 's/^__version__ = "(.*)"/\1/')
-SHINY_VERSION = $(shell grep '^__version__ = ' $(PACKAGE_DIR)/py-shiny/shiny/_version.py | sed -E "s/.*['\"]([^'\"]+)['\"]/\1/")
-SHINYWIDGETS_VERSION = $(shell grep '^__version__ = ' $(PACKAGE_DIR)/py-shinywidgets/shinywidgets/__version.py 2>/dev/null | sed -E "s/.*['\"]([^'\"]+)['\"]/\1/" || grep '^__version__ = ' $(PACKAGE_DIR)/py-shinywidgets/shinywidgets/__init__.py | sed -E -e 's/^__version__ = "(.*)"/\1/')
-FAICONS_VERSION = $(shell grep '^__version__ = ' $(PACKAGE_DIR)/py-faicons/faicons/__init__.py | sed -E -e 's/^__version__ = "(.*)"/\1/')
+# Extract package versions by grepping source files. Each package may define
+# __version__ in __init__.py, _version.py, or __version.py (hatch-vcs).
+# We use a consistent helper that checks all three locations.
+_get_version = $(shell grep '^__version__ = ' $(1)/__version.py $(1)/__init__.py $(1)/_version.py 2>/dev/null | head -1 | sed -E "s/.*['\"]([^'\"]+)['\"]/\1/")
+HTMLTOOLS_VERSION = $(call _get_version,$(PACKAGE_DIR)/py-htmltools/htmltools)
+SHINY_VERSION = $(call _get_version,$(PACKAGE_DIR)/py-shiny/shiny)
+SHINYWIDGETS_VERSION = $(call _get_version,$(PACKAGE_DIR)/py-shinywidgets/shinywidgets)
+FAICONS_VERSION = $(call _get_version,$(PACKAGE_DIR)/py-faicons/faicons)
 
 HTMLTOOLS_WHEEL = htmltools-$(HTMLTOOLS_VERSION)-py3-none-any.whl
 SHINY_WHEEL = shiny-$(SHINY_VERSION)-py3-none-any.whl
