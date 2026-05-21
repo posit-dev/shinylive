@@ -1,12 +1,12 @@
 {
   "htmltools": {
     "name": "htmltools",
-    "version": "0.6.1",
-    "filename": "htmltools-0.6.1-py3-none-any.whl",
+    "version": "0.7.0",
+    "filename": "htmltools-0.7.0-py3-none-any.whl",
     "sha256": null,
     "url": null,
     "depends": [
-      {"name": "typing-extensions", "specs": [[">=", "3.10.0.0"]]},
+      {"name": "typing-extensions", "specs": [[">=", "4.12.0"]]},
       {"name": "packaging", "specs": [[">=", "20.9"]]}
     ],
     "imports": [
@@ -15,14 +15,14 @@
   },
   "shiny": {
     "name": "shiny",
-    "version": "1.6.1",
-    "filename": "shiny-1.6.1-py3-none-any.whl",
+    "version": "1.6.2",
+    "filename": "shiny-1.6.2-py3-none-any.whl",
     "sha256": null,
     "url": null,
     "depends": [
       {"name": "typing-extensions", "specs": [[">=", "4.10.0"]]},
       {"name": "starlette", "specs": []},
-      {"name": "htmltools", "specs": [[">=", "0.6.0"]]},
+      {"name": "htmltools", "specs": [[">=", "0.7.0"]]},
       {"name": "markdown-it-py", "specs": [[">=", "1.1.0"]]},
       {"name": "mdit-py-plugins", "specs": [[">=", "0.3.0"]]},
       {"name": "linkify-it-py", "specs": [[">=", "1.0"]]},
@@ -40,8 +40,8 @@
   },
   "shinywidgets": {
     "name": "shinywidgets",
-    "version": "0.8.0",
-    "filename": "shinywidgets-0.8.0-py3-none-any.whl",
+    "version": "0.8.1",
+    "filename": "shinywidgets-0.8.1-py3-none-any.whl",
     "sha256": null,
     "url": null,
     "depends": [
