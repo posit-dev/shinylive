@@ -51,7 +51,7 @@ export async function initWebR({
   try {
     await webRProxy.webR.objs.globalEnv.bind(".base_url", baseUrl);
     await webRProxy.runRAsync(
-      `webr::mount("/shinylive/library", "${baseUrl}library.data")`,
+      `webr::mount("/shinylive/library", "${baseUrl}library.data.gz")`,
     );
     await webRProxy.runRAsync(load_r_pre);
   } catch (e) {
