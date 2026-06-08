@@ -567,12 +567,12 @@
   },
   "shinychat": {
     "name": "shinychat",
-    "version": "0.2.8",
-    "filename": "shinychat-0.2.8-py3-none-any.whl",
-    "sha256": "6742a2354257280458269a8b5675f1254e5583be34b6eb1a626de44c0323286a",
-    "url": "https://files.pythonhosted.org/packages/16/01/8658eaffa920f4c621f05acc42ea98248147706079287b3a7ab4e47e1ece/shinychat-0.2.8-py3-none-any.whl",
+    "version": "0.4.0",
+    "filename": "shinychat-0.4.0-py3-none-any.whl",
+    "sha256": "3571b52b26f8a93d7a53a9d85f27207c8d2a081b5443d0b0f918adcc21a01d87",
+    "url": "https://files.pythonhosted.org/packages/9b/1b/05b670402b6d28298c5312e738697c35cf1be5c0f4ccdefa5a55f5710f6b/shinychat-0.4.0-py3-none-any.whl",
     "depends": [
-      {"name": "htmltools", "specs": [[">=", "0.6.0"]]},
+      {"name": "htmltools", "specs": [[">=", "0.7.0"]]},
       {"name": "shiny", "specs": [[">=", "1.4.0"]]}
     ],
     "imports": [
