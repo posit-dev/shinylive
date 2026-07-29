@@ -1,4 +1,5 @@
 import React, { useEffect } from "react";
+import { loadStatusStore } from "../load-status";
 import type { ProxyType, PyodideProxy } from "../pyodide-proxy";
 import { loadPyodideProxy } from "../pyodide-proxy";
 import * as utils from "../utils";
@@ -36,6 +37,9 @@ export async function initPyodide({
   if (!stdout) stdout = async (x: string) => console.log("pyodide echo:" + x);
   if (!stderr) stderr = (x: string) => console.error("pyodide error:" + x);
 
+  const status = loadStatusStore("python");
+
+  status.set("engine-download");
   const pyodideProxy = await loadPyodideProxy(
     {
       type: proxyType,
@@ -47,10 +51,15 @@ export async function initPyodide({
 
   let initError = false;
   try {
-    // One-time initialization of Python session
+    // One-time initialization of Python session. This await also loads the base
+    // packages, since the worker calls loadPackagesFromImports before running
+    // the code, so boot and package loading are reported as a single stage.
+    status.set("engine-start");
     await pyodideProxy.runPyAsync(load_python_pre);
+    status.set("ready");
   } catch (e) {
     initError = true;
+    status.set("failed", e instanceof Error ? e.message : String(e));
     console.error(e);
   }
 
@@ -127,7 +136,11 @@ export function usePyodide({
     (async () => {
       const pyodideProxyHandle = await pyodideProxyHandlePromise;
       setPyodideProxyHandle(pyodideProxyHandle);
-    })();
+    })().catch((e) => {
+      // Already surfaced to the user via the load status store; log it so it
+      // isn't an unhandled rejection.
+      console.error(e);
+    });
   }, [pyodideProxyHandlePromise]);
 
   return pyodideProxyHandle;

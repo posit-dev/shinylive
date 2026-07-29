@@ -1,9 +1,12 @@
 import * as React from "react";
+import { useLoadStatus } from "../hooks/useLoadStatus";
+import type { EngineName } from "../load-status";
+import { ENGINE_LABEL } from "../load-status";
 import type { PyodideProxy } from "../pyodide-proxy";
 import * as utils from "../utils";
 import type { WebRProxy } from "../webr-proxy";
 import type { ProxyHandle } from "./App";
-import { LoadingAnimation } from "./LoadingAnimation";
+import { LoadingStatus } from "./LoadingStatus";
 import "./Viewer.css";
 import type { FileContent } from "./filecontent";
 import skull from "./skull.svg";
@@ -128,6 +131,7 @@ export function Viewer({
   setViewerMethods,
   devMode = false,
   setWindowTitle = false,
+  engine,
 }: {
   proxyHandle: ProxyHandle;
   setViewerMethods: React.Dispatch<React.SetStateAction<ViewerMethods>>;
@@ -138,6 +142,7 @@ export function Viewer({
         defaultTitle: string;
       }
     | false;
+  engine: EngineName;
 }) {
   const viewerFrameRef = React.useRef<HTMLIFrameElement>(null);
   const [appRunningState, setAppRunningState] = React.useState<
@@ -147,6 +152,7 @@ export function Viewer({
   const [lastErrorMessage, setLastErrorMessage] = React.useState<string | null>(
     null,
   );
+  const engineStatus = useLoadStatus(engine);
 
   // Add effect to monitor iframe title changes
   React.useEffect(() => {
@@ -343,24 +349,30 @@ export function Viewer({
     });
   }, [proxyHandle.shinyReady]);
 
+  const engineFailed = engineStatus.stage === "failed";
+
   return (
     <div className="shinylive-viewer">
       <iframe ref={viewerFrameRef} className="app-frame" />
-      {appRunningState === "loading" ? (
-        <div className="loading-wrapper">
-          <LoadingAnimation />
-        </div>
-      ) : appRunningState === "errored" ? (
+      {engineFailed || appRunningState === "errored" ? (
         <div className="loading-wrapper loading-wrapper-error">
           <div className="error-alert">
             <div className="error-icon">
               <img src={skull} alt="skull" />
             </div>
-            <div className="error-message">Error starting app!</div>
+            <div className="error-message">
+              {engineFailed
+                ? `Error loading ${ENGINE_LABEL[engine]}!`
+                : "Error starting app!"}
+            </div>
             <div className="error-log">
-              <pre>{lastErrorMessage}</pre>
+              <pre>{engineFailed ? engineStatus.error : lastErrorMessage}</pre>
             </div>
           </div>
+        </div>
+      ) : appRunningState === "loading" ? (
+        <div className="loading-wrapper">
+          <LoadingStatus engine={engine} />
         </div>
       ) : null}
     </div>
