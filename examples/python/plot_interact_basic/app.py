@@ -24,25 +24,19 @@ app_ui = ui.page_fluid(
         """
         )
     ),
-    ui.row(
-        ui.column(
-            4,
-            ui.panel_well(
-                ui.input_radio_buttons(
-                    "plot_type", "Plot type", ["matplotlib", "plotnine"]
-                )
-            ),
+    ui.layout_columns(
+        ui.card(
+            ui.input_radio_buttons("plot_type", "Plot type", ["matplotlib", "plotnine"])
         ),
-        ui.column(
-            8,
-            ui.output_plot("plot1", click=True, dblclick=True, hover=True, brush=True),
-        ),
+        ui.output_plot("plot1", click=True, dblclick=True, hover=True, brush=True),
+        col_widths=[4, 8],
     ),
-    ui.row(
-        ui.column(3, ui.output_code("click_info")),
-        ui.column(3, ui.output_code("dblclick_info")),
-        ui.column(3, ui.output_code("hover_info")),
-        ui.column(3, ui.output_code("brush_info")),
+    ui.layout_columns(
+        ui.output_code("click_info"),
+        ui.output_code("dblclick_info"),
+        ui.output_code("hover_info"),
+        ui.output_code("brush_info"),
+        col_widths=[3, 3, 3, 3],
     ),
 )
 

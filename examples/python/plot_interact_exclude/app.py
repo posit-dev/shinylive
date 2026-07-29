@@ -21,10 +21,8 @@ app_ui = ui.page_fluid(
         """
         )
     ),
-    ui.row(
-        ui.column(2),
-        ui.column(
-            8,
+    ui.layout_columns(
+        ui.div(
             ui.output_plot("plot1", click=True, brush=True),
             ui.div(
                 {"style": "text-align: center"},
@@ -32,9 +30,12 @@ app_ui = ui.page_fluid(
                 ui.input_action_button("exclude_reset", "Reset"),
             ),
         ),
+        # Negative widths are empty columns, which centers the plot in 8 of 12.
+        col_widths=[-2, 8, -2],
     ),
-    ui.row(
-        ui.column(12, {"style": "margin-top: 15px;"}, ui.output_code("model")),
+    ui.div(
+        {"style": "margin-top: 15px;"},
+        ui.output_code("model"),
     ),
 )
 
