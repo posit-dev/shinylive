@@ -5,9 +5,7 @@ name: Test example apps
 # a build or a deploy.
 on:
   push:
-    branches: [main]
   pull_request:
-    branches: [main]
 
 jobs:
   check_examples_index:
