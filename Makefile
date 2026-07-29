@@ -356,12 +356,13 @@ examples-check-index:
 	node scripts/check_examples_index.mjs
 
 ## Run every example app in a browser and check for errors (needs `make all`)
-# Set EXAMPLES_SHARD to run part of the suite, as in `EXAMPLES_SHARD=1/4`. CI
-# splits the suite this way so each shard gets a runner, and therefore the full
-# memory, to itself.
+# Set EXAMPLES_ENGINE (`py` or `r`) and EXAMPLES_SHARD (as in `1/3`) to run part
+# of the suite. CI splits it both ways so every job gets a runner, and therefore
+# the full memory, to itself.
 examples-smoke-test: node_modules
 	npx playwright install --with-deps chromium
 	npx playwright test --config playwright-examples.config.ts \
+	  $(if $(EXAMPLES_ENGINE),--project=$(EXAMPLES_ENGINE)) \
 	  $(if $(EXAMPLES_SHARD),--shard=$(EXAMPLES_SHARD))
 
 ## Run tests

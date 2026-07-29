@@ -4,9 +4,6 @@ name: Test example apps
 # so they live in their own workflow: a problem with an example should not block
 # a build or a deploy.
 on:
-  # `pull_request` alone covers branch work. Listing an unfiltered `push` as well
-  # would run this whole workflow twice for every push to a PR branch, on the
-  # same commit.
   push:
     branches: [main]
   pull_request:
@@ -34,17 +31,21 @@ jobs:
   # workflow has no `needs` relationship to that one, so a broken example still
   # cannot block a build or a deploy.
   #
-  # The suite is sharded so each shard has a runner to itself -- every test boots
-  # a whole Pyodide or webR instance, so they want memory rather than cores, and
-  # sharing one runner between parallel workers would squeeze all of them. Four
-  # shards puts the slowest job around four minutes; past that the per-shard
-  # build cost stops paying for itself.
+  # Split by engine and then sharded, so every job has a runner to itself --
+  # each test boots a whole Pyodide or webR instance, so they want memory rather
+  # than cores, and parallel workers inside one runner would squeeze all of them.
+  #
+  # Splitting by engine first matters because R examples cost roughly 29s each
+  # against 17s for Python, and playwright assigns shards in contiguous blocks.
+  # Sharding the combined suite therefore piled all 11 R tests into the last
+  # shard, which then ran 45% longer than its siblings while they sat idle.
   examples-smoke-test:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        shard: [1, 2, 3, 4]
+        engine: [py, r]
+        shard: [1, 2, 3]
     steps:
       - uses: actions/checkout@v5
 
@@ -64,15 +65,16 @@ jobs:
         run: |
           make all
 
-      - name: Run examples smoke test (shard ${{ matrix.shard }}/4)
+      - name: Run examples smoke test (${{ matrix.engine }} shard ${{ matrix.shard }}/3)
         env:
-          EXAMPLES_SHARD: ${{ matrix.shard }}/4
+          EXAMPLES_ENGINE: ${{ matrix.engine }}
+          EXAMPLES_SHARD: ${{ matrix.shard }}/3
         run: |
           make examples-smoke-test
 
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: examples-smoke-test-report-${{ matrix.shard }}
+          name: examples-smoke-test-report-${{ matrix.engine }}-${{ matrix.shard }}
           path: playwright-report/
           retention-days: 30

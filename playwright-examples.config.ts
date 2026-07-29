@@ -1,5 +1,6 @@
 import type { PlaywrightTestConfig } from "@playwright/test";
 import { devices } from "@playwright/test";
+import { APP_ENGINES } from "./playwright/examples-smoke-helpers";
 
 /**
  * Config for the examples smoke test (`make examples-smoke-test`).
@@ -22,11 +23,12 @@ const config: PlaywrightTestConfig = {
 
   // Each test runs a whole Pyodide or webR instance, so these are memory-hungry
   // rather than CPU-bound. `workers: 1` gives each engine the runner to itself;
-  // wall-clock time comes from sharding across CI jobs instead, so a shard never
-  // has to share memory with a sibling. See `make examples-smoke-test`.
+  // wall-clock time comes from splitting across CI jobs by engine and shard
+  // instead, so a shard never has to share memory with a sibling. See
+  // `make examples-smoke-test`.
   //
   // `fullyParallel` is required for that: sharding is file-granular without it,
-  // and this suite is a single file, so shard 1 would take all 38 tests and the
+  // and this suite is a single file, so shard 1 would take every test and the
   // rest would take none.
   fullyParallel: true,
   workers: 1,
@@ -41,7 +43,21 @@ const config: PlaywrightTestConfig = {
     trace: "retain-on-failure",
   },
 
-  projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
+  // One project per engine, so CI can give each its own shard count with
+  // `--project`. Pyodide and webR examples cost very different amounts -- around
+  // 17s and 29s per test respectively on a CI runner -- and playwright assigns
+  // shards in contiguous blocks, so sharding the combined suite dumps every R
+  // test into the last shard and leaves it as the long pole.
+  //
+  // Matching on the `engine:` marker rather than the engine name alone is
+  // deliberate: a test's grep target includes the project name and the spec's
+  // path, so `r examples` would also match the `r examples-smoke.spec.ts` that
+  // appears in every Python test's target under project "r".
+  projects: APP_ENGINES.map((engine) => ({
+    name: engine,
+    grep: new RegExp(`engine:${engine}\\b`),
+    use: { ...devices["Desktop Chrome"] },
+  })),
 
   webServer: {
     // Shinylive registers a service worker, which browsers only allow over

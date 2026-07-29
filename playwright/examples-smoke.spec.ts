@@ -24,7 +24,12 @@ import {
 for (const engine of APP_ENGINES) {
   const examples = readExamplesJson(engine);
 
-  test.describe(`${engine} examples`, () => {
+  // The `engine:` marker is what playwright-examples.config.ts greps on to build
+  // a project per engine. It has to be a token that appears nowhere else in a
+  // test's grep target, because that target includes the project name and the
+  // spec's own path -- so for project "r" a plain "r examples" would also match
+  // the "r examples-smoke.spec.ts" in every Python test's target.
+  test.describe(`engine:${engine}`, () => {
     for (const title of exampleAppTitles(examples)) {
       test(title, async ({ page }) => {
         const consoleErrors: string[] = [];
