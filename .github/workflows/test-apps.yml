@@ -17,7 +17,7 @@ jobs:
   examples-check-index:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
 
       - name: Check that all examples are indexed
         run: |
@@ -47,10 +47,10 @@ jobs:
         engine: [py, r]
         shard: [1, 2, 3]
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
 
       - name: Set up Python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v7
         with:
           python-version: "3.11"
 
@@ -72,7 +72,7 @@ jobs:
         run: |
           make examples-smoke-test
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: examples-smoke-test-report-${{ matrix.engine }}-${{ matrix.shard }}
