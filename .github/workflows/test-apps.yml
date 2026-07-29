@@ -8,11 +8,50 @@ on:
   pull_request:
 
 jobs:
-  check_examples_index:
+  examples-check-index:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
 
       - name: Check that all examples are indexed
         run: |
-          make check_examples_index
+          make examples-check-index
+
+  # Loads every indexed example in a real browser, for both engines, and fails
+  # on tracebacks, deprecation warnings, output errors, or JS console errors.
+  #
+  # This has to build shinylive first, because it drives the built `_shinylive/`
+  # output. It deliberately does not reuse the artifact from build.yml: this
+  # workflow has no `needs` relationship to that one, so a broken example still
+  # cannot block a build or a deploy.
+  examples-smoke-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+
+      - name: Upgrade pip
+        run: python -m pip install --upgrade pip
+
+      - name: Check out submodules
+        run: |
+          make submodules
+
+      - name: Build shinylive
+        run: |
+          make all
+
+      - name: Run examples smoke test
+        run: |
+          make examples-smoke-test
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: examples-smoke-test-report
+          path: playwright-report/
+          retention-days: 30

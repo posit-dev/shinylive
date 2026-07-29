@@ -10,7 +10,7 @@
 	packages \
 	quarto quartoserve \
 	clean-packages clean distclean \
-	check_examples_index test test-watch webr \
+	examples-check-index examples-smoke-test test test-watch webr \
 	_shinylive
 
 .DEFAULT_GOAL := help
@@ -352,8 +352,13 @@ distclean: clean
 	rm -rf $(VENV) $(DOWNLOAD_DIR)
 
 ## Check that every example on disk is listed in examples/index.json
-check_examples_index:
+examples-check-index:
 	node scripts/check_examples_index.mjs
+
+## Run every example app in a browser and check for errors (needs `make all`)
+examples-smoke-test: node_modules
+	npx playwright install --with-deps chromium
+	npx playwright test --config playwright-examples.config.ts
 
 ## Run tests
 test:
