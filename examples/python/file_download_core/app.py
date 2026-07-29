@@ -7,31 +7,21 @@ import matplotlib.pyplot as plt
 import numpy as np
 from shiny import App, render, ui
 
-
-# A card component wrapper.
-def ui_card(title, *args):
-    return (
-        ui.div(
-            {"class": "card mb-4"},
-            ui.div(title, class_="card-header"),
-            ui.div({"class": "card-body"}, *args),
-        ),
-    )
-
-
 app_ui = ui.page_fluid(
-    ui_card(
-        "Download a pre-existing file, using its existing name on disk.",
+    ui.card(
+        ui.card_header(
+            "Download a pre-existing file, using its existing name on disk."
+        ),
         ui.download_button("download1", "Download CSV"),
     ),
-    ui_card(
-        "Download a PNG that is generated dynamically.",
+    ui.card(
+        ui.card_header("Download a PNG that is generated dynamically."),
         ui.input_text("title", "Plot title", "Random scatter plot"),
         ui.input_slider("num_points", "Number of data points", 1, 100, 50),
         ui.download_button("download2", "Download PNG"),
     ),
-    ui_card(
-        "Download a file with name that is generated dynamically.",
+    ui.card(
+        ui.card_header("Download a file with name that is generated dynamically."),
         ui.download_button("download3", "Download CSV"),
     ),
 )

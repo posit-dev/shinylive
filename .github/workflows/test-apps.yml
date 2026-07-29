@@ -5,14 +5,76 @@ name: Test example apps
 # a build or a deploy.
 on:
   push:
+    branches: [main]
   pull_request:
 
+# A new push to a PR makes the in-flight run for the previous commit redundant.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  check_examples_index:
+  examples-check-index:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
 
       - name: Check that all examples are indexed
         run: |
-          make check_examples_index
+          make examples-check-index
+
+  # Loads every indexed example in a real browser, for both engines, and fails
+  # on tracebacks, deprecation warnings, output errors, or JS console errors.
+  #
+  # This has to build shinylive first, because it drives the built `_shinylive/`
+  # output. It deliberately does not reuse the artifact from build.yml: this
+  # workflow has no `needs` relationship to that one, so a broken example still
+  # cannot block a build or a deploy.
+  #
+  # Split by engine and then sharded, so every job has a runner to itself --
+  # each test boots a whole Pyodide or webR instance, so they want memory rather
+  # than cores, and parallel workers inside one runner would squeeze all of them.
+  #
+  # Splitting by engine first matters because R examples cost roughly 29s each
+  # against 17s for Python, and playwright assigns shards in contiguous blocks.
+  # Sharding the combined suite therefore piled all 11 R tests into the last
+  # shard, which then ran 45% longer than its siblings while they sat idle.
+  examples-smoke-test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        engine: [py, r]
+        shard: [1, 2, 3]
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.11"
+
+      - name: Upgrade pip
+        run: python -m pip install --upgrade pip
+
+      - name: Check out submodules
+        run: |
+          make submodules
+
+      - name: Build shinylive
+        run: |
+          make all
+
+      - name: Run examples smoke test (${{ matrix.engine }} shard ${{ matrix.shard }}/3)
+        env:
+          EXAMPLES_ENGINE: ${{ matrix.engine }}
+          EXAMPLES_SHARD: ${{ matrix.shard }}/3
+        run: |
+          make examples-smoke-test
+
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: examples-smoke-test-report-${{ matrix.engine }}-${{ matrix.shard }}
+          path: playwright-report/
+          retention-days: 30
