@@ -15,13 +15,13 @@
   },
   "shiny": {
     "name": "shiny",
-    "version": "1.6.4",
-    "filename": "shiny-1.6.4-py3-none-any.whl",
+    "version": "1.7.0",
+    "filename": "shiny-1.7.0-py3-none-any.whl",
     "sha256": null,
     "url": null,
     "depends": [
       {"name": "typing-extensions", "specs": [[">=", "4.10.0"]]},
-      {"name": "starlette", "specs": []},
+      {"name": "starlette", "specs": [[">=", "0.17.1"]]},
       {"name": "htmltools", "specs": [[">=", "0.7.0"]]},
       {"name": "markdown-it-py", "specs": [[">=", "1.1.0"]]},
       {"name": "mdit-py-plugins", "specs": [[">=", "0.3.0"]]},
@@ -32,7 +32,7 @@
       {"name": "narwhals", "specs": [[">=", "1.10.0"]]},
       {"name": "orjson", "specs": [[">=", "3.10.7"]]},
       {"name": "shinychat", "specs": [[">=", "0.1.0"]]},
-      {"name": "opentelemetry-api", "specs": [[">=", "1.20.0"]]}
+      {"name": "opentelemetry-api", "specs": [[">=", "1.24.0"]]}
     ],
     "imports": [
       "shiny"
@@ -57,15 +57,15 @@
   },
   "shinyswatch": {
     "name": "shinyswatch",
-    "version": "0.11.0",
-    "filename": "shinyswatch-0.11.0-py3-none-any.whl",
-    "sha256": "2c4dd5036d00fe8f8bcd5ed90e8b433cfa64cfcff7b91424a768c0df9cd7e6ed",
-    "url": "https://files.pythonhosted.org/packages/15/c2/7498240c02e46be103e70ad8e938f9898afe8047c4e690b50b7b11140a5c/shinyswatch-0.11.0-py3-none-any.whl",
+    "version": "0.12.0",
+    "filename": "shinyswatch-0.12.0-py3-none-any.whl",
+    "sha256": "3b37fadbbf353e7c234c2d0972ba0ea90784559aca37d1e17a4c977fece036e9",
+    "url": "https://files.pythonhosted.org/packages/37/e6/f72496868dd078403ad3a7b8ad61f292149522877fdccb5007d66346ac0e/shinyswatch-0.12.0-py3-none-any.whl",
     "depends": [
       {"name": "typing-extensions", "specs": [[">=", "3.10.0.0"]]},
       {"name": "packaging", "specs": [[">=", "20.9"]]},
       {"name": "htmltools", "specs": [[">=", "0.2.0"]]},
-      {"name": "shiny", "specs": [[">=", "1.6.3"]]}
+      {"name": "shiny", "specs": [[">=", "1.7.0"]]}
     ],
     "imports": [
       "shinyswatch"
