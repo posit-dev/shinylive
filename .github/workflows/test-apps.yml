@@ -4,8 +4,17 @@ name: Test example apps
 # so they live in their own workflow: a problem with an example should not block
 # a build or a deploy.
 on:
+  # `pull_request` alone covers branch work. Listing an unfiltered `push` as well
+  # would run this whole workflow twice for every push to a PR branch, on the
+  # same commit.
   push:
+    branches: [main]
   pull_request:
+
+# A new push to a PR makes the in-flight run for the previous commit redundant.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
   examples-check-index:
@@ -24,8 +33,18 @@ jobs:
   # output. It deliberately does not reuse the artifact from build.yml: this
   # workflow has no `needs` relationship to that one, so a broken example still
   # cannot block a build or a deploy.
+  #
+  # The suite is sharded so each shard has a runner to itself -- every test boots
+  # a whole Pyodide or webR instance, so they want memory rather than cores, and
+  # sharing one runner between parallel workers would squeeze all of them. Four
+  # shards puts the slowest job around four minutes; past that the per-shard
+  # build cost stops paying for itself.
   examples-smoke-test:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4]
     steps:
       - uses: actions/checkout@v5
 
@@ -45,13 +64,15 @@ jobs:
         run: |
           make all
 
-      - name: Run examples smoke test
+      - name: Run examples smoke test (shard ${{ matrix.shard }}/4)
+        env:
+          EXAMPLES_SHARD: ${{ matrix.shard }}/4
         run: |
           make examples-smoke-test
 
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: examples-smoke-test-report
+          name: examples-smoke-test-report-${{ matrix.shard }}
           path: playwright-report/
           retention-days: 30

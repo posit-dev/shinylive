@@ -21,9 +21,14 @@ const config: PlaywrightTestConfig = {
   expect: { timeout: 30 * 1000 },
 
   // Each test runs a whole Pyodide or webR instance, so these are memory-hungry
-  // rather than CPU-bound. One at a time keeps them well clear of the runner's
-  // limits; the whole suite still finishes in a few minutes.
-  fullyParallel: false,
+  // rather than CPU-bound. `workers: 1` gives each engine the runner to itself;
+  // wall-clock time comes from sharding across CI jobs instead, so a shard never
+  // has to share memory with a sibling. See `make examples-smoke-test`.
+  //
+  // `fullyParallel` is required for that: sharding is file-granular without it,
+  // and this suite is a single file, so shard 1 would take all 38 tests and the
+  // rest would take none.
+  fullyParallel: true,
   workers: 1,
 
   forbidOnly: !!process.env.CI,
