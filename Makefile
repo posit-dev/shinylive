@@ -10,7 +10,7 @@
 	packages \
 	quarto quartoserve \
 	clean-packages clean distclean \
-	test test-watch webr \
+	check_examples_index test test-watch webr \
 	_shinylive
 
 .DEFAULT_GOAL := help
@@ -350,6 +350,10 @@ clean:
 ## Remove all build files, venv/, and downloads/
 distclean: clean
 	rm -rf $(VENV) $(DOWNLOAD_DIR)
+
+## Check that every example on disk is listed in examples/index.json
+check_examples_index:
+	node scripts/check_examples_index.mjs
 
 ## Run tests
 test:
