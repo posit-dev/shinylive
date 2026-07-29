@@ -239,7 +239,10 @@ self.onmessage = async function (e: MessageEvent): Promise<void> {
       });
     }
   } catch (e) {
-    if (e instanceof pyodide.ffi.PythonError) {
+    if (
+      typeof pyodide !== "undefined" &&
+      e instanceof pyodide.ffi.PythonError
+    ) {
       e.message = pyUtils.shortFormatLastTraceback();
     }
 
