@@ -3,14 +3,10 @@ from pathlib import Path
 from shiny import App, render, ui
 
 app_ui = ui.page_fluid(
-    ui.row(
-        ui.column(
-            6, ui.input_slider("n", "Make a Shiny square:", min=0, max=6, value=2)
-        ),
-        ui.column(
-            6,
-            ui.output_ui("images"),
-        ),
+    ui.layout_columns(
+        ui.input_slider("n", "Make a Shiny square:", min=0, max=6, value=2),
+        ui.output_ui("images"),
+        col_widths=[6, 6],
     )
 )
 
@@ -21,7 +17,6 @@ def square(x: ui.TagChild, n: int) -> ui.Tag:
 
 
 def server(input, output, session):
-    @output
     @render.ui
     def images() -> ui.Tag:
         img = ui.img(src="logo.png", style="width: 40px;")

@@ -21,32 +21,28 @@ app_ui = ui.page_fluid(
         """
         )
     ),
-    ui.row(
-        ui.column(
-            4,
-            ui.panel_well(
-                ui.input_checkbox("facet", "Use facets", False),
-                ui.input_radio_buttons(
-                    "brush_dir", "Brush direction", ["xy", "x", "y"], inline=True
-                ),
-                ui.input_checkbox(
-                    "fast",
-                    f"Fast hovering/brushing (throttled with {FAST_INTERACT_INTERVAL}ms interval)",
-                ),
-                ui.input_checkbox("all_rows", "Return all rows in data frame", False),
-                ui.input_slider(
-                    "max_distance", "Max distance of point from hover", 1, 20, 5
-                ),
+    ui.layout_columns(
+        ui.card(
+            ui.input_checkbox("facet", "Use facets", False),
+            ui.input_radio_buttons(
+                "brush_dir", "Brush direction", ["xy", "x", "y"], inline=True
+            ),
+            ui.input_checkbox(
+                "fast",
+                f"Fast hovering/brushing (throttled with {FAST_INTERACT_INTERVAL}ms interval)",
+            ),
+            ui.input_checkbox("all_rows", "Return all rows in data frame", False),
+            ui.input_slider(
+                "max_distance", "Max distance of point from hover", 1, 20, 5
             ),
         ),
-        ui.column(
-            8,
-            ui.output_ui("plot_ui"),
-        ),
+        ui.output_ui("plot_ui"),
+        col_widths=[4, 8],
     ),
-    ui.row(
-        ui.column(6, ui.tags.b("Points near cursor"), ui.output_table("near_hover")),
-        ui.column(6, ui.tags.b("Points in brush"), ui.output_table("in_brush")),
+    ui.layout_columns(
+        ui.div(ui.tags.b("Points near cursor"), ui.output_table("near_hover")),
+        ui.div(ui.tags.b("Points in brush"), ui.output_table("in_brush")),
+        col_widths=[6, 6],
     ),
 )
 
@@ -98,22 +94,3 @@ def server(input, output, session):
 
 
 app = App(app_ui, server)
-
-
-def format_table(df: pd.DataFrame):
-    return (
-        df.style.set_table_attributes('class="dataframe shiny-table table w-auto"')
-        .hide(axis="index")  # pyright: reportUnknownMemberType=false
-        .set_table_styles(
-            [
-                dict(selector="th", props=[("text-align", "right")]),
-                dict(
-                    selector="tr>td",
-                    props=[
-                        ("padding-top", "0.1rem"),
-                        ("padding-bottom", "0.1rem"),
-                    ],
-                ),
-            ]  # pyright: reportGeneralTypeIssues=false
-        )
-    )
