@@ -365,6 +365,13 @@ examples-smoke-test: node_modules
 	  $(if $(EXAMPLES_ENGINE),--project=$(EXAMPLES_ENGINE)) \
 	  $(if $(EXAMPLES_SHARD),--shard=$(EXAMPLES_SHARD))
 
+## Run example app intent tests in a browser (needs `make all`)
+examples-intent-test: node_modules
+	npx playwright install --with-deps chromium
+	npx playwright test --config playwright-examples.config.ts \
+	  playwright/examples-intent.spec.ts \
+	  $(if $(EXAMPLES_ENGINE),--project=$(EXAMPLES_ENGINE))
+
 ## Run tests
 test:
 	npm run playwright test

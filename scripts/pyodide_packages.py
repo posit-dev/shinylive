@@ -690,6 +690,15 @@ def orig_pyodide_lock() -> PyodidePackagesFile:
             + f" Copying {os.path.relpath(pyodide_lock_json_file)} to {os.path.relpath(orig_pyodide_lock_json_file)}."
         )
         shutil.copy(pyodide_lock_json_file, orig_pyodide_lock_json_file)
+    else:
+        try:
+            with open(pyodide_lock_json_file, "r") as f_new, open(orig_pyodide_lock_json_file, "r") as f_orig:
+                new_info = json.load(f_new).get("info", {})
+                orig_info = json.load(f_orig).get("info", {})
+                if new_info.get("version") != orig_info.get("version"):
+                    shutil.copy(pyodide_lock_json_file, orig_pyodide_lock_json_file)
+        except Exception:
+            shutil.copy(pyodide_lock_json_file, orig_pyodide_lock_json_file)
 
     with open(orig_pyodide_lock_json_file, "r") as f:
         pyodide_packages_info = cast(PyodidePackagesFile, json.load(f))

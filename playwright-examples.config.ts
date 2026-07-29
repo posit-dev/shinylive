@@ -14,7 +14,7 @@ import { APP_ENGINES } from "./playwright/examples-smoke-helpers";
  */
 const config: PlaywrightTestConfig = {
   testDir: "./playwright",
-  testMatch: /examples-smoke\.spec\.ts/,
+  testMatch: /examples-(smoke|intent)\.spec\.ts/,
 
   // Each test boots an engine from scratch, and the assertions inside have
   // their own tighter timeouts.
