@@ -1,5 +1,6 @@
 import React, { useEffect } from "react";
 import { ChannelType } from "webr";
+import { loadStatusStore } from "../load-status";
 import * as utils from "../utils";
 import type { WebRProxy } from "../webr-proxy";
 import { loadWebRProxy } from "../webr-proxy";
@@ -38,6 +39,9 @@ export async function initWebR({
     : ChannelType.PostMessage;
   const baseUrl = utils.currentScriptDir() + "/webr/";
 
+  const status = loadStatusStore("r");
+
+  status.set("engine-download");
   const webRProxy = await loadWebRProxy(
     {
       baseUrl,
@@ -49,13 +53,16 @@ export async function initWebR({
 
   let initError = false;
   try {
+    status.set("engine-start");
     await webRProxy.webR.objs.globalEnv.bind(".base_url", baseUrl);
     await webRProxy.runRAsync(
       `webr::mount("/shinylive/library", "${baseUrl}library.data.gz")`,
     );
     await webRProxy.runRAsync(load_r_pre);
+    status.set("ready");
   } catch (e) {
     initError = true;
+    status.set("failed", e instanceof Error ? e.message : String(e));
     console.error(e);
   }
 
@@ -121,7 +128,11 @@ export function useWebR({
     (async () => {
       const webRProxyHandle = await webRProxyHandlePromise;
       setwebRProxyHandle(webRProxyHandle);
-    })();
+    })().catch((e) => {
+      // Already surfaced to the user via the load status store; log it so it
+      // isn't an unhandled rejection.
+      console.error(e);
+    });
   }, [webRProxyHandlePromise]);
 
   return webRProxyHandle;

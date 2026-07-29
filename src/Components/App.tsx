@@ -11,6 +11,7 @@ import { initPyodide, initShiny, usePyodide } from "../hooks/usePyodide";
 import { useRunOnceOnMount } from "../hooks/useRunOnceOnMount";
 import type { WebRProxyHandle } from "../hooks/useWebR";
 import { initRShiny, initWebR, useWebR } from "../hooks/useWebR";
+import { loadStatusStore } from "../load-status";
 import type { ProxyType } from "../pyodide-proxy";
 import "./App.css";
 import { type EditorMethods } from "./Editor";
@@ -138,30 +139,38 @@ function ensurePyodideProxyHandlePromise({
 }): Promise<PyodideProxyHandle> {
   if (!pyodideProxyHandlePromise) {
     pyodideProxyHandlePromise = (async (): Promise<PyodideProxyHandle> => {
-      let pyodideProxyHandle = await initPyodide({
-        proxyType,
-        stdout: terminalInterface.echo,
-        stderr: terminalInterface.error,
-      });
+      try {
+        let pyodideProxyHandle = await initPyodide({
+          proxyType,
+          stdout: terminalInterface.echo,
+          stderr: terminalInterface.error,
+        });
 
-      if (shiny) {
-        pyodideProxyHandle = await initShiny({ pyodideProxyHandle });
-      }
+        if (shiny) {
+          pyodideProxyHandle = await initShiny({ pyodideProxyHandle });
+        }
 
-      if (!pyodideProxyHandle.initError) {
-        terminalInterface.clear();
+        if (!pyodideProxyHandle.initError) {
+          terminalInterface.clear();
 
-        if (showStartBanner) {
-          // When we get here, .ready will always be true.
-          if (pyodideProxyHandle.ready) {
-            await pyodideProxyHandle.pyodide.runPyAsync(
-              `print(pyodide.console.BANNER); print(" ")`,
-            );
+          if (showStartBanner) {
+            // When we get here, .ready will always be true.
+            if (pyodideProxyHandle.ready) {
+              await pyodideProxyHandle.pyodide.runPyAsync(
+                `print(pyodide.console.BANNER); print(" ")`,
+              );
+            }
           }
         }
-      }
 
-      return pyodideProxyHandle;
+        return pyodideProxyHandle;
+      } catch (e) {
+        loadStatusStore("python").set(
+          "failed",
+          e instanceof Error ? e.message : String(e),
+        );
+        throw e;
+      }
     })();
   }
   return pyodideProxyHandlePromise;
@@ -174,20 +183,28 @@ function ensureWebRProxyHandlePromise({
 }): Promise<WebRProxyHandle> {
   if (!webRProxyHandlePromise) {
     webRProxyHandlePromise = (async (): Promise<WebRProxyHandle> => {
-      let webRProxyHandle = await initWebR({
-        stdout: terminalInterface.echo,
-        stderr: terminalInterface.error,
-      });
+      try {
+        let webRProxyHandle = await initWebR({
+          stdout: terminalInterface.echo,
+          stderr: terminalInterface.error,
+        });
 
-      if (shiny) {
-        webRProxyHandle = await initRShiny({ webRProxyHandle });
+        if (shiny) {
+          webRProxyHandle = await initRShiny({ webRProxyHandle });
+        }
+
+        if (!webRProxyHandle.initError) {
+          terminalInterface.clear();
+        }
+
+        return webRProxyHandle;
+      } catch (e) {
+        loadStatusStore("r").set(
+          "failed",
+          e instanceof Error ? e.message : String(e),
+        );
+        throw e;
       }
-
-      if (!webRProxyHandle.initError) {
-        terminalInterface.clear();
-      }
-
-      return webRProxyHandle;
     })();
   }
   return webRProxyHandlePromise as Promise<WebRProxyHandle>;
@@ -432,6 +449,7 @@ export function App({
             setViewerMethods={setViewerMethods}
             devMode={true}
             setWindowTitle={appOptions.setWindowTitle}
+            engine={appEngine}
           />
         </ResizableGrid>
       </>
@@ -483,6 +501,7 @@ export function App({
             setViewerMethods={setViewerMethods}
             devMode={true}
             setWindowTitle={appOptions.setWindowTitle}
+            engine={appEngine}
           />
         </ResizableGrid>
       </>
@@ -588,6 +607,7 @@ export function App({
           setViewerMethods={setViewerMethods}
           devMode={true}
           setWindowTitle={appOptions.setWindowTitle}
+          engine={appEngine}
         />
       </ResizableGrid>
     );
@@ -611,6 +631,7 @@ export function App({
             setViewerMethods={setViewerMethods}
             devMode={false}
             setWindowTitle={appOptions.setWindowTitle}
+            engine={appEngine}
           />
         </div>
       </>
