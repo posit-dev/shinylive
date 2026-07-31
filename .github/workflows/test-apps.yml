@@ -25,6 +25,8 @@ jobs:
 
   # Loads every indexed example in a real browser, for both engines, and fails
   # on tracebacks, deprecation warnings, output errors, or JS console errors.
+  # Runs the intent tests alongside it, which drive each app's inputs and check
+  # the outputs that depend on them.
   #
   # This has to build shinylive first, because it drives the built `_shinylive/`
   # output. It deliberately does not reuse the artifact from build.yml: this
@@ -65,7 +67,7 @@ jobs:
         run: |
           make all
 
-      - name: Run examples smoke test (${{ matrix.engine }} shard ${{ matrix.shard }}/3)
+      - name: Run examples smoke and intent tests (${{ matrix.engine }} shard ${{ matrix.shard }}/3)
         env:
           EXAMPLES_ENGINE: ${{ matrix.engine }}
           EXAMPLES_SHARD: ${{ matrix.shard }}/3

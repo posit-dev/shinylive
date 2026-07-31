@@ -3,6 +3,7 @@ import { expect } from "@playwright/test";
 import * as fs from "fs";
 import * as path from "path";
 import type { ExampleIndexJson } from "../src/examples";
+import type { ShinyApp } from "./controllers";
 
 /**
  * Kept in sync by hand with sanitizeTitleForUrl() in src/examples.ts. Importing
@@ -25,6 +26,9 @@ export type SmokeEngine = (typeof APP_ENGINES)[number];
 
 /** Where `make _shinylive` puts the built sites. */
 const SHINYLIVE_DIR = path.join(__dirname, "..", "_shinylive");
+
+/** The iframe shinylive renders the app into. */
+const APP_FRAME = ".app-frame";
 
 /**
  * Categories whose entries are not Shiny apps and so have nothing to smoke
@@ -73,6 +77,8 @@ function exampleUrl(engine: SmokeEngine, title: string): string {
 /**
  * Open one example in a fresh page and wait for its app to render.
  *
+ * Returns the running app, ready to hand to the controllers in ./controllers.
+ *
  * Every example gets its own page rather than sharing one warm engine session.
  * A warm session is faster in principle, but switching examples inside one
  * races against the outgoing app: pending proxied requests hit a
@@ -86,7 +92,7 @@ export async function openExample(
   page: Page,
   engine: SmokeEngine,
   title: string,
-): Promise<void> {
+): Promise<ShinyApp> {
   await page.goto(exampleUrl(engine, title), {
     waitUntil: "domcontentloaded",
   });
@@ -101,6 +107,8 @@ export async function openExample(
   ).toHaveText(title);
 
   await waitForAppRendered(page);
+
+  return { page, root: page.frameLocator(APP_FRAME) };
 }
 
 /** Wait for the REPL prompt, which means the engine has finished booting. */

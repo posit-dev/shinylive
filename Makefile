@@ -355,7 +355,7 @@ distclean: clean
 examples-check-index:
 	node scripts/check_examples_index.mjs
 
-## Run every example app in a browser and check for errors (needs `make all`)
+## Run the smoke and intent tests for every example app (needs `make all`)
 # Set EXAMPLES_ENGINE (`py` or `r`) and EXAMPLES_SHARD (as in `1/3`) to run part
 # of the suite. CI splits it both ways so every job gets a runner, and therefore
 # the full memory, to itself.
@@ -365,12 +365,13 @@ examples-smoke-test: node_modules
 	  $(if $(EXAMPLES_ENGINE),--project=$(EXAMPLES_ENGINE)) \
 	  $(if $(EXAMPLES_SHARD),--shard=$(EXAMPLES_SHARD))
 
-## Run example app intent tests in a browser (needs `make all`)
+## Run only the example app intent tests (needs `make all`)
 examples-intent-test: node_modules
 	npx playwright install --with-deps chromium
 	npx playwright test --config playwright-examples.config.ts \
 	  playwright/examples-intent.spec.ts \
-	  $(if $(EXAMPLES_ENGINE),--project=$(EXAMPLES_ENGINE))
+	  $(if $(EXAMPLES_ENGINE),--project=$(EXAMPLES_ENGINE)) \
+	  $(if $(EXAMPLES_SHARD),--shard=$(EXAMPLES_SHARD))
 
 ## Run tests
 test:
