@@ -10,7 +10,8 @@
 	packages \
 	quarto quartoserve \
 	clean-packages clean distclean \
-	examples-check-index examples-smoke-test test test-watch webr \
+	examples-check-index examples-test-deps examples-smoke-test \
+	examples-intent-test test test-watch webr \
 	_shinylive
 
 .DEFAULT_GOAL := help
@@ -355,23 +356,34 @@ distclean: clean
 examples-check-index:
 	node scripts/check_examples_index.mjs
 
+## Install the example app tests' Python dependencies
+# The tests drive apps with `shiny.playwright.controller`, whose locators track
+# the markup a given Shiny renders, so the installed Shiny has to be the one
+# shinylive bundles -- the submodule $(SHINY_WHEEL) is built from.
+examples-test-deps: $(PYBIN) $(PACKAGE_DIR)/py-shiny
+	$(PYBIN)/pip install -r requirements-test.txt
+	$(PYBIN)/pip install $(PACKAGE_DIR)/py-shiny
+	$(PYBIN)/playwright install --with-deps chromium
+
+# Arguments shared by the example app test targets. Set EXAMPLES_ENGINE (`py` or
+# `r`) and EXAMPLES_SHARD (as in `1/3`) to run part of the suite; CI splits it
+# both ways so every job gets a runner, and therefore the full memory, to
+# itself. Each test boots a whole Pyodide or webR instance, so they want memory
+# rather than cores, and parallel workers inside one runner would squeeze all of
+# them -- wall-clock time comes from sharding across jobs instead.
+EXAMPLES_PYTEST_ARGS = \
+  $(if $(EXAMPLES_ENGINE),-m $(EXAMPLES_ENGINE)) \
+  $(if $(EXAMPLES_SHARD),--shard=$(EXAMPLES_SHARD)) \
+  $(if $(CI),--reruns 1)
+
 ## Run the smoke and intent tests for every example app (needs `make all`)
-# Set EXAMPLES_ENGINE (`py` or `r`) and EXAMPLES_SHARD (as in `1/3`) to run part
-# of the suite. CI splits it both ways so every job gets a runner, and therefore
-# the full memory, to itself.
-examples-smoke-test: node_modules
-	npx playwright install --with-deps chromium
-	npx playwright test --config playwright-examples.config.ts \
-	  $(if $(EXAMPLES_ENGINE),--project=$(EXAMPLES_ENGINE)) \
-	  $(if $(EXAMPLES_SHARD),--shard=$(EXAMPLES_SHARD))
+examples-smoke-test: examples-test-deps
+	$(PYBIN)/pytest tests $(EXAMPLES_PYTEST_ARGS)
 
 ## Run only the example app intent tests (needs `make all`)
-examples-intent-test: node_modules
-	npx playwright install --with-deps chromium
-	npx playwright test --config playwright-examples.config.ts \
-	  playwright/examples-intent.spec.ts \
-	  $(if $(EXAMPLES_ENGINE),--project=$(EXAMPLES_ENGINE)) \
-	  $(if $(EXAMPLES_SHARD),--shard=$(EXAMPLES_SHARD))
+examples-intent-test: examples-test-deps
+	$(PYBIN)/pytest tests/test_examples_intent_py.py tests/test_examples_intent_r.py \
+	  $(EXAMPLES_PYTEST_ARGS)
 
 ## Run tests
 test:
