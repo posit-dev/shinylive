@@ -16,7 +16,7 @@ from playwright.sync_api import Page
 from playwright.sync_api import expect as playwright_expect
 from shiny.playwright import controller
 
-from controller_shims import NavPanel, OutputPlot
+from controller_shims import InputSelectize, NavPanel, OutputPlot
 from shinylive_app import expect_plot_to_redraw, open_example, wait_until
 
 pytestmark = pytest.mark.r
@@ -42,7 +42,7 @@ def test_001_hello(page: Page) -> None:
 def test_002_text(page: Page) -> None:
     app = open_example(page, "r", "Shiny Text")
     # R's selectInput() is selectize-backed, unlike ui.input_select().
-    dataset = controller.InputSelectize(app, "dataset")
+    dataset = InputSelectize(app, "dataset")
     obs = controller.InputNumeric(app, "obs")
     summary = controller.OutputTextVerbatim(app, "summary")
     view = controller.OutputTable(app, "view")
@@ -79,7 +79,7 @@ def test_003_reactivity(page: Page) -> None:
     controller.OutputTextVerbatim(app, "summary").expect.to_contain_text("area")
 
     # The table depends on both the dataset and the row count.
-    controller.InputSelectize(app, "dataset").set("pressure")
+    InputSelectize(app, "dataset").set("pressure")
     view = controller.OutputTable(app, "view")
     view.expect_column_labels(["temperature", "pressure"])
     controller.InputNumeric(app, "obs").set("4")
@@ -88,7 +88,7 @@ def test_003_reactivity(page: Page) -> None:
 
 def test_004_mpg(page: Page) -> None:
     app = open_example(page, "r", "Miles Per Gallon")
-    variable = controller.InputSelectize(app, "variable")
+    variable = InputSelectize(app, "variable")
     outliers = controller.InputCheckbox(app, "outliers")
     caption = controller.OutputText(app, "caption")
     mpg_plot = OutputPlot(app, "mpgPlot")
@@ -180,7 +180,7 @@ def test_006_tabsets(page: Page) -> None:
 
 def test_007_widgets(page: Page) -> None:
     app = open_example(page, "r", "Widgets")
-    dataset = controller.InputSelectize(app, "dataset")
+    dataset = InputSelectize(app, "dataset")
     update = controller.InputActionButton(app, "update")
     summary = controller.OutputTextVerbatim(app, "summary")
     view = controller.OutputTable(app, "view")
@@ -251,7 +251,7 @@ def test_009_upload(page: Page) -> None:
 
 def test_010_download(page: Page) -> None:
     app = open_example(page, "r", "R File Download")
-    dataset = controller.InputSelectize(app, "dataset")
+    dataset = InputSelectize(app, "dataset")
     table = controller.OutputTable(app, "table")
     download_data = controller.DownloadButton(app, "downloadData")
 

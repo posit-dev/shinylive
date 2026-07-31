@@ -73,8 +73,15 @@ An example app leaves an `id` unset that the controller keys on:
 - `controller.Accordion` and `controller.ValueBox` want ids the `orbit` and
   `brand` examples never set, so those two assertions use plain locators.
 
-And one that is simply a gap in py-shiny:
+And two that are simply gaps in py-shiny:
 
+- **`InputSelectize._populate_dom()`** -- which `expect_choices()` and
+  `expect_choice_labels()` call, because selectize builds its dropdown lazily --
+  opens the dropdown and then closes it by clicking the page body. That clicks
+  whatever sits at the centre of the app, and on CI the `altair` example's chart
+  is there and swallows the event, so the dropdown never closes and the
+  assertion times out. The shim presses Escape instead, which is bound to
+  selectize's own input and is what the upstream docstring says it does.
 - **`DownloadButton.expect_label()`** looks for the `.action-label` span it
   inherits from `InputActionBase`, which a download link does not render. The
   `file_download_core` test asserts the link's text directly.

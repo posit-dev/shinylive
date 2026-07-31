@@ -19,7 +19,7 @@ from playwright.sync_api import Page
 from playwright.sync_api import expect as playwright_expect
 from shiny.playwright import controller
 
-from controller_shims import NavPanel, OutputPlot, sidebar
+from controller_shims import InputSelectize, NavPanel, OutputPlot, sidebar
 from shinylive_app import (
     brush,
     expect_plot_to_redraw,
@@ -105,7 +105,7 @@ def test_plotly(page: Page) -> None:
 
 def test_altair(page: Page) -> None:
     app = open_example(page, "py", "altair")
-    variable = controller.InputSelectize(app, "var")
+    variable = InputSelectize(app, "var")
     chart = app.locator("#hist.shiny-ipywidget-output")
 
     variable.expect_choices(["bill_length_mm", "body_mass_g"])
@@ -219,7 +219,7 @@ def test_extra_packages(page: Page) -> None:
 
 def test_fetch(page: Page) -> None:
     app = open_example(page, "py", "Fetch data from a web API")
-    city = controller.InputSelectize(app, "city")
+    city = InputSelectize(app, "city")
     data_type = controller.InputRadioButtons(app, "data_type")
 
     # No city is selected on startup, so the app makes no request -- which is

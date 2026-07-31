@@ -11,9 +11,10 @@ from __future__ import annotations
 import re
 from typing import Optional
 
-from playwright.sync_api import Page
+from playwright.sync_api import Locator, Page
 from playwright.sync_api import expect as playwright_expect
 from shiny.playwright import controller
+from shiny.playwright.expect import expect_to_have_style
 
 # py-shiny spells this `shiny.playwright._types.Timeout`, which is private.
 Timeout = Optional[float]
@@ -100,3 +101,26 @@ def sidebar(page: Page, *, nth: int = 0) -> controller.Sidebar:
     if aside_id is None:
         raise AssertionError("sidebar has no id to key on")
     return controller.Sidebar(page, aside_id)
+
+
+class InputSelectize(controller.InputSelectize):
+    """`controller.InputSelectize` that dismisses its dropdown with Escape.
+
+    `expect_choices()` and `expect_choice_labels()` have to open the dropdown
+    first, because selectize builds it lazily. py-shiny then closes it by
+    clicking the page body, which clicks whatever sits at the centre of the app;
+    the dropdown is full-width and sits directly under the input, so in a short
+    app that is the dropdown itself, and it never closes. Escape closes it
+    wherever it is -- which is what the upstream docstring says it does.
+    """
+
+    # Assigned in py-shiny's __init__, but absent from the type stubs, so restate
+    # them for the benefit of a type checker.
+    _loc_dropdown: Locator
+    _loc_events: Locator
+
+    def _populate_dom(self, timeout: Timeout = None) -> None:
+        self._loc_events.click(timeout=timeout)
+        expect_to_have_style(self._loc_dropdown, "display", "block", timeout=timeout)
+        self._loc_events.press("Escape", timeout=timeout)
+        expect_to_have_style(self._loc_dropdown, "display", "none", timeout=timeout)
