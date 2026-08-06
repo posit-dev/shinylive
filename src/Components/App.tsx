@@ -139,8 +139,13 @@ function ensurePyodideProxyHandlePromise({
 }): Promise<PyodideProxyHandle> {
   if (!pyodideProxyHandlePromise) {
     pyodideProxyHandlePromise = (async (): Promise<PyodideProxyHandle> => {
+      let pyodideProxyHandle: PyodideProxyHandle;
+
+      // Ensure that pyodide and shiny can be successfully initialized
+      // to determine if the engine is usable. If not, set the status state
+      // to "failed" to report the error to the user
       try {
-        let pyodideProxyHandle = await initPyodide({
+        pyodideProxyHandle = await initPyodide({
           proxyType,
           stdout: terminalInterface.echo,
           stderr: terminalInterface.error,
@@ -149,8 +154,19 @@ function ensurePyodideProxyHandlePromise({
         if (shiny) {
           pyodideProxyHandle = await initShiny({ pyodideProxyHandle });
         }
+      } catch (e) {
+        loadStatusStore("python").set(
+          "failed",
+          e instanceof Error ? e.message : String(e),
+        );
+        throw e;
+      }
 
-        if (!pyodideProxyHandle.initError) {
+      if (!pyodideProxyHandle.initError) {
+        try {
+          // This block is purely cosmetic and the engine runs whether or not these
+          // succeed, so a throw here must not reach the catch above,
+          // which would be recorded as an engine load failure
           terminalInterface.clear();
 
           if (showStartBanner) {
@@ -161,16 +177,12 @@ function ensurePyodideProxyHandlePromise({
               );
             }
           }
+        } catch (e) {
+          console.error(e);
         }
-
-        return pyodideProxyHandle;
-      } catch (e) {
-        loadStatusStore("python").set(
-          "failed",
-          e instanceof Error ? e.message : String(e),
-        );
-        throw e;
       }
+
+      return pyodideProxyHandle;
     })();
   }
   return pyodideProxyHandlePromise;
@@ -183,8 +195,12 @@ function ensureWebRProxyHandlePromise({
 }): Promise<WebRProxyHandle> {
   if (!webRProxyHandlePromise) {
     webRProxyHandlePromise = (async (): Promise<WebRProxyHandle> => {
+      let webRProxyHandle: WebRProxyHandle;
+
+      // See the note in ensurePyodideProxyHandlePromise: only engine readiness
+      // belongs in here, because "failed" is terminal.
       try {
-        let webRProxyHandle = await initWebR({
+        webRProxyHandle = await initWebR({
           stdout: terminalInterface.echo,
           stderr: terminalInterface.error,
         });
@@ -192,12 +208,6 @@ function ensureWebRProxyHandlePromise({
         if (shiny) {
           webRProxyHandle = await initRShiny({ webRProxyHandle });
         }
-
-        if (!webRProxyHandle.initError) {
-          terminalInterface.clear();
-        }
-
-        return webRProxyHandle;
       } catch (e) {
         loadStatusStore("r").set(
           "failed",
@@ -205,6 +215,16 @@ function ensureWebRProxyHandlePromise({
         );
         throw e;
       }
+
+      if (!webRProxyHandle.initError) {
+        try {
+          terminalInterface.clear();
+        } catch (e) {
+          console.error(e);
+        }
+      }
+
+      return webRProxyHandle;
     })();
   }
   return webRProxyHandlePromise as Promise<WebRProxyHandle>;
