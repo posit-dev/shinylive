@@ -348,6 +348,15 @@ webr::shim_install()
 .start_app <- function(appName, appDir, devMode = FALSE) {
   tryCatch(
     {
+      # Parse the app's R files before shiny does. shiny's sourceUTF8 catches the
+      # parse error and raises only "Error sourcing <file>", discarding the line
+      # number and the offending line, so letting parse() fail here is what gets
+      # that detail to the viewer. Runs first so a typo fails before any package
+      # installs rather than after them.
+      for (f in list.files(appDir, pattern = "[.][Rr]$", full.names = TRUE)) {
+        parse(file = f)
+      }
+
       # Mount VFS images provided in Shinylive app assets
       .mount_vfs_images()
 
