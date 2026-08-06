@@ -88,11 +88,8 @@ function createHttpRequestChannel(
   return httpRequestChannel;
 }
 
-// Shown above the error log for every failure, engine or app. A stale cache is
-// the most common cause we can actually tell the user how to fix, and a normal
-// reload does not clear it. There is deliberately no reload button: JS cannot
-// force a cache-bypassing reload, so a button would do the one thing that has
-// already failed.
+// Recovery hint shown above the error log when the engine itself fails to load.
+// A stale cache is a common cause, so suggest the user to try a hard refresh
 function RecoveryHint() {
   return (
     <div className="error-recovery">
@@ -104,6 +101,38 @@ function RecoveryHint() {
         If that doesn’t help, clear this site’s cookies and cached data, then
         reload. Stale cached files are a common cause of loading failures.
       </p>
+    </div>
+  );
+}
+
+// The failure screen for both engine and app syntax failures. `kind` dictates
+// if the recovery hint is shown in the engine-failure case, which isn't needed
+// relevant for an application syntax error (it just shows the traceback instead)
+export function ViewerError({
+  kind,
+  engine,
+  message,
+}: {
+  kind: "engine" | "app";
+  engine: EngineName;
+  message: string | null;
+}) {
+  return (
+    <div className="loading-wrapper loading-wrapper-error">
+      <div className="error-alert">
+        <div className="error-icon">
+          <img src={skull} alt="skull" />
+        </div>
+        <div className="error-message">
+          {kind === "engine"
+            ? `Error loading ${ENGINE_LABEL[engine]}!`
+            : "Error starting app!"}
+        </div>
+        {kind === "engine" ? <RecoveryHint /> : null}
+        <div className="error-log">
+          <pre>{message}</pre>
+        </div>
+      </div>
     </div>
   );
 }
@@ -383,22 +412,11 @@ export function Viewer({
     <div className="shinylive-viewer">
       <iframe ref={viewerFrameRef} className="app-frame" />
       {engineFailed || appRunningState === "errored" ? (
-        <div className="loading-wrapper loading-wrapper-error">
-          <div className="error-alert">
-            <div className="error-icon">
-              <img src={skull} alt="skull" />
-            </div>
-            <div className="error-message">
-              {engineFailed
-                ? `Error loading ${ENGINE_LABEL[engine]}!`
-                : "Error starting app!"}
-            </div>
-            <RecoveryHint />
-            <div className="error-log">
-              <pre>{engineFailed ? engineStatus.error : lastErrorMessage}</pre>
-            </div>
-          </div>
-        </div>
+        <ViewerError
+          kind={engineFailed ? "engine" : "app"}
+          engine={engine}
+          message={engineFailed ? engineStatus.error : lastErrorMessage}
+        />
       ) : appRunningState === "loading" ? (
         <div className="loading-wrapper">
           <LoadingStatus engine={engine} />
