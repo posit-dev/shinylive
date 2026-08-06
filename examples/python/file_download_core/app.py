@@ -28,19 +28,20 @@ app_ui = ui.page_fluid(
 
 
 def server(input, output, session):
-    @render.download()
+    @render.download_button()
     def download1():
         # This is the simplest case. The implementation simply returns the path to a
         # file on disk.
         path = Path(__file__).parent / "mtcars.csv"
         return str(path)
 
-    @render.download(filename="image.png")
+    @render.download_button(filename="image.png")
     def download2():
         # Another way to implement a file download is by yielding bytes; either all at
         # once, like in this case, or by yielding multiple times. When using this
-        # approach, you should pass a filename argument to @render.download, which
-        # determines what the browser will name the downloaded file.
+        # approach, you should pass a filename argument to
+        # @render.download_button, which determines what the browser will name the
+        # downloaded file.
         x = np.random.uniform(size=input.num_points())
         y = np.random.uniform(size=input.num_points())
         plt.figure()
@@ -50,7 +51,7 @@ def server(input, output, session):
             plt.savefig(buf, format="png")
             yield buf.getvalue()
 
-    @render.download(
+    @render.download_button(
         filename=lambda: f"data-{date.today().isoformat()}-{np.random.randint(100,999)}.csv"
     )
     async def download3():
