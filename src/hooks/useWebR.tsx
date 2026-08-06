@@ -1,5 +1,6 @@
 import React, { useEffect } from "react";
 import { ChannelType } from "webr";
+import { checkEngineAssetReachable } from "../engine-load-guard";
 import { loadStatusStore } from "../load-status";
 import * as utils from "../utils";
 import type { WebRProxy } from "../webr-proxy";
@@ -42,11 +43,14 @@ export async function initWebR({
   const status = loadStatusStore("r");
 
   status.set("engine-download");
+  // Checked because webR's init() hangs rather than failing when the wasm is
+  // missing; see engine-load-guard.ts. This throw propagates to App.tsx, which
+  // records it as "failed".
+  const unreachable = await checkEngineAssetReachable("r", baseUrl);
+  if (unreachable) throw new Error(unreachable);
+
   const webRProxy = await loadWebRProxy(
-    {
-      baseUrl,
-      channelType,
-    },
+    { baseUrl, channelType },
     stdout,
     stderr,
   );
@@ -335,31 +339,50 @@ webr::shim_install()
   lapply(rownames(installed.packages()), function(p) { .webr_pkg_cache[[p]] <<- TRUE })
 }
 
+# Returns "" on success, or the error message on failure.
+#
+# The caller evaluates this with captureConditions = FALSE, so an error raised
+# here would go to the terminal and never reach JavaScript: the viewer would go
+# on to display an app that never started. Returning the message instead is what
+# makes a failed startup visible.
 .start_app <- function(appName, appDir, devMode = FALSE) {
-  # Mount VFS images provided in Shinylive app assets
-  .mount_vfs_images()
+  tryCatch(
+    {
+      # Mount VFS images provided in Shinylive app assets
+      .mount_vfs_images()
 
-  # Uniquely install packages with webr
-  unique_pkgs <- unique(renv::dependencies(appDir, quiet = TRUE)$Package)
-  lapply(unique_pkgs, function(pkg_name) {
-    if (isTRUE(.webr_pkg_cache[[pkg_name]])) return()
+      # Uniquely install packages with webr
+      unique_pkgs <- unique(renv::dependencies(appDir, quiet = TRUE)$Package)
+      lapply(unique_pkgs, function(pkg_name) {
+        if (isTRUE(.webr_pkg_cache[[pkg_name]])) return()
 
-    has_pkg <- nzchar(system.file(package = pkg_name))
-    .webr_pkg_cache[[pkg_name]] <<- has_pkg
+        has_pkg <- nzchar(system.file(package = pkg_name))
+        .webr_pkg_cache[[pkg_name]] <<- has_pkg
 
-    if (!has_pkg) {
-      webr::install(pkg_name)
+        if (!has_pkg) {
+          # Deliberately not fatal: renv::dependencies() also reports packages
+          # that are named but never actually used, and those apps run fine
+          # today. A package that really is needed fails below, when the app
+          # source is evaluated.
+          webr::install(pkg_name)
+        }
+      })
+
+      if (isTRUE(devMode)) {
+        # Enable client-side dev mode features, namely the error console
+        options(shiny.client_devmode = TRUE)
+      }
+
+      app <- .shiny_to_httpuv(appDir)
+      assign(appName, app, envir = .shiny_app_registry)
+      ""
+    },
+    error = function(cnd) {
+      msg <- paste(conditionMessage(cnd), collapse = "\n")
+      if (!nzchar(msg)) msg <- "The app failed to start, with no error message."
+      msg
     }
-  })
-
-  if (isTRUE(devMode)) {
-    # Enable client-side dev mode features, namely the error console
-    options(shiny.client_devmode = TRUE)
-  }
-
-  app <- .shiny_to_httpuv(appDir)
-  assign(appName, app, envir = .shiny_app_registry)
-  invisible(0)
+  )
 }
 
 invisible(0)
