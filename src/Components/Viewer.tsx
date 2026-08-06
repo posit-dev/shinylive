@@ -88,6 +88,26 @@ function createHttpRequestChannel(
   return httpRequestChannel;
 }
 
+// Shown above the error log for every failure, engine or app. A stale cache is
+// the most common cause we can actually tell the user how to fix, and a normal
+// reload does not clear it. There is deliberately no reload button: JS cannot
+// force a cache-bypassing reload, so a button would do the one thing that has
+// already failed.
+function RecoveryHint() {
+  return (
+    <div className="error-recovery">
+      <p className="error-recovery-lead">
+        First, try a hard refresh: <kbd>Cmd+Shift+R</kbd> on macOS, or{" "}
+        <kbd>Ctrl+Shift+R</kbd> on Windows and Linux.
+      </p>
+      <p>
+        If that doesn’t help, clear this site’s cookies and cached data, then
+        reload. Stale cached files are a common cause of loading failures.
+      </p>
+    </div>
+  );
+}
+
 async function resetPyAppFrame(
   pyodide: PyodideProxy,
   appName: string,
@@ -232,11 +252,19 @@ export function Viewer({
             env: { files, appDir },
             captureStreams: false,
           });
-          await webRProxy.runRAsync(".start_app(appName, appDir, devMode)", {
-            env: { appName, appDir, devMode },
-            captureConditions: false,
-            captureStreams: false,
-          });
+          // .start_app reports failure by returning the message rather than
+          // raising, because captureConditions is off here. evalRString is used
+          // instead of runRAsync so webR marshals the string before releasing
+          // the R object.
+          const startError = await webRProxy.webR.evalRString(
+            ".start_app(appName, appDir, devMode)",
+            {
+              env: { appName, appDir, devMode },
+              captureConditions: false,
+              captureStreams: false,
+            },
+          );
+          if (startError) throw new Error(startError);
         } finally {
           await shelter.purge();
         }
@@ -365,6 +393,7 @@ export function Viewer({
                 ? `Error loading ${ENGINE_LABEL[engine]}!`
                 : "Error starting app!"}
             </div>
+            <RecoveryHint />
             <div className="error-log">
               <pre>{engineFailed ? engineStatus.error : lastErrorMessage}</pre>
             </div>

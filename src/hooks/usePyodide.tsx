@@ -1,4 +1,5 @@
 import React, { useEffect } from "react";
+import { checkEngineAssetReachable } from "../engine-load-guard";
 import { loadStatusStore } from "../load-status";
 import type { ProxyType, PyodideProxy } from "../pyodide-proxy";
 import { loadPyodideProxy } from "../pyodide-proxy";
@@ -39,12 +40,17 @@ export async function initPyodide({
 
   const status = loadStatusStore("python");
 
+  const indexURL = utils.currentScriptDir() + "/pyodide/";
+
   status.set("engine-download");
+  // Checked because loadPyodide() hangs rather than failing when the wasm is
+  // missing; see engine-load-guard.ts. This throw propagates to App.tsx, which
+  // records it as "failed".
+  const unreachable = await checkEngineAssetReachable("python", indexURL);
+  if (unreachable) throw new Error(unreachable);
+
   const pyodideProxy = await loadPyodideProxy(
-    {
-      type: proxyType,
-      indexURL: utils.currentScriptDir() + "/pyodide/",
-    },
+    { type: proxyType, indexURL },
     stdout,
     stderr,
   );

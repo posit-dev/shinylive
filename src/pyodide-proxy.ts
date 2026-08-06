@@ -381,10 +381,19 @@ class WebWorkerPyodideProxy implements PyodideProxy {
   }
 
   async init(config: LoadPyodideConfig): Promise<void> {
-    await this.postMessageAsync({
+    const response = (await this.postMessageAsync({
       type: "init",
       config,
-    });
+    })) as PyodideWorker.ReplyMessageDone;
+
+    // The worker reports an init failure in the reply rather than by dying, so
+    // without this check a Pyodide that never started looks like one that did,
+    // and the first symptom is an unrelated error much later.
+    if (response.error) {
+      const err = postableErrorObjectToError(response.error);
+      this.stderrCallback(err.message);
+      throw err;
+    }
   }
 
   proxyType(): ProxyType {
