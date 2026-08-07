@@ -1,6 +1,13 @@
 {
   "typeCheckingMode": "basic",
-  "strict": ["scripts"],
+  "strict": [
+    "scripts"
+  ],
   "reportUnusedFunction": "none",
-  "reportWildcardImportFromLibrary": "none"
+  "reportWildcardImportFromLibrary": "none",
+  "extraPaths": [
+    "tests"
+  ],
+  "venvPath": ".",
+  "venv": "venv"
 }

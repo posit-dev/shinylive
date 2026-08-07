@@ -1,0 +1,10 @@
+# Dependencies for the example app tests in tests/.
+#
+# Shiny itself is not pinned here: `make examples-test-deps` installs it from the
+# packages/py-shiny submodule, so the controllers the tests drive apps with come
+# from the same source as the Shiny that renders those apps.
+pytest>=8.0
+pytest-playwright>=0.5
+pytest-rerunfailures>=14.0
+pytest-timeout>=2.3
+pytest-xdist>=3.5

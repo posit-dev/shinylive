@@ -12,9 +12,7 @@ import { devices } from "@playwright/test";
  */
 const config: PlaywrightTestConfig = {
   testDir: "./playwright",
-  /* The examples smoke test has its own config and static webServer; see
-   * playwright-examples.config.ts. */
-  testIgnore: /examples-smoke\.spec\.ts/,
+  /* The example app tests are pytest, not playwright-test; see tests/. */
   /* Maximum time one test can run for. */
   timeout: 50 * 1000,
   expect: {

@@ -25,6 +25,8 @@ jobs:
 
   # Loads every indexed example in a real browser, for both engines, and fails
   # on tracebacks, deprecation warnings, output errors, or JS console errors.
+  # Runs the intent tests alongside it, which drive each app's inputs and check
+  # the outputs that depend on them.
   #
   # This has to build shinylive first, because it drives the built `_shinylive/`
   # output. It deliberately does not reuse the artifact from build.yml: this
@@ -36,9 +38,8 @@ jobs:
   # than cores, and parallel workers inside one runner would squeeze all of them.
   #
   # Splitting by engine first matters because R examples cost roughly 29s each
-  # against 17s for Python, and playwright assigns shards in contiguous blocks.
-  # Sharding the combined suite therefore piled all 11 R tests into the last
-  # shard, which then ran 45% longer than its siblings while they sat idle.
+  # against 17s for Python, so sharding the combined suite leaves whichever shard
+  # draws the R tests as the long pole while its siblings sit idle.
   examples-smoke-test:
     runs-on: ubuntu-latest
     strategy:
@@ -65,7 +66,7 @@ jobs:
         run: |
           make all
 
-      - name: Run examples smoke test (${{ matrix.engine }} shard ${{ matrix.shard }}/3)
+      - name: Run examples smoke and intent tests (${{ matrix.engine }} shard ${{ matrix.shard }}/3)
         env:
           EXAMPLES_ENGINE: ${{ matrix.engine }}
           EXAMPLES_SHARD: ${{ matrix.shard }}/3
@@ -76,5 +77,5 @@ jobs:
         if: always()
         with:
           name: examples-smoke-test-report-${{ matrix.engine }}-${{ matrix.shard }}
-          path: playwright-report/
+          path: test-results/
           retention-days: 30
