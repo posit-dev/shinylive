@@ -131,15 +131,23 @@ self.onmessage = async function (e: MessageEvent): Promise<void> {
       if (pyodideStatus === "none") {
         pyodideStatus = "loading";
 
-        pyodide = await loadPyodide({
-          ...msg.config,
-          stdout: self.stdout_callback,
-          stderr: self.stderr_callback,
-        });
+        try {
+          pyodide = await loadPyodide({
+            ...msg.config,
+            stdout: self.stdout_callback,
+            stderr: self.stderr_callback,
+          });
 
-        pyUtils = await setupPythonEnv(pyodide, callJS);
+          pyUtils = await setupPythonEnv(pyodide, callJS);
 
-        pyodideStatus = "loaded";
+          pyodideStatus = "loaded";
+        } catch (e) {
+          // Reset the status so that a subsequent init starts over. Otherwise
+          // it would take the "already loading/loaded" path and report success
+          // with a pyodide that was never initialized.
+          pyodideStatus = "none";
+          throw e;
+        }
       }
 
       messagePort.postMessage({ type: "reply", subtype: "done" });
@@ -239,7 +247,15 @@ self.onmessage = async function (e: MessageEvent): Promise<void> {
       });
     }
   } catch (e) {
-    if (e instanceof pyodide.ffi.PythonError) {
+    // Both of these can still be undefined here: init may have failed partway
+    // through, after loadPyodide() but before setupPythonEnv() returned. If we
+    // throw from this handler, no reply is ever posted and the caller waits
+    // forever, so it must not assume either one exists.
+    if (
+      typeof pyodide !== "undefined" &&
+      typeof pyUtils !== "undefined" &&
+      e instanceof pyodide.ffi.PythonError
+    ) {
       e.message = pyUtils.shortFormatLastTraceback();
     }
 

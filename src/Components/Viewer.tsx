@@ -1,9 +1,12 @@
 import * as React from "react";
+import { useLoadStatus } from "../hooks/useLoadStatus";
+import type { EngineName } from "../load-status";
+import { ENGINE_LABEL } from "../load-status";
 import type { PyodideProxy } from "../pyodide-proxy";
 import * as utils from "../utils";
 import type { WebRProxy } from "../webr-proxy";
 import type { ProxyHandle } from "./App";
-import { LoadingAnimation } from "./LoadingAnimation";
+import { LoadingStatus } from "./LoadingStatus";
 import "./Viewer.css";
 import type { FileContent } from "./filecontent";
 import skull from "./skull.svg";
@@ -85,6 +88,55 @@ function createHttpRequestChannel(
   return httpRequestChannel;
 }
 
+// Recovery hint shown above the error log when the engine itself fails to load.
+// A stale cache is a common cause, so suggest the user to try a hard refresh
+function RecoveryHint() {
+  return (
+    <div className="error-recovery">
+      <p className="error-recovery-lead">
+        First, try a hard refresh: <kbd>Cmd+Shift+R</kbd> on macOS, or{" "}
+        <kbd>Ctrl+Shift+R</kbd> on Windows and Linux.
+      </p>
+      <p>
+        If that doesn’t help, clear this site’s cookies and cached data, then
+        reload. Stale cached files are a common cause of loading failures.
+      </p>
+    </div>
+  );
+}
+
+// The failure screen for both engine and app syntax failures. `kind` dictates
+// if the recovery hint is shown in the engine-failure case, which isn't needed
+// relevant for an application syntax error (it just shows the traceback instead)
+export function ViewerError({
+  kind,
+  engine,
+  message,
+}: {
+  kind: "engine" | "app";
+  engine: EngineName;
+  message: string | null;
+}) {
+  return (
+    <div className="loading-wrapper loading-wrapper-error">
+      <div className="error-alert">
+        <div className="error-icon">
+          <img src={skull} alt="skull" />
+        </div>
+        <div className="error-message">
+          {kind === "engine"
+            ? `Error loading ${ENGINE_LABEL[engine]}!`
+            : "Error starting app!"}
+        </div>
+        {kind === "engine" ? <RecoveryHint /> : null}
+        <div className="error-log">
+          <pre>{message}</pre>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 async function resetPyAppFrame(
   pyodide: PyodideProxy,
   appName: string,
@@ -128,6 +180,7 @@ export function Viewer({
   setViewerMethods,
   devMode = false,
   setWindowTitle = false,
+  engine,
 }: {
   proxyHandle: ProxyHandle;
   setViewerMethods: React.Dispatch<React.SetStateAction<ViewerMethods>>;
@@ -138,6 +191,7 @@ export function Viewer({
         defaultTitle: string;
       }
     | false;
+  engine: EngineName;
 }) {
   const viewerFrameRef = React.useRef<HTMLIFrameElement>(null);
   const [appRunningState, setAppRunningState] = React.useState<
@@ -147,6 +201,7 @@ export function Viewer({
   const [lastErrorMessage, setLastErrorMessage] = React.useState<string | null>(
     null,
   );
+  const engineStatus = useLoadStatus(engine);
 
   // Add effect to monitor iframe title changes
   React.useEffect(() => {
@@ -226,11 +281,19 @@ export function Viewer({
             env: { files, appDir },
             captureStreams: false,
           });
-          await webRProxy.runRAsync(".start_app(appName, appDir, devMode)", {
-            env: { appName, appDir, devMode },
-            captureConditions: false,
-            captureStreams: false,
-          });
+          // .start_app reports failure by returning the message rather than
+          // raising, because captureConditions is off here. evalRString is used
+          // instead of runRAsync so webR marshals the string before releasing
+          // the R object.
+          const startError = await webRProxy.webR.evalRString(
+            ".start_app(appName, appDir, devMode)",
+            {
+              env: { appName, appDir, devMode },
+              captureConditions: false,
+              captureStreams: false,
+            },
+          );
+          if (startError) throw new Error(startError);
         } finally {
           await shelter.purge();
         }
@@ -343,24 +406,20 @@ export function Viewer({
     });
   }, [proxyHandle.shinyReady]);
 
+  const engineFailed = engineStatus.stage === "failed";
+
   return (
     <div className="shinylive-viewer">
       <iframe ref={viewerFrameRef} className="app-frame" />
-      {appRunningState === "loading" ? (
+      {engineFailed || appRunningState === "errored" ? (
+        <ViewerError
+          kind={engineFailed ? "engine" : "app"}
+          engine={engine}
+          message={engineFailed ? engineStatus.error : lastErrorMessage}
+        />
+      ) : appRunningState === "loading" ? (
         <div className="loading-wrapper">
-          <LoadingAnimation />
-        </div>
-      ) : appRunningState === "errored" ? (
-        <div className="loading-wrapper loading-wrapper-error">
-          <div className="error-alert">
-            <div className="error-icon">
-              <img src={skull} alt="skull" />
-            </div>
-            <div className="error-message">Error starting app!</div>
-            <div className="error-log">
-              <pre>{lastErrorMessage}</pre>
-            </div>
-          </div>
+          <LoadingStatus engine={engine} />
         </div>
       ) : null}
     </div>
