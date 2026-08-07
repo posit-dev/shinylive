@@ -117,8 +117,10 @@ def test_regularization(page: Page) -> None:
         plot.expect_rendered()
 
     before = [plot.loc_img.get_attribute("src") for plot in plots]
-    strength.set("0.2")
-    strength.expect_value("0.2")
+    # Use the exact maximum so the test does not depend on browser-specific
+    # floating-point labels for intermediate slider steps.
+    strength.set("1")
+    strength.expect_value("1")
     for plot, src in zip(plots, before):
         playwright_expect(plot.loc_img).not_to_have_attribute("src", src or "")
 
@@ -144,12 +146,14 @@ def test_altair(page: Page) -> None:
     variable.expect_selected(["bill_length_mm"])
     playwright_expect(chart_surface).to_be_visible()
 
-    before = chart_surface.screenshot()
+    # The widget replaces its canvas during a redraw, but its output container
+    # stays attached to the DOM.
+    before = chart.screenshot()
     variable.set("body_mass_g")
     variable.expect_selected(["body_mass_g"])
     wait_until(
         page,
-        lambda: chart_surface.screenshot() != before,
+        lambda: chart.screenshot() != before,
         "expected the Altair chart to update",
     )
 
