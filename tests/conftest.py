@@ -9,13 +9,56 @@ import time
 from typing import Iterator
 
 import pytest
+from playwright.sync_api import ConsoleMessage, Page
 from playwright.sync_api import expect
 
-from shinylive_app import SHINYLIVE_DIR, STATIC_PORT
+from shinylive_app import (
+    APP_FRAME,
+    SHINYLIVE_DIR,
+    STATIC_PORT,
+    suspect_terminal_lines,
+    terminal_text,
+)
 
 # Assertions get their own timeout, well short of the per-test one: an app that
 # is going to answer at all answers long before this.
 expect.set_options(timeout=30_000)
+
+
+@pytest.fixture(autouse=True)
+def fail_on_example_errors(page: Page) -> Iterator[None]:
+    """Fail on errors emitted while an example is starting or being exercised."""
+    console_errors: list[str] = []
+
+    def on_console(message: ConsoleMessage) -> None:
+        if message.type != "error":
+            return
+        # A missing favicon is not an app problem.
+        if message.location["url"].endswith("favicon.ico"):
+            return
+        console_errors.append(message.text)
+
+    page.on("console", on_console)
+    page.on("pageerror", lambda error: console_errors.append(str(error)))
+
+    yield
+
+    # Give debounced inputs and reactive effects time to surface asynchronous
+    # errors before checking the final page state.
+    page.wait_for_timeout(500)
+
+    terminal = terminal_text(page)
+    suspect_lines = suspect_terminal_lines(terminal)
+    assert suspect_lines == [], (
+        "unexpected output in the shinylive terminal:\n" + terminal
+    )
+    expect(
+        page.frame_locator(APP_FRAME).locator(".shiny-output-error"),
+        "app rendered an output error",
+    ).to_have_count(0)
+    assert console_errors == [], "browser console errors:\n" + "\n".join(
+        console_errors
+    )
 
 
 def pytest_addoption(parser: pytest.Parser) -> None:

@@ -8,6 +8,10 @@ output in a real browser:
 - **`test_examples_intent_py.py`** and **`test_examples_intent_r.py`** go further
   for each app: drive its inputs, and check the outputs that depend on them.
 
+Every test also fails on terminal tracebacks or warnings, Shiny output errors,
+and browser console errors, including errors emitted after an intent-test
+interaction.
+
 ```console
 make examples-test-deps     # once
 make all                    # the tests drive the built output

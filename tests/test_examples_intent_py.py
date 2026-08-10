@@ -54,6 +54,7 @@ def test_app_with_plot(page: Page) -> None:
     histogram = OutputPlot(app, "histogram")
 
     sidebar(app).expect_open(True)
+    n.expect_min("1")
     n.expect_value("20")
     histogram.expect_rendered()
     histogram.expect_img_alt("A histogram")
@@ -65,31 +66,63 @@ def test_app_with_plot(page: Page) -> None:
 def test_cpuinfo(page: Page) -> None:
     app = open_example(page, "py", "CPU info")
     cmap = controller.InputSelect(app, "cmap")
+    hold = controller.InputSwitch(app, "hold")
 
     cmap.expect_choices(["inferno", "viridis", "copper", "prism"])
     cmap.expect_selected("inferno")
-    controller.InputSwitch(app, "hold").expect_checked(False)
+    hold.expect_checked(False)
     controller.InputActionButton(app, "reset").expect_label("Clear history")
 
     graphs, heatmap = NavPanel(app, "Graphs"), NavPanel(app, "Heatmap")
     graphs.expect_active(True)
     OutputPlot(app, "plot").expect_rendered()
 
+    # Freeze the sample history so the heatmap only changes in response to the
+    # controls exercised below, rather than its once-per-second timer.
+    hold.set(True)
+    hold.expect_checked(True)
+    page.wait_for_timeout(1500)
+
     # The heatmap is a table with one column per (fake) CPU.
     heatmap.click()
     heatmap.expect_active(True)
     controller.InputNumeric(app, "table_rows").expect_value("15")
-    controller.OutputTable(app, "table").expect_ncol(8)
+    table = controller.OutputTable(app, "table")
+    table.expect_ncol(8)
+
+    before = table.loc.inner_html()
+    page.wait_for_timeout(1200)
+    assert table.loc.inner_html() == before, "frozen CPU history kept changing"
+    cmap.set("viridis")
+    cmap.expect_selected("viridis")
+    wait_until(
+        page,
+        lambda: table.loc.inner_html() != before,
+        "expected the colormap to update the heatmap",
+    )
 
 
 def test_regularization(page: Page) -> None:
     app = open_example(page, "py", "Regularization")
+    strength = controller.InputSlider(app, "a")
+    plots = [
+        OutputPlot(app, "plot"),
+        OutputPlot(app, "plotVOWELS"),
+        OutputPlot(app, "plotCONSONANTS"),
+    ]
 
-    controller.InputSlider(app, "a").expect_value("0.1")
+    strength.expect_value("0.1")
     # One simulation feeds all three plots through a reactive calc.
-    OutputPlot(app, "plot").expect_rendered()
-    OutputPlot(app, "plotVOWELS").expect_rendered()
-    OutputPlot(app, "plotCONSONANTS").expect_rendered()
+    for plot in plots:
+        plot.expect_rendered()
+
+    before = [plot.loc_img.get_attribute("src") for plot in plots]
+    # Use the exact maximum so the test does not depend on browser-specific
+    # floating-point labels for intermediate slider steps.
+    strength.set("1")
+    strength.expect_value("1")
+    for plot, src in zip(plots, before):
+        playwright_expect(plot.loc_img).not_to_have_attribute("src", src or "")
 
 
 def test_plotly(page: Page) -> None:
@@ -107,26 +140,42 @@ def test_altair(page: Page) -> None:
     app = open_example(page, "py", "altair")
     variable = InputSelectize(app, "var")
     chart = app.locator("#hist.shiny-ipywidget-output")
+    chart_surface = chart.locator("canvas, svg").first
 
     variable.expect_choices(["bill_length_mm", "body_mass_g"])
     variable.expect_selected(["bill_length_mm"])
-    playwright_expect(chart.locator("canvas, svg").first).to_be_visible()
+    playwright_expect(chart_surface).to_be_visible()
 
+    # The widget replaces its canvas during a redraw, but its output container
+    # stays attached to the DOM.
+    before = chart.screenshot()
     variable.set("body_mass_g")
     variable.expect_selected(["body_mass_g"])
-    playwright_expect(chart.locator("canvas, svg").first).to_be_visible()
+    wait_until(
+        page,
+        lambda: chart.screenshot() != before,
+        "expected the Altair chart to update",
+    )
 
 
 def test_ipyleaflet(page: Page) -> None:
     app = open_example(page, "py", "Map")
     center = controller.InputSelect(app, "center")
+    map_widget = app.locator("#map .leaflet-container")
+    map_pane = map_widget.locator(".leaflet-map-pane")
 
     center.expect_choices(["London", "Paris", "New York"])
     center.expect_selected("London")
-    playwright_expect(app.locator("#map .leaflet-container")).to_be_visible()
+    playwright_expect(map_widget).to_be_visible()
 
+    before = map_pane.get_attribute("style")
     center.set("Paris")
     center.expect_selected("Paris")
+    wait_until(
+        page,
+        lambda: map_pane.get_attribute("style") != before,
+        "expected the map viewport to move",
+    )
 
 
 def test_multiple_source_files(page: Page) -> None:
@@ -218,16 +267,37 @@ def test_extra_packages(page: Page) -> None:
 
 
 def test_fetch(page: Page) -> None:
+    page.context.route(
+        "https://goweather.herokuapp.com/weather/**",
+        lambda route: route.fulfill(
+            status=200,
+            headers={
+                "access-control-allow-origin": "*",
+                "content-type": "application/json",
+            },
+            body=(
+                '{"temperature":"20 C","wind":"10 km/h",'
+                '"description":"Test sunshine"}'
+            ),
+        ),
+    )
     app = open_example(page, "py", "Fetch data from a web API")
     city = InputSelectize(app, "city")
     data_type = controller.InputRadioButtons(app, "data_type")
+    info = controller.OutputCode(app, "info")
 
-    # No city is selected on startup, so the app makes no request -- which is
-    # what keeps this test off the network.
     city.expect_selected([""])
     data_type.expect_choices(["json", "string", "bytes"])
     data_type.expect_selected("json")
-    controller.OutputCode(app, "info").expect_value("")
+    info.expect_value("")
+
+    city.set("Paris")
+    city.expect_selected(["Paris"])
+    info.expect.to_contain_text(
+        "Request URL: https://goweather.herokuapp.com/weather/Paris"
+    )
+    info.expect.to_contain_text("Result type: <class 'dict'>")
+    info.expect.to_contain_text("Test sunshine")
 
 
 def test_brand(page: Page) -> None:
@@ -531,7 +601,7 @@ def test_plot_interact_exclude(page: Page) -> None:
 
     # Brushing the left of the panel covers some of the scatter but not all of
     # it; toggling drops whatever was brushed and refits.
-    brush(page, plot1, 0.2, 0.15, 0.55, 0.85)
+    brush(page, plot1, 0.25, 0.2, 0.4, 0.8)
     controller.InputActionButton(app, "exclude_toggle").click()
     wait_until(
         page,

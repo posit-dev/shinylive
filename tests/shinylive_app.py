@@ -313,16 +313,23 @@ def brush(
     page.wait_for_timeout(500)
 
 
-def wait_until(page: Page, predicate: Callable[[], bool], message: str) -> None:
-    """Poll `predicate` until it holds, or fail with `message`.
+def wait_until(
+    page: Page,
+    predicate: Callable[[], bool],
+    message: str,
+    *,
+    timeout: float = 10_000,
+) -> None:
+    """Poll `predicate` until it holds or `timeout` milliseconds elapse.
 
     For the handful of assertions that are about a value changing rather than a
     locator settling, which is all playwright's own expectations cover.
     """
-    for _ in range(60):
+    interval = 250
+    for _ in range(round(timeout / interval)):
         if predicate():
             return
-        page.wait_for_timeout(500)
+        page.wait_for_timeout(interval)
     raise AssertionError(message)
 
 

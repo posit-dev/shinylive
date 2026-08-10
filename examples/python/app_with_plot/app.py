@@ -3,7 +3,7 @@ import numpy as np
 from shiny.express import ui, input, render
 
 with ui.sidebar():
-    ui.input_slider("n", "N", 0, 100, 20)
+    ui.input_slider("n", "N", 1, 100, 20)
 
 
 @render.plot(alt="A histogram")
