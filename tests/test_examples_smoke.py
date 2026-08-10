@@ -18,4 +18,5 @@ EXAMPLES = [(engine, title) for engine in ENGINES for title in example_app_title
     "engine,title", EXAMPLES, ids=[f"{engine}-{title}" for engine, title in EXAMPLES]
 )
 def test_example_app_starts_cleanly(page: Page, engine: str, title: str) -> None:
+    # fail_on_example_errors fixture (autouse=true) will test for console errors.
     open_example(page, engine, title)
