@@ -83,6 +83,7 @@ buildjs-prod           Build JS resources for production (with minification)
 watch                  Build JS resources and watch for changes
 serve                  Build JS resources, watch for changes, and serve site
 serve-prod             Build JS resources for production, watch for changes, and serve site
+buildjs-r              Build JS resources with webR as the default engine
 buildjs-prod-r         Build JS resources for production with webR as the default engine
 serve-prod-r           Build JS resources for production and serve site with webR as the default engine
 serve-r                Build JS resources and serve site with webR as the default engine
@@ -93,15 +94,30 @@ retrieve_packages      Download packages in shinylive_lock.json from PyPI
 update_pyodide_lock_json Update pyodide/pyodide-lock.json to include packages in shinylive_lock.json
 create_typeshed_json   Create the typeshed.json file which will be used by the shinylive type checker
 copy_pyright           Copy src/pyright files to build directory
-api-docs               Build Shiny API docs
 quarto                 Build Quarto example site in quarto/
 quartoserve            Build Quarto example site and serve
 clean-packages         Remove built wheels from the packages/ directory
 clean                  Remove all build files
-distclean              Remove all build files and venv/
-test                   Run tests
-test-watch             Run tests and watch
+distclean              Remove all build files, venv/, and downloads/
+examples-check-index   Check that every example on disk is listed in examples/index.json
+examples-smoke-test    Run the smoke and intent tests for every example app (needs `make all`)
+examples-intent-test   Run only the example app intent tests (needs `make all`)
+site-test              Run the site and static export tests (needs `make all`)
 ```
+
+## Tests
+
+The browser tests live in `tests/` and run under pytest. They drive the built
+`_shinylive/` output, so they need a `make all` first.
+
+```sh
+make test-deps            # once
+make examples-smoke-test  # every app in examples/, both engines
+make site-test            # the editor, apps loaded from the URL, static exports
+```
+
+See [tests/README.md](tests/README.md) for what each suite covers and for the
+conventions to follow when adding to them.
 
 
 ## Testing

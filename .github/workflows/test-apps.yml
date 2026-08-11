@@ -66,6 +66,9 @@ jobs:
         run: |
           make all
 
+      # The site tests are not part of this matrix -- they test the build rather
+      # than the examples, and run in build.yml. `make examples-smoke-test`
+      # selects on the `examples` marker, so they are not swept in here.
       - name: Run examples smoke and intent tests (${{ matrix.engine }} shard ${{ matrix.shard }}/3)
         env:
           EXAMPLES_ENGINE: ${{ matrix.engine }}

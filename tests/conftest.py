@@ -1,17 +1,22 @@
-"""Fixtures and options for the example app tests."""
+"""Fixtures and options for the tests in this directory."""
 
 from __future__ import annotations
 
 import socket
 import subprocess
 import sys
+import threading
 import time
-from typing import Iterator
+from functools import partial
+from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
+from pathlib import Path
+from typing import Any, Callable, Iterator, Mapping
 
 import pytest
 from playwright.sync_api import ConsoleMessage, Page
 from playwright.sync_api import expect
 
+from export_app import export_app
 from shinylive_app import (
     APP_FRAME,
     SHINYLIVE_DIR,
@@ -26,8 +31,17 @@ expect.set_options(timeout=30_000)
 
 
 @pytest.fixture(autouse=True)
-def fail_on_example_errors(page: Page) -> Iterator[None]:
-    """Fail on errors emitted while an example is starting or being exercised."""
+def fail_on_page_errors(request: pytest.FixtureRequest, page: Page) -> Iterator[None]:
+    """Fail on errors emitted while an app is starting or being exercised.
+
+    Every test that opens a page gets this. A test that provokes an error on
+    purpose -- a deliberate syntax error, a download made to fail -- opts out
+    with `@pytest.mark.allow_page_errors` and asserts on the failure itself.
+    """
+    if request.node.get_closest_marker("allow_page_errors"):
+        yield
+        return
+
     console_errors: list[str] = []
 
     def on_console(message: ConsoleMessage) -> None:
@@ -145,6 +159,61 @@ def static_server() -> Iterator[None]:
             process.wait(timeout=10)
         except subprocess.TimeoutExpired:
             process.kill()
+
+
+@pytest.fixture(scope="session")
+def export_root(tmp_path_factory: pytest.TempPathFactory) -> Path:
+    """The directory the session's static exports are assembled in."""
+    return tmp_path_factory.mktemp("exports")
+
+
+@pytest.fixture(scope="session")
+def export_server(export_root: Path) -> Iterator[str]:
+    """Serve the session's exports, and return the base URL they are served at.
+
+    In-process and on a port the OS picks, where `static_server` is a subprocess
+    on a fixed one: `_shinylive/` is the same directory in every run and worth
+    reusing a server for, but an export root is made fresh per session, so a
+    server left over from another run would quietly serve the wrong files.
+    """
+
+    class _QuietHandler(SimpleHTTPRequestHandler):
+        def log_message(self, format: str, *args: Any) -> None:
+            pass
+
+    server = ThreadingHTTPServer(
+        ("127.0.0.1", 0), partial(_QuietHandler, directory=str(export_root))
+    )
+    threading.Thread(target=server.serve_forever, daemon=True).start()
+    try:
+        yield f"http://127.0.0.1:{server.server_address[1]}"
+    finally:
+        server.shutdown()
+        server.server_close()
+
+
+@pytest.fixture
+def exported_app(export_root: Path, export_server: str) -> Callable[..., str]:
+    """Export an app from the local build, and return the URL serving it.
+
+    ```python
+    url = exported_app({"app.py": "..."}, name="hello")
+    page.goto(url)
+    ```
+
+    The keyword arguments are `export_app()`'s, plus the `name` of the directory
+    to export into. Names are reused across tests on purpose: an export is a few
+    files and two symlinks, so rewriting one is cheaper than reasoning about
+    which test wrote what.
+    """
+
+    def _exported_app(
+        files: Mapping[str, str], *, name: str = "app", **kwargs: Any
+    ) -> str:
+        export_app(files, export_root / name, **kwargs)
+        return f"{export_server}/{name}/"
+
+    return _exported_app
 
 
 def _port_is_open() -> bool:

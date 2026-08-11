@@ -1,13 +1,16 @@
-"""Loading shinylive's example apps, and handing them to Shiny's controllers.
+"""Loading shinylive's apps, and handing them to Shiny's controllers.
 
-The tests drive apps through `shiny.playwright.controller`, the same controllers
-py-shiny uses for its own tests. See ./README.md.
+The example tests drive apps through `shiny.playwright.controller`, the same
+controllers py-shiny uses for its own tests. The site tests share the page
+helpers here -- the terminal, the app iframe, waiting for an engine. See
+./README.md.
 """
 
 from __future__ import annotations
 
 import json
 import re
+import sys
 from collections.abc import Callable
 from pathlib import Path
 from typing import Any, cast
@@ -24,6 +27,10 @@ BASE_URL = f"http://127.0.0.1:{STATIC_PORT}"
 
 # The iframe shinylive renders the app into.
 APP_FRAME = ".app-frame"
+
+# CodeMirror's "Mod" in the editor's key bindings, which is Cmd on a Mac and Ctrl
+# everywhere else. It resolves that from the browser, so it follows the host.
+MOD_KEY = "Meta" if sys.platform == "darwin" else "Control"
 
 ENGINES = ("py", "r")
 
@@ -129,7 +136,7 @@ def open_example(page: Page, engine: str, title: str) -> Page:
     url = f"{BASE_URL}/{engine}/examples/#{sanitize_title_for_url(title)}"
     page.goto(url, wait_until="domcontentloaded")
 
-    _wait_for_prompt(page, engine)
+    wait_for_prompt(page, engine)
 
     # App.tsx falls back to the first example when a hash does not resolve, so
     # without this a typo would silently test the same app over and over.
@@ -138,12 +145,12 @@ def open_example(page: Page, engine: str, title: str) -> Page:
         f'expected the "{title}" example to be selected',
     ).to_have_text(title)
 
-    _wait_for_app_rendered(page)
+    wait_for_app_rendered(page)
 
     return cast(Page, ShinyliveApp(page))
 
 
-def _wait_for_prompt(page: Page, engine: str) -> None:
+def wait_for_prompt(page: Page, engine: str) -> None:
     """Wait for the REPL prompt, which means the engine has finished booting."""
     page.wait_for_function(
         # Python's prompt is ">>>", R's is ">".
@@ -165,7 +172,7 @@ def _wait_for_prompt(page: Page, engine: str) -> None:
     )
 
 
-def _wait_for_app_rendered(page: Page) -> None:
+def wait_for_app_rendered(page: Page) -> None:
     """Wait for the app iframe to render something."""
     body = page.frame_locator(APP_FRAME).locator("body")
     error_log = page.locator(".shinylive-viewer .loading-wrapper-error .error-log pre")
