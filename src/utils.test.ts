@@ -49,7 +49,16 @@ describe("basename()", () => {
 });
 
 describe("currentScriptPath()/currentScriptDir()", () => {
-  test("the dir is the dirname of the path", () => {
+  // Under jest, `import.meta.url` resolves to this module's own location, so
+  // these assert against `src/utils.ts` itself.
+  test("the path is a bare filesystem path to the module", () => {
+    expect(currentScriptPath()).toMatch(/\/src\/utils\.ts$/);
+    // It's `URL.pathname`, so no scheme and no query string.
+    expect(currentScriptPath()).not.toMatch(/^[a-z]+:/);
+  });
+
+  test("the dir drops the filename", () => {
+    expect(currentScriptDir()).toMatch(/\/src$/);
     expect(currentScriptDir()).toBe(dirname(currentScriptPath()));
   });
 });
@@ -123,6 +132,13 @@ describe("string/byte conversions", () => {
     expect(stringToUint8Array("abc")).toHaveLength(3);
   });
 
+  test("stringToUint8Array truncates code points above 0xff", () => {
+    // This is `charCodeAt()` narrowed to a byte, not an encoding: 0x100 wraps
+    // to 0. Callers are expected to hand it latin-1-ish data (see
+    // `isBinary()`), which is why nothing here goes through TextEncoder.
+    expect(Array.from(stringToUint8Array("\xffĀ"))).toEqual([255, 0]);
+  });
+
   test("uint8ArrayToString maps bytes to code points", () => {
     expect(uint8ArrayToString(new Uint8Array([65, 66, 67]))).toBe("ABC");
   });
@@ -149,7 +165,12 @@ describe("sleep()", () => {
         resolved = true;
       });
       expect(resolved).toBe(false);
-      jest.advanceTimersByTime(1000);
+      // Stop one tick short first, so that a `sleep()` which ignored its
+      // argument (and slept 0 ms) would not pass this.
+      jest.advanceTimersByTime(999);
+      await Promise.resolve();
+      expect(resolved).toBe(false);
+      jest.advanceTimersByTime(1);
       await p;
       expect(resolved).toBe(true);
     } finally {

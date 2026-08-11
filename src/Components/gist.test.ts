@@ -90,7 +90,7 @@ describe("gistApiResponseToFileContents()", () => {
     // itself is what decides.
     const files = await gistApiResponseToFileContents(
       gistResponse({
-        "data.db": gistFile({
+        someKey: gistFile({
           filename: "data.db",
           type: "text/plain",
           content: b64("SQLite\x00format"),
@@ -99,6 +99,9 @@ describe("gistApiResponseToFileContents()", () => {
     );
     expect(files[0].type).toBe("binary");
     expect(files[0].content).toBeInstanceOf(Uint8Array);
+    // The binary path builds its own object, so check it uses the filename
+    // rather than the key too.
+    expect(files[0].name).toBe("data.db");
   });
 
   test("handles several files", async () => {

@@ -36,7 +36,10 @@ describe("positionToOffset()", () => {
     expect(positionToOffset(doc, { line: 2, col: 99 })).toBe(6);
   });
 
-  test("the last line clamps to the document length", () => {
+  test("a column past the end of the last line clamps to the document end", () => {
+    // Note that this is the same line-end clamp as above; the extra
+    // `newOffset > cmDoc.length` check in the source can't fire, because a
+    // line's end is never past the end of the document.
     expect(positionToOffset(doc, { line: 3, col: 99 })).toBe(doc.length);
   });
 });

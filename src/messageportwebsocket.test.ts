@@ -5,6 +5,8 @@ import { MessagePortWebSocket } from "./messageportwebsocket";
 // postMessage(). Delivery is deferred to a macrotask, as a real port's is.
 class FakePort extends EventTarget {
   peer!: FakePort;
+  /** Everything this side put on the wire, so tests can assert on the sender. */
+  posted: any[] = [];
   private started = false;
   private pending: unknown[] = [];
 
@@ -16,6 +18,7 @@ class FakePort extends EventTarget {
   }
 
   postMessage(data: unknown): void {
+    this.posted.push(data);
     setTimeout(() => this.peer.receive(data), 0);
   }
 
@@ -32,15 +35,12 @@ class FakePort extends EventTarget {
   }
 }
 
-function fakeChannel(): { port1: MessagePort; port2: MessagePort } {
+function fakeChannel(): { port1: FakePort; port2: FakePort } {
   const port1 = new FakePort();
   const port2 = new FakePort();
   port1.peer = port2;
   port2.peer = port1;
-  return {
-    port1: port1 as unknown as MessagePort,
-    port2: port2 as unknown as MessagePort,
-  };
+  return { port1, port2 };
 }
 
 // Messages cross the channel on a macrotask, so tests wait for a timer rather
@@ -52,9 +52,15 @@ function flush(): Promise<void> {
 /** A client and server pair joined by a channel, as in real use. */
 function connectedPair() {
   const channel = fakeChannel();
-  const server = new MessagePortWebSocket(channel.port1);
-  const client = new MessagePortWebSocket(channel.port2);
-  return { server, client };
+  const server = new MessagePortWebSocket(
+    channel.port1 as unknown as MessagePort,
+  );
+  const client = new MessagePortWebSocket(
+    channel.port2 as unknown as MessagePort,
+  );
+  // The raw ports are handed back so tests can look at what was put on the
+  // wire, and post frames that the public API would refuse to send.
+  return { server, client, serverPort: channel.port1 };
 }
 
 describe("readyState", () => {
@@ -141,17 +147,26 @@ describe("send()", () => {
   });
 
   test("is silently dropped after close", async () => {
-    const { server, client } = connectedPair();
+    const { server, client, serverPort } = connectedPair();
     const onmessage = jest.fn();
+    const onerror = jest.fn();
     client.onmessage = onmessage;
+    client.onerror = onerror;
 
     server.accept();
     await flush();
     server.close();
+    const postedAfterClose = serverPort.posted.length;
+
     expect(() => server.send("too late")).not.toThrow();
     await flush();
 
+    // The drop has to happen in send(): the far side is closed too, so a
+    // message that made it onto the wire would be discarded there anyway, but
+    // only after reporting a protocol error.
+    expect(serverPort.posted).toHaveLength(postedAfterClose);
     expect(onmessage).not.toHaveBeenCalled();
+    expect(onerror).not.toHaveBeenCalled();
   });
 });
 
@@ -230,6 +245,32 @@ describe("protocol errors", () => {
       "Unexpected event 'bogus' while in readyState 1",
     );
     expect(client.readyState).toBe(3);
+  });
+
+  test("a close frame arriving after the socket is closed errors once", async () => {
+    const { server, client } = connectedPair();
+    const onerror = jest.fn();
+    const onclose = jest.fn();
+    client.onerror = onerror;
+    client.onclose = onclose;
+
+    server.accept();
+    await flush();
+    server.close(1000, "done");
+    await flush();
+    expect(client.readyState).toBe(3);
+    expect(onclose).toHaveBeenCalledTimes(1);
+
+    // A second close frame on the wire, which `close()` itself would not send.
+    server._port.postMessage({ type: "close", value: { code: 1000 } });
+    await flush();
+
+    expect(onerror).toHaveBeenCalledTimes(1);
+    expect(onerror.mock.calls[0][0].message).toBe(
+      "Unexpected event 'close' while in readyState 3",
+    );
+    // The error path calls close() again, but that is already a no-op.
+    expect(onclose).toHaveBeenCalledTimes(1);
   });
 
   test("a duplicate open errors rather than re-opening", async () => {

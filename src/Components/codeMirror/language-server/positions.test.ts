@@ -25,11 +25,20 @@ describe("positionToOffset()", () => {
     expect(positionToOffset(doc, { line: 2, character: 100 })).toBeUndefined();
   });
 
+  test("a character past the end of its line is not clamped to the line", () => {
+    // The bounds check is against the whole document, not the line, so a
+    // character overshoot on an early line silently lands on a later one --
+    // line 0 is "abc", but character 10 gives offset 10, which is on line 2.
+    // The `codeMirror/utils.ts` pair of these functions does clamp.
+    expect(positionToOffset(doc, { line: 0, character: 10 })).toBe(10);
+  });
+
   test("LSP positions are 0-based where codemirror lines are 1-based", () => {
-    // Line 0 in LSP is line 1 in codemirror, whose `from` is 0.
-    expect(positionToOffset(doc, { line: 0, character: 0 })).toBe(
-      doc.line(1).from,
-    );
+    // Line 0 in LSP is line 1 in codemirror, whose `from` is 0. Asserting the
+    // literal rather than `doc.line(1).from`, which would just restate the
+    // implementation.
+    expect(positionToOffset(doc, { line: 0, character: 0 })).toBe(0);
+    expect(positionToOffset(doc, { line: 1, character: 0 })).toBe(4);
   });
 });
 

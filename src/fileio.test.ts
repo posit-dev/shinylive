@@ -37,10 +37,15 @@ function fakeDirHandle(
 
 describe("loadFileContent()", () => {
   test("decodes a text file as UTF-8", async () => {
-    const handle = fakeFileHandle("app.py", bytesOf("x = 1"));
+    // Multi-byte on purpose: 0xc3 0xa9 is "é" in UTF-8 but two characters in
+    // latin-1, so this fails if the decoding is byte-per-character.
+    const handle = fakeFileHandle(
+      "app.py",
+      new Uint8Array([0x78, 0x20, 0x3d, 0x20, 0xc3, 0xa9]),
+    );
     await expect(loadFileContent(handle)).resolves.toEqual({
       name: "app.py",
-      content: "x = 1",
+      content: "x = é",
       type: "text",
     });
   });
@@ -108,6 +113,56 @@ describe("loadDirectoryRecursive()", () => {
     ).rejects.toThrow(/Too many files in directory proj; maximum is 2\./);
   });
 
+  test("the file limit is off by one: maxFiles + 1 files get through", async () => {
+    // Characterizing current behaviour, not endorsing it. The guard in
+    // `loadDirectoryRecursive()` runs at the top of the loop, before the file
+    // it is guarding is pushed, so `maxFiles` of 2 admits 3 files and only the
+    // 4th trips it. If the source is changed to `>=`, update this test.
+    const three = Array.from({ length: 3 }, (_, i) =>
+      fakeFileHandle(`f${i}.py`, bytesOf("x")),
+    );
+    const files = await loadDirectoryRecursive(
+      fakeDirHandle("proj", three),
+      "",
+      undefined,
+      2,
+    );
+    expect(files).toHaveLength(3);
+
+    const four = Array.from({ length: 4 }, (_, i) =>
+      fakeFileHandle(`f${i}.py`, bytesOf("x")),
+    );
+    await expect(
+      loadDirectoryRecursive(fakeDirHandle("proj", four), "", undefined, 2),
+    ).rejects.toThrow(/Too many files/);
+  });
+
+  test("the limits are not passed down to subdirectories", async () => {
+    // Characterizing a latent bug: the recursive call at the bottom of
+    // `loadDirectoryRecursive()` passes only the handle and the path prefix, so
+    // a subdirectory silently falls back to the 20 MB / 20 file module
+    // defaults. A file that is too big at the top level loads fine one level
+    // down. If the source starts forwarding `maxBytes`/`maxFiles`, this should
+    // become a rejection.
+    const dir = fakeDirHandle("proj", [
+      fakeDirHandle("sub", [fakeFileHandle("big.py", bytesOf("0123456789"))]),
+    ]);
+
+    const files = await loadDirectoryRecursive(dir, "", 5);
+    expect(files.map((f) => f.name)).toEqual(["sub/big.py"]);
+
+    // The same file at the top level does respect the limit.
+    await expect(
+      loadDirectoryRecursive(
+        fakeDirHandle("proj", [
+          fakeFileHandle("big.py", bytesOf("0123456789")),
+        ]),
+        "",
+        5,
+      ),
+    ).rejects.toThrow("File exceeds max size of 5 bytes.");
+  });
+
   test("an empty directory gives no files", async () => {
     await expect(
       loadDirectoryRecursive(fakeDirHandle("proj", [])),
@@ -121,6 +176,10 @@ describe("assertHasFileAccessApiSupport()", () => {
   beforeEach(() => {
     alertMock.mockClear();
     window.alert = alertMock;
+    // jsdom has no File System Access API, but don't rely on test ordering to
+    // keep it that way.
+    // @ts-expect-error: removing a global the tests below may have stubbed.
+    delete window.showOpenFilePicker;
   });
 
   afterEach(() => {
@@ -148,6 +207,7 @@ describe("saveFileContentsToDirectory()", () => {
   function recordingDirHandle() {
     const written: Record<string, unknown> = {};
     const created: string[] = [];
+    const closed: string[] = [];
 
     function makeDir(prefix: string): FileSystemDirectoryHandle {
       return {
@@ -165,17 +225,19 @@ describe("saveFileContentsToDirectory()", () => {
             write: async (content: unknown) => {
               written[prefix === "" ? name : `${prefix}/${name}`] = content;
             },
-            close: async () => {},
+            close: async () => {
+              closed.push(prefix === "" ? name : `${prefix}/${name}`);
+            },
           }),
         }),
       } as unknown as FileSystemDirectoryHandle;
     }
 
-    return { root: makeDir(""), written, created };
+    return { root: makeDir(""), written, created, closed };
   }
 
   test("writes a flat list of files", async () => {
-    const { root, written, created } = recordingDirHandle();
+    const { root, written, created, closed } = recordingDirHandle();
     const files: FileContent[] = [
       { name: "app.py", content: "x = 1", type: "text" },
       { name: "util.py", content: "y = 2", type: "text" },
@@ -185,6 +247,8 @@ describe("saveFileContentsToDirectory()", () => {
 
     expect(written).toEqual({ "app.py": "x = 1", "util.py": "y = 2" });
     expect(created).toEqual([]);
+    // Without the close() the data can sit in the writable and never land.
+    expect(closed).toEqual(["app.py", "util.py"]);
   });
 
   test("creates every level of a nested path", async () => {

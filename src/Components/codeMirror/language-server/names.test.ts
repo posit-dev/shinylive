@@ -12,8 +12,11 @@ describe("nameFromSignature()", () => {
     expect(nameFromSignature("foo(bar(1), 2)")).toBe("foo");
   });
 
-  test("a string with no '(' gives the empty string", () => {
-    // `substring(0, -1)` is "". Documenting the behaviour, as above.
+  test("a string with no '(' is unspecified, and today gives \"\"", () => {
+    // `indexOf("(")` is -1, so `substring(0, -1)` is "". Documenting the
+    // behaviour rather than endorsing it: the only caller
+    // (`signatureHelp.ts`) always passes a real signature, so this input
+    // doesn't occur, and a future fix here would not be a regression.
     expect(nameFromSignature("foo")).toBe("");
   });
 });
@@ -35,10 +38,12 @@ describe("removeFullyQualifiedName()", () => {
     );
   });
 
-  test("a string with no '(' is passed through unchanged", () => {
-    // `indexOf("(")` is -1, so `substring(0, -1)` is "" and `substring(-1)` is
-    // the whole string: the qualifier is not stripped. Documenting the
-    // behaviour rather than endorsing it -- callers pass real signatures.
+  test("a string with no '(' is unspecified, and today passes through", () => {
+    // Same -1 as in `nameFromSignature()`: `substring(0, -1)` is "" and
+    // `substring(-1)` is the whole string, so the qualifier is *not* stripped
+    // even though stripping it is what the function is for. Again an input
+    // that callers don't produce, so this pins current behaviour rather than a
+    // contract.
     expect(removeFullyQualifiedName("a.b.c")).toBe("a.b.c");
   });
 });

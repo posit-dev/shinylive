@@ -195,16 +195,17 @@ describe("parseCodeBlock()", () => {
     ).toThrow(/must have a '#\| standalone: true' argument/);
   });
 
-  test("a block with no args at all throws a bare TypeError", () => {
-    // Documenting current behaviour, not endorsing it: `processQuartoArgs()`
+  test("a block with no args at all throws", () => {
+    // Latent bug, documented rather than endorsed: `processQuartoArgs()`
     // returns `undefined` for `quartoArgs` when there are no `#|` lines (that's
     // what js-yaml gives back for an empty document), and `parseCodeBlock()`
-    // dereferences it without checking. The intended message here is the
-    // "must have a '#| standalone: true' argument" one below.
-    expect(() => parseCodeBlock(["x = 1"], "python")).toThrow(TypeError);
-    expect(() => parseCodeBlock(["x = 1"], "python")).toThrow(
-      /Cannot read properties of undefined/,
-    );
+    // dereferences it without checking, so today this is a bare TypeError from
+    // the runtime rather than the "must have a '#| standalone: true' argument"
+    // message above. Reachable from `run-python-blocks.ts`, which passes
+    // arbitrary `block.innerText`. Deliberately asserting only that it throws,
+    // so that fixing the source (`quartoArgsParsed ?? {}`) doesn't have to come
+    // with a test edit -- the friendly error satisfies this too.
+    expect(() => parseCodeBlock(["x = 1"], "python")).toThrow();
   });
 
   test("an editor block with 'standalone: true' throws", () => {

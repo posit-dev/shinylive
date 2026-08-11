@@ -46,9 +46,16 @@ describe("minCssLengthUnit()", () => {
     expect(minCssLengthUnit("auto", "auto", false)).toBe("min(auto, auto)");
   });
 
-  test("a zero length is treated as absent, not as 0px", () => {
-    // `asCssLengthUnit(0)` gives the truthy string "0px", so this is really a
-    // check that the falsy-string branches below don't fire for it.
+  test("a zero length is kept as 0px, not treated as absent", () => {
+    // `asCssLengthUnit(0)` gives the truthy string "0px", so the falsy-value
+    // branches don't fire for it and both lengths make it into the min().
     expect(minCssLengthUnit(0, 200)).toBe("min(0px, 200px)");
+  });
+
+  test("an empty string is treated as absent", () => {
+    // Unlike 0, "" is falsy after `asCssLengthUnit()` passes it through, so it
+    // takes the single-value branch.
+    expect(minCssLengthUnit("", 200)).toBe("200px");
+    expect(minCssLengthUnit(200, "")).toBe("200px");
   });
 });
