@@ -2,7 +2,9 @@
 
 Everything here drives the built `_shinylive/` output in a real browser, under
 pytest. There are two groups, marked `examples` and `site`, and every test
-carries one of the two.
+carries one of the two — CI selects on those markers and nothing else, so
+`conftest.py` refuses to collect a test that has neither rather than let it
+quietly never run.
 
 **`examples`** — the apps in `examples/`:
 
