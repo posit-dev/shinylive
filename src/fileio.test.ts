@@ -2,6 +2,7 @@ import type { FileContent } from "./Components/filecontent";
 import {
   FILE_SYSTEM_API_ERROR_MESSAGE,
   assertHasFileAccessApiSupport,
+  downloadFile,
   loadDirectoryRecursive,
   loadFileContent,
   saveFileContentsToDirectory,
@@ -273,5 +274,46 @@ describe("saveFileContentsToDirectory()", () => {
     );
 
     expect(written["logo.png"]).toBe(bytes);
+  });
+});
+
+describe("downloadFile()", () => {
+  // jsdom has no URL.createObjectURL, so it gets stubbed. Everything else here
+  // -- the anchor, the Blob, the click -- jsdom implements for real.
+  let createObjectURL: jest.Mock;
+
+  beforeEach(() => {
+    createObjectURL = jest.fn(() => "blob:fake-url");
+    (URL as unknown as { createObjectURL: unknown }).createObjectURL =
+      createObjectURL;
+  });
+
+  test("clicks an anchor carrying the filename and blob url", async () => {
+    const clicks: string[] = [];
+    jest
+      .spyOn(HTMLAnchorElement.prototype, "click")
+      .mockImplementation(function (this: HTMLAnchorElement) {
+        clicks.push(`${this.download}|${this.href}`);
+      });
+
+    await downloadFile("app.py", "print(1)");
+
+    expect(clicks).toEqual(["app.py|blob:fake-url"]);
+  });
+
+  test("defaults to text/plain and passes the type through to the blob", async () => {
+    jest.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(() => {
+      /* the click is what we stub out; the blob is what we assert on */
+    });
+
+    await downloadFile("a.txt", "hi");
+    await downloadFile("a.json", "{}", "application/json");
+
+    const types = createObjectURL.mock.calls.map((c) => (c[0] as Blob).type);
+    expect(types).toEqual(["text/plain", "application/json"]);
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
   });
 });

@@ -1,6 +1,6 @@
-import { Text } from "@codemirror/state";
+import { EditorState, Text } from "@codemirror/state";
 import * as LSP from "vscode-languageserver-protocol";
-import { diagnosticsMapping } from "./diagnostics";
+import { diagnosticToTransaction, diagnosticsMapping } from "./diagnostics";
 
 // "abc\nde\nfghi" -- offsets 0-3 on LSP line 0, 4-6 on line 1, 7-11 on line 2.
 const doc = Text.of(["abc", "de", "fghi"]);
@@ -91,5 +91,38 @@ describe("diagnosticsMapping()", () => {
       lspDiagnostic({ message: "second" }),
     ]);
     expect(mapped.map((d) => d.message)).toEqual(["first", "second"]);
+  });
+});
+
+describe("diagnosticToTransaction()", () => {
+  // EditorState is pure state -- no DOM, no EditorView -- so this needs no
+  // browser even though it is codemirror.
+  const state = EditorState.create({ doc: doc.toString() });
+
+  test("returns a transaction for the given state", () => {
+    const tr = diagnosticToTransaction(state, [lspDiagnostic()]);
+
+    expect(tr.startState).toBe(state);
+    // The diagnostics ride in on effects, not on a document change.
+    expect(tr.docChanged).toBe(false);
+    expect(tr.effects.length).toBeGreaterThan(0);
+  });
+
+  test("an empty diagnostic list still gives a usable transaction", () => {
+    const tr = diagnosticToTransaction(state, []);
+
+    expect(tr.startState).toBe(state);
+    expect(tr.docChanged).toBe(false);
+  });
+
+  test("the mapped positions survive into the new state", () => {
+    // Range 0-3 on LSP line 0 is offsets 0-3, and applying the transaction
+    // should leave the document alone while carrying that range along.
+    const tr = diagnosticToTransaction(state, [lspDiagnostic()]);
+
+    expect(tr.state.doc.toString()).toBe(doc.toString());
+    expect(diagnosticsMapping(state.doc, [lspDiagnostic()])).toEqual([
+      { from: 0, to: 3, severity: "error", message: "something is wrong" },
+    ]);
   });
 });

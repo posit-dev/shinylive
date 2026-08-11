@@ -16,3 +16,13 @@ if (typeof globalThis.structuredClone === "undefined") {
   const v8 = require("node:v8");
   globalThis.structuredClone = (value) => v8.deserialize(v8.serialize(value));
 }
+
+// jsdom implements neither MessageChannel nor MessagePort. Node's are the same
+// shape for what we use -- `postMessage()`, the `onmessage` setter and
+// `close()` -- so code that hands a port to a worker can be tested for real
+// rather than against a mock of the thing under test.
+if (typeof globalThis.MessageChannel === "undefined") {
+  const { MessageChannel, MessagePort } = require("node:worker_threads");
+  globalThis.MessageChannel = MessageChannel;
+  globalThis.MessagePort = MessagePort;
+}

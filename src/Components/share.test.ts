@@ -4,6 +4,7 @@ import {
   appUrlPrefix,
   editorUrlPrefix,
   fileContentsToUrlString,
+  fileContentsToUrlStringInWebWorker,
 } from "./share";
 
 function decode(urlString: string): FileContentJson[] {
@@ -77,5 +78,79 @@ describe("fileContentsToUrlString()", () => {
 
   test("an empty file list still round-trips", () => {
     expect(decode(fileContentsToUrlString([]))).toEqual([]);
+  });
+});
+
+describe("fileContentsToUrlStringInWebWorker()", () => {
+  // jsdom has no Worker, but the only thing this code needs from one is
+  // "receives a message and a MessagePort, replies through the port".
+  // MessageChannel jsdom does implement, so a stub Worker is enough to exercise
+  // the real handshake rather than mocking it away.
+  let posted: { value: string }[];
+
+  class FakeWorker {
+    constructor(
+      public url: string,
+      public opts?: WorkerOptions,
+    ) {}
+
+    postMessage(msg: { type: string; value: string }, transfer: MessagePort[]) {
+      posted.push({ value: msg.value });
+      const port = transfer[0];
+      // Reply asynchronously, as a real worker would.
+      setTimeout(() => {
+        port.postMessage({ type: msg.type, value: "ENCODED" });
+        // A real worker's port goes away with the message; closing it here
+        // keeps node's MessagePort from holding the event loop open.
+        port.close();
+      });
+    }
+  }
+
+  beforeEach(() => {
+    posted = [];
+    (global as unknown as { Worker: unknown }).Worker = FakeWorker;
+  });
+
+  // A fresh array each time: the sort below is in-place, so a shared fixture
+  // would be reordered by whichever test ran first.
+  const files = (): FileContent[] => [
+    { name: "b.py", content: "second", type: "text" },
+    { name: "a.py", content: "first", type: "text" },
+  ];
+
+  test("returns the value the worker sends back", async () => {
+    await expect(fileContentsToUrlStringInWebWorker(files())).resolves.toBe(
+      "ENCODED",
+    );
+  });
+
+  test("sorts the caller's array in place, like the sync version", async () => {
+    const mine = files();
+    await fileContentsToUrlStringInWebWorker(mine);
+    expect(mine.map((f) => f.name)).toEqual(["a.py", "b.py"]);
+  });
+
+  test("sorts by name before handing the files over", async () => {
+    await fileContentsToUrlStringInWebWorker(files());
+
+    expect(
+      JSON.parse(posted[0].value).map((f: FileContentJson) => f.name),
+    ).toEqual(["a.py", "b.py"]);
+  });
+
+  test("leaves the order alone when sort is false", async () => {
+    await fileContentsToUrlStringInWebWorker(files(), false);
+
+    expect(
+      JSON.parse(posted[0].value).map((f: FileContentJson) => f.name),
+    ).toEqual(["b.py", "a.py"]);
+  });
+
+  test("reuses one worker across calls", async () => {
+    await fileContentsToUrlStringInWebWorker(files());
+    await fileContentsToUrlStringInWebWorker(files());
+
+    expect(posted).toHaveLength(2);
   });
 });
