@@ -16,9 +16,15 @@ jobs:
   # TypeScript unit tests (jest)
   # =====================================================
   # These cover pure logic in src/ and need no build, so this job does its own
-  # minimal checkout rather than hanging off `build`. `build` gates on it, since
-  # that job also deploys. App-level browser tests live in tests/ and run from
-  # the "Test example apps" workflow.
+  # minimal checkout rather than hanging off `build`.
+  #
+  # `build` declares `needs: test_unit` in turn, because that job does more than
+  # build: it deploys to S3, uploads the _shinylive/ artifact, and attaches
+  # release assets. Without the dependency, those would run whether or not the
+  # unit tests passed.
+  #
+  # App-level browser tests live in tests/ and run from the "Test example apps"
+  # workflow.
   test_unit:
     name: Unit tests
     runs-on: ubuntu-latest
