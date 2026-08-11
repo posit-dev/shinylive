@@ -1,6 +1,6 @@
-# Dependencies for the example app tests in tests/.
+# Dependencies for the browser tests in tests/.
 #
-# Shiny itself is not pinned here: `make examples-test-deps` installs it from the
+# Shiny itself is not pinned here: `make test-deps` installs it from the
 # packages/py-shiny submodule, so the controllers the tests drive apps with come
 # from the same source as the Shiny that renders those apps.
 pytest>=8.0

@@ -100,6 +100,7 @@ clean-packages         Remove built wheels from the packages/ directory
 clean                  Remove all build files
 distclean              Remove all build files, venv/, and downloads/
 examples-check-index   Check that every example on disk is listed in examples/index.json
+test-deps              Install the Python dependencies for the tests in tests/
 examples-smoke-test    Run the smoke and intent tests for every example app (needs `make all`)
 examples-intent-test   Run only the example app intent tests (needs `make all`)
 site-test              Run the site and static export tests (needs `make all`)

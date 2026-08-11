@@ -356,10 +356,12 @@ distclean: clean
 examples-check-index:
 	node scripts/check_examples_index.mjs
 
-## Install the Python dependencies for the tests in tests/
 # The example tests drive apps with `shiny.playwright.controller`, whose locators
 # track the markup a given Shiny renders, so the installed Shiny has to be the
 # one shinylive bundles -- the submodule $(SHINY_WHEEL) is built from.
+#
+# The `##` line has to sit directly above the target for `make help` to find it.
+## Install the Python dependencies for the tests in tests/
 test-deps: $(PYBIN) $(PACKAGE_DIR)/py-shiny
 	$(PYBIN)/pip install -r requirements-test.txt
 	$(PYBIN)/pip install $(PACKAGE_DIR)/py-shiny

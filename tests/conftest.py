@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 import socket
 import subprocess
 import sys
@@ -30,6 +31,29 @@ from shinylive_app import (
 expect.set_options(timeout=30_000)
 
 
+# Analytics, which no test here is about. `make all` templates a Google Tag
+# Manager loader into the site's pages when GOOGLE_TAG_MANAGER_ID is set
+# (scripts/build.ts), which .github/workflows/build.yml does and test-apps.yml
+# does not -- so the site tests are the only ones that ever meet it, and they
+# meet it only on CI, next to the deploy they gate.
+_ANALYTICS_URL = re.compile(
+    r"https?://([^/]+\.)?(googletagmanager|google-analytics)\.com/"
+)
+
+
+@pytest.fixture(autouse=True)
+def block_analytics(page: Page) -> None:
+    """Keep the tests off the network, and off anything but shinylive's own code.
+
+    The loader is injected with `async`, so a slow or unreachable tag manager
+    would hold up the page's load event and, with it, `page.goto()`. Aborting is
+    also why `fail_on_page_errors` has to forgive these: a request that never
+    completes reaches the console as an error, the same way a missing favicon
+    does.
+    """
+    page.route(_ANALYTICS_URL, lambda route: route.abort())
+
+
 @pytest.fixture(autouse=True)
 def fail_on_page_errors(request: pytest.FixtureRequest, page: Page) -> Iterator[None]:
     """Fail on errors emitted while an app is starting or being exercised.
@@ -47,8 +71,10 @@ def fail_on_page_errors(request: pytest.FixtureRequest, page: Page) -> Iterator[
     def on_console(message: ConsoleMessage) -> None:
         if message.type != "error":
             return
-        # A missing favicon is not an app problem.
-        if message.location["url"].endswith("favicon.ico"):
+        # A missing favicon is not an app problem, and neither is the tag
+        # manager `block_analytics` just aborted.
+        url = message.location["url"]
+        if url.endswith("favicon.ico") or _ANALYTICS_URL.search(url):
             return
         console_errors.append(message.text)
 
@@ -84,9 +110,25 @@ def pytest_addoption(parser: pytest.Parser) -> None:
     )
 
 
+def pytest_configure(config: pytest.Config) -> None:
+    shard = config.getoption("--shard")
+    if shard is not None:
+        config.pluginmanager.register(_ShardPlugin(str(shard)), "shinylive-shard")
+
+
+# The two markers every test is expected to carry. CI runs one job selecting on
+# `examples` and another selecting on `site`, so a test with neither is a test
+# nothing ever runs.
+_SUITE_MARKERS = ("examples", "site")
+
+
 def pytest_collection_modifyitems(
     config: pytest.Config, items: list[pytest.Item]
 ) -> None:
+    # This runs before `-m` deselection: a conftest's implementation of this hook
+    # is called ahead of the one in _pytest.mark, which is what makes the engine
+    # markers added below visible to `-m py` / `-m r`.
+
     # Let `-m py` / `-m r` select an engine for tests that are parametrized by
     # one, the way the per-engine modules are already marked.
     for item in items:
@@ -95,22 +137,49 @@ def pytest_collection_modifyitems(
         if engine == "py" or engine == "r":
             item.add_marker(pytest.mark.py if engine == "py" else pytest.mark.r)
 
-    shard = config.getoption("--shard")
-    if shard is None:
-        return
+    unmarked = [
+        item.nodeid
+        for item in items
+        if not any(item.get_closest_marker(name) for name in _SUITE_MARKERS)
+    ]
+    if unmarked:
+        raise pytest.UsageError(
+            "every test needs a `pytest.mark.examples` or `pytest.mark.site` "
+            "marker, usually as a module-level `pytestmark`. Neither CI job "
+            "selects a test without one, so it would quietly never run:\n  "
+            + "\n  ".join(unmarked)
+        )
 
-    index, total = (int(part) for part in str(shard).split("/"))
-    if not 1 <= index <= total:
-        raise pytest.UsageError(f"--shard={shard} is out of range")
 
-    # Round-robin rather than playwright's contiguous blocks. Every test here
-    # boots a whole engine, and their costs vary enough -- a couple of seconds
-    # for a text output, half a minute for a simulation -- that dealing them out
-    # one at a time keeps the shards closer in length.
-    keep = [item for i, item in enumerate(items) if i % total == index - 1]
-    drop = [item for i, item in enumerate(items) if i % total != index - 1]
-    config.hook.pytest_deselected(items=drop)
-    items[:] = keep
+class _ShardPlugin:
+    """Run one part of the suite, as in `--shard=1/3`.
+
+    A plugin rather than another function in this module so that its hook can be
+    `trylast` and so run *after* `-m` deselection. Sharding first and selecting
+    afterwards still covers every test exactly once, but it deals out the whole
+    of `tests/` -- so each examples shard would be handed a slice of the site
+    tests to throw away, and the shards' sizes would drift with whatever else
+    happens to live here.
+    """
+
+    def __init__(self, shard: str) -> None:
+        self.index, self.total = (int(part) for part in shard.split("/"))
+        if not 1 <= self.index <= self.total:
+            raise pytest.UsageError(f"--shard={shard} is out of range")
+
+    @pytest.hookimpl(trylast=True)
+    def pytest_collection_modifyitems(
+        self, config: pytest.Config, items: list[pytest.Item]
+    ) -> None:
+        # Round-robin rather than playwright's contiguous blocks. Every test here
+        # boots a whole engine, and their costs vary enough -- a couple of
+        # seconds for a text output, half a minute for a simulation -- that
+        # dealing them out one at a time keeps the shards closer in length.
+        mine = self.index - 1
+        keep = [item for i, item in enumerate(items) if i % self.total == mine]
+        drop = [item for i, item in enumerate(items) if i % self.total != mine]
+        config.hook.pytest_deselected(items=drop)
+        items[:] = keep
 
 
 @pytest.fixture(scope="session", autouse=True)
