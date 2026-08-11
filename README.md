@@ -135,7 +135,7 @@ make examples-intent-test  # only the intent tests
 
 `tests/README.md` covers how these are put together, including `EXAMPLES_ENGINE` and `EXAMPLES_SHARD` for running part of the suite.
 
-The specs in `playwright/` predate all of this and are not currently run by either suite.
+The specs in `playwright/` predate all of this and are not currently run by either suite; the `make test` target still points at them, but the `npm run playwright` script it calls no longer exists.
 
 ## Pulling changes
 

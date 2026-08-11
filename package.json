@@ -109,7 +109,8 @@
     "ignorePatterns": [
       "src/pyodide",
       "src/pyright",
-      "**/*.test.tsx"
+      "jest.config.js",
+      "testing-helpers"
     ],
     "plugins": [
       "react",
