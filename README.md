@@ -104,6 +104,39 @@ test-watch             Run tests and watch
 ```
 
 
+## Testing
+
+There are two suites, split by what they need to run.
+
+### TypeScript unit tests (jest)
+
+Pure logic in `src/` -- parsing, encoding, path handling, the pieces that don't need a browser. They need no build and no Python, and the whole suite runs in about a second.
+
+```bash
+npm install    # once
+npm run test:unit
+npm run test:unit:watch
+```
+
+Tests live next to the code they cover, as `src/**/*.test.ts`. The runner is configured in `jest.config.js`: jsdom for a DOM, `@swc/jest` to strip TypeScript, and the stubs in `testing-helpers/` for CSS and asset imports and for the browser globals jsdom lacks. swc does not type-check, so `npx tsc --noEmit` is what checks the tests' types.
+
+Anything that needs a real browser, a running app, or Pyodide/webR belongs in the app tests below rather than here.
+
+### App tests (pytest driving Playwright)
+
+Every app in `examples/`, loaded in a real browser against the built `_shinylive/` output, checked for tracebacks, warnings, output errors and console errors -- and, in the intent tests, driven through its inputs.
+
+```bash
+make examples-test-deps    # once
+make all                   # the tests drive the built output
+make examples-smoke-test   # both suites
+make examples-intent-test  # only the intent tests
+```
+
+`tests/README.md` covers how these are put together, including `EXAMPLES_ENGINE` and `EXAMPLES_SHARD` for running part of the suite.
+
+The specs in `playwright/` predate all of this and are not currently run by either suite.
+
 ## Pulling changes
 
 After pulling changes to the parent repo, you may need to tell it to update submodules.

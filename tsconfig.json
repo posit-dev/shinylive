@@ -10,7 +10,9 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "resolveJsonModule": true,
-    "types": [],
+    // For the jest globals in src/**/*.test.ts. swc strips types without
+    // checking them, so `tsc --noEmit` is what type-checks the unit tests.
+    "types": ["jest"],
     "forceConsistentCasingInFileNames": true
   },
   "include": [
@@ -20,7 +22,6 @@
   "exclude": [
     "src/pyodide",
     "src/pyright",
-    "**/*.test.tsx",
     "node_modules"
   ],
   "$schema": "https://json.schemastore.org/tsconfig",
