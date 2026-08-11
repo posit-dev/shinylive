@@ -9,8 +9,9 @@ describe("processQuartoArgs()", () => {
     const lines = ["def foo(x):", "  return x + 1"];
     const result = processQuartoArgs(lines);
     expect(result.lines).toEqual(lines);
-    // js-yaml returns undefined for an empty document.
-    expect(result.quartoArgs).toBeUndefined();
+    // js-yaml returns undefined for an empty document; that's normalized to an
+    // empty object so callers can apply their defaults to it.
+    expect(result.quartoArgs).toEqual({});
   });
 
   test.each([
@@ -61,7 +62,7 @@ describe("processQuartoArgs()", () => {
 
   test("a plain comment is not an arg", () => {
     const result = processQuartoArgs(["# not an arg", "app = 1"]);
-    expect(result.quartoArgs).toBeUndefined();
+    expect(result.quartoArgs).toEqual({});
     expect(result.lines).toEqual(["# not an arg", "app = 1"]);
   });
 });
@@ -195,17 +196,14 @@ describe("parseCodeBlock()", () => {
     ).toThrow(/must have a '#\| standalone: true' argument/);
   });
 
-  test("a block with no args at all throws", () => {
-    // Latent bug, documented rather than endorsed: `processQuartoArgs()`
-    // returns `undefined` for `quartoArgs` when there are no `#|` lines (that's
-    // what js-yaml gives back for an empty document), and `parseCodeBlock()`
-    // dereferences it without checking, so today this is a bare TypeError from
-    // the runtime rather than the "must have a '#| standalone: true' argument"
-    // message above. Reachable from `run-python-blocks.ts`, which passes
-    // arbitrary `block.innerText`. Deliberately asserting only that it throws,
-    // so that fixing the source (`quartoArgsParsed ?? {}`) doesn't have to come
-    // with a test edit -- the friendly error satisfies this too.
-    expect(() => parseCodeBlock(["x = 1"], "python")).toThrow();
+  test("a block with no args at all gets the same message as one with the wrong args", () => {
+    // js-yaml returns `undefined` for an empty document, which is what a block
+    // with no `#|` lines produces. That used to be dereferenced unguarded, so
+    // the most likely authoring mistake -- forgetting the args entirely --
+    // raised a bare TypeError instead of the message meant for it.
+    expect(() => parseCodeBlock(["x = 1"], "python")).toThrow(
+      /must have a '#\| standalone: true' argument/,
+    );
   });
 
   test("an editor block with 'standalone: true' throws", () => {

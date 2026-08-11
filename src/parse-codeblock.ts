@@ -117,10 +117,11 @@ export function processQuartoArgs(lines: string[]): {
     .slice(0, i)
     .map((line) => line.replace(rgxQuartoComment, ""));
 
-  // Parse the args as YAML.
-  const quartoArgs: QuartoArgs = yamlLoad(
-    argCommentLines.join("\n"),
-  ) as QuartoArgs;
+  // Parse the args as YAML. An empty document -- a code block with no `#|`
+  // lines at all -- yields `undefined`, so fall back to an empty object and let
+  // the caller apply its defaults.
+  const quartoArgs: QuartoArgs = (yamlLoad(argCommentLines.join("\n")) ??
+    {}) as QuartoArgs;
 
   return {
     lines: lines.slice(i),

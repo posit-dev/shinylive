@@ -45,17 +45,16 @@ describe("errorToPostableErrorObject()", () => {
     expect(obj.stack).toBeUndefined();
   });
 
-  test("a thrown value with no properties is not handled", () => {
-    // Latent bug, documented rather than endorsed: `e.name` is read before the
-    // `instanceof Error` guard, so anything without properties throws on the
-    // way in. Both callers are `catch (e)` blocks (see
-    // `pyodide-worker.ts`), where `e` can be any thrown value, so `throw null`
-    // in Python-adjacent code turns into a TypeError from the error reporter
-    // itself. A primitive is fine, because property access on it doesn't throw.
-    expect(() => errorToPostableErrorObject("just a string")).not.toThrow();
-    expect(errorToPostableErrorObject("just a string").name).toBeUndefined();
-    expect(() => errorToPostableErrorObject(null)).toThrow(TypeError);
-    expect(() => errorToPostableErrorObject(undefined)).toThrow(TypeError);
+  test("converts a thrown value with no properties", () => {
+    // The only caller is a `catch (e)`, where `e` can be any thrown value at
+    // all. `e.name` used to be read before the `instanceof Error` guard, so
+    // `throw null` anywhere in the worker turned into a TypeError from the
+    // error reporter itself, losing the original error.
+    for (const thrown of [null, undefined, "just a string", 0]) {
+      const obj = errorToPostableErrorObject(thrown);
+      expect(obj.message).toBe("An unknown error occured");
+      expect(typeof obj.name).toBe("string");
+    }
   });
 });
 
@@ -94,12 +93,14 @@ describe("postableErrorObjectToError()", () => {
     );
   });
 
-  test("a non-object is not handled either", () => {
-    // The other half of the latent bug above: `"message" in errObj` throws for
-    // anything that isn't an object, and this function is applied to whatever
-    // came across postMessage().
-    expect(() => postableErrorObjectToError(null)).toThrow(TypeError);
-    expect(() => postableErrorObjectToError("oops")).toThrow(TypeError);
+  test("a non-object becomes a generic Error too", () => {
+    // `"message" in errObj` throws for anything that isn't an object, and this
+    // is applied to whatever came across postMessage().
+    for (const bad of [null, undefined, "oops", 0]) {
+      expect(postableErrorObjectToError(bad).message).toBe(
+        "An unknown error occured",
+      );
+    }
   });
 });
 
