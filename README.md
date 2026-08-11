@@ -133,6 +133,8 @@ Anything that needs a real browser, a running app, or Pyodide/webR belongs in th
 make unit-test-coverage
 ```
 
+The run prints a note under the table saying what the figures cover, because the number on its own is easy to misread -- see below.
+
 On a pull request, CI posts the same report as a comment, with a per-file comparison against the base branch and annotations on uncovered lines you touched. It is a signal, not a gate: there is no threshold, and a drop will not fail the build.
 
 To exclude a line that can't be reached -- a defensive branch the types rule out, say -- mark it in the source:

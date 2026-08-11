@@ -86,7 +86,10 @@ jobs:
           # Then update the PR comment in place, so a busy PR gets one comment
           # rather than one per push. Fails harmlessly on fork PRs.
           marker='<!-- jest-coverage-report -->'
-          body=$(printf '%s\n%s\n' "$marker" "$REPORT")
+          # The same caveat the local run prints under its table: these figures
+          # are unit coverage over the pure-logic modules, not the whole app.
+          caveat='> Unit tests only — the pure-logic modules in `src/`. The React components, hooks, engine proxies and service worker are covered by the pytest + Playwright suites in `tests/`, which are not measured here.'
+          body=$(printf '%s\n%s\n\n%s\n' "$marker" "$caveat" "$REPORT")
 
           id=$(gh api "repos/$GITHUB_REPOSITORY/issues/$PR/comments" --paginate \
                  --jq ".[] | select(.body | startswith(\"$marker\")) | .id" | head -1)
