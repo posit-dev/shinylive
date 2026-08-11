@@ -45,6 +45,21 @@ module.exports = {
     ],
   },
 
+  // V8's built-in coverage rather than jest's default, which instruments via
+  // babel-plugin-istanbul inside babel-jest — a transform this config doesn't
+  // use. With @swc/jest, the istanbul provider silently reports nothing.
+  coverageProvider: "v8",
+
+  // Deliberately no `collectCoverageFrom`: coverage is reported for the files
+  // the tests actually load. Widening it to all of src/ looks more honest but
+  // isn't — the v8 provider gives files it never loaded a placeholder count of
+  // one branch and one function, so the branch and function percentages come
+  // out meaningless. Statements would be accurate and would read as ~15%, which
+  // mostly measures how much of src/ is React that `tests/` covers instead.
+  //
+  // No `coverageThreshold` either. Coverage is a signal on pull requests, not a
+  // gate; see the note in README.md.
+
   // esbuild resolves these at build time; jest has no loader for them.
   moduleNameMapper: {
     "\\.(css|less|sass|scss)$":

@@ -9,6 +9,8 @@
 __pycache__
 /typings/
 
+/coverage/
+/report.json
 /test-results/
 /playwright-report/
 /playwright/.cache/

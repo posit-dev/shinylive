@@ -22,6 +22,11 @@ jobs:
   test_unit:
     name: Unit tests
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      # For the uncovered-line annotations on the diff.
+      checks: write
 
     steps:
       - uses: actions/checkout@v7
@@ -34,8 +39,59 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      # This is the step that gates the merge. Everything below it reports.
       - name: Run unit tests
         run: npm run test:unit
+
+      # Coverage is a signal, not a gate — hence `continue-on-error` on both
+      # steps. The action runs the suite again on the PR branch and on its base
+      # so it can show a per-file delta, which is the number worth watching. It
+      # can't produce one until a working harness exists on the base branch, so
+      # on this PR it reports head coverage alone.
+      - name: Measure coverage
+        id: coverage
+        if: github.event_name == 'pull_request'
+        continue-on-error: true
+        # Pinned to a commit rather than @v2: this is a third-party action, and
+        # the job holds a write token. v2.3.1, 2024-09-09.
+        uses: ArtiomTr/jest-coverage-report-action@7f750dd50f5585533321eb7ebc482b936b49a5d4
+        with:
+          annotations: coverage
+          # Emit markdown rather than letting the action comment for itself. A
+          # PR from a fork gets a read-only token, and the action's own comment
+          # step dies on it; the publish step below degrades to the job summary
+          # instead. (The action's README suggests `pull_request_target` for
+          # this, which would run fork code with a write token. No.)
+          output: report-markdown
+
+      - name: Publish the coverage report
+        if: github.event_name == 'pull_request' && steps.coverage.outputs.report != ''
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR: ${{ github.event.pull_request.number }}
+          REPORT: ${{ steps.coverage.outputs.report }}
+        run: |
+          set -euo pipefail
+
+          # Always readable from the run's summary page, token or no token.
+          printf '%s\n' "$REPORT" >> "$GITHUB_STEP_SUMMARY"
+
+          # Then update the PR comment in place, so a busy PR gets one comment
+          # rather than one per push. Fails harmlessly on fork PRs.
+          marker='<!-- jest-coverage-report -->'
+          body=$(printf '%s\n%s\n' "$marker" "$REPORT")
+
+          id=$(gh api "repos/$GITHUB_REPOSITORY/issues/$PR/comments" --paginate \
+                 --jq ".[] | select(.body | startswith(\"$marker\")) | .id" | head -1)
+
+          if [ -n "$id" ]; then
+            gh api --method PATCH "repos/$GITHUB_REPOSITORY/issues/comments/$id" \
+              -f body="$body" > /dev/null
+          else
+            gh api --method POST "repos/$GITHUB_REPOSITORY/issues/$PR/comments" \
+              -f body="$body" > /dev/null
+          fi
 
   build:
     needs: test_unit

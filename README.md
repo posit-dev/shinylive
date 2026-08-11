@@ -122,6 +122,16 @@ Tests live next to the code they cover, as `src/**/*.test.ts`. The runner is con
 
 Anything that needs a real browser, a running app, or Pyodide/webR belongs in the app tests below rather than here.
 
+#### Coverage
+
+```bash
+npm run test:unit:coverage
+```
+
+On a pull request, CI posts the same report as a comment, with a per-file comparison against the base branch and annotations on uncovered lines you touched. It is a signal, not a gate: there is no threshold, and a drop will not fail the build.
+
+Read the number for its direction, not its size. Coverage is collected only for the files the tests load, so the total moves as files enter and leave the suite -- the per-file deltas are the reliable part. It also says nothing about the roughly 85% of `src/` that is React, the editor and the engine proxies, which the app tests below cover instead.
+
 ### App tests (pytest driving Playwright)
 
 Every app in `examples/`, loaded in a real browser against the built `_shinylive/` output, checked for tracebacks, warnings, output errors and console errors -- and, in the intent tests, driven through its inputs.
