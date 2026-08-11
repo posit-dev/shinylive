@@ -113,7 +113,12 @@ There are two suites, split by what they need to run.
 Pure logic in `src/` -- parsing, encoding, path handling, the pieces that don't need a browser. They need no build and no Python, and the whole suite runs in about a second.
 
 ```bash
-npm install    # once
+make unit-test
+```
+
+`make` installs dependencies first if they're stale. To skip that, or to leave jest running on a watch loop, use the scripts directly:
+
+```bash
 npm run test:unit
 npm run test:unit:watch
 ```
@@ -125,7 +130,7 @@ Anything that needs a real browser, a running app, or Pyodide/webR belongs in th
 #### Coverage
 
 ```bash
-npm run test:unit:coverage
+make unit-test-coverage
 ```
 
 On a pull request, CI posts the same report as a comment, with a per-file comparison against the base branch and annotations on uncovered lines you touched. It is a signal, not a gate: there is no threshold, and a drop will not fail the build.
