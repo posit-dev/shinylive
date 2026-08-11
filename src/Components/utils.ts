@@ -7,6 +7,9 @@ export function asCssLengthUnit(value?: number | string): string | undefined {
     return value;
   }
 
+  // Defensive only: the declared parameter type rules this out, so it is
+  // reachable only from untyped callers.
+  /* v8 ignore next 3 */
   if (typeof value !== "number") {
     return undefined;
   }

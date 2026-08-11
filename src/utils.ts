@@ -51,6 +51,8 @@ export function currentScriptDir(): string {
   return dirname(currentScriptPath());
 }
 
+// A debugging helper. Nothing in src/ calls it.
+/* v8 ignore next 3 */
 export function loudPrint(msg: string) {
   console.log("%c" + msg, "color:forestgreen");
 }

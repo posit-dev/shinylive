@@ -135,6 +135,17 @@ make unit-test-coverage
 
 On a pull request, CI posts the same report as a comment, with a per-file comparison against the base branch and annotations on uncovered lines you touched. It is a signal, not a gate: there is no threshold, and a drop will not fail the build.
 
+To exclude a line that can't be reached -- a defensive branch the types rule out, say -- mark it in the source:
+
+```ts
+/* v8 ignore next 3 */
+if (thisCannotHappen) {
+  return fallback;
+}
+```
+
+Note the dialect. Coverage runs through v8, so it honours c8's `/* c8 ignore next */` and `/* v8 ignore next */` (plus `start`/`stop` to bracket a region), and *not* istanbul's `/* istanbul ignore next */`, which is silently ignored. It has to be a `/* */` block comment; `//` does not work.
+
 Read the number for its direction, not its size. Coverage is collected only for the files the tests load, so the total moves as files enter and leave the suite -- the per-file deltas are the reliable part. It also says nothing about the roughly 85% of `src/` that is React, the editor and the engine proxies, which the app tests below cover instead.
 
 ### App tests (pytest driving Playwright)
