@@ -29,7 +29,7 @@ from shinylive_app import (
     wait_until,
 )
 
-pytestmark = pytest.mark.py
+pytestmark = [pytest.mark.examples, pytest.mark.py]
 
 UPLOAD_CSV = str(Path(__file__).parent / "fixtures" / "upload.csv")
 

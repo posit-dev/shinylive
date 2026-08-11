@@ -1,26 +1,62 @@
-# Example app tests
+# Browser tests
 
-Two suites over the apps in `examples/`, both driving the built `_shinylive/`
-output in a real browser:
+Everything here drives the built `_shinylive/` output in a real browser, under
+pytest. There are two groups, marked `examples` and `site`, and every test
+carries one of the two.
+
+**`examples`** — the apps in `examples/`:
 
 - **`test_examples_smoke.py`** loads every indexed example, for both engines, and
   fails on tracebacks, deprecation warnings, output errors or JS console errors.
 - **`test_examples_intent_py.py`** and **`test_examples_intent_r.py`** go further
   for each app: drive its inputs, and check the outputs that depend on them.
 
+**`site`** — shinylive itself, rather than any one app:
+
+- **`test_site_editor.py`** selects an example, and runs a script in the
+  terminal.
+- **`test_site_url_loading.py`** loads an app out of the URL hash in each of the
+  three views, and checks the `h=0` option only the app view honours.
+- **`test_site_export.py`** covers a static export: the app page, the `edit/`
+  page, and the editor-cell mode.
+
 Every test also fails on terminal tracebacks or warnings, Shiny output errors,
-and browser console errors, including errors emitted after an intent-test
-interaction.
+and browser console errors, including errors emitted after an interaction. A
+test that provokes one on purpose opts out with `@pytest.mark.allow_page_errors`
+and asserts on the failure itself.
 
 ```console
-make examples-test-deps     # once
+make test-deps              # once
 make all                    # the tests drive the built output
-make examples-smoke-test    # both suites
+make examples-smoke-test    # the smoke and intent suites
 make examples-intent-test   # only the intent tests
+make site-test              # the site and export suites
 ```
 
-`EXAMPLES_ENGINE=py|r` and `EXAMPLES_SHARD=1/3` run part of the suite; CI splits
-it both ways.
+`EXAMPLES_ENGINE=py|r` and `EXAMPLES_SHARD=1/3` run part of the example suite; CI
+splits it both ways, in `test-apps.yml`. The site tests are one job, in
+`build.yml`, next to the build they test.
+
+## Static exports without the Python package
+
+`test_site_export.py` needs an exported app, which is normally the Python
+shinylive package's `shinylive export` -- and that package depends on this
+repository, the circular dependency that kept a playwright job in `build.yml`
+commented out for years.
+
+`export_app.py` assembles one from `build/` instead. An export is `app.json`
+(the files, verbatim), `export_template/index.html` with its variables filled
+in, `edit/index.html` as-is, and the shinylive bundle; `make all` produces all
+of it. The `exported_app` fixture writes one and returns the URL it is served
+at:
+
+```python
+def test_something(page, exported_app):
+    page.goto(exported_app({"app.py": "..."}, name="something"))
+```
+
+The app mode comes from the `?_shinylive-mode=` query string, which is where
+`runExportedApp()` reads it.
 
 ## Shiny's own controllers
 
@@ -35,10 +71,10 @@ n.set("40")
 controller.OutputCode(app, "txt").expect_value("n*2 is 80")
 ```
 
-`make examples-test-deps` installs Shiny from the `packages/py-shiny` submodule
-rather than from PyPI, because the controllers' locators track the markup a given
-Shiny renders, and that submodule is the source of the Shiny wheel shinylive
-bundles into the Python apps.
+`make test-deps` installs Shiny from the `packages/py-shiny` submodule rather
+than from PyPI, because the controllers' locators track the markup a given Shiny
+renders, and that submodule is the source of the Shiny wheel shinylive bundles
+into the Python apps.
 
 ### The iframe
 

@@ -10,12 +10,8 @@ __pycache__
 /typings/
 
 /test-results/
-/playwright-report/
-/playwright/.cache/
 
 .vscode/*.log
-
-playwright/static-build/
 
 /.luarc.json
 

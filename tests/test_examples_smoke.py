@@ -11,6 +11,8 @@ from playwright.sync_api import Page
 
 from shinylive_app import ENGINES, example_app_titles, open_example
 
+pytestmark = pytest.mark.examples
+
 EXAMPLES = [(engine, title) for engine in ENGINES for title in example_app_titles(engine)]
 
 

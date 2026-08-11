@@ -19,7 +19,7 @@ from shiny.playwright import controller
 from controller_shims import InputSelectize, NavPanel, OutputPlot
 from shinylive_app import expect_plot_to_redraw, open_example, wait_until
 
-pytestmark = pytest.mark.r
+pytestmark = [pytest.mark.examples, pytest.mark.r]
 
 UPLOAD_CSV = str(Path(__file__).parent / "fixtures" / "upload.csv")
 
