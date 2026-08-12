@@ -40,17 +40,18 @@ export async function initPyodide({
 
   const status = loadStatusStore("python");
 
-  const indexURL = utils.currentScriptDir() + "/pyodide/";
+  const baseUrl = utils.currentScriptDir() + "/pyodide/";
 
   status.set("engine-download");
   // Checked because loadPyodide() hangs rather than failing when the wasm is
   // missing; see engine-load-guard.ts. This throw propagates to App.tsx, which
   // records it as "failed".
-  const unreachable = await checkEngineAssetReachable("python", indexURL);
+  const unreachable = await checkEngineAssetReachable("python", baseUrl);
   if (unreachable) throw new Error(unreachable);
 
   const pyodideProxy = await loadPyodideProxy(
-    { type: proxyType, indexURL },
+    // indexURL is Pyodide's own loadPyodide() parameter name; keep it as-is.
+    { type: proxyType, indexURL: baseUrl },
     stdout,
     stderr,
   );

@@ -247,10 +247,8 @@ self.onmessage = async function (e: MessageEvent): Promise<void> {
       });
     }
   } catch (e) {
-    // Both of these can still be undefined here: init may have failed partway
-    // through, after loadPyodide() but before setupPythonEnv() returned. If we
-    // throw from this handler, no reply is ever posted and the caller waits
-    // forever, so it must not assume either one exists.
+    // pyUtils can still be undefined here if init failed before
+    // setupPythonEnv() returned.
     if (
       typeof pyodide !== "undefined" &&
       typeof pyUtils !== "undefined" &&
