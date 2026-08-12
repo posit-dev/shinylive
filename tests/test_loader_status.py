@@ -88,22 +88,38 @@ def test_r_syntax_error_reports_the_line(page: Page, loader_delay: int) -> None:
 
 @pytest.mark.allow_page_errors
 def test_r_failure_names_the_call(page: Page, loader_delay: int) -> None:
-    """conditionMessage() drops conditionCall(), so the dialog showed what
-    failed but not which call failed. stop() raises with a call attached, so
-    this is where the difference shows.
+    """conditionMessage() drops conditionCall(), so the dialog said what failed
+    but not which call failed. A failure inside a function the app author wrote
+    is where the difference shows: R attaches that call to the condition.
+    """
+    sabotage(page, "r", "r-runtime-call", loader_delay)
+    page.goto(app_url("r", "r-runtime-call"))
+    expect(page.locator(".error-message")).to_have_text("Error starting app!")
+    log = page.locator(".error-log pre")
+    expect(log).to_contain_text("Error in load_data(")
+    expect(log).to_contain_text("deliberate failure")
+    # deparse() breaks a call wider than 60 characters across lines and
+    # .start_app keeps only the first, so the app's last argument is past the
+    # break: a dialog containing it would mean the truncation is gone.
+    expect(log).not_to_contain_text("truncated_marker")
+
+
+@pytest.mark.allow_page_errors
+def test_r_top_level_failure_shows_only_the_message(
+    page: Page, loader_delay: int
+) -> None:
+    """A top-level failure has no call of the author's to name: shiny evaluates
+    every app body inside ..stacktraceon.., so that wrapper is the only call the
+    condition carries, and deparsing it yields the whole app source.
+
+    .start_app drops a call from that family, which leaves exactly what the
+    dialog showed before it reported calls at all. The exact-text assertion is
+    what rules out both the wrapper's name and the app source behind it.
     """
     sabotage(page, "r", "r-runtime", loader_delay)
     page.goto(app_url("r", "r-runtime"))
     expect(page.locator(".error-message")).to_have_text("Error starting app!")
-    log = page.locator(".error-log pre")
-    expect(log).to_contain_text("Error in ")
-    expect(log).to_contain_text("deliberate failure")
-    # shiny evaluates the app's body inside ..stacktraceon..(), so the call this
-    # condition carries deparses to the whole app source. "unreachable" appears
-    # only in the app's ui line, which is past the first deparsed line: this is
-    # the assertion that .start_app truncates rather than pasting the app into
-    # the dialog.
-    expect(log).not_to_contain_text("unreachable")
+    expect(page.locator(".error-log pre")).to_have_text("deliberate failure")
 
 
 @pytest.mark.allow_page_errors

@@ -23,6 +23,7 @@ MODES = (
     "app-syntax",
     "requirements",
     "r-runtime",
+    "r-runtime-call",
     "engine-load",
     "engine-unreachable",
     "engine-setup",
@@ -96,15 +97,44 @@ def _files(engine: str, mode: str) -> list[dict[str, str]]:
             }
         ]
     if mode == "r-runtime":
-        # A runtime error at the app's top level, raised with a call attached so
-        # conditionCall() has something to report. parse() succeeds here, so
-        # this exercises the handler rather than the parse guard.
+        # A fatal error at the app's top level. parse() succeeds here, so this
+        # exercises .start_app's condition handler rather than its parse guard.
+        # The only call such a condition carries is shiny's ..stacktraceon..
+        # wrapper, which .start_app drops, so this is the mode that shows the
+        # dialog falling back to the bare message.
         return [
             {
                 "name": MAIN_FILE["r"],
                 "content": (
                     "library(shiny)\n\n"
                     "stop('deliberate failure')\n\n"
+                    'ui <- fluidPage(h1("unreachable"))\n'
+                    "server <- function(input, output, session) { }\n"
+                    "shinyApp(ui, server)\n"
+                ),
+            }
+        ]
+    if mode == "r-runtime-call":
+        # The same failure, one frame down: raised inside a function the app
+        # author wrote and called, so conditionCall() names `load_data(...)`
+        # rather than shiny's wrapper. This is the case reporting the call is
+        # for.
+        #
+        # The call is deliberately wider than deparse()'s 60-character cutoff so
+        # that it deparses to more than one line, which is what puts
+        # `truncated_marker` past the first line -- the only argument the dialog
+        # must not show.
+        return [
+            {
+                "name": MAIN_FILE["r"],
+                "content": (
+                    "library(shiny)\n\n"
+                    "load_data <- function(path, columns, truncated_marker) {\n"
+                    "  stop('deliberate failure')\n"
+                    "}\n\n"
+                    'load_data(path = "a/path/long/enough/to/split/the/deparse.csv",\n'
+                    '          columns = c("first", "second"),\n'
+                    "          truncated_marker = TRUE)\n\n"
                     'ui <- fluidPage(h1("unreachable"))\n'
                     "server <- function(input, output, session) { }\n"
                     "shinyApp(ui, server)\n"
