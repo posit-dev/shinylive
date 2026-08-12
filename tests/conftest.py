@@ -1,17 +1,23 @@
-"""Fixtures and options for the example app tests."""
+"""Fixtures and options for the tests in this directory."""
 
 from __future__ import annotations
 
+import re
 import socket
 import subprocess
 import sys
+import threading
 import time
-from typing import Iterator
+from functools import partial
+from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
+from pathlib import Path
+from typing import Any, Callable, Iterator, Mapping
 
 import pytest
 from playwright.sync_api import ConsoleMessage, Page
 from playwright.sync_api import expect
 
+from export_app import export_app
 from shinylive_app import (
     APP_FRAME,
     SHINYLIVE_DIR,
@@ -25,16 +31,50 @@ from shinylive_app import (
 expect.set_options(timeout=30_000)
 
 
+# Analytics, which no test here is about. `make all` templates a Google Tag
+# Manager loader into the site's pages when GOOGLE_TAG_MANAGER_ID is set
+# (scripts/build.ts), which .github/workflows/build.yml does and test-apps.yml
+# does not -- so the site tests are the only ones that ever meet it, and they
+# meet it only on CI, next to the deploy they gate.
+_ANALYTICS_URL = re.compile(
+    r"https?://([^/]+\.)?(googletagmanager|google-analytics)\.com/"
+)
+
+
 @pytest.fixture(autouse=True)
-def fail_on_example_errors(page: Page) -> Iterator[None]:
-    """Fail on errors emitted while an example is starting or being exercised."""
+def block_analytics(page: Page) -> None:
+    """Keep the tests off the network, and off anything but shinylive's own code.
+
+    The loader is injected with `async`, so a slow or unreachable tag manager
+    would hold up the page's load event and, with it, `page.goto()`. Aborting is
+    also why `fail_on_page_errors` has to forgive these: a request that never
+    completes reaches the console as an error, the same way a missing favicon
+    does.
+    """
+    page.route(_ANALYTICS_URL, lambda route: route.abort())
+
+
+@pytest.fixture(autouse=True)
+def fail_on_page_errors(request: pytest.FixtureRequest, page: Page) -> Iterator[None]:
+    """Fail on errors emitted while an app is starting or being exercised.
+
+    Every test that opens a page gets this. A test that provokes an error on
+    purpose -- a deliberate syntax error, a download made to fail -- opts out
+    with `@pytest.mark.allow_page_errors` and asserts on the failure itself.
+    """
+    if request.node.get_closest_marker("allow_page_errors"):
+        yield
+        return
+
     console_errors: list[str] = []
 
     def on_console(message: ConsoleMessage) -> None:
         if message.type != "error":
             return
-        # A missing favicon is not an app problem.
-        if message.location["url"].endswith("favicon.ico"):
+        # A missing favicon is not an app problem, and neither is the tag
+        # manager `block_analytics` just aborted.
+        url = message.location["url"]
+        if url.endswith("favicon.ico") or _ANALYTICS_URL.search(url):
             return
         console_errors.append(message.text)
 
@@ -70,9 +110,25 @@ def pytest_addoption(parser: pytest.Parser) -> None:
     )
 
 
+def pytest_configure(config: pytest.Config) -> None:
+    shard = config.getoption("--shard")
+    if shard is not None:
+        config.pluginmanager.register(_ShardPlugin(str(shard)), "shinylive-shard")
+
+
+# The two markers every test is expected to carry. CI runs one job selecting on
+# `examples` and another selecting on `site`, so a test with neither is a test
+# nothing ever runs.
+_SUITE_MARKERS = ("examples", "site")
+
+
 def pytest_collection_modifyitems(
     config: pytest.Config, items: list[pytest.Item]
 ) -> None:
+    # This runs before `-m` deselection: a conftest's implementation of this hook
+    # is called ahead of the one in _pytest.mark, which is what makes the engine
+    # markers added below visible to `-m py` / `-m r`.
+
     # Let `-m py` / `-m r` select an engine for tests that are parametrized by
     # one, the way the per-engine modules are already marked.
     for item in items:
@@ -81,34 +137,59 @@ def pytest_collection_modifyitems(
         if engine == "py" or engine == "r":
             item.add_marker(pytest.mark.py if engine == "py" else pytest.mark.r)
 
-    shard = config.getoption("--shard")
-    if shard is None:
-        return
+    unmarked = [
+        item.nodeid
+        for item in items
+        if not any(item.get_closest_marker(name) for name in _SUITE_MARKERS)
+    ]
+    if unmarked:
+        raise pytest.UsageError(
+            "every test needs a `pytest.mark.examples` or `pytest.mark.site` "
+            "marker, usually as a module-level `pytestmark`. Neither CI job "
+            "selects a test without one, so it would quietly never run:\n  "
+            + "\n  ".join(unmarked)
+        )
 
-    index, total = (int(part) for part in str(shard).split("/"))
-    if not 1 <= index <= total:
-        raise pytest.UsageError(f"--shard={shard} is out of range")
 
-    # Round-robin rather than playwright's contiguous blocks. Every test here
-    # boots a whole engine, and their costs vary enough -- a couple of seconds
-    # for a text output, half a minute for a simulation -- that dealing them out
-    # one at a time keeps the shards closer in length.
-    keep = [item for i, item in enumerate(items) if i % total == index - 1]
-    drop = [item for i, item in enumerate(items) if i % total != index - 1]
-    config.hook.pytest_deselected(items=drop)
-    items[:] = keep
+class _ShardPlugin:
+    """Run one part of the suite, as in `--shard=1/3`.
+
+    A plugin rather than another function in this module so that its hook can be
+    `trylast` and so run *after* `-m` deselection. Sharding first and selecting
+    afterwards still covers every test exactly once, but it deals out the whole
+    of `tests/` -- so each examples shard would be handed a slice of the site
+    tests to throw away, and the shards' sizes would drift with whatever else
+    happens to live here.
+    """
+
+    def __init__(self, shard: str) -> None:
+        self.index, self.total = (int(part) for part in shard.split("/"))
+        if not 1 <= self.index <= self.total:
+            raise pytest.UsageError(f"--shard={shard} is out of range")
+
+    @pytest.hookimpl(trylast=True)
+    def pytest_collection_modifyitems(
+        self, config: pytest.Config, items: list[pytest.Item]
+    ) -> None:
+        # Round-robin rather than playwright's contiguous blocks. Every test here
+        # boots a whole engine, and their costs vary enough -- a couple of
+        # seconds for a text output, half a minute for a simulation -- that
+        # dealing them out one at a time keeps the shards closer in length.
+        mine = self.index - 1
+        keep = [item for i, item in enumerate(items) if i % self.total == mine]
+        drop = [item for i, item in enumerate(items) if i % self.total != mine]
+        config.hook.pytest_deselected(items=drop)
+        items[:] = keep
 
 
 @pytest.fixture(scope="session", autouse=True)
 def static_server() -> Iterator[None]:
     """Serve the built `_shinylive/` for the session.
 
-    The tests drive the built output rather than the esbuild dev server, because
-    that server needs `shinylive export` from the Python shinylive package --
-    which depends on this repository. That circular dependency is why the
-    playwright job in build.yml is commented out. Serving `_shinylive/` needs
-    nothing but a static file server, so this suite can actually run on CI, and
-    it exercises the same bytes we deploy.
+    The tests drive the built output rather than the esbuild dev server: it
+    needs `shinylive export` from the Python shinylive package, which depends on
+    this repository. Serving `_shinylive/` needs only a static file server, and
+    exercises the same bytes we deploy.
 
     Shinylive registers a service worker, which browsers only allow over https or
     from localhost -- see src/load-shinylive-sw.ts.
@@ -145,6 +226,61 @@ def static_server() -> Iterator[None]:
             process.wait(timeout=10)
         except subprocess.TimeoutExpired:
             process.kill()
+
+
+@pytest.fixture(scope="session")
+def export_root(tmp_path_factory: pytest.TempPathFactory) -> Path:
+    """The directory the session's static exports are assembled in."""
+    return tmp_path_factory.mktemp("exports")
+
+
+@pytest.fixture(scope="session")
+def export_server(export_root: Path) -> Iterator[str]:
+    """Serve the session's exports, and return the base URL they are served at.
+
+    In-process and on a port the OS picks, where `static_server` is a subprocess
+    on a fixed one: `_shinylive/` is the same directory in every run and worth
+    reusing a server for, but an export root is made fresh per session, so a
+    server left over from another run would quietly serve the wrong files.
+    """
+
+    class _QuietHandler(SimpleHTTPRequestHandler):
+        def log_message(self, format: str, *args: Any) -> None:
+            pass
+
+    server = ThreadingHTTPServer(
+        ("127.0.0.1", 0), partial(_QuietHandler, directory=str(export_root))
+    )
+    threading.Thread(target=server.serve_forever, daemon=True).start()
+    try:
+        yield f"http://127.0.0.1:{server.server_address[1]}"
+    finally:
+        server.shutdown()
+        server.server_close()
+
+
+@pytest.fixture
+def exported_app(export_root: Path, export_server: str) -> Callable[..., str]:
+    """Export an app from the local build, and return the URL serving it.
+
+    ```python
+    url = exported_app({"app.py": "..."}, name="hello")
+    page.goto(url)
+    ```
+
+    The keyword arguments are `export_app()`'s, plus the `name` of the directory
+    to export into. Names are reused across tests on purpose: an export is a few
+    files and two symlinks, so rewriting one is cheaper than reasoning about
+    which test wrote what.
+    """
+
+    def _exported_app(
+        files: Mapping[str, str], *, name: str = "app", **kwargs: Any
+    ) -> str:
+        export_app(files, export_root / name, **kwargs)
+        return f"{export_server}/{name}/"
+
+    return _exported_app
 
 
 def _port_is_open() -> bool:

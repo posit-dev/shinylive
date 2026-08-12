@@ -14,8 +14,7 @@
     "type-check": "tsc --noEmit",
     "test:unit": "jest",
     "test:unit:watch": "jest --watch",
-    "test:unit:coverage": "node testing-helpers/coverage-note.js",
-    "cypress:open": "cypress open"
+    "test:unit:coverage": "node testing-helpers/coverage-note.js"
   },
   "author": "Winston Chang <winston@posit.co>",
   "license": "MIT",
@@ -37,7 +36,6 @@
     "@codemirror/view": "^6.9.1",
     "@github/clipboard-copy-element": "^1.3.0",
     "@lezer/common": "^1.0.2",
-    "@playwright/test": "^1.40.1",
     "@swc/core": "^1.15.47",
     "@swc/jest": "^0.2.39",
     "@types/events": "^3.0.3",

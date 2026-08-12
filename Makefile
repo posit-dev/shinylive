@@ -10,8 +10,9 @@
 	packages \
 	quarto quartoserve \
 	clean-packages clean distclean \
-	examples-check-index examples-test-deps examples-smoke-test \
-	examples-intent-test type-check unit-test unit-test-coverage test test-watch webr \
+	examples-check-index type-check \
+	test-deps test-unit test-unit-coverage \
+	test-examples-smoke test-examples-intent test-site webr \
 	_shinylive
 
 .DEFAULT_GOAL := help
@@ -361,18 +362,20 @@ type-check: node_modules
 	npm run type-check
 
 ## Run the TypeScript unit tests (jest); needs no build and no Python
-unit-test: node_modules
+test-unit: node_modules
 	npm run test:unit
 
 ## Run the TypeScript unit tests and report coverage
-unit-test-coverage: node_modules
+test-unit-coverage: node_modules
 	npm run test:unit:coverage
 
-## Install the example app tests' Python dependencies
-# The tests drive apps with `shiny.playwright.controller`, whose locators track
-# the markup a given Shiny renders, so the installed Shiny has to be the one
-# shinylive bundles -- the submodule $(SHINY_WHEEL) is built from.
-examples-test-deps: $(PYBIN) $(PACKAGE_DIR)/py-shiny
+# The example tests drive apps with `shiny.playwright.controller`, whose locators
+# track the markup a given Shiny renders, so the installed Shiny has to be the
+# one shinylive bundles -- the submodule $(SHINY_WHEEL) is built from.
+#
+# The `##` line has to sit directly above the target for `make help` to find it.
+## Install the Python dependencies for the tests in tests/
+test-deps: $(PYBIN) $(PACKAGE_DIR)/py-shiny
 	$(PYBIN)/pip install -r requirements-test.txt
 	$(PYBIN)/pip install $(PACKAGE_DIR)/py-shiny
 	$(PYBIN)/playwright install --with-deps chromium
@@ -383,20 +386,27 @@ examples-test-deps: $(PYBIN) $(PACKAGE_DIR)/py-shiny
 # itself. Each test boots a whole Pyodide or webR instance, so they want memory
 # rather than cores, and parallel workers inside one runner would squeeze all of
 # them -- wall-clock time comes from sharding across jobs instead.
+#
+# The `examples` marker keeps the site tests out of that matrix; they get their
+# own target below.
 EXAMPLES_PYTEST_ARGS = \
-  $(if $(EXAMPLES_ENGINE),-m $(EXAMPLES_ENGINE)) \
+  -m "examples$(if $(EXAMPLES_ENGINE), and $(EXAMPLES_ENGINE))" \
   $(if $(EXAMPLES_SHARD),--shard=$(EXAMPLES_SHARD)) \
   $(if $(CI),--reruns 1)
 
 ## Run the smoke and intent tests for every example app (needs `make all`)
-examples-smoke-test: examples-test-deps
+test-examples-smoke: test-deps
 	$(PYBIN)/pytest tests $(EXAMPLES_PYTEST_ARGS)
 
 ## Run only the example app intent tests (needs `make all`)
-examples-intent-test: examples-test-deps
+test-examples-intent: test-deps
 	$(PYBIN)/pytest tests/test_examples_intent_py.py tests/test_examples_intent_r.py \
 	  $(EXAMPLES_PYTEST_ARGS)
 
-## Run tests
-test:
-	npm run playwright test
+# The site tests cover the build itself rather than any example app: the editor,
+# apps loaded from the URL, and a static export assembled from build/ by
+# tests/export_app.py. There is one engine's worth of work here, so they run in a
+# single job rather than the examples' engine x shard matrix.
+## Run the site and static export tests (needs `make all`)
+test-site: test-deps
+	$(PYBIN)/pytest tests -m site $(if $(CI),--reruns 1)

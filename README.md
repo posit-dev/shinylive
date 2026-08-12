@@ -83,6 +83,7 @@ buildjs-prod           Build JS resources for production (with minification)
 watch                  Build JS resources and watch for changes
 serve                  Build JS resources, watch for changes, and serve site
 serve-prod             Build JS resources for production, watch for changes, and serve site
+buildjs-r              Build JS resources with webR as the default engine
 buildjs-prod-r         Build JS resources for production with webR as the default engine
 serve-prod-r           Build JS resources for production and serve site with webR as the default engine
 serve-r                Build JS resources and serve site with webR as the default engine
@@ -93,16 +94,20 @@ retrieve_packages      Download packages in shinylive_lock.json from PyPI
 update_pyodide_lock_json Update pyodide/pyodide-lock.json to include packages in shinylive_lock.json
 create_typeshed_json   Create the typeshed.json file which will be used by the shinylive type checker
 copy_pyright           Copy src/pyright files to build directory
-api-docs               Build Shiny API docs
 quarto                 Build Quarto example site in quarto/
 quartoserve            Build Quarto example site and serve
 clean-packages         Remove built wheels from the packages/ directory
 clean                  Remove all build files
-distclean              Remove all build files and venv/
-test                   Run tests
-test-watch             Run tests and watch
+distclean              Remove all build files, venv/, and downloads/
+examples-check-index   Check that every example on disk is listed in examples/index.json
+type-check             Type-check everything, including the unit tests (swc does not check types)
+test-unit              Run the TypeScript unit tests (jest); needs no build and no Python
+test-unit-coverage     Run the TypeScript unit tests and report coverage
+test-deps              Install the Python dependencies for the tests in tests/
+test-examples-smoke    Run the smoke and intent tests for every example app (needs `make all`)
+test-examples-intent   Run only the example app intent tests (needs `make all`)
+test-site              Run the site and static export tests (needs `make all`)
 ```
-
 
 ## Testing
 
@@ -113,7 +118,7 @@ There are two suites, split by what they need to run.
 Pure logic in `src/` -- parsing, encoding, path handling, the pieces that don't need a browser. They need no build and no Python, and the whole suite runs in about a second.
 
 ```bash
-make unit-test
+make test-unit
 ```
 
 `make` installs dependencies first if they're stale. To skip that, or to leave jest running on a watch loop, use the scripts directly:
@@ -130,7 +135,7 @@ Anything that needs a real browser, a running app, or Pyodide/webR belongs in th
 #### Coverage
 
 ```bash
-make unit-test-coverage
+make test-unit-coverage
 ```
 
 The run prints a note under the table saying what the figures cover, because the number on its own is easy to misread -- see below.
@@ -152,18 +157,17 @@ Read the number for its direction, not its size. Coverage is collected only for 
 
 ### App tests (pytest driving Playwright)
 
-Every app in `examples/`, loaded in a real browser against the built `_shinylive/` output, checked for tracebacks, warnings, output errors and console errors -- and, in the intent tests, driven through its inputs.
+Real browsers against the built `_shinylive/` output. Two halves, split by marker: the `examples` tests load every app in `examples/` and check for tracebacks, warnings, output errors and console errors -- driving each through its inputs, in the intent tests -- while the `site` tests cover the editor, apps loaded from a URL, and static exports.
 
 ```bash
-make examples-test-deps    # once
+make test-deps             # once
 make all                   # the tests drive the built output
-make examples-smoke-test   # both suites
-make examples-intent-test  # only the intent tests
+make test-examples-smoke   # every example app
+make test-examples-intent  # only the intent tests
+make test-site             # editor, URL loading, static export
 ```
 
-`tests/README.md` covers how these are put together, including `EXAMPLES_ENGINE` and `EXAMPLES_SHARD` for running part of the suite.
-
-The specs in `playwright/` predate all of this and are not currently run by either suite; the `make test` target still points at them, but the `npm run playwright` script it calls no longer exists.
+See [tests/README.md](tests/README.md) for what each suite covers, the conventions to follow when adding to them, and `EXAMPLES_ENGINE` / `EXAMPLES_SHARD` for running part of the suite.
 
 ## Pulling changes
 
