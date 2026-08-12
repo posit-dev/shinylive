@@ -8,3 +8,6 @@ pytest-playwright>=0.5
 pytest-rerunfailures>=14.0
 pytest-timeout>=2.3
 pytest-xdist>=3.5
+
+# Builds the LZ-compressed app hashes the loader tests load apps through.
+lzstring

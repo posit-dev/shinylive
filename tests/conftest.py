@@ -108,6 +108,22 @@ def pytest_addoption(parser: pytest.Parser) -> None:
         metavar="N/TOTAL",
         help="Run one part of the suite, as in `1/3`.",
     )
+    parser.addoption(
+        "--loader-delay",
+        type=int,
+        default=4000,
+        help=(
+            "Milliseconds to hold the engine's core wasm before answering. "
+            "LoadingStatus only shows text after 3s (STATUS_DELAY_MS), so the "
+            "default leaves about a second of visible status. Turn it up to "
+            "watch the stages by hand."
+        ),
+    )
+
+
+@pytest.fixture
+def loader_delay(request: pytest.FixtureRequest) -> int:
+    return int(request.config.getoption("--loader-delay"))
 
 
 def pytest_configure(config: pytest.Config) -> None:
