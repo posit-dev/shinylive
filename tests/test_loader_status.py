@@ -87,6 +87,26 @@ def test_r_syntax_error_reports_the_line(page: Page, loader_delay: int) -> None:
 
 
 @pytest.mark.allow_page_errors
+def test_r_failure_names_the_call(page: Page, loader_delay: int) -> None:
+    """conditionMessage() drops conditionCall(), so the dialog showed what
+    failed but not which call failed. stop() raises with a call attached, so
+    this is where the difference shows.
+    """
+    sabotage(page, "r", "r-runtime", loader_delay)
+    page.goto(app_url("r", "r-runtime"))
+    expect(page.locator(".error-message")).to_have_text("Error starting app!")
+    log = page.locator(".error-log pre")
+    expect(log).to_contain_text("Error in ")
+    expect(log).to_contain_text("deliberate failure")
+    # shiny evaluates the app's body inside ..stacktraceon..(), so the call this
+    # condition carries deparses to the whole app source. "unreachable" appears
+    # only in the app's ui line, which is past the first deparsed line: this is
+    # the assertion that .start_app truncates rather than pasting the app into
+    # the dialog.
+    expect(log).not_to_contain_text("unreachable")
+
+
+@pytest.mark.allow_page_errors
 def test_python_unresolvable_requirement_fails_the_app(
     page: Page, loader_delay: int
 ) -> None:

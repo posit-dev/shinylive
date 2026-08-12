@@ -339,12 +339,17 @@ webr::shim_install()
   lapply(rownames(installed.packages()), function(p) { .webr_pkg_cache[[p]] <<- TRUE })
 }
 
-# Returns "" on success, or the error message on failure.
+# Returns list(status = "ok"), or list(status = "error", message, class, call).
 #
 # The caller evaluates this with captureConditions = FALSE, so an error raised
 # here would go to the terminal and never reach JavaScript: the viewer would go
-# on to display an app that never started. Returning the message instead is what
-# makes a failed startup visible.
+# on to display an app that never started. Returning the failure as a value is
+# what makes a failed startup visible.
+#
+# A status list rather than the message alone: a condition whose message is
+# empty is indistinguishable from success once the two share one string, and
+# conditionMessage() on its own throws away the condition's call, so the viewer
+# could say what failed but not which call failed.
 .start_app <- function(appName, appDir, devMode = FALSE) {
   tryCatch(
     {
@@ -353,6 +358,10 @@ webr::shim_install()
       # number and the offending line, so letting parse() fail here is what gets
       # that detail to the viewer. Runs first so a typo fails before any package
       # installs rather than after them.
+      #
+      # Reporting the condition's call below does not replace this step: the
+      # detail is destroyed by sourceUTF8's own try() before any handler of ours
+      # sees a condition, so there is nothing left for one to report.
       for (f in list.files(appDir, pattern = "[.][Rr]$", full.names = TRUE)) {
         parse(file = f)
       }
@@ -384,12 +393,23 @@ webr::shim_install()
 
       app <- .shiny_to_httpuv(appDir)
       assign(appName, app, envir = .shiny_app_registry)
-      ""
+      list(status = "ok")
     },
     error = function(cnd) {
       msg <- paste(conditionMessage(cnd), collapse = "\n")
       if (!nzchar(msg)) msg <- "The app failed to start, with no error message."
-      msg
+      # conditionCall() is NULL when the condition was signalled without a call,
+      # and deparse() returns one element per line of source. Keep only the first
+      # line, marking that there was more, the way R's own error printing does:
+      # shiny evaluates the app's body inside ..stacktraceon..(), so deparsing
+      # that call in full would put the entire app source in the dialog.
+      cnd_call <- conditionCall(cnd)
+      call_txt <- ""
+      if (!is.null(cnd_call)) {
+        lines <- deparse(cnd_call)
+        call_txt <- if (length(lines) > 1) paste0(lines[[1]], " ...") else lines[[1]]
+      }
+      list(status = "error", message = msg, class = class(cnd), call = call_txt)
     }
   )
 }

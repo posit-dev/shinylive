@@ -22,6 +22,7 @@ MODES = (
     "off",
     "app-syntax",
     "requirements",
+    "r-runtime",
     "engine-load",
     "engine-unreachable",
     "engine-setup",
@@ -91,6 +92,22 @@ def _files(engine: str, mode: str) -> list[dict[str, str]]:
                 "content": WORKING_APP["r"].replace(
                     "library(shiny)",
                     f"library(shiny)\nlibrary({MISSING_PKG.replace('-', '.')})",
+                ),
+            }
+        ]
+    if mode == "r-runtime":
+        # A runtime error at the app's top level, raised with a call attached so
+        # conditionCall() has something to report. parse() succeeds here, so
+        # this exercises the handler rather than the parse guard.
+        return [
+            {
+                "name": MAIN_FILE["r"],
+                "content": (
+                    "library(shiny)\n\n"
+                    "stop('deliberate failure')\n\n"
+                    'ui <- fluidPage(h1("unreachable"))\n'
+                    "server <- function(input, output, session) { }\n"
+                    "shinyApp(ui, server)\n"
                 ),
             }
         ]

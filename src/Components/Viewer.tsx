@@ -1,4 +1,5 @@
 import * as React from "react";
+import type { RObject } from "webr";
 import { useLoadStatus } from "../hooks/useLoadStatus";
 import type { EngineName } from "../load-status";
 import { ENGINE_LABEL } from "../load-status";
@@ -172,6 +173,34 @@ async function resetRAppFrame(
   await utils.sleep(200);
 }
 
+/** One named character element of webR's serialisation of an R list.
+ *
+ * `RObject.toJs()` returns a tagged tree, not a plain object: an R list arrives
+ * as `{ type, names, values }`, and each element is itself either a
+ * `{ type, names, values }` node or an already-unwrapped scalar -- webr's
+ * `WebRDataJsNode.values` is typed as holding either. So both levels are
+ * handled here, and the result is a `string[]` because every R character vector
+ * has a length.
+ *
+ * An absent or unreadable field gives `[]` rather than a guess, so a reply that
+ * does not match this shape fails loudly at the caller instead of reading as
+ * success.
+ */
+function rCharacterField(
+  js: Awaited<ReturnType<RObject["toJs"]>>,
+  name: string,
+): string[] {
+  if (!("names" in js) || js.names === null || !("values" in js)) return [];
+  const index = js.names.indexOf(name);
+  if (index === -1) return [];
+  const element: unknown = js.values[index];
+  if (typeof element === "string") return [element];
+  if (element === null || typeof element !== "object") return [];
+  const values: unknown = (element as { values?: unknown }).values;
+  if (!Array.isArray(values)) return [];
+  return values.filter((value): value is string => typeof value === "string");
+}
+
 // =============================================================================
 // Viewer component
 // =============================================================================
@@ -281,11 +310,13 @@ export function Viewer({
             env: { files, appDir },
             captureStreams: false,
           });
-          // .start_app reports failure by returning the message rather than
-          // raising, because captureConditions is off here. evalRString is used
-          // instead of runRAsync so webR marshals the string before releasing
-          // the R object.
-          const startError = await webRProxy.webR.evalRString(
+          // .start_app reports failure by returning a status list rather than
+          // raising, because captureConditions is off here: a raised error would
+          // go to the terminal and never reach this catch, and the viewer would
+          // show an app that never started. Evaluated on this shelter, rather
+          // than through runRAsync, because runRAsync purges its own shelter
+          // before returning -- the list has to outlive the call.
+          const startResult = await shelter.evalR(
             ".start_app(appName, appDir, devMode)",
             {
               env: { appName, appDir, devMode },
@@ -293,7 +324,27 @@ export function Viewer({
               captureStreams: false,
             },
           );
-          if (startError) throw new Error(startError);
+          const start = await startResult.toJs();
+          // Anything other than an explicit "ok" is a failure, including a reply
+          // that did not survive the conversion above: a startup whose outcome
+          // cannot be read is not one to go on and display an app for.
+          if (rCharacterField(start, "status")[0] !== "ok") {
+            const message =
+              rCharacterField(start, "message")[0] ??
+              // Distinct from .start_app's own no-message fallback, so the two
+              // are told apart: that one means R raised an empty condition,
+              // this one means no readable status came back at all.
+              "The app failed to start, and R reported no status.";
+            const call = rCharacterField(start, "call")[0];
+            const error = new Error(
+              call ? `Error in ${call}: ${message}` : message,
+            );
+            // Not branched on: a third category on the error screen would be a
+            // UX change. Carried so the console says what kind of failure it
+            // was.
+            console.error("R startup failure", rCharacterField(start, "class"));
+            throw error;
+          }
         } finally {
           await shelter.purge();
         }
