@@ -41,16 +41,13 @@ splits it both ways, in `test-apps.yml`. The site tests are one job, in
 
 ## Static exports without the Python package
 
-`test_site_export.py` needs an exported app, which is normally the Python
-shinylive package's `shinylive export` -- and that package depends on this
-repository, the circular dependency that kept a playwright job in `build.yml`
-commented out for years.
-
-`export_app.py` assembles one from `build/` instead. An export is `app.json`
-(the files, verbatim), `export_template/index.html` with its variables filled
-in, `edit/index.html` as-is, and the shinylive bundle; `make all` produces all
-of it. The `exported_app` fixture writes one and returns the URL it is served
-at:
+`test_site_export.py` needs an exported app, which normally comes from the
+Python shinylive package's `shinylive export`. Depending on that package here
+would cause a circular dependency, so `export_app.py` assembles an export from `build/`
+instead: `app.json` (the files, verbatim), `export_template/index.html`
+with its variables filled in, `edit/index.html` as-is, and the shinylive bundle,
+all of which `make all` produces. The `exported_app` fixture writes one and returns
+the URL it is served at:
 
 ```python
 def test_something(page, exported_app):

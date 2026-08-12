@@ -186,12 +186,10 @@ class _ShardPlugin:
 def static_server() -> Iterator[None]:
     """Serve the built `_shinylive/` for the session.
 
-    The tests drive the built output rather than the esbuild dev server, because
-    that server needs `shinylive export` from the Python shinylive package --
-    which depends on this repository. That circular dependency is why the
-    playwright job in build.yml is commented out. Serving `_shinylive/` needs
-    nothing but a static file server, so this suite can actually run on CI, and
-    it exercises the same bytes we deploy.
+    The tests drive the built output rather than the esbuild dev server: it
+    needs `shinylive export` from the Python shinylive package, which depends on
+    this repository. Serving `_shinylive/` needs only a static file server, and
+    exercises the same bytes we deploy.
 
     Shinylive registers a service worker, which browsers only allow over https or
     from localhost -- see src/load-shinylive-sw.ts.

@@ -1,10 +1,8 @@
 """Assembling a static export of an app, the way `shinylive export` would.
 
 That command lives in the Python shinylive package, which depends on *this*
-repository -- the circular dependency that kept the playwright job in build.yml
-commented out for years, and that this module exists to avoid. Nothing an export
-contains has to come from that package: every piece is already sitting in
-`build/` once `make all` has run.
+repository, so the tests cannot use it. They do not need to: every piece of an
+export is already sitting in `build/` once `make all` has run.
 
 An export is small. `runExportedApp()` in src/Components/App.tsx fetches
 `./app.json` -- a plain array of `{name, content, type}` -- and reads the app

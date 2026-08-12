@@ -114,21 +114,10 @@ jobs:
         run: |
           make all
 
-      # =====================================================
-      # Run the site tests
-      # =====================================================
-      # These drive the build produced by the step above: the editor, apps loaded
-      # from the URL, and a static export. They run here rather than in
-      # test-apps.yml because what they test is this build, and because a failure
-      # should stop the deploy that follows.
-      #
-      # An earlier version of this ran the TypeScript playwright suite and was
-      # commented out for years, because two of its specs shelled out to
-      # `shinylive export` from the Python shinylive package -- which depends on
-      # this repository, so it could only be updated after a release from here,
-      # and a failure would then block the next release. tests/export_app.py
-      # assembles an export out of build/ instead, so nothing here installs that
-      # package.
+      # The editor, apps loaded from the URL, and a static export, all against
+      # the build produced above. They run here rather than in test-apps.yml
+      # because that build is what they test, and a failure should stop the
+      # deploy that follows.
       - name: Run site and static export tests
         run: |
           make site-test
