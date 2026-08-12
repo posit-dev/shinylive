@@ -106,21 +106,6 @@ examples-intent-test   Run only the example app intent tests (needs `make all`)
 site-test              Run the site and static export tests (needs `make all`)
 ```
 
-## Tests
-
-The browser tests live in `tests/` and run under pytest. They drive the built
-`_shinylive/` output, so they need a `make all` first.
-
-```sh
-make test-deps            # once
-make examples-smoke-test  # every app in examples/, both engines
-make site-test            # the editor, apps loaded from the URL, static exports
-```
-
-See [tests/README.md](tests/README.md) for what each suite covers and for the
-conventions to follow when adding to them.
-
-
 ## Testing
 
 There are two suites, split by what they need to run.
@@ -169,18 +154,17 @@ Read the number for its direction, not its size. Coverage is collected only for 
 
 ### App tests (pytest driving Playwright)
 
-Every app in `examples/`, loaded in a real browser against the built `_shinylive/` output, checked for tracebacks, warnings, output errors and console errors -- and, in the intent tests, driven through its inputs.
+Real browsers against the built `_shinylive/` output. Two halves, split by marker: the `examples` tests load every app in `examples/` and check for tracebacks, warnings, output errors and console errors -- driving each through its inputs, in the intent tests -- while the `site` tests cover the editor, apps loaded from a URL, and static exports.
 
 ```bash
-make examples-test-deps    # once
+make test-deps             # once
 make all                   # the tests drive the built output
-make examples-smoke-test   # both suites
+make examples-smoke-test   # every example app
 make examples-intent-test  # only the intent tests
+make site-test             # editor, URL loading, static export
 ```
 
-`tests/README.md` covers how these are put together, including `EXAMPLES_ENGINE` and `EXAMPLES_SHARD` for running part of the suite.
-
-The specs in `playwright/` predate all of this and are not currently run by either suite; the `make test` target still points at them, but the `npm run playwright` script it calls no longer exists.
+See [tests/README.md](tests/README.md) for what each suite covers, the conventions to follow when adding to them, and `EXAMPLES_ENGINE` / `EXAMPLES_SHARD` for running part of the suite.
 
 ## Pulling changes
 
