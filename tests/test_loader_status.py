@@ -243,15 +243,16 @@ def test_slow_load_announces_its_stages(
     label = ENGINE_LABEL[engine]
     log = page.evaluate("window.__stageLog")
 
-    # STATUS_DELAY_MS (LoadingStatus.tsx) withholds the stage text for the
-    # first 3s. Anchored on the recording's own first "wrapper is up" entry
-    # rather than assumed to be t=0, so this cannot pass vacuously just
-    # because the observer happened to attach before the loader even mounted.
+    # STATUS_DELAY_MS (LoadingStatus.tsx) withholds the stage text until 3s
+    # after the loader mounts. Asserted as an absence, not a duration: the
+    # recording's own first "wrapper is up" entry -- not assumed to be the
+    # log's first entry, in case the observer fired for some other reason
+    # first -- must show no stage text yet. `next()` raises on an empty log
+    # rather than letting this pass vacuously.
     mounted = next(entry for entry in log if entry["wrapper"])
-    first_text = next(entry for entry in log if entry["text"])
-    assert first_text["t"] - mounted["t"] >= 2_500, (
-        "stage text appeared less than ~3s after the loader mounted",
-        log,
+    assert mounted["text"] is None, (
+        "stage text was already showing when the loader mounted",
+        mounted,
     )
 
     # The order stages appeared in, deduplicated -- the recording is a log of
