@@ -11,7 +11,7 @@ from typing import cast
 import pytest
 from playwright.sync_api import Page, expect
 
-from loader_apps import app_url, sabotage
+from loader_apps import MISSING_PKG, app_url, sabotage
 
 pytestmark = [pytest.mark.site, pytest.mark.loader]
 
@@ -52,27 +52,12 @@ def test_engine_setup_failure_replies_instead_of_hanging(
     Before the fix the error handler itself threw on the absent pyUtils, no
     reply was posted, and the loader spun forever -- so the assertion that
     matters is that an error screen appears at all.
-
-    Whether `page.route()` can even intercept the worker script (loaded via
-    `importScripts()`/`new Worker()`, not `fetch()`) is an open question this
-    test resolves: `sabotage()`'s handler installs first, then a second handler
-    on the same glob is layered on top of it purely to observe that *some*
-    handler ran for that URL before falling back to the real one. If neither
-    fires, `fired` stays empty and the assertion below -- not a silently-passing
-    page -- is what reports it.
     """
     sabotage(page, "py", "engine-setup", loader_delay)
-    fired = []
-    page.route(
-        "**/pyodide-worker.js",
-        lambda route: (fired.append(route.request.url), route.fallback()),
-    )
     page.goto(app_url("py", "engine-setup"))
     expect(page.locator(".error-message")).to_have_text("Error loading Python!")
+    expect(page.locator(".error-recovery")).to_be_visible()
     expect(page.locator(".error-log pre")).to_contain_text("ModuleNotFoundError")
-    assert fired, (
-        "no request for pyodide-worker.js was ever intercepted by page.route()"
-    )
 
 
 @pytest.mark.allow_page_errors
@@ -110,17 +95,43 @@ def test_python_unresolvable_requirement_fails_the_app(
     expect(page.locator(".error-message")).to_have_text("Error starting app!")
 
 
+@pytest.mark.allow_page_errors
 def test_r_unresolvable_library_still_runs(page: Page, loader_delay: int) -> None:
     """Deliberately not fatal (useWebR.tsx:371-376): renv::dependencies() also
     reports packages that are named but never used, and those apps run today.
-    No allow_page_errors -- this one is expected to be clean.
+
+    This opts out of conftest's fail_on_page_errors, so it asserts for itself
+    which console error is acceptable: webr::install() warning that it could
+    not find the never-used package, which reaches the console (rather than
+    the shinylive terminal) because it fires before the Terminal component
+    mounts and takes over App.tsx's "preload error:" fallback logger. Anything
+    else -- an unrelated error, or this one going silent -- still fails the
+    test.
     """
     from shinylive_app import wait_for_app_rendered
+
+    errors: list[str] = []
+    page.on(
+        "console", lambda m: errors.append(m.text) if m.type == "error" else None
+    )
 
     sabotage(page, "r", "requirements", loader_delay)
     page.goto(app_url("r", "requirements"))
     wait_for_app_rendered(page)
     expect(page.locator(".loading-wrapper-error")).to_have_count(0)
+
+    # R prints this warning as two lines -- "Warning in webr::install(...) :"
+    # and an indented message body -- each its own console.error() call, so
+    # both need to pass. Every line goes through App.tsx's "preload error:"
+    # fallback (see the docstring), and the body names the exact package this
+    # sabotage() mode injects, which is what rules out an unrelated error
+    # merely sharing that prefix.
+    assert errors, "expected webr::install()'s not-found warning on the console"
+    assert all(e.startswith("preload error:") for e in errors), errors
+    combined = "\n".join(errors)
+    missing_pkg_r_name = MISSING_PKG.replace("-", ".")
+    assert "webr::install" in combined, combined
+    assert f"{missing_pkg_r_name} not found in webR binary repo" in combined, combined
 
 
 def test_an_unknown_mode_is_rejected_before_it_reaches_the_page() -> None:
