@@ -6,12 +6,14 @@ for how to watch one in a browser.
 
 from __future__ import annotations
 
-from typing import cast
+import uuid
+from typing import Iterator, cast
 
 import pytest
 from playwright.sync_api import Page, expect
 
-from loader_apps import MISSING_PKG, app_url, sabotage
+from loader_apps import MISSING_PKG, _files, app_url, sabotage
+from shinylive_app import BASE_URL, SHINYLIVE_DIR
 
 pytestmark = [pytest.mark.site, pytest.mark.loader]
 
@@ -265,6 +267,100 @@ def test_slow_load_announces_its_stages(
         f"Starting {label}…",
         "Loading packages and starting app…",
     ], stages
+
+
+_EMBED_BLOCK_CLASS = {"py": "shinylive-python", "r": "shinylive-r"}
+
+# Arbitrary but fixed, so the block never scrolls; nothing here depends on the
+# exact value.
+_EMBED_VIEWER_HEIGHT = 320
+
+
+def _codeblock_body(files: list[dict[str, str]]) -> str:
+    """Render a file set as a shinylive code-block body.
+
+    Mirrors codeBlockBody() in scripts/loader-demo.ts: a single file needs no
+    header, and more than one uses the '## file:' syntax parse-codeblock.ts
+    understands.
+    """
+    if len(files) == 1:
+        return files[0]["content"]
+    return "\n".join(f"## file: {f['name']}\n{f['content']}" for f in files).rstrip()
+
+
+@pytest.fixture
+def embed_page(engine: str, mode: str) -> Iterator[str]:
+    """A minimal page with one embedded block, served from the site root.
+
+    Embedded blocks take their engine from the block's own class
+    (run-python-blocks.ts selects on ".shinylive-python, .shinylive-r"), so one
+    JS bundle serves both -- unlike the full-page layout, where the engine is
+    substituted into the HTML at build time. `_shinylive/py/shinylive/` and
+    `_shinylive/r/shinylive/` are byte-for-byte identical, so the only thing
+    that determines which engine actually runs is the block's class below.
+
+    The page is still written next to whichever engine's own `shinylive-sw.js`
+    matches `engine`: load-shinylive-sw.js derives the service worker's path
+    from the page's own directory, the same way the built editor/app pages do.
+
+    Modeled on scripts/loader-demo.ts's embedPage()/buildDemoSite() -- the last
+    known-working generator of this markup, since replaced by this test.
+    """
+    body = _codeblock_body(_files(engine, mode))
+    html = f"""<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <script src="shinylive/load-shinylive-sw.js" type="module"></script>
+    <link href="shinylive/shinylive.css" rel="stylesheet" />
+    <script src="shinylive/run-python-blocks.js" type="module"></script>
+  </head>
+  <body>
+    <pre class="{_EMBED_BLOCK_CLASS[engine]}">
+#| standalone: true
+#| viewerHeight: {_EMBED_VIEWER_HEIGHT}
+
+{body}</pre>
+  </body>
+</html>
+"""
+    # A unique name per test so parallel runs (xdist, or two parametrized cases
+    # touching the same engine) never collide on the same file.
+    page_path = SHINYLIVE_DIR / engine / f"_embed_test_{uuid.uuid4().hex}.html"
+    page_path.write_text(html)
+    try:
+        yield f"{BASE_URL}/{engine}/{page_path.name}"
+    finally:
+        page_path.unlink(missing_ok=True)
+
+
+@pytest.mark.allow_page_errors
+@pytest.mark.parametrize("engine", ["py", "r"])
+@pytest.mark.parametrize("mode", ["app-syntax", "engine-load"])
+def test_embedded_block_shows_the_error(
+    page: Page, engine: str, mode: str, loader_delay: int, embed_page: str
+) -> None:
+    """Two representative modes, not all six: the failure plumbing is identical
+    across layouts, so what is being checked here is the error screen's
+    presentation inside a small block rather than the detection.
+
+    Asserts the exact headline rather than just that one showed up: for the
+    "r" case this is what would catch the embed accidentally booting Pyodide
+    instead of webR (or vice versa) -- a wrong-language headline is the one
+    symptom a mixed-up engine could not hide.
+    """
+    sabotage(page, engine, mode, loader_delay)
+    page.goto(embed_page)
+    if mode == "app-syntax":
+        expect(page.locator(".error-message")).to_have_text("Error starting app!")
+        expect(page.locator(".error-recovery")).to_have_count(0)
+    else:
+        expect(page.locator(".error-message")).to_have_text(
+            f"Error loading {ENGINE_LABEL[engine]}!"
+        )
+        expect(page.locator(".error-recovery")).to_be_visible()
+        expect(page.locator(".error-log pre")).to_contain_text("404")
+    expect(page.locator(".error-log pre")).not_to_be_empty()
 
 
 def test_an_unknown_mode_is_rejected_before_it_reaches_the_page() -> None:
