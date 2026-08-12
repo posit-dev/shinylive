@@ -30,9 +30,9 @@ and asserts on the failure itself.
 ```console
 make test-deps              # once
 make all                    # the tests drive the built output
-make examples-smoke-test    # the smoke and intent suites
-make examples-intent-test   # only the intent tests
-make site-test              # the site and export suites
+make test-examples-smoke    # the smoke and intent suites
+make test-examples-intent   # only the intent tests
+make test-site              # the site and export suites
 ```
 
 `EXAMPLES_ENGINE=py|r` and `EXAMPLES_SHARD=1/3` run part of the example suite; CI

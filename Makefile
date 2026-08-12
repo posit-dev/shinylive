@@ -10,9 +10,9 @@
 	packages \
 	quarto quartoserve \
 	clean-packages clean distclean \
-	examples-check-index test-deps examples-smoke-test \
-	examples-intent-test site-test \
-	type-check unit-test unit-test-coverage webr \
+	examples-check-index type-check \
+	test-deps test-unit test-unit-coverage \
+	test-examples-smoke test-examples-intent test-site webr \
 	_shinylive
 
 .DEFAULT_GOAL := help
@@ -362,11 +362,11 @@ type-check: node_modules
 	npm run type-check
 
 ## Run the TypeScript unit tests (jest); needs no build and no Python
-unit-test: node_modules
+test-unit: node_modules
 	npm run test:unit
 
 ## Run the TypeScript unit tests and report coverage
-unit-test-coverage: node_modules
+test-unit-coverage: node_modules
 	npm run test:unit:coverage
 
 # The example tests drive apps with `shiny.playwright.controller`, whose locators
@@ -395,11 +395,11 @@ EXAMPLES_PYTEST_ARGS = \
   $(if $(CI),--reruns 1)
 
 ## Run the smoke and intent tests for every example app (needs `make all`)
-examples-smoke-test: test-deps
+test-examples-smoke: test-deps
 	$(PYBIN)/pytest tests $(EXAMPLES_PYTEST_ARGS)
 
 ## Run only the example app intent tests (needs `make all`)
-examples-intent-test: test-deps
+test-examples-intent: test-deps
 	$(PYBIN)/pytest tests/test_examples_intent_py.py tests/test_examples_intent_r.py \
 	  $(EXAMPLES_PYTEST_ARGS)
 
@@ -408,5 +408,5 @@ examples-intent-test: test-deps
 # tests/export_app.py. There is one engine's worth of work here, so they run in a
 # single job rather than the examples' engine x shard matrix.
 ## Run the site and static export tests (needs `make all`)
-site-test: test-deps
+test-site: test-deps
 	$(PYBIN)/pytest tests -m site $(if $(CI),--reruns 1)

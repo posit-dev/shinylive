@@ -100,10 +100,13 @@ clean-packages         Remove built wheels from the packages/ directory
 clean                  Remove all build files
 distclean              Remove all build files, venv/, and downloads/
 examples-check-index   Check that every example on disk is listed in examples/index.json
+type-check             Type-check everything, including the unit tests (swc does not check types)
+test-unit              Run the TypeScript unit tests (jest); needs no build and no Python
+test-unit-coverage     Run the TypeScript unit tests and report coverage
 test-deps              Install the Python dependencies for the tests in tests/
-examples-smoke-test    Run the smoke and intent tests for every example app (needs `make all`)
-examples-intent-test   Run only the example app intent tests (needs `make all`)
-site-test              Run the site and static export tests (needs `make all`)
+test-examples-smoke    Run the smoke and intent tests for every example app (needs `make all`)
+test-examples-intent   Run only the example app intent tests (needs `make all`)
+test-site              Run the site and static export tests (needs `make all`)
 ```
 
 ## Testing
@@ -115,7 +118,7 @@ There are two suites, split by what they need to run.
 Pure logic in `src/` -- parsing, encoding, path handling, the pieces that don't need a browser. They need no build and no Python, and the whole suite runs in about a second.
 
 ```bash
-make unit-test
+make test-unit
 ```
 
 `make` installs dependencies first if they're stale. To skip that, or to leave jest running on a watch loop, use the scripts directly:
@@ -132,7 +135,7 @@ Anything that needs a real browser, a running app, or Pyodide/webR belongs in th
 #### Coverage
 
 ```bash
-make unit-test-coverage
+make test-unit-coverage
 ```
 
 The run prints a note under the table saying what the figures cover, because the number on its own is easy to misread -- see below.
@@ -159,9 +162,9 @@ Real browsers against the built `_shinylive/` output. Two halves, split by marke
 ```bash
 make test-deps             # once
 make all                   # the tests drive the built output
-make examples-smoke-test   # every example app
-make examples-intent-test  # only the intent tests
-make site-test             # editor, URL loading, static export
+make test-examples-smoke   # every example app
+make test-examples-intent  # only the intent tests
+make test-site             # editor, URL loading, static export
 ```
 
 See [tests/README.md](tests/README.md) for what each suite covers, the conventions to follow when adding to them, and `EXAMPLES_ENGINE` / `EXAMPLES_SHARD` for running part of the suite.

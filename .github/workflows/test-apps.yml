@@ -40,7 +40,7 @@ jobs:
   # Splitting by engine first matters because R examples cost roughly 29s each
   # against 17s for Python, so sharding the combined suite leaves whichever shard
   # draws the R tests as the long pole while its siblings sit idle.
-  examples-smoke-test:
+  test-examples-smoke:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -67,18 +67,18 @@ jobs:
           make all
 
       # The site tests are not part of this matrix -- they test the build rather
-      # than the examples, and run in build.yml. `make examples-smoke-test`
+      # than the examples, and run in build.yml. `make test-examples-smoke`
       # selects on the `examples` marker, so they are not swept in here.
       - name: Run examples smoke and intent tests (${{ matrix.engine }} shard ${{ matrix.shard }}/3)
         env:
           EXAMPLES_ENGINE: ${{ matrix.engine }}
           EXAMPLES_SHARD: ${{ matrix.shard }}/3
         run: |
-          make examples-smoke-test
+          make test-examples-smoke
 
       - uses: actions/upload-artifact@v7
         if: always()
         with:
-          name: examples-smoke-test-report-${{ matrix.engine }}-${{ matrix.shard }}
+          name: test-examples-smoke-report-${{ matrix.engine }}-${{ matrix.shard }}
           path: test-results/
           retention-days: 30
