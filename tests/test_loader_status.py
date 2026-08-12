@@ -82,8 +82,14 @@ def test_r_syntax_error_reports_the_line(page: Page, loader_delay: int) -> None:
     sabotage(page, "r", "app-syntax", loader_delay)
     page.goto(app_url("r", "app-syntax"))
     log = page.locator(".error-log pre")
+    # The R fixture ships a second, valid .R file, so this also pins which of the
+    # files the guard iterated is named as the one that failed.
     expect(log).to_contain_text("app.R:")
     expect(log).to_contain_text("^")
+    # The guard re-raises without the condition's call, which would otherwise be
+    # its own parse(file = f) -- a prefix naming our loop variable, in front of
+    # the message that is the entire point of parsing here.
+    expect(log).not_to_contain_text("Error in parse")
 
 
 @pytest.mark.allow_page_errors

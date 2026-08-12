@@ -76,7 +76,17 @@ def _files(engine: str, mode: str) -> list[dict[str, str]]:
         raise ValueError(f"unknown mode {mode!r}; must be one of {MODES}")
     main = MAIN_FILE[engine]
     if mode == "app-syntax":
-        return [{"name": main, "content": SYNTAX_ERROR_APP[engine]}]
+        files = [{"name": main, "content": SYNTAX_ERROR_APP[engine]}]
+        if engine == "r":
+            # A second, valid .R file, so .start_app's parse guard iterates over
+            # more than one and its re-raise has a file to lose. The guard drops
+            # the condition's call (which would name only its own loop variable)
+            # and keeps the message, and the path lives in that message -- so the
+            # dialog naming app.R is what shows the path survived.
+            files.append(
+                {"name": "helpers.R", "content": "double <- function(x) x * 2\n"}
+            )
+        return files
     if mode == "requirements":
         if engine == "py":
             return [

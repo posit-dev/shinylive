@@ -363,7 +363,15 @@ webr::shim_install()
       # detail is destroyed by sourceUTF8's own try() before any handler of ours
       # sees a condition, so there is nothing left for one to report.
       for (f in list.files(appDir, pattern = "[.][Rr]$", full.names = TRUE)) {
-        parse(file = f)
+        # call. = FALSE because the call this condition would otherwise carry is
+        # this loop's own parse(file = f), whose f names nothing an app author
+        # would recognise. conditionMessage() keeps the whole reason the step
+        # exists: the file, the line and column, the offending source lines and
+        # the caret.
+        tryCatch(
+          parse(file = f),
+          error = function(cnd) stop(conditionMessage(cnd), call. = FALSE)
+        )
       }
 
       # Mount VFS images provided in Shinylive app assets
