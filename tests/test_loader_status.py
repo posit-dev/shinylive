@@ -6,14 +6,13 @@ for how to watch one in a browser.
 
 from __future__ import annotations
 
-import uuid
 from typing import Iterator, cast
 
 import pytest
 from playwright.sync_api import Page, expect
 
 from loader_apps import MISSING_PKG, _files, app_url, sabotage
-from shinylive_app import BASE_URL, SHINYLIVE_DIR
+from shinylive_app import BASE_URL
 
 pytestmark = [pytest.mark.site, pytest.mark.loader]
 
@@ -289,8 +288,8 @@ def _codeblock_body(files: list[dict[str, str]]) -> str:
 
 
 @pytest.fixture
-def embed_page(engine: str, mode: str) -> Iterator[str]:
-    """A minimal page with one embedded block, served from the site root.
+def embed_page(page: Page, engine: str, mode: str) -> Iterator[str]:
+    """A minimal page with one embedded block, served from the site origin.
 
     Embedded blocks take their engine from the block's own class
     (run-python-blocks.ts selects on ".shinylive-python, .shinylive-r"), so one
@@ -299,9 +298,19 @@ def embed_page(engine: str, mode: str) -> Iterator[str]:
     `_shinylive/r/shinylive/` are byte-for-byte identical, so the only thing
     that determines which engine actually runs is the block's class below.
 
-    The page is still written next to whichever engine's own `shinylive-sw.js`
-    matches `engine`: load-shinylive-sw.js derives the service worker's path
-    from the page's own directory, the same way the built editor/app pages do.
+    Fulfilled with `page.route()` for a URL under the real static server
+    rather than written to `_shinylive/<engine>/` on disk: that directory is a
+    live build artifact (`make _shinylive`'s `cp -Lr`, a non-cleaning overlay
+    copy), and a stray file surviving a hard crash -- a CI timeout, SIGKILL,
+    anything that skips a `finally` -- would ride into every later build and
+    ultimately the deploy. `sabotage()` already fulfils/rewrites responses
+    this way for the engine-level modes; this is the same technique for the
+    page itself, with zero filesystem footprint. The origin and directory
+    depth (`{BASE_URL}/<engine>/...`) are unchanged from a real page there, so
+    the block's relative `shinylive/...` asset paths, and the service worker
+    scope load-shinylive-sw.js derives from the page's own directory, still
+    resolve against the real files `static_server` serves -- only this one URL
+    is intercepted; every other request passes through untouched.
 
     Modeled on scripts/loader-demo.ts's embedPage()/buildDemoSite() -- the last
     known-working generator of this markup, since replaced by this test.
@@ -324,14 +333,11 @@ def embed_page(engine: str, mode: str) -> Iterator[str]:
   </body>
 </html>
 """
-    # A unique name per test so parallel runs (xdist, or two parametrized cases
-    # touching the same engine) never collide on the same file.
-    page_path = SHINYLIVE_DIR / engine / f"_embed_test_{uuid.uuid4().hex}.html"
-    page_path.write_text(html)
-    try:
-        yield f"{BASE_URL}/{engine}/{page_path.name}"
-    finally:
-        page_path.unlink(missing_ok=True)
+    url = f"{BASE_URL}/{engine}/_embed_test.html"
+    page.route(
+        url, lambda route: route.fulfill(content_type="text/html", body=html)
+    )
+    yield url
 
 
 @pytest.mark.allow_page_errors
@@ -344,23 +350,36 @@ def test_embedded_block_shows_the_error(
     across layouts, so what is being checked here is the error screen's
     presentation inside a small block rather than the detection.
 
-    Asserts the exact headline rather than just that one showed up: for the
-    "r" case this is what would catch the embed accidentally booting Pyodide
-    instead of webR (or vice versa) -- a wrong-language headline is the one
-    symptom a mixed-up engine could not hide.
+    "engine-load" 404s `**/webr/R.wasm` or `**/pyodide/pyodide.asm.wasm`
+    specifically (see `sabotage()`), so its exact "Error loading R!"/"Error
+    loading Python!" headline can only appear if the matching engine actually
+    requested that asset -- that assertion alone would catch a `.shinylive-r`
+    block that silently booted Pyodide instead of webR (or vice versa).
+
+    "app-syntax" sabotages nothing at the network level, and its headline
+    ("Error starting app!") and recovery-hint absence are engine-agnostic, so
+    neither would notice a mixed-up engine: the R syntax-error source
+    (SYNTAX_ERROR_APP["r"]) also fails to compile as Python, so a
+    `.shinylive-r` block that silently ran Pyodide on it would still produce
+    every one of those symptoms. What does differ is the log's own content --
+    `.start_app`'s parse guard names `app.R` with a line and caret for R, while
+    Pyodide's SyntaxError names `app.py` -- so that is the assertion this mode
+    needs to be discriminating rather than merely present.
     """
     sabotage(page, engine, mode, loader_delay)
     page.goto(embed_page)
+    log = page.locator(".error-log pre")
     if mode == "app-syntax":
         expect(page.locator(".error-message")).to_have_text("Error starting app!")
         expect(page.locator(".error-recovery")).to_have_count(0)
+        expect(log).to_contain_text("app.R" if engine == "r" else "app.py")
     else:
         expect(page.locator(".error-message")).to_have_text(
             f"Error loading {ENGINE_LABEL[engine]}!"
         )
         expect(page.locator(".error-recovery")).to_be_visible()
-        expect(page.locator(".error-log pre")).to_contain_text("404")
-    expect(page.locator(".error-log pre")).not_to_be_empty()
+        expect(log).to_contain_text("404")
+    expect(log).not_to_be_empty()
 
 
 def test_an_unknown_mode_is_rejected_before_it_reaches_the_page() -> None:
