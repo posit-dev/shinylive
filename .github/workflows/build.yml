@@ -12,27 +12,16 @@ on:
     types:
       - completed
 jobs:
-  # =====================================================
   # TypeScript unit tests (jest)
-  # =====================================================
-  # These cover pure logic in src/ and need no build, so this job does its own
-  # minimal checkout rather than hanging off `build`.
-  #
-  # `build` declares `needs: test_unit` in turn, because that job does more than
-  # build: it deploys to S3, uploads the _shinylive/ artifact, and attaches
-  # release assets. Without the dependency, those would run whether or not the
-  # unit tests passed.
-  #
-  # App-level browser tests live in tests/ and run from the "Test example apps"
-  # workflow.
+  # Pure logic in src/, so no build needed.
+  # App-level browser tests live in tests/ and run from the "Test example apps" workflow.
   test_unit:
     name: Unit tests
     runs-on: ubuntu-latest
     permissions:
       contents: read
       pull-requests: write
-      # For the uncovered-line annotations on the diff.
-      checks: write
+      checks: write # uncovered-line annotations
 
     steps:
       - uses: actions/checkout@v7
@@ -45,34 +34,22 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # swc strips types without checking them, so this is what type-checks
-      # both src/ and the tests.
       - name: Type-check
         run: npm run type-check
 
-      # This and the step above gate the merge. Everything below them reports.
       - name: Run unit tests
         run: npm run test:unit
 
-      # Coverage is a signal, not a gate — hence `continue-on-error` on both
-      # steps. The action runs the suite again on the PR branch and on its base
-      # so it can show a per-file delta, which is the number worth watching. It
-      # can't produce one until a working harness exists on the base branch, so
-      # on this PR it reports head coverage alone.
+      # Coverage is not a gate, just informative for PRs
       - name: Measure coverage
         id: coverage
         if: github.event_name == 'pull_request'
         continue-on-error: true
-        # Pinned to a commit rather than @v2: this is a third-party action, and
-        # the job holds a write token. v2.3.1, 2024-09-09.
+        # Third-party action holding a write token, so pinned for supply chain security. v2.3.1, 2024-09-09.
         uses: ArtiomTr/jest-coverage-report-action@7f750dd50f5585533321eb7ebc482b936b49a5d4
         with:
           annotations: coverage
-          # Emit markdown rather than letting the action comment for itself. A
-          # PR from a fork gets a read-only token, and the action's own comment
-          # step dies on it; the publish step below degrades to the job summary
-          # instead. (The action's README suggests `pull_request_target` for
-          # this, which would run fork code with a write token. No.)
+          # Generate report as markdown and then publish separately below
           output: report-markdown
 
       - name: Publish the coverage report
