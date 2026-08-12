@@ -104,6 +104,67 @@ test-watch             Run tests and watch
 ```
 
 
+## Testing
+
+There are two suites, split by what they need to run.
+
+### TypeScript unit tests (jest)
+
+Pure logic in `src/` -- parsing, encoding, path handling, the pieces that don't need a browser. They need no build and no Python, and the whole suite runs in about a second.
+
+```bash
+make unit-test
+```
+
+`make` installs dependencies first if they're stale. To skip that, or to leave jest running on a watch loop, use the scripts directly:
+
+```bash
+npm run test:unit
+npm run test:unit:watch
+```
+
+Tests live next to the code they cover, as `src/**/*.test.ts`. The runner is configured in `jest.config.js`: jsdom for a DOM, `@swc/jest` to strip TypeScript, and the stubs in `testing-helpers/` for CSS and asset imports and for the browser globals jsdom lacks. swc does not type-check, so `make type-check` is what checks the tests' types, alongside the rest of `src/`. CI runs it in the same job as the tests, and a failure blocks the build.
+
+Anything that needs a real browser, a running app, or Pyodide/webR belongs in the app tests below rather than here.
+
+#### Coverage
+
+```bash
+make unit-test-coverage
+```
+
+The run prints a note under the table saying what the figures cover, because the number on its own is easy to misread -- see below.
+
+On a pull request, CI posts the same report as a comment, with a per-file comparison against the base branch and annotations on uncovered lines you touched. It is a signal, not a gate: there is no threshold, and a drop will not fail the build.
+
+To exclude a line that can't be reached -- a defensive branch the types rule out, say -- mark it in the source:
+
+```ts
+/* v8 ignore next 3 */
+if (thisCannotHappen) {
+  return fallback;
+}
+```
+
+Note the dialect. Coverage runs through v8, so it honours c8's `/* c8 ignore next */` and `/* v8 ignore next */` (plus `start`/`stop` to bracket a region), and *not* istanbul's `/* istanbul ignore next */`, which is silently ignored. It has to be a `/* */` block comment; `//` does not work.
+
+Read the number for its direction, not its size. Coverage is collected only for the files the tests load, so the total moves as files enter and leave the suite -- the per-file deltas are the reliable part. It also says nothing about the roughly 85% of `src/` that is React, the editor and the engine proxies, which the app tests below cover instead.
+
+### App tests (pytest driving Playwright)
+
+Every app in `examples/`, loaded in a real browser against the built `_shinylive/` output, checked for tracebacks, warnings, output errors and console errors -- and, in the intent tests, driven through its inputs.
+
+```bash
+make examples-test-deps    # once
+make all                   # the tests drive the built output
+make examples-smoke-test   # both suites
+make examples-intent-test  # only the intent tests
+```
+
+`tests/README.md` covers how these are put together, including `EXAMPLES_ENGINE` and `EXAMPLES_SHARD` for running part of the suite.
+
+The specs in `playwright/` predate all of this and are not currently run by either suite; the `make test` target still points at them, but the `npm run playwright` script it calls no longer exists.
+
 ## Pulling changes
 
 After pulling changes to the parent repo, you may need to tell it to update submodules.

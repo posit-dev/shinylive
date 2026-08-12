@@ -70,9 +70,14 @@ function getDragInfo(
       beforeInfo,
       afterInfo,
     };
+    // Nothing below is reachable: every pixel/fr/missing combination is
+    // handled above, and getUnitInfo() throws on any other unit. The marker
+    // sits here rather than below so it covers this `if`'s implicit else too.
+    /* c8 ignore start */
   }
 
   return { type: "unsupported" };
+  /* c8 ignore stop */
 }
 
 function getPxToFrRatioForRelativeTracts({
@@ -181,9 +186,11 @@ export function initDragState({
 
   const dragInfo = getDragInfo(beforeVal, afterVal);
 
+  /* c8 ignore start -- getDragInfo() never returns "unsupported"; see there */
   if (dragInfo.type === "unsupported") {
     throw new Error("Unsupported drag type");
   }
+  /* c8 ignore stop */
 
   // Let the container know that it's been dragged and thus can allow items to
   // be whatever size the user wants.

@@ -17,14 +17,20 @@ export type PostableErrorObject = {
 export function errorToPostableErrorObject(
   e: Error | any
 ): PostableErrorObject {
+  if (!(e instanceof Error)) {
+    // Anything can be thrown, including `null` and `undefined`. This is only
+    // ever called from a `catch`, so throwing here would lose the original
+    // error entirely.
+    return {
+      message: "An unknown error occured",
+      name: e?.name ?? "Error",
+    };
+  }
+
   const errObj: PostableErrorObject = {
     message: "An unknown error occured",
     name: e.name,
   };
-
-  if (!(e instanceof Error)) {
-    return errObj;
-  }
 
   errObj.message = e.message;
 
@@ -40,8 +46,14 @@ export function postableErrorObjectToError(
 ): Error {
   // In the future, it's probably better to use `Object.hasOwn()` instead of
   // `in`, but at the time of this writing (2022-07), it is very new and we
-  // can't expect all browsers to support it yet.
-  if ("message" in errObj && "name" in errObj) {
+  // can't expect all browsers to support it yet. `in` throws on anything that
+  // isn't an object, so guard the type first.
+  if (
+    typeof errObj === "object" &&
+    errObj !== null &&
+    "message" in errObj &&
+    "name" in errObj
+  ) {
     // This is a PostableErrorObject.
     const err = new Error(errObj.message);
     err.name = errObj.name;

@@ -12,7 +12,78 @@ on:
     types:
       - completed
 jobs:
+  # TypeScript unit tests (jest)
+  # Pure logic in src/, so no build needed.
+  # App-level browser tests live in tests/ and run from the "Test example apps" workflow.
+  test_unit:
+    name: Unit tests
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      checks: write # uncovered-line annotations
+
+    env:
+      # Both coverage steps below need a write token: one to attach
+      # uncovered-line annotations, the other to leave a PR comment. A PR from a
+      # fork only gets a read token, so it skips them visibly instead of running
+      # them and failing.
+      REPORT_COVERAGE: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == false }}
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "lts/*"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Type-check
+        run: npm run type-check
+
+      - name: Run unit tests
+        run: npm run test:unit
+
+      # Coverage is measured but never enforced: no threshold, and the figure
+      # only covers the modules these tests import.
+      - name: Measure coverage
+        id: coverage
+        if: env.REPORT_COVERAGE == 'true'
+        # Third-party action holding a write token, so pinned for supply chain security. v2.3.1, 2024-09-09.
+        uses: ArtiomTr/jest-coverage-report-action@7f750dd50f5585533321eb7ebc482b936b49a5d4
+        with:
+          annotations: coverage
+          # Generate report as markdown and then publish separately below
+          output: report-markdown
+
+      # Kept separate from the comment below so the numbers survive on the run's
+      # summary page even if posting the comment fails.
+      - name: Add the coverage report to the run summary
+        if: env.REPORT_COVERAGE == 'true' && steps.coverage.outputs.report != ''
+        env:
+          REPORT: ${{ steps.coverage.outputs.report }}
+        run: printf '%s\n' "$REPORT" >> "$GITHUB_STEP_SUMMARY"
+
+      # `header` makes the comment sticky: a busy PR gets one comment updated in
+      # place rather than one per push.
+      - name: Publish the coverage report
+        if: env.REPORT_COVERAGE == 'true' && steps.coverage.outputs.report != ''
+        # Third-party action holding a write token, so pinned for supply chain security. v3.0.5, 2026-07-04.
+        uses: marocchino/sticky-pull-request-comment@5770ad5eb8f42dd2c4f34da00c94c5381e49af88
+        with:
+          header: jest-coverage-report
+          # The same caveat the local run prints under its table: these figures
+          # are unit coverage over the pure-logic modules, not the whole app.
+          message: |
+            > Unit tests only — the pure-logic modules in `src/`. The React components, hooks, engine proxies and service worker are covered by the pytest + Playwright suites in `tests/`, which are not measured here.
+
+            ${{ steps.coverage.outputs.report }}
+
   build:
+    needs: test_unit
     runs-on: ubuntu-latest
     permissions:
       id-token: write

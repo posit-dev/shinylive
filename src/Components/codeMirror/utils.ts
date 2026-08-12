@@ -15,6 +15,9 @@ export function positionToOffset(cmDoc: Text, pos: CursorPosition): number {
   const newOffset = Math.min(line.from + pos.col, line.to);
 
   // If the new offset is beyond the end of the document, just go to the end.
+  // Unreachable in practice: `newOffset` is clamped to `line.to` above, and a
+  // line's end is never past the end of the document.
+  /* v8 ignore next 3 */
   if (newOffset > cmDoc.length) {
     return cmDoc.length;
   }

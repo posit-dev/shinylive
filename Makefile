@@ -11,7 +11,7 @@
 	quarto quartoserve \
 	clean-packages clean distclean \
 	examples-check-index examples-test-deps examples-smoke-test \
-	examples-intent-test test test-watch webr \
+	examples-intent-test type-check unit-test unit-test-coverage test test-watch webr \
 	_shinylive
 
 .DEFAULT_GOAL := help
@@ -355,6 +355,18 @@ distclean: clean
 ## Check that every example on disk is listed in examples/index.json
 examples-check-index:
 	node scripts/check_examples_index.mjs
+
+## Type-check everything, including the unit tests (swc does not check types)
+type-check: node_modules
+	npm run type-check
+
+## Run the TypeScript unit tests (jest); needs no build and no Python
+unit-test: node_modules
+	npm run test:unit
+
+## Run the TypeScript unit tests and report coverage
+unit-test-coverage: node_modules
+	npm run test:unit:coverage
 
 ## Install the example app tests' Python dependencies
 # The tests drive apps with `shiny.playwright.controller`, whose locators track
