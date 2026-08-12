@@ -17,6 +17,31 @@ pytestmark = [pytest.mark.site, pytest.mark.loader]
 
 ENGINE_LABEL = {"py": "Python", "r": "R"}
 
+# Installed with `page.add_init_script()`, before either of `sabotage("off",
+# ...)`'s two delays has a chance to fire (see the docstring on
+# test_slow_load_announces_its_stages for why that matters). Records every
+# change to the loader's own DOM with a timestamp, in the page rather than in
+# this process, so the recording is immune to how blocked this process gets.
+_STAGE_RECORDER_SCRIPT = """
+window.__stageLog = [];
+const t0 = performance.now();
+const record = () => {
+  const wrapper = document.querySelector(".loading-status");
+  const stage = document.querySelector(".loading-stage");
+  window.__stageLog.push({
+    t: performance.now() - t0,
+    wrapper: !!wrapper,
+    text: stage ? stage.textContent : null,
+  });
+};
+new MutationObserver(record).observe(document, {
+  subtree: true,
+  childList: true,
+  characterData: true,
+});
+record();
+"""
+
 
 @pytest.mark.allow_page_errors
 @pytest.mark.parametrize("engine", ["py", "r"])
@@ -174,6 +199,71 @@ def test_r_unresolvable_library_still_runs(page: Page, loader_delay: int) -> Non
     missing_pkg_r_name = MISSING_PKG.replace("-", ".")
     assert "webr::install" in combined, combined
     assert f"{missing_pkg_r_name} not found in webR binary repo" in combined, combined
+
+
+@pytest.mark.parametrize("engine", ["py", "r"])
+def test_slow_load_announces_its_stages(
+    page: Page, engine: str, loader_delay: int
+) -> None:
+    """The feature's headline behaviour: a slow first load explains itself.
+
+    Deliberately carries no `@pytest.mark.allow_page_errors`: this is a
+    successful load, so `fail_on_page_errors` should see nothing at all, and
+    that marker would mask real console noise rather than let it fail the test.
+
+    Reads back a recording rather than polling live for each stage in turn.
+    `sabotage("off", ...)` answers the engine's core-wasm requests with
+    `time.sleep()`, which -- per that function's own docstring -- blocks this
+    whole process's connection to the browser, not just the one request it is
+    answering. The engine makes *two* such requests before it is up
+    (`engine-load-guard`'s reachability check, then the real load), so any of
+    this test's own commands, including `page.goto()` itself, can each land in
+    the middle of one of those sleeps and block for a full `loader_delay`
+    with no way to poll in between. A first version of this test used
+    sequential `expect(...).to_have_text(...)` calls to assert the order, and
+    it was flaky in exactly that way: on a fast local engine, enough of that
+    blocked time could go by that the app finished booting before the first
+    check ever got a chance to observe the DOM, and text that has already
+    come and gone does not come back for a later, more patient `expect()` to
+    find. A `MutationObserver`, installed before either delay has fired,
+    sidesteps this: it runs in the browser and timestamps every change to the
+    loader's own DOM, so the recording it produces is immune to how blocked
+    this process gets. This test lets the load run to completion and then
+    reads that recording back once.
+    """
+    page.add_init_script(_STAGE_RECORDER_SCRIPT)
+    sabotage(page, engine, "off", loader_delay)
+    page.goto(app_url(engine, "off"))
+
+    from shinylive_app import wait_for_app_rendered
+
+    wait_for_app_rendered(page)
+    expect(page.locator(".loading-status")).to_have_count(0)
+
+    label = ENGINE_LABEL[engine]
+    log = page.evaluate("window.__stageLog")
+
+    # STATUS_DELAY_MS (LoadingStatus.tsx) withholds the stage text for the
+    # first 3s. Anchored on the recording's own first "wrapper is up" entry
+    # rather than assumed to be t=0, so this cannot pass vacuously just
+    # because the observer happened to attach before the loader even mounted.
+    mounted = next(entry for entry in log if entry["wrapper"])
+    first_text = next(entry for entry in log if entry["text"])
+    assert first_text["t"] - mounted["t"] >= 2_500, (
+        "stage text appeared less than ~3s after the loader mounted",
+        log,
+    )
+
+    # The order stages appeared in, deduplicated -- the recording is a log of
+    # every DOM mutation, so the same stage text shows up on more than one
+    # entry in a row.
+    seen = [entry["text"] for entry in log if entry["text"] is not None]
+    stages = [text for i, text in enumerate(seen) if i == 0 or text != seen[i - 1]]
+    assert stages == [
+        f"Downloading {label}…",
+        f"Starting {label}…",
+        "Loading packages and starting app…",
+    ], stages
 
 
 def test_an_unknown_mode_is_rejected_before_it_reaches_the_page() -> None:
