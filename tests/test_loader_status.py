@@ -75,6 +75,54 @@ def test_engine_setup_failure_replies_instead_of_hanging(
     )
 
 
+@pytest.mark.allow_page_errors
+@pytest.mark.parametrize("engine", ["py", "r"])
+def test_app_syntax_error_shows_no_recovery_hint(
+    page: Page, engine: str, loader_delay: int
+) -> None:
+    """Absorbs viewer-error.test.tsx's second and third cases."""
+    sabotage(page, engine, "app-syntax", loader_delay)
+    page.goto(app_url(engine, "app-syntax"))
+    expect(page.locator(".error-message")).to_have_text("Error starting app!")
+    expect(page.locator(".error-recovery")).to_have_count(0)
+    expect(page.locator(".error-log pre")).not_to_be_empty()
+
+
+@pytest.mark.allow_page_errors
+def test_r_syntax_error_reports_the_line(page: Page, loader_delay: int) -> None:
+    """shiny's sourceUTF8 catches the parse error and re-raises a bare
+    "Error sourcing <file>". .start_app parses the app's files first so the real
+    message survives; this asserts that it still does.
+    """
+    sabotage(page, "r", "app-syntax", loader_delay)
+    page.goto(app_url("r", "app-syntax"))
+    log = page.locator(".error-log pre")
+    expect(log).to_contain_text("app.R:")
+    expect(log).to_contain_text("^")
+
+
+@pytest.mark.allow_page_errors
+def test_python_unresolvable_requirement_fails_the_app(
+    page: Page, loader_delay: int
+) -> None:
+    sabotage(page, "py", "requirements", loader_delay)
+    page.goto(app_url("py", "requirements"))
+    expect(page.locator(".error-message")).to_have_text("Error starting app!")
+
+
+def test_r_unresolvable_library_still_runs(page: Page, loader_delay: int) -> None:
+    """Deliberately not fatal (useWebR.tsx:371-376): renv::dependencies() also
+    reports packages that are named but never used, and those apps run today.
+    No allow_page_errors -- this one is expected to be clean.
+    """
+    from shinylive_app import wait_for_app_rendered
+
+    sabotage(page, "r", "requirements", loader_delay)
+    page.goto(app_url("r", "requirements"))
+    wait_for_app_rendered(page)
+    expect(page.locator(".loading-wrapper-error")).to_have_count(0)
+
+
 def test_an_unknown_mode_is_rejected_before_it_reaches_the_page() -> None:
     """A typo'd mode string should fail loudly at the call, not silently at
     the assertion. `_files()` and `sabotage()`'s guards run before either
