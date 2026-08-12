@@ -27,21 +27,28 @@ function stubFetch(impl: (url: string, init?: RequestInit) => unknown): void {
 // A minimal Response whose body yields `chunks` then closes. Only the fields
 // checkEngineAssetReachable() touches are present: a fake is clearer here than
 // a real Response, whose body cannot be built from parts in jsdom.
+//
+// A real ReadableStream exposes `cancel()` both on the stream itself and on
+// its reader; the source calls the former on the failure path (a non-ok
+// response) and the latter on the success path (inside readHead). Both are
+// wired to the same flag so either path's release can be observed.
 function response(status: number, chunks: Uint8Array[]) {
   let i = 0;
   let cancelled = false;
+  const cancel = async () => {
+    cancelled = true;
+  };
   return {
     ok: status >= 200 && status < 300,
     status,
     body: {
+      cancel,
       getReader: () => ({
         read: async () =>
           i < chunks.length
             ? { done: false, value: chunks[i++] }
             : { done: true, value: undefined },
-        cancel: async () => {
-          cancelled = true;
-        },
+        cancel,
       }),
     },
     // Exposed so the cancel assertion can read it back.
@@ -80,17 +87,20 @@ test("uses a plain GET, never HEAD", async () => {
   await checkEngineAssetReachable("python", "/shinylive/pyodide/");
   const [url, init] = fetchSpy.mock.calls[0];
   expect(url).toContain("/shinylive/pyodide/pyodide.asm.wasm");
-  expect((init as RequestInit | undefined)?.method?.toUpperCase()).not.toBe(
-    "HEAD",
-  );
+  const method = (init as RequestInit | undefined)?.method;
+  expect(method === undefined || method.toUpperCase() === "GET").toBe(true);
 });
 
 test("a 404 is reported with the URL and the status", async () => {
-  stubFetch(() => response(404, []));
+  // Only the status is needed for a failed response, so the body is released
+  // rather than read; capture the fixture to observe that release happens.
+  const res = response(404, []);
+  stubFetch(() => res);
   const msg = await checkEngineAssetReachable("python", "/shinylive/pyodide/");
   expect(msg).toMatch(/Python engine could not be downloaded/);
   expect(msg).toMatch(/pyodide\.asm\.wasm/);
   expect(msg).toMatch(/HTTP 404/);
+  expect(res.cancelled).toBe(true);
 });
 
 test("a 5xx is treated as a failure too", async () => {
@@ -100,6 +110,21 @@ test("a 5xx is treated as a failure too", async () => {
   const msg = await checkEngineAssetReachable("r", "/shinylive/webr/");
   expect(msg).toMatch(/R engine could not be downloaded/);
   expect(msg).toMatch(/HTTP 503/);
+
+  // Releasing the body is best-effort: a body that cannot be cancelled must
+  // not stop the failure from being reported.
+  fetchSpy.mockRestore();
+  stubFetch(() => ({
+    ok: false,
+    status: 503,
+    body: {
+      cancel: async () => {
+        throw new Error("already released");
+      },
+    },
+  }));
+  const msg2 = await checkEngineAssetReachable("r", "/shinylive/webr/");
+  expect(msg2).toMatch(/HTTP 503/);
 });
 
 test("a network error is reported without a status", async () => {
@@ -148,21 +173,54 @@ test("only the leading bytes are read, not the whole body", async () => {
   expect(reads).toBe(1);
 });
 
+type CorruptionCase = [
+  name: string,
+  engine: "python" | "r",
+  baseUrl: string,
+  body: string | number[],
+  // Not every row asserts the engine label; the originals for "an empty
+  // body" and "a body truncated inside the magic number" checked only the
+  // generic corruption message.
+  label?: RegExp,
+];
+
+const CORRUPTION_CASES: CorruptionCase[] = [
+  [
+    "an HTML page",
+    "python",
+    "/shinylive/pyodide/",
+    "<!doctype html>\n<html><body>Sign in</body></html>",
+    /Python engine could not be downloaded/,
+  ],
+  [
+    "other non-wasm bytes",
+    "r",
+    "/shinylive/webr/",
+    [0xde, 0xad, 0xbe, 0xef],
+    /R engine could not be downloaded/,
+  ],
+  ["an empty body", "python", "/shinylive/pyodide/", []],
+  [
+    "a body truncated inside the magic number",
+    "python",
+    "/shinylive/pyodide/",
+    [0x00, 0x61],
+  ],
+];
+
 // A captive portal or an SPA index.html fallback answers with 200. Handing
 // either to the engine hangs it, so the check has to look past the status.
-describe.each([
-  ["an HTML page", "<!doctype html>\n<html><body>Sign in</body></html>"],
-  ["other non-wasm bytes", [0xde, 0xad, 0xbe, 0xef]],
-  ["an empty body", []],
-  ["a body truncated inside the magic number", [0x00, 0x61]],
-])("a 200 carrying %s is rejected", (_name, body) => {
-  test("reports corruption", async () => {
-    stubFetch(() => response(200, [toBytes(body)]));
-    await expect(
-      checkEngineAssetReachable("python", "/shinylive/pyodide/"),
-    ).resolves.toMatch(/appears to be corrupted/);
-  });
-});
+describe.each(CORRUPTION_CASES)(
+  "a 200 carrying %s is rejected",
+  (_name, engine, baseUrl, body, label) => {
+    test("reports corruption", async () => {
+      stubFetch(() => response(200, [toBytes(body)]));
+      const msg = await checkEngineAssetReachable(engine, baseUrl);
+      expect(msg).toMatch(/appears to be corrupted/);
+      if (label) expect(msg).toMatch(label);
+    });
+  },
+);
 
 test("the magic number may arrive split across chunks", async () => {
   // A stream is free to deliver one byte at a time; that is not a failure.
