@@ -70,6 +70,8 @@ SYNTAX_ERROR_APP = {
 
 
 def _files(engine: str, mode: str) -> list[dict[str, str]]:
+    if mode not in MODES:
+        raise ValueError(f"unknown mode {mode!r}; must be one of {MODES}")
     main = MAIN_FILE[engine]
     if mode == "app-syntax":
         return [{"name": main, "content": SYNTAX_ERROR_APP[engine]}]
@@ -105,6 +107,8 @@ def app_url(engine: str, mode: str, view: str = "app") -> str:
 
 def sabotage(page: Page, engine: str, mode: str, delay_ms: int) -> None:
     """Install whatever route handlers `mode` needs. A no-op for app-level modes."""
+    if mode not in MODES:
+        raise ValueError(f"unknown mode {mode!r}; must be one of {MODES}")
     if mode == "engine-load":
         page.route(CORE_ASSET[engine], lambda r: r.fulfill(status=404, body="nope"))
         return
