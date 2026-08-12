@@ -22,6 +22,10 @@
   "exclude": [
     "src/pyodide",
     "src/pyright",
+    // A Deno script, not a browser or Node module: it imports over https and
+    // uses the Deno global, neither of which this config can resolve. esbuild
+    // bundles it without type-checking, and Deno type-checks it when it runs.
+    "src/scripts/codeblock-to-json.ts",
     "node_modules"
   ],
   "$schema": "https://json.schemastore.org/tsconfig",

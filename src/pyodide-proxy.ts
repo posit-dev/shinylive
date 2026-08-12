@@ -3,7 +3,7 @@ import { makeRequest } from "./messageporthttp.js";
 import { openChannel } from "./messageportwebsocket-channel";
 import { postableErrorObjectToError } from "./postable-error";
 import type * as PyodideWorker from "./pyodide-worker";
-import type { PyIterable } from "./pyodide/ffi";
+import type { PyIterable, PyProxy } from "./pyodide/ffi";
 import type { PackageData } from "./pyodide/pyodide";
 import { loadPyodide } from "./pyodide/pyodide";
 import * as utils from "./utils";
@@ -578,21 +578,27 @@ export function processReturnValue<K extends keyof ReturnMapping = "none">(
       return repr(value);
     },
     get to_html() {
-      let toHtml: (x: any) => ToHtmlResult;
+      // `_to_html` is a Python function, so it hands back a PyProxy of a dict
+      // rather than a ToHtmlResult; `toJs()` below is what turns it into one.
+      let toHtml: ((x: any) => PyProxy) | null = null;
       try {
-        toHtml = pyodide.globals.get("_to_html") as (x: any) => ToHtmlResult;
+        toHtml = pyodide.globals.get("_to_html") as (x: any) => PyProxy;
       } catch (e) {
         console.error("Couldn't find _to_html function: ", e);
-        // Placeholder
-        toHtml = (x: any) => ({
-          type: "text",
-          value: "Couldn't finding _to_html function.",
-        });
       }
-      const val = toHtml(value).toJs({
+
+      if (toHtml === null) {
+        // The placeholder used to be a plain object, which meant the `toJs()`
+        // call below threw on it and lost this message.
+        return {
+          type: "text",
+          value: "Couldn't find _to_html function.",
+        } as ToHtmlResult;
+      }
+
+      return toHtml(value).toJs({
         dict_converter: Object.fromEntries,
-      });
-      return val;
+      }) as ToHtmlResult;
     },
     get none() {
       return undefined;

@@ -45,7 +45,12 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # This is the step that gates the merge. Everything below it reports.
+      # swc strips types without checking them, so this is what type-checks
+      # both src/ and the tests.
+      - name: Type-check
+        run: npm run type-check
+
+      # This and the step above gate the merge. Everything below them reports.
       - name: Run unit tests
         run: npm run test:unit
 

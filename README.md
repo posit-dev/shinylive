@@ -123,7 +123,7 @@ npm run test:unit
 npm run test:unit:watch
 ```
 
-Tests live next to the code they cover, as `src/**/*.test.ts`. The runner is configured in `jest.config.js`: jsdom for a DOM, `@swc/jest` to strip TypeScript, and the stubs in `testing-helpers/` for CSS and asset imports and for the browser globals jsdom lacks. swc does not type-check, so `npx tsc --noEmit` is what checks the tests' types.
+Tests live next to the code they cover, as `src/**/*.test.ts`. The runner is configured in `jest.config.js`: jsdom for a DOM, `@swc/jest` to strip TypeScript, and the stubs in `testing-helpers/` for CSS and asset imports and for the browser globals jsdom lacks. swc does not type-check, so `make type-check` is what checks the tests' types, alongside the rest of `src/`. CI runs it in the same job as the tests, and a failure blocks the build.
 
 Anything that needs a real browser, a running app, or Pyodide/webR belongs in the app tests below rather than here.
 
