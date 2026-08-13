@@ -330,7 +330,7 @@ export function Viewer({
           // cannot be read is not one to go on and display an app for.
           if (rCharacterField(start, "status")[0] !== "ok") {
             const message =
-              rCharacterField(start, "message")[0] ??
+              rCharacterField(start, "message")[0] ||
               // Distinct from .start_app's own no-message fallback, so the two
               // are told apart: that one means R raised an empty condition,
               // this one means no readable status came back at all.

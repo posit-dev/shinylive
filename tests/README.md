@@ -144,16 +144,22 @@ And two that are simply gaps in py-shiny:
 scenario rather than assert on it, use Playwright's own tooling instead of a
 one-off script:
 
-    # Watch one, slowly, in a real window
-    pytest tests/test_loader_status.py -k "slow_load and chromium-py" \
-        --headed --slowmo 500 --loader-delay 15000
+```console
+# Watch one, slowly, in a real window
+pytest tests/test_loader_status.py -k "slow_load and chromium-py" \
+    --headed --slowmo 500 --loader-delay 15000
+```
 
-    # Record it
-    pytest tests/test_loader_status.py -k engine_setup --video on
+```console
+# Record it
+pytest tests/test_loader_status.py -k engine_setup --video on
+```
 
-    # Step through afterwards
-    pytest tests/test_loader_status.py -k app_syntax --tracing on
-    playwright show-trace test-results/**/trace.zip
+```console
+# Step through afterwards
+pytest tests/test_loader_status.py -k app_syntax --tracing on
+playwright show-trace test-results/**/trace.zip
+```
 
 Every test file's own name ends in `.py`, so a bare `-k "... and py"` selects
 both engines' parametrizations, not just Python's -- match the full

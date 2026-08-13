@@ -161,8 +161,11 @@ describe("realistic sequences", () => {
 
   test("failing after ready is still recorded (app-start failures come later)", () => {
     // The engine reaching "ready" does not mean the app will start: requirements
-    // installation and app import both happen afterwards. A failure then must
-    // still register, or Viewer would never show the error alert.
+    // installation and app import both happen afterwards, but at the engine
+    // level -- an app-start failure travels through Viewer's own
+    // lastErrorMessage/appRunningState instead, not this store. Nothing here
+    // special-cases "ready", so a late engine-level failure is recorded rather
+    // than silently dropped.
     const store = loadStatusStore("python");
     store.set("engine-download");
     store.set("engine-start");

@@ -408,8 +408,8 @@ webr::shim_install()
       if (!nzchar(msg)) msg <- "The app failed to start, with no error message."
       # conditionCall() is NULL when the condition was signalled without a call,
       # and deparse() returns one element per line of source. Keep only the first
-      # line, marking that there was more, the way R's own error printing does,
-      # so that a long but meaningful call is trimmed rather than dumped.
+      # line, marking that there was more, so that a long but meaningful call is
+      # trimmed rather than dumped.
       cnd_call <- conditionCall(cnd)
       call_txt <- ""
       if (!is.null(cnd_call)) {

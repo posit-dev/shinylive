@@ -108,8 +108,9 @@ def test_r_syntax_error_reports_the_line(page: Page, loader_delay: int) -> None:
     sabotage(page, "r", "app-syntax", loader_delay)
     page.goto(app_url("r", "app-syntax"))
     log = page.locator(".error-log pre")
-    # The R fixture ships a second, valid .R file, so this also pins which of the
-    # files the guard iterated is named as the one that failed.
+    # The R fixture ships a second, valid .R file that sorts before app.R, so
+    # this also pins that the failing file named here is app.R, not the one the
+    # guard parsed first.
     expect(log).to_contain_text("app.R:")
     expect(log).to_contain_text("^")
     # The guard re-raises without the condition's call, which would otherwise be
@@ -278,9 +279,8 @@ _EMBED_VIEWER_HEIGHT = 320
 def _codeblock_body(files: list[dict[str, str]]) -> str:
     """Render a file set as a shinylive code-block body.
 
-    Mirrors codeBlockBody() in scripts/loader-demo.ts: a single file needs no
-    header, and more than one uses the '## file:' syntax parse-codeblock.ts
-    understands.
+    A single file needs no header; a multi-file block needs a '## file:'
+    header per file, the syntax src/parse-codeblock.ts understands.
     """
     if len(files) == 1:
         return files[0]["content"]
@@ -312,8 +312,9 @@ def embed_page(page: Page, engine: str, mode: str) -> Iterator[str]:
     resolve against the real files `static_server` serves -- only this one URL
     is intercepted; every other request passes through untouched.
 
-    Modeled on scripts/loader-demo.ts's embedPage()/buildDemoSite() -- the last
-    known-working generator of this markup, since replaced by this test.
+    An embedded shinylive app block needs `#| standalone: true` --
+    parse-codeblock.ts throws if a viewer block lacks it -- or the block
+    renders as a static code sample instead of a live app.
     """
     body = _codeblock_body(_files(engine, mode))
     html = f"""<!doctype html>
@@ -385,9 +386,9 @@ def test_embedded_block_shows_the_error(
 def test_an_unknown_mode_is_rejected_before_it_reaches_the_page() -> None:
     """A typo'd mode string should fail loudly at the call, not silently at
     the assertion. `_files()` and `sabotage()`'s guards run before either
-    function touches a page, so this needs neither a browser nor
-    `allow_page_errors`: the page passed to `sabotage()` here is a stand-in
-    that would blow up if the guard did not raise first.
+    function touches a page, so this needs no `allow_page_errors`: the page
+    passed to `sabotage()` here is a stand-in that would blow up if the guard
+    did not raise first.
     """
     with pytest.raises(ValueError):
         app_url("py", "bogus-mode")
