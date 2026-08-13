@@ -1,0 +1,66 @@
+name: Test the loader
+
+# The loader's status text and its failure modes, in a browser, against a real
+# build. These live in their own workflow rather than in build.yml, for the same
+# reason the example tests do: they are slow, and they should not sit in front of
+# a deploy.
+#
+# They are the `loader` half of the `site` marker. The other half -- the editor,
+# apps loaded from the URL, and static export -- stays in build.yml on purpose,
+# because a failure there should stop the deploy that follows it. That trade is
+# not made here: nearly every test in this workflow boots a real Pyodide or webR
+# instance, so the suite costs about as much as all the other site tests put
+# together, and it has little CI history yet. Gating releases on engine-booting
+# browser tests before knowing how they behave on a runner is how a flaky test
+# becomes a stuck release.
+#
+# Revisit once there is green history. Gating means either moving these tests
+# back under `make test-site`, or triggering the deploy from this workflow's
+# success with `workflow_run`.
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# A new push to a PR makes the in-flight run for the previous commit redundant.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # Builds its own copy of the site rather than reusing build.yml's output.
+  # `make all` costs about 90s, which is cheaper than restructuring the deploy
+  # steps out of that workflow's build job so an artifact could be handed over.
+  test-loader:
+    name: Loader tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.11"
+
+      - name: Upgrade pip
+        run: python -m pip install --upgrade pip
+
+      - name: Check out submodules
+        run: |
+          make submodules
+
+      - name: Build shinylive
+        run: |
+          make all
+
+      - name: Run the loader status tests
+        run: |
+          make test-loader
+
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: test-loader-report
+          path: test-results/
+          retention-days: 30
