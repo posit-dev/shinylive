@@ -118,6 +118,10 @@ jobs:
       # the build produced above. They run here rather than in test-apps.yml
       # because that build is what they test, and a failure should stop the
       # deploy that follows.
+      #
+      # `make test-site` selects `-m "site and not loader"`. The loader tests are
+      # the other half of that pair and run in the test-loader job below, not
+      # here -- see that job's comment for why.
       - name: Run site and static export tests
         run: |
           make test-site
@@ -196,6 +200,59 @@ jobs:
   # =====================================================
   # Deploy GitHub Pages site
   # =====================================================
+  # The loader's status text and failure modes, against a build of its own.
+  #
+  # Deliberately NOT in the `build` job, and so deliberately not gating the
+  # deploy that job performs. Two reasons, both worth revisiting later:
+  #
+  #  - These tests cost about as much as every other site test put together
+  #    (~59s against ~55s, measured locally), because nearly all of them boot a
+  #    real Pyodide or webR instance and one delays the load on purpose. Paying
+  #    that serially in front of an S3 deploy buys little when it can run
+  #    alongside instead.
+  #  - They are new and have never run on a CI runner. Gating releases on
+  #    engine-booting browser tests with no CI history is how a flaky test turns
+  #    into a stuck release. Once they have a few green runs behind them, moving
+  #    the gate is a one-line change: give this job a `needs:` relationship, or
+  #    fold the marker back into `make test-site`.
+  #
+  # It builds its own copy rather than reusing the build job's output, because
+  # `make all` costs about 90s -- cheaper than restructuring the deploy steps out
+  # of the build job so an artifact could be passed between them.
+  test-loader:
+    name: Loader tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.11"
+
+      - name: Upgrade pip
+        run: python -m pip install --upgrade pip
+
+      - name: Check out submodules
+        run: |
+          make submodules
+
+      - name: Build shinylive
+        run: |
+          make all
+
+      - name: Run the loader status tests
+        run: |
+          make test-loader
+
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: test-loader-report
+          path: test-results/
+          retention-days: 30
+
   deploy-gh-pages:
     if: github.ref == 'refs/heads/main'
     needs: build

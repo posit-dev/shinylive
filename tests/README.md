@@ -138,6 +138,21 @@ And two that are simply gaps in py-shiny:
   first. py-shiny's `set()` absorbs this by inching across the track; `brush()`
   in the tests waits explicitly.
 
+## The loader tests are their own half of `site`
+
+`tests/test_loader_status.py` carries both the `site` and `loader` markers, and
+the two Make targets split on that: `make test-site` runs `-m "site and not
+loader"`, `make test-loader` runs `-m loader`. Between them they cover every
+`site` test, so running one is not running them all -- worth knowing before
+concluding the suite is green.
+
+They are split because nearly every one of them boots a real engine, which makes
+them cost about as much as all the other site tests together. `make test-site`
+runs inside the job that deploys; `make test-loader` gets a job of its own that
+does not gate the deploy. See the comment on `test-loader` in
+`.github/workflows/build.yml` for why, and for what would have to change to make
+them gate it.
+
 ## Watching a loader test by hand
 
 `tests/test_loader_status.py` replaced `scripts/loader-demo.ts`. To watch a
