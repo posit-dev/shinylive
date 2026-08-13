@@ -9,7 +9,7 @@ from __future__ import annotations
 from typing import Iterator, cast
 
 import pytest
-from playwright.sync_api import Page, expect
+from playwright.sync_api import ConsoleMessage, Page, expect
 
 from loader_apps import MISSING_PKG, _files, app_url, sabotage
 from shinylive_app import BASE_URL
@@ -177,12 +177,21 @@ def test_r_unresolvable_library_still_runs(page: Page, loader_delay: int) -> Non
     else -- an unrelated error, or this one going silent -- still fails the
     test.
     """
-    from shinylive_app import wait_for_app_rendered
+    from shinylive_app import is_benign_console_error, wait_for_app_rendered
 
+    # Collecting console errors by hand means also forgiving what
+    # fail_on_page_errors forgives -- the aborted tag-manager requests, which
+    # arrive as "Failed to load resource: net::ERR_FAILED". They only appear on
+    # CI, where make all templates the tag manager in, so a local run cannot
+    # catch the omission. Hence the shared predicate rather than a second copy of
+    # the rule.
     errors: list[str] = []
-    page.on(
-        "console", lambda m: errors.append(m.text) if m.type == "error" else None
-    )
+
+    def collect(message: ConsoleMessage) -> None:
+        if message.type == "error" and not is_benign_console_error(message):
+            errors.append(message.text)
+
+    page.on("console", collect)
 
     sabotage(page, "r", "requirements", loader_delay)
     page.goto(app_url("r", "requirements"))

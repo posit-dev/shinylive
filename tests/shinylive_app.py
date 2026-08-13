@@ -15,9 +15,32 @@ from collections.abc import Callable
 from pathlib import Path
 from typing import Any, cast
 
-from playwright.sync_api import FrameLocator, Locator, Page
+from playwright.sync_api import ConsoleMessage, FrameLocator, Locator, Page
 from playwright.sync_api import expect as playwright_expect
 from shiny.playwright.controller import OutputPlot as OutputPlotBase
+
+# Analytics, which no test here is about. `make all` templates a Google Tag
+# Manager loader into the site's pages when GOOGLE_TAG_MANAGER_ID is set
+# (scripts/build.ts), which .github/workflows/build.yml does and test-apps.yml
+# does not -- so the site tests are the only ones that meet it, and only on CI.
+ANALYTICS_URL = re.compile(
+    r"https?://([^/]+\.)?(googletagmanager|google-analytics)\.com/"
+)
+
+
+def is_benign_console_error(message: ConsoleMessage) -> bool:
+    """Whether a console error is noise rather than an app problem.
+
+    A missing favicon is not an app problem, and neither is the tag manager that
+    `block_analytics` just aborted -- an aborted request reaches the console as
+    `net::ERR_FAILED`. Shared with `fail_on_page_errors` in conftest.py so that a
+    test opting out of that fixture and collecting console errors itself does not
+    have to rediscover which ones to forgive. Getting this wrong is invisible
+    locally, because the tag manager is only templated in on CI.
+    """
+    url = message.location["url"]
+    return url.endswith("favicon.ico") or bool(ANALYTICS_URL.search(url))
+
 
 # Where `make _shinylive` puts the built sites.
 SHINYLIVE_DIR = Path(__file__).resolve().parent.parent / "_shinylive"

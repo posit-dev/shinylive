@@ -19,9 +19,11 @@ from playwright.sync_api import expect
 
 from export_app import export_app
 from shinylive_app import (
+    ANALYTICS_URL,
     APP_FRAME,
     SHINYLIVE_DIR,
     STATIC_PORT,
+    is_benign_console_error,
     suspect_terminal_lines,
     terminal_text,
 )
@@ -31,14 +33,7 @@ from shinylive_app import (
 expect.set_options(timeout=30_000)
 
 
-# Analytics, which no test here is about. `make all` templates a Google Tag
-# Manager loader into the site's pages when GOOGLE_TAG_MANAGER_ID is set
-# (scripts/build.ts), which .github/workflows/build.yml does and test-apps.yml
-# does not -- so the site tests are the only ones that ever meet it, and they
-# meet it only on CI, next to the deploy they gate.
-_ANALYTICS_URL = re.compile(
-    r"https?://([^/]+\.)?(googletagmanager|google-analytics)\.com/"
-)
+# See `ANALYTICS_URL` and `is_benign_console_error` in shinylive_app.py.
 
 
 @pytest.fixture(autouse=True)
@@ -51,7 +46,7 @@ def block_analytics(page: Page) -> None:
     completes reaches the console as an error, the same way a missing favicon
     does.
     """
-    page.route(_ANALYTICS_URL, lambda route: route.abort())
+    page.route(ANALYTICS_URL, lambda route: route.abort())
 
 
 @pytest.fixture(autouse=True)
@@ -71,10 +66,7 @@ def fail_on_page_errors(request: pytest.FixtureRequest, page: Page) -> Iterator[
     def on_console(message: ConsoleMessage) -> None:
         if message.type != "error":
             return
-        # A missing favicon is not an app problem, and neither is the tag
-        # manager `block_analytics` just aborted.
-        url = message.location["url"]
-        if url.endswith("favicon.ico") or _ANALYTICS_URL.search(url):
+        if is_benign_console_error(message):
             return
         console_errors.append(message.text)
 
