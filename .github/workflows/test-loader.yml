@@ -1,22 +1,12 @@
 name: Test the loader
 
-# The loader's status text and its failure modes, in a browser, against a real
-# build. These live in their own workflow rather than in build.yml, for the same
-# reason the example tests do: they are slow, and they should not sit in front of
-# a deploy.
-#
-# They are the `loader` half of the `site` marker. The other half -- the editor,
-# apps loaded from the URL, and static export -- stays in build.yml on purpose,
-# because a failure there should stop the deploy that follows it. That trade is
-# not made here: nearly every test in this workflow boots a real Pyodide or webR
-# instance, so the suite costs about as much as all the other site tests put
-# together, and it has little CI history yet. Gating releases on engine-booting
-# browser tests before knowing how they behave on a runner is how a flaky test
-# becomes a stuck release.
-#
-# Revisit once there is green history. Gating means either moving these tests
-# back under `make test-site`, or triggering the deploy from this workflow's
-# success with `workflow_run`.
+# The loader's status text and failure modes, in a browser. Their own workflow for
+# the same reason the example tests have one: nearly every test boots a real
+# Pyodide or webR instance, so they are slow and should not sit in front of a
+# deploy. They are the `loader` half of the `site` marker; the other half stays in
+# build.yml and still gates the deploy. To gate these too, fold the marker back
+# into `make test-site`, or trigger the deploy from this workflow with
+# `workflow_run`.
 on:
   push:
     branches: [main]
@@ -28,9 +18,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  # Builds its own copy of the site rather than reusing build.yml's output.
-  # `make all` costs about 90s, which is cheaper than restructuring the deploy
-  # steps out of that workflow's build job so an artifact could be handed over.
+  # Builds its own copy rather than reusing build.yml's: `make all` is cheaper
+  # than moving that workflow's deploy steps out so an artifact could be shared.
   test-loader:
     name: Loader tests
     runs-on: ubuntu-latest

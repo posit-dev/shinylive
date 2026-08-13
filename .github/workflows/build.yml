@@ -119,10 +119,8 @@ jobs:
       # because that build is what they test, and a failure should stop the
       # deploy that follows.
       #
-      # `make test-site` selects `-m "site and not loader"`. The loader tests are
-      # the other half of that pair and run in test-loader.yml instead, because
-      # they are slow and should not sit in front of a deploy -- that file's
-      # header explains the trade, and why these tests do not make it.
+      # `make test-site` is `-m "site and not loader"`; the loader half runs in
+      # test-loader.yml.
       - name: Run site and static export tests
         run: |
           make test-site
