@@ -1,12 +1,6 @@
 name: Test the loader
 
-# The loader's status text and failure modes, in a browser. Their own workflow for
-# the same reason the example tests have one: nearly every test boots a real
-# Pyodide or webR instance, so they are slow and should not sit in front of a
-# deploy. They are the `loader` half of the `site` marker; the other half stays in
-# build.yml and still gates the deploy. To gate these too, fold the marker back
-# into `make test-site`, or trigger the deploy from this workflow with
-# `workflow_run`.
+# Tests the loader's status text and failure modes using playwright.
 on:
   push:
     branches: [main]

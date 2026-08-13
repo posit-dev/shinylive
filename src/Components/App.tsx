@@ -141,9 +141,8 @@ function ensurePyodideProxyHandlePromise({
     pyodideProxyHandlePromise = (async (): Promise<PyodideProxyHandle> => {
       let pyodideProxyHandle: PyodideProxyHandle;
 
-      // Ensure that pyodide and shiny can be successfully initialized
-      // to determine if the engine is usable. If not, set the status state
-      // to "failed" to report the error to the user
+      // Ensure pyodide engine and shiny can be successfully initialized
+      // If not, set the status to "failed" to report the error to the user
       try {
         pyodideProxyHandle = await initPyodide({
           proxyType,
@@ -164,9 +163,9 @@ function ensurePyodideProxyHandlePromise({
 
       if (!pyodideProxyHandle.initError) {
         try {
-          // This block is purely cosmetic and the engine runs whether or not these
-          // succeed, so a throw here must not reach the catch above,
-          // which would be recorded as an engine load failure
+          // This section for printing the terminal console banner is cosmetic only
+          // and logs any errors to the browser console, rather than marking the engine
+          // load as failed "failed".
           terminalInterface.clear();
 
           if (showStartBanner) {

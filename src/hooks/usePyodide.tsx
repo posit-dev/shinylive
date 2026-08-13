@@ -50,7 +50,6 @@ export async function initPyodide({
   if (unreachable) throw new Error(unreachable);
 
   const pyodideProxy = await loadPyodideProxy(
-    // indexURL is Pyodide's own loadPyodide() parameter name; keep it as-is.
     { type: proxyType, indexURL: baseUrl },
     stdout,
     stderr,
@@ -144,8 +143,8 @@ export function usePyodide({
       const pyodideProxyHandle = await pyodideProxyHandlePromise;
       setPyodideProxyHandle(pyodideProxyHandle);
     })().catch((e) => {
-      // Already surfaced to the user via the load status store; log it so it
-      // isn't an unhandled rejection.
+      // Already surfaced to the user via the load status store;
+      // logged to console so it isn't an unhandled rejection.
       console.error(e);
     });
   }, [pyodideProxyHandlePromise]);

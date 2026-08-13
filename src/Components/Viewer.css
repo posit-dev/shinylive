@@ -29,10 +29,8 @@
   align-items: center;
 }
 
-/* The alert's auto margins do the centring; these two are defensive. When the
-   alert is bigger than the viewer the auto margins collapse to zero, and these
-   then decide which edge stays visible. Chromium keeps the top-left reachable
-   either way, but not every engine has always done so. */
+/* Defensive: when the alert outgrows the viewer the auto margins collapse to
+   zero, and these keep the top-left corner reachable rather than clipped. */
 .shinylive-viewer .loading-wrapper.loading-wrapper-error {
   justify-content: flex-start;
   align-items: flex-start;
@@ -40,15 +38,12 @@
 
 .shinylive-viewer .loading-wrapper .error-alert {
   text-align: center;
-  /* One fixed column shared by the hint and the log below. Without it the alert
-     is as wide as its widest child, so a long traceback line would stretch it
-     past the viewer, collapse the auto margins, and leave the hint centred above
-     a flush-left log. Shrinks on a narrow viewer, and never overflows it. */
+  /* One fixed column, shared with the log below. Without it the alert is as wide
+     as its widest child, so a long traceback line stretches it past the viewer. */
   --error-column: 34rem;
   width: var(--error-column);
   max-width: 100%;
-  /* Centres in both axes. All four must stay `auto`: overriding one anchors the
-     alert to that edge instead of centring it. */
+  /* All four sides must stay `auto`; overriding one anchors the alert there. */
   margin: auto;
   font-size: 1.4rem;
   font-family: var(--font-face);
@@ -63,15 +58,11 @@
   margin-bottom: 0.5rem;
 }
 
-/* Sits between the headline and the log, so the fix the user can act on comes
-   before the traceback they probably can't.
-   Shaped by fill alone with no outline, which is how every other surface here is
-   set apart (a grey container holding white panels; the one border in App.css is
-   commented out). The fill is a tint of the app's red, --colors-red / #c10000,
-   so it reads as part of the error. */
+/* Between the headline and the log, so the fix the user can act on comes before
+   the traceback they probably can't. Fill rather than outline, like every other
+   surface here, tinted from the app's red so it reads as part of the error. */
 .shinylive-viewer .loading-wrapper .error-alert .error-recovery {
-  /* Fills the alert's column rather than setting its own width, so it lines up
-     with the log below, which is inset only by its own small padding. */
+  /* No width of its own, so it lines up with the log below. */
   margin: 0.9rem 0;
   padding: 0.75rem 0.9rem;
   border-radius: var(--panel-roundness, 5px);
@@ -95,9 +86,8 @@
   font-weight: 600;
 }
 
-/* The shortcut set apart from the prose so it is scannable without reading the
-   sentence. Same fill-not-outline treatment, one level lighter than the panel,
-   mirroring how a white panel sits on the grey container. */
+/* Set apart so the shortcut is scannable without reading the sentence, one level
+   lighter than the panel it sits on. */
 .shinylive-viewer .loading-wrapper .error-alert .error-recovery kbd {
   display: inline-block;
   padding: 0.05rem 0.4rem;
@@ -115,9 +105,8 @@
   padding: 0.3rem;
 }
 
-/* Keep the traceback's own line breaks, but wrap long lines. Without this the
-   wrapper scrolls sideways instead, so reading the error means dragging through
-   it horizontally. */
+/* Keep the traceback's own line breaks but wrap long ones; otherwise reading the
+   error means dragging sideways. */
 .shinylive-viewer .loading-wrapper .error-alert .error-log pre {
   white-space: pre-wrap;
   overflow-wrap: break-word;

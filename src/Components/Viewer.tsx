@@ -107,8 +107,8 @@ function RecoveryHint() {
 }
 
 // The failure screen for both engine and app syntax failures. `kind` dictates
-// if the recovery hint is shown in the engine-failure case, which isn't needed
-// relevant for an application syntax error (it just shows the traceback instead)
+// if the recovery hint is shown in the engine-failure case, which isn't
+// relevant for an application-level error (it shows the traceback/error instead)
 export function ViewerError({
   kind,
   engine,
@@ -284,11 +284,12 @@ export function Viewer({
             captureStreams: false,
           });
           // .start_app reports failure by returning a status list rather than
-          // raising, because captureConditions is off here: a raised error would
+          // raising, because captureConditions is false here: a raised error would
           // go to the terminal and never reach this catch, and the viewer would
-          // show an app that never started. Evaluated on this shelter, rather
-          // than through runRAsync, because runRAsync purges its own shelter
-          // before returning -- the list has to outlive the call.
+          // show an app that never started. We evaluate on the shelter rather
+          // than through runRAsync because runRAsync purges its own shelter
+          // before returning, and we need the list to outlive the call to show
+          // information about the error to the user.
           const startResult = await shelter.evalR(
             ".start_app(appName, appDir, devMode)",
             {
@@ -299,22 +300,18 @@ export function Viewer({
           );
           const start = await startResult.toJs();
           // Anything other than an explicit "ok" is a failure, including a reply
-          // that did not survive the conversion above: a startup whose outcome
-          // cannot be read is not one to go on and display an app for.
+          // that did not survive the conversion above.
           if (rCharacterField(start, "status")[0] !== "ok") {
             const message =
               rCharacterField(start, "message")[0] ||
-              // Distinct from .start_app's own no-message fallback, so the two
-              // are told apart: that one means R raised an empty condition,
-              // this one means no readable status came back at all.
+              // Distinct from .start_app's own no-message fallback to distinguish
+              // between R raising an empty condition and no readable status coming
+              // back at all.
               "The app failed to start, and R reported no status.";
             const call = rCharacterField(start, "call")[0];
             const error = new Error(
               call ? `Error in ${call}: ${message}` : message,
             );
-            // Not branched on: a third category on the error screen would be a
-            // UX change. Carried so the console says what kind of failure it
-            // was.
             console.error("R startup failure", rCharacterField(start, "class"));
             throw error;
           }

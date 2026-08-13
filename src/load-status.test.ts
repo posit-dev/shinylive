@@ -132,10 +132,10 @@ describe("failed is terminal", () => {
   });
 
   test("a non-failed set() followed by a second failed() both leave the first error in place", () => {
-    // Regression test for Fix 1: on the R path, initRShiny's `library(shiny)`
-    // failure used to overwrite the real root-cause error because a spurious
-    // "ready" transition slipped through in between the two set("failed", ...)
-    // calls. Exercise that exact sequence: failed -> ready -> failed(second).
+    // The general form of the two above: nothing reopens a failed store. That
+    // matters on the R path, where initWebR records the root cause but returns
+    // `ready: true` anyway, so App.tsx goes on to initRShiny and `library(shiny)`
+    // fails downstream — an error that would otherwise replace the real one.
     const store = loadStatusStore("python");
     store.set("failed", "first");
     store.set("ready");

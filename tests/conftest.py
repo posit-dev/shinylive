@@ -2,22 +2,20 @@
 
 from __future__ import annotations
 
-import re
 import socket
 import subprocess
 import sys
 import threading
 import time
+from collections.abc import Callable, Iterator, Mapping
 from functools import partial
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from typing import Any, Callable, Iterator, Mapping
+from typing import Any
 
 import pytest
-from playwright.sync_api import ConsoleMessage, Page
-from playwright.sync_api import expect
-
 from export_app import export_app
+from playwright.sync_api import ConsoleMessage, Page, expect
 from shinylive_app import (
     ANALYTICS_URL,
     APP_FRAME,
@@ -88,9 +86,7 @@ def fail_on_page_errors(request: pytest.FixtureRequest, page: Page) -> Iterator[
         page.frame_locator(APP_FRAME).locator(".shiny-output-error"),
         "app rendered an output error",
     ).to_have_count(0)
-    assert console_errors == [], "browser console errors:\n" + "\n".join(
-        console_errors
-    )
+    assert console_errors == [], "browser console errors:\n" + "\n".join(console_errors)
 
 
 def pytest_addoption(parser: pytest.Parser) -> None:

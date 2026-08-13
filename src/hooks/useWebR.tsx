@@ -133,8 +133,8 @@ export function useWebR({
       const webRProxyHandle = await webRProxyHandlePromise;
       setwebRProxyHandle(webRProxyHandle);
     })().catch((e) => {
-      // Already surfaced to the user via the load status store; log it so it
-      // isn't an unhandled rejection.
+      // Already surfaced to the user via the load status store;
+      // logged to the console so it isn't an unhandled rejection.
       console.error(e);
     });
   }, [webRProxyHandlePromise]);
@@ -346,28 +346,19 @@ webr::shim_install()
 # on to display an app that never started. Returning the failure as a value is
 # what makes a failed startup visible.
 #
-# A status list rather than the message alone: a condition whose message is
-# empty is indistinguishable from success once the two share one string, and
-# conditionMessage() on its own throws away the condition's call, so the viewer
-# could say what failed but not which call failed.
+# The status field carries the explicit outcome rather than leaving it to be inferred: a
+# condition can carry an empty message, which on its own would read as success.
+# The class and call fields are what conditionMessage() would drop, and the call
+# is how the dialog can name which call failed, not just what went wrong.
 .start_app <- function(appName, appDir, devMode = FALSE) {
   tryCatch(
     {
-      # Parse the app's R files before shiny does. shiny's sourceUTF8 catches the
-      # parse error and raises only "Error sourcing <file>", discarding the line
-      # number and the offending line, so letting parse() fail here is what gets
-      # that detail to the viewer. Runs first so a typo fails before any package
-      # installs rather than after them.
-      #
-      # Reporting the condition's call below does not replace this step: the
-      # detail is destroyed by sourceUTF8's own try() before any handler of ours
-      # sees a condition, so there is nothing left for one to report.
+      # Perform a basic parse of top-level R scripts to highlight any syntax
+      # errors. Runs first so a typo fails before spending time on package installs.
       for (f in list.files(appDir, pattern = "[.][Rr]$", full.names = TRUE)) {
         # call. = FALSE because the call this condition would otherwise carry is
         # this loop's own parse(file = f), whose f names nothing an app author
-        # would recognise. conditionMessage() keeps the whole reason the step
-        # exists: the file, the line and column, the offending source lines and
-        # the caret.
+        # would recognise.
         tryCatch(
           parse(file = f),
           error = function(cnd) stop(conditionMessage(cnd), call. = FALSE)
@@ -388,7 +379,7 @@ webr::shim_install()
         if (!has_pkg) {
           # Deliberately not fatal: renv::dependencies() also reports packages
           # that are named but never actually used, and those apps run fine
-          # today. A package that really is needed fails below, when the app
+          # today. A package that really is needed fails later, when the app
           # source is evaluated.
           webr::install(pkg_name)
         }
@@ -418,8 +409,7 @@ webr::shim_install()
         # shiny wraps every app body in ..stacktraceon..(), so for any top-level
         # failure the condition's call is the whole app source -- no use to anyone
         # reading the dialog. Report a call only when it names something the
-        # author would recognise, and fall back to the bare message otherwise,
-        # which is what the dialog showed before it reported a call at all.
+        # author would recognize, and fall back to the bare message otherwise.
         #
         # A prefix rather than a list of names: the shiny shipped here exports
         # ..stacktraceon.. and ..stacktraceoff.., and the prefix covers both

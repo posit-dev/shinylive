@@ -143,21 +143,17 @@ And two that are simply gaps in py-shiny:
 `tests/test_loader_status.py` carries both the `site` and `loader` markers, and
 the two Make targets split on that: `make test-site` runs `-m "site and not
 loader"`, `make test-loader` runs `-m loader`. Between them they cover every
-`site` test, so running one is not running them all -- worth knowing before
-concluding the suite is green.
+`site` test, so running one is not running them all.
 
 They are split because nearly every one of them boots a real engine, which makes
 them cost about as much as all the other site tests together. `make test-site`
 runs inside the job that deploys; `make test-loader` gets a job of its own that
-does not gate the deploy. See the comment on `test-loader` in
-`.github/workflows/build.yml` for why, and for what would have to change to make
-them gate it.
+does not gate the deploy.
 
 ## Watching a loader test by hand
 
-`tests/test_loader_status.py` replaced `scripts/loader-demo.ts`. To watch a
-scenario rather than assert on it, use Playwright's own tooling instead of a
-one-off script:
+To watch a playwright scenario rather than just running the tests,
+you can use Playwright's tooling:
 
 ```console
 # Watch one, slowly, in a real window
@@ -177,11 +173,10 @@ playwright show-trace test-results/**/trace.zip
 ```
 
 Every test file's own name ends in `.py`, so a bare `-k "... and py"` selects
-both engines' parametrizations, not just Python's -- match the full
-parametrize id (`chromium-py`, not `py`) to get one. `--loader-delay` only
-holds back the *slow-load* test (`sabotage("off", ...)` is the only mode whose
-route handler installs the delay); it is a no-op on the failure-mode tests, so
-don't reach for it there. The status text only appears 3s after the loader
+both engines' parametrizations. `--loader-delay` only holds back the
+*slow-load* test (`sabotage("off", ...)` is the only mode whose
+route handler installs the delay); it is a no-op on the failure-mode tests.
+The status text only appears 3s after the loader
 mounts (`STATUS_DELAY_MS` in `src/Components/LoadingStatus.tsx`), so turn the
 delay up to give yourself time to read the stages. `--tracing on` overrides
 `pytest.ini`'s `--tracing retain-on-failure` and writes a trace even for a

@@ -58,9 +58,9 @@ describe("reading a field", () => {
 // would land here, and nothing else in either suite would notice.
 describe("an unreadable reply gives no values rather than a guess", () => {
   test("no names at all", () => {
-    expect(rCharacterField({ type: "null" } as unknown as Js, "status")).toEqual(
-      [],
-    );
+    expect(
+      rCharacterField({ type: "null" } as unknown as Js, "status"),
+    ).toEqual([]);
   });
 
   test("names is null", () => {

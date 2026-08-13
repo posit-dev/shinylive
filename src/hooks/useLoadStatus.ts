@@ -1,3 +1,4 @@
+// Subscribes a component to one engine's load status, re-rendering on each stage.
 import { useSyncExternalStore } from "react";
 import type { EngineName, LoadStatus } from "../load-status";
 import { loadStatusStore } from "../load-status";

@@ -6,12 +6,12 @@ for how to watch one in a browser.
 
 from __future__ import annotations
 
-from typing import Iterator, cast
+from collections.abc import Iterator
+from typing import cast
 
 import pytest
-from playwright.sync_api import ConsoleMessage, Page, expect
-
 from loader_apps import MISSING_PKG, _files, app_url, sabotage
+from playwright.sync_api import ConsoleMessage, Page, expect
 from shinylive_app import BASE_URL
 
 pytestmark = [pytest.mark.site, pytest.mark.loader]
@@ -224,23 +224,16 @@ def test_slow_load_announces_its_stages(
 
     Reads back a recording rather than polling live for each stage in turn.
     `sabotage("off", ...)` answers the engine's core-wasm requests with
-    `time.sleep()`, which -- per that function's own docstring -- blocks this
-    whole process's connection to the browser, not just the one request it is
-    answering. The engine makes *two* such requests before it is up
-    (`engine-load-guard`'s reachability check, then the real load), so any of
-    this test's own commands, including `page.goto()` itself, can each land in
-    the middle of one of those sleeps and block for a full `loader_delay`
-    with no way to poll in between. A first version of this test used
-    sequential `expect(...).to_have_text(...)` calls to assert the order, and
-    it was flaky in exactly that way: on a fast local engine, enough of that
-    blocked time could go by that the app finished booting before the first
-    check ever got a chance to observe the DOM, and text that has already
-    come and gone does not come back for a later, more patient `expect()` to
-    find. A `MutationObserver`, installed before either delay has fired,
-    sidesteps this: it runs in the browser and timestamps every change to the
-    loader's own DOM, so the recording it produces is immune to how blocked
-    this process gets. This test lets the load run to completion and then
-    reads that recording back once.
+    `time.sleep()`, which blocks this whole process's connection to the browser,
+    not just the one request it is answering. The engine makes *two* such requests
+    before it is up (`engine-load-guard`'s reachability check, then the real load),
+    so any of this test's own commands, including `page.goto()` itself, can each land
+    in the middle of one of those sleeps and block for a full `loader_delay`
+    with no way to poll in between. A `MutationObserver`, installed before either
+    delay has fired, sidesteps some observed flakiness: it runs in the browser and
+    timestamps every change to the loader's own DOM, so the recording it produces is
+    immune to how blocked this process gets. This test lets the load run to completion
+    and then reads that recording back once.
     """
     page.add_init_script(_STAGE_RECORDER_SCRIPT)
     sabotage(page, engine, "off", loader_delay)
@@ -344,9 +337,7 @@ def embed_page(page: Page, engine: str, mode: str) -> Iterator[str]:
 </html>
 """
     url = f"{BASE_URL}/{engine}/_embed_test.html"
-    page.route(
-        url, lambda route: route.fulfill(content_type="text/html", body=html)
-    )
+    page.route(url, lambda route: route.fulfill(content_type="text/html", body=html))
     yield url
 
 

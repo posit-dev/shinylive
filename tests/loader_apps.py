@@ -13,7 +13,6 @@ import time
 
 import lzstring
 from playwright.sync_api import Page, Route
-
 from shinylive_app import BASE_URL
 
 _LZ = lzstring.LZString()
