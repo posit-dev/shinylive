@@ -137,3 +137,32 @@ And two that are simply gaps in py-shiny:
   input for 300ms, so an action taken immediately afterwards can reach the server
   first. py-shiny's `set()` absorbs this by inching across the track; `brush()`
   in the tests waits explicitly.
+
+## Watching a loader test by hand
+
+`tests/test_loader_status.py` replaced `scripts/loader-demo.ts`. To watch a
+scenario rather than assert on it, use Playwright's own tooling instead of a
+one-off script:
+
+    # Watch one, slowly, in a real window
+    pytest tests/test_loader_status.py -k "slow_load and chromium-py" \
+        --headed --slowmo 500 --loader-delay 15000
+
+    # Record it
+    pytest tests/test_loader_status.py -k engine_setup --video on
+
+    # Step through afterwards
+    pytest tests/test_loader_status.py -k app_syntax --tracing on
+    playwright show-trace test-results/**/trace.zip
+
+Every test file's own name ends in `.py`, so a bare `-k "... and py"` selects
+both engines' parametrizations, not just Python's -- match the full
+parametrize id (`chromium-py`, not `py`) to get one. `--loader-delay` only
+holds back the *slow-load* test (`sabotage("off", ...)` is the only mode whose
+route handler installs the delay); it is a no-op on the failure-mode tests, so
+don't reach for it there. The status text only appears 3s after the loader
+mounts (`STATUS_DELAY_MS` in `src/Components/LoadingStatus.tsx`), so turn the
+delay up to give yourself time to read the stages. `--tracing on` overrides
+`pytest.ini`'s `--tracing retain-on-failure` and writes a trace even for a
+test that passes. Failures already keep one either way, and build.yml uploads
+`test-results/`.
