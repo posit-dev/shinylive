@@ -11,6 +11,7 @@ import { initPyodide, initShiny, usePyodide } from "../hooks/usePyodide";
 import { useRunOnceOnMount } from "../hooks/useRunOnceOnMount";
 import type { WebRProxyHandle } from "../hooks/useWebR";
 import { initRShiny, initWebR, useWebR } from "../hooks/useWebR";
+import { loadStatusStore } from "../load-status";
 import type { ProxyType } from "../pyodide-proxy";
 import "./App.css";
 import { type EditorMethods } from "./Editor";
@@ -138,26 +139,45 @@ function ensurePyodideProxyHandlePromise({
 }): Promise<PyodideProxyHandle> {
   if (!pyodideProxyHandlePromise) {
     pyodideProxyHandlePromise = (async (): Promise<PyodideProxyHandle> => {
-      let pyodideProxyHandle = await initPyodide({
-        proxyType,
-        stdout: terminalInterface.echo,
-        stderr: terminalInterface.error,
-      });
+      let pyodideProxyHandle: PyodideProxyHandle;
 
-      if (shiny) {
-        pyodideProxyHandle = await initShiny({ pyodideProxyHandle });
+      // Ensure pyodide engine and shiny can be successfully initialized
+      // If not, set the status to "failed" to report the error to the user
+      try {
+        pyodideProxyHandle = await initPyodide({
+          proxyType,
+          stdout: terminalInterface.echo,
+          stderr: terminalInterface.error,
+        });
+
+        if (shiny) {
+          pyodideProxyHandle = await initShiny({ pyodideProxyHandle });
+        }
+      } catch (e) {
+        loadStatusStore("python").set(
+          "failed",
+          e instanceof Error ? e.message : String(e),
+        );
+        throw e;
       }
 
       if (!pyodideProxyHandle.initError) {
-        terminalInterface.clear();
+        try {
+          // This section for printing the terminal console banner is cosmetic only
+          // and logs any errors to the browser console, rather than marking the engine
+          // load as failed "failed".
+          terminalInterface.clear();
 
-        if (showStartBanner) {
-          // When we get here, .ready will always be true.
-          if (pyodideProxyHandle.ready) {
-            await pyodideProxyHandle.pyodide.runPyAsync(
-              `print(pyodide.console.BANNER); print(" ")`,
-            );
+          if (showStartBanner) {
+            // When we get here, .ready will always be true.
+            if (pyodideProxyHandle.ready) {
+              await pyodideProxyHandle.pyodide.runPyAsync(
+                `print(pyodide.console.BANNER); print(" ")`,
+              );
+            }
           }
+        } catch (e) {
+          console.error(e);
         }
       }
 
@@ -174,17 +194,33 @@ function ensureWebRProxyHandlePromise({
 }): Promise<WebRProxyHandle> {
   if (!webRProxyHandlePromise) {
     webRProxyHandlePromise = (async (): Promise<WebRProxyHandle> => {
-      let webRProxyHandle = await initWebR({
-        stdout: terminalInterface.echo,
-        stderr: terminalInterface.error,
-      });
+      let webRProxyHandle: WebRProxyHandle;
 
-      if (shiny) {
-        webRProxyHandle = await initRShiny({ webRProxyHandle });
+      // See the note in ensurePyodideProxyHandlePromise: only engine readiness
+      // belongs in here, because "failed" is terminal.
+      try {
+        webRProxyHandle = await initWebR({
+          stdout: terminalInterface.echo,
+          stderr: terminalInterface.error,
+        });
+
+        if (shiny) {
+          webRProxyHandle = await initRShiny({ webRProxyHandle });
+        }
+      } catch (e) {
+        loadStatusStore("r").set(
+          "failed",
+          e instanceof Error ? e.message : String(e),
+        );
+        throw e;
       }
 
       if (!webRProxyHandle.initError) {
-        terminalInterface.clear();
+        try {
+          terminalInterface.clear();
+        } catch (e) {
+          console.error(e);
+        }
       }
 
       return webRProxyHandle;
@@ -432,6 +468,7 @@ export function App({
             setViewerMethods={setViewerMethods}
             devMode={true}
             setWindowTitle={appOptions.setWindowTitle}
+            engine={appEngine}
           />
         </ResizableGrid>
       </>
@@ -483,6 +520,7 @@ export function App({
             setViewerMethods={setViewerMethods}
             devMode={true}
             setWindowTitle={appOptions.setWindowTitle}
+            engine={appEngine}
           />
         </ResizableGrid>
       </>
@@ -588,6 +626,7 @@ export function App({
           setViewerMethods={setViewerMethods}
           devMode={true}
           setWindowTitle={appOptions.setWindowTitle}
+          engine={appEngine}
         />
       </ResizableGrid>
     );
@@ -611,6 +650,7 @@ export function App({
             setViewerMethods={setViewerMethods}
             devMode={false}
             setWindowTitle={appOptions.setWindowTitle}
+            engine={appEngine}
           />
         </div>
       </>

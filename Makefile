@@ -12,7 +12,7 @@
 	clean-packages clean distclean \
 	examples-check-index type-check \
 	test-deps test-unit test-unit-coverage \
-	test-examples-smoke test-examples-intent test-site webr \
+	test-examples-smoke test-examples-intent test-site test-loader webr \
 	_shinylive
 
 .DEFAULT_GOAL := help
@@ -407,6 +407,19 @@ test-examples-intent: test-deps
 # apps loaded from the URL, and a static export assembled from build/ by
 # tests/export_app.py. There is one engine's worth of work here, so they run in a
 # single job rather than the examples' engine x shard matrix.
+#
+# This and `test-loader` are halves of a pair: every test in tests/ marked `site`
+# is in exactly one of them. The loader tests are split out because they boot an
+# engine per test and cost about as much as all the other site tests together, so
+# they get their own CI job rather than sitting in the one that deploys. Running
+# both covers the whole `site` marker.
 ## Run the site and static export tests (needs `make all`)
 test-site: test-deps
-	$(PYBIN)/pytest tests -m site $(if $(CI),--reruns 1)
+	$(PYBIN)/pytest tests -m "site and not loader" $(if $(CI),--reruns 1)
+
+# The other half of the pair above. Slow by nature: most of these load a real
+# engine, and one deliberately delays the load so the loader has stages to
+# report. See "Watching a loader test by hand" in tests/README.md.
+## Run the loader status and failure-mode tests (needs `make all`)
+test-loader: test-deps
+	$(PYBIN)/pytest tests -m loader $(if $(CI),--reruns 1)

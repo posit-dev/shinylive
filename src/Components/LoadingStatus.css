@@ -1,0 +1,54 @@
+.loading-status {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow: auto;
+  background-color: inherit;
+  /* Not var(--font-face): that webfont can land after this text paints, making
+     it reflow. */
+  font-family:
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    Roboto,
+    Helvetica,
+    Arial,
+    sans-serif;
+}
+
+.loading-status .loading-content {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  /* Full width so the stage text's max-width resolves against the viewer rather
+     than against the much narrower animation. */
+  width: 100%;
+  box-sizing: border-box;
+  padding: 1rem;
+  /* Centres vertically while keeping overflow scrollable in a short container.
+     All four margins must stay `auto`: overriding one anchors the content to
+     that edge instead of centring it. */
+  margin: auto;
+}
+
+/* Out of flow, so appearing cannot grow the centred column and shift the
+   animation upwards. */
+.loading-status .loading-stage {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: max-content;
+  max-width: 90%;
+  margin: 0;
+  text-align: center;
+  font-size: 0.7rem;
+  font-style: italic;
+  font-weight: 400;
+  line-height: 1.4;
+  color: #9a9a9a;
+  animation: loading-animation-fade-in 0.5s;
+}

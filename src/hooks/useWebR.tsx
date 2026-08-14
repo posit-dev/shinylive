@@ -1,5 +1,7 @@
 import React, { useEffect } from "react";
 import { ChannelType } from "webr";
+import { checkEngineAssetReachable } from "../engine-load-guard";
+import { loadStatusStore } from "../load-status";
 import * as utils from "../utils";
 import type { WebRProxy } from "../webr-proxy";
 import { loadWebRProxy } from "../webr-proxy";
@@ -38,24 +40,33 @@ export async function initWebR({
     : ChannelType.PostMessage;
   const baseUrl = utils.currentScriptDir() + "/webr/";
 
+  const status = loadStatusStore("r");
+
+  status.set("engine-download");
+  // Checked because webR's init() hangs rather than failing when the wasm is
+  // missing; see engine-load-guard.ts. This throw propagates to App.tsx, which
+  // records it as "failed".
+  const unreachable = await checkEngineAssetReachable("r", baseUrl);
+  if (unreachable) throw new Error(unreachable);
+
   const webRProxy = await loadWebRProxy(
-    {
-      baseUrl,
-      channelType,
-    },
+    { baseUrl, channelType },
     stdout,
     stderr,
   );
 
   let initError = false;
   try {
+    status.set("engine-start");
     await webRProxy.webR.objs.globalEnv.bind(".base_url", baseUrl);
     await webRProxy.runRAsync(
       `webr::mount("/shinylive/library", "${baseUrl}library.data.gz")`,
     );
     await webRProxy.runRAsync(load_r_pre);
+    status.set("ready");
   } catch (e) {
     initError = true;
+    status.set("failed", e instanceof Error ? e.message : String(e));
     console.error(e);
   }
 
@@ -121,7 +132,11 @@ export function useWebR({
     (async () => {
       const webRProxyHandle = await webRProxyHandlePromise;
       setwebRProxyHandle(webRProxyHandle);
-    })();
+    })().catch((e) => {
+      // Already surfaced to the user via the load status store;
+      // logged to the console so it isn't an unhandled rejection.
+      console.error(e);
+    });
   }, [webRProxyHandlePromise]);
 
   return webRProxyHandle;
@@ -324,31 +339,86 @@ webr::shim_install()
   lapply(rownames(installed.packages()), function(p) { .webr_pkg_cache[[p]] <<- TRUE })
 }
 
+# Returns list(status = "ok"), or list(status = "error", message, class, call).
+#
+# The caller evaluates this with captureConditions = FALSE, so an error raised
+# here would go to the terminal and never reach JavaScript: the viewer would go
+# on to display an app that never started. Returning the failure as a value is
+# what makes a failed startup visible.
+#
+# The status field carries the explicit outcome rather than leaving it to be inferred: a
+# condition can carry an empty message, which on its own would read as success.
+# The class and call fields are what conditionMessage() would drop, and the call
+# is how the dialog can name which call failed, not just what went wrong.
 .start_app <- function(appName, appDir, devMode = FALSE) {
-  # Mount VFS images provided in Shinylive app assets
-  .mount_vfs_images()
+  tryCatch(
+    {
+      # Perform a basic parse of top-level R scripts to highlight any syntax
+      # errors. Runs first so a typo fails before spending time on package installs.
+      for (f in list.files(appDir, pattern = "[.][Rr]$", full.names = TRUE)) {
+        # call. = FALSE because the call this condition would otherwise carry is
+        # this loop's own parse(file = f), whose f names nothing an app author
+        # would recognise.
+        tryCatch(
+          parse(file = f),
+          error = function(cnd) stop(conditionMessage(cnd), call. = FALSE)
+        )
+      }
 
-  # Uniquely install packages with webr
-  unique_pkgs <- unique(renv::dependencies(appDir, quiet = TRUE)$Package)
-  lapply(unique_pkgs, function(pkg_name) {
-    if (isTRUE(.webr_pkg_cache[[pkg_name]])) return()
+      # Mount VFS images provided in Shinylive app assets
+      .mount_vfs_images()
 
-    has_pkg <- nzchar(system.file(package = pkg_name))
-    .webr_pkg_cache[[pkg_name]] <<- has_pkg
+      # Uniquely install packages with webr
+      unique_pkgs <- unique(renv::dependencies(appDir, quiet = TRUE)$Package)
+      lapply(unique_pkgs, function(pkg_name) {
+        if (isTRUE(.webr_pkg_cache[[pkg_name]])) return()
 
-    if (!has_pkg) {
-      webr::install(pkg_name)
+        has_pkg <- nzchar(system.file(package = pkg_name))
+        .webr_pkg_cache[[pkg_name]] <<- has_pkg
+
+        if (!has_pkg) {
+          # Deliberately not fatal: renv::dependencies() also reports packages
+          # that are named but never actually used, and those apps run fine
+          # today. A package that really is needed fails later, when the app
+          # source is evaluated.
+          webr::install(pkg_name)
+        }
+      })
+
+      if (isTRUE(devMode)) {
+        # Enable client-side dev mode features, namely the error console
+        options(shiny.client_devmode = TRUE)
+      }
+
+      app <- .shiny_to_httpuv(appDir)
+      assign(appName, app, envir = .shiny_app_registry)
+      list(status = "ok")
+    },
+    error = function(cnd) {
+      msg <- paste(conditionMessage(cnd), collapse = "\n")
+      if (!nzchar(msg)) msg <- "The app failed to start, with no error message."
+      # conditionCall() is NULL when the condition was signalled without a call,
+      # and deparse() returns one element per line of source. Keep only the first
+      # line, marking that there was more, so that a long but meaningful call is
+      # trimmed rather than dumped.
+      cnd_call <- conditionCall(cnd)
+      call_txt <- ""
+      if (!is.null(cnd_call)) {
+        lines <- deparse(cnd_call)
+        call_txt <- if (length(lines) > 1) paste0(lines[[1]], " ...") else lines[[1]]
+        # shiny wraps every app body in ..stacktraceon..(), so for any top-level
+        # failure the condition's call is the whole app source -- no use to anyone
+        # reading the dialog. Report a call only when it names something the
+        # author would recognize, and fall back to the bare message otherwise.
+        #
+        # A prefix rather than a list of names: the shiny shipped here exports
+        # ..stacktraceon.. and ..stacktraceoff.., and the prefix covers both
+        # without naming internals that may not exist in a given shiny.
+        if (startsWith(call_txt, "..stacktrace")) call_txt <- ""
+      }
+      list(status = "error", message = msg, class = class(cnd), call = call_txt)
     }
-  })
-
-  if (isTRUE(devMode)) {
-    # Enable client-side dev mode features, namely the error console
-    options(shiny.client_devmode = TRUE)
-  }
-
-  app <- .shiny_to_httpuv(appDir)
-  assign(appName, app, envir = .shiny_app_registry)
-  invisible(0)
+  )
 }
 
 invisible(0)

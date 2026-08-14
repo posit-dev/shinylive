@@ -137,3 +137,48 @@ And two that are simply gaps in py-shiny:
   input for 300ms, so an action taken immediately afterwards can reach the server
   first. py-shiny's `set()` absorbs this by inching across the track; `brush()`
   in the tests waits explicitly.
+
+## The loader tests are their own half of `site`
+
+`tests/test_loader_status.py` carries both the `site` and `loader` markers, and
+the two Make targets split on that: `make test-site` runs `-m "site and not
+loader"`, `make test-loader` runs `-m loader`. Between them they cover every
+`site` test, so running one is not running them all.
+
+They are split because nearly every one of them boots a real engine, which makes
+them cost about as much as all the other site tests together. `make test-site`
+runs inside the job that deploys; `make test-loader` gets a job of its own that
+does not gate the deploy.
+
+## Watching a loader test by hand
+
+To watch a playwright scenario rather than just running the tests,
+you can use Playwright's tooling:
+
+```console
+# Watch one, slowly, in a real window
+pytest tests/test_loader_status.py -k "slow_load and chromium-py" \
+    --headed --slowmo 500 --loader-delay 15000
+```
+
+```console
+# Record it
+pytest tests/test_loader_status.py -k engine_setup --video on
+```
+
+```console
+# Step through afterwards
+pytest tests/test_loader_status.py -k app_syntax --tracing on
+playwright show-trace test-results/**/trace.zip
+```
+
+Every test file's own name ends in `.py`, so a bare `-k "... and py"` selects
+both engines' parametrizations. `--loader-delay` only holds back the
+*slow-load* test (`sabotage("off", ...)` is the only mode whose
+route handler installs the delay); it is a no-op on the failure-mode tests.
+The status text only appears 3s after the loader
+mounts (`STATUS_DELAY_MS` in `src/Components/LoadingStatus.tsx`), so turn the
+delay up to give yourself time to read the stages. `--tracing on` overrides
+`pytest.ini`'s `--tracing retain-on-failure` and writes a trace even for a
+test that passes. Failures already keep one either way, and build.yml uploads
+`test-results/`.

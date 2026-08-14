@@ -118,6 +118,9 @@ jobs:
       # the build produced above. They run here rather than in test-apps.yml
       # because that build is what they test, and a failure should stop the
       # deploy that follows.
+      #
+      # `make test-site` is `-m "site and not loader"`; the loader half runs in
+      # test-loader.yml.
       - name: Run site and static export tests
         run: |
           make test-site

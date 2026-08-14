@@ -29,12 +29,22 @@
   align-items: center;
 }
 
+/* Defensive: when the alert outgrows the viewer the auto margins collapse to
+   zero, and these keep the top-left corner reachable rather than clipped. */
 .shinylive-viewer .loading-wrapper.loading-wrapper-error {
-  justify-content: left;
+  justify-content: flex-start;
+  align-items: flex-start;
 }
 
 .shinylive-viewer .loading-wrapper .error-alert {
   text-align: center;
+  /* One fixed column, shared with the log below. Without it the alert is as wide
+     as its widest child, so a long traceback line stretches it past the viewer. */
+  --error-column: 34rem;
+  width: var(--error-column);
+  max-width: 100%;
+  /* All four sides must stay `auto`; overriding one anchors the alert there. */
+  margin: auto;
   font-size: 1.4rem;
   font-family: var(--font-face);
   -webkit-animation: loading-animation-fade-in 0.5s;
@@ -48,10 +58,58 @@
   margin-bottom: 0.5rem;
 }
 
+/* Between the headline and the log, so the fix the user can act on comes before
+   the traceback they probably can't. Fill rather than outline, like every other
+   surface here, tinted from the app's red so it reads as part of the error. */
+.shinylive-viewer .loading-wrapper .error-alert .error-recovery {
+  /* No width of its own, so it lines up with the log below. */
+  margin: 0.9rem 0;
+  padding: 0.75rem 0.9rem;
+  border-radius: var(--panel-roundness, 5px);
+  background-color: #fadfdf;
+  color: #5e3737;
+  font-size: 0.85rem;
+  line-height: 1.55;
+  text-align: left;
+}
+
+.shinylive-viewer .loading-wrapper .error-alert .error-recovery p {
+  margin: 0;
+}
+
+.shinylive-viewer .loading-wrapper .error-alert .error-recovery p + p {
+  margin-top: 0.45rem;
+}
+
+.shinylive-viewer .loading-wrapper .error-alert .error-recovery-lead {
+  color: #912828;
+  font-weight: 600;
+}
+
+/* Set apart so the shortcut is scannable without reading the sentence, one level
+   lighter than the panel it sits on. */
+.shinylive-viewer .loading-wrapper .error-alert .error-recovery kbd {
+  display: inline-block;
+  padding: 0.05rem 0.4rem;
+  border-radius: var(--button-roundness, 5px);
+  background-color: var(--colors-white, white);
+  color: #912828;
+  font-family: var(--font-mono-face, monospace);
+  font-size: 0.9em;
+  white-space: nowrap;
+}
+
 .shinylive-viewer .loading-wrapper .error-alert .error-log {
   font-size: 0.7rem;
   text-align: left;
   padding: 0.3rem;
+}
+
+/* Keep the traceback's own line breaks but wrap long ones; otherwise reading the
+   error means dragging sideways. */
+.shinylive-viewer .loading-wrapper .error-alert .error-log pre {
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
 }
 
 @keyframes loading-animation-fade-in {
