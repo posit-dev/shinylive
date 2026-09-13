@@ -33,7 +33,7 @@ STATIC_APP = {
 app_ui = ui.page_fluid(
     ui.h2("{APP_HEADING}"),
     ui.input_slider("n", "N", 0, 100, 20),
-    ui.output_text_verbatim("txt"),
+    ui.output_text("txt"),
 )
 
 

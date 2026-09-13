@@ -15,8 +15,8 @@
   },
   "shiny": {
     "name": "shiny",
-    "version": "1.7.0",
-    "filename": "shiny-1.7.0-py3-none-any.whl",
+    "version": "1.8.0",
+    "filename": "shiny-1.8.0-py3-none-any.whl",
     "sha256": null,
     "url": null,
     "depends": [
@@ -57,15 +57,15 @@
   },
   "shinyswatch": {
     "name": "shinyswatch",
-    "version": "0.12.0",
-    "filename": "shinyswatch-0.12.0-py3-none-any.whl",
-    "sha256": "3b37fadbbf353e7c234c2d0972ba0ea90784559aca37d1e17a4c977fece036e9",
-    "url": "https://files.pythonhosted.org/packages/37/e6/f72496868dd078403ad3a7b8ad61f292149522877fdccb5007d66346ac0e/shinyswatch-0.12.0-py3-none-any.whl",
+    "version": "0.13.0",
+    "filename": "shinyswatch-0.13.0-py3-none-any.whl",
+    "sha256": "dac07f22e38a1fc8d756b59990db689f5ab0194ad1ea6f9c6acecb925e03bb5e",
+    "url": "https://files.pythonhosted.org/packages/b7/8b/f0200b8f6d8744e6db5cc8fa08a4f4a5e84c22194a1b617e91643797f03c/shinyswatch-0.13.0-py3-none-any.whl",
     "depends": [
       {"name": "typing-extensions", "specs": [[">=", "3.10.0.0"]]},
       {"name": "packaging", "specs": [[">=", "20.9"]]},
       {"name": "htmltools", "specs": [[">=", "0.2.0"]]},
-      {"name": "shiny", "specs": [[">=", "1.7.0"]]}
+      {"name": "shiny", "specs": [[">=", "1.8.0"]]}
     ],
     "imports": [
       "shinyswatch"

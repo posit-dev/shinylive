@@ -321,7 +321,7 @@ def test_brand(page: Page) -> None:
     controller.InputSwitch(app, "switch1").expect_checked(True)
     controller.InputRadioButtons(app, "radio1").expect_selected("Option A")
     plot1.expect_rendered()
-    controller.OutputTextVerbatim(app, "out_text1").expect.to_contain_text(
+    controller.OutputCode(app, "out_text1").expect.to_contain_text(
         "def example_function():"
     )
 
