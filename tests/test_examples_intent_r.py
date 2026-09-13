@@ -44,7 +44,7 @@ def test_002_text(page: Page) -> None:
     # R's selectInput() is selectize-backed, unlike ui.input_select().
     dataset = InputSelectize(app, "dataset")
     obs = controller.InputNumeric(app, "obs")
-    summary = controller.OutputTextVerbatim(app, "summary")
+    summary = controller.OutputCode(app, "summary")
     view = controller.OutputTable(app, "view")
 
     dataset.expect_choices(["rock", "pressure", "cars"])
@@ -76,7 +76,7 @@ def test_003_reactivity(page: Page) -> None:
     # The caption output depends on the text box and nothing else.
     caption.set("Something else")
     caption_out.expect_value("Something else")
-    controller.OutputTextVerbatim(app, "summary").expect.to_contain_text("area")
+    controller.OutputCode(app, "summary").expect.to_contain_text("area")
 
     # The table depends on both the dataset and the row count.
     InputSelectize(app, "dataset").set("pressure")
@@ -166,7 +166,7 @@ def test_006_tabsets(page: Page) -> None:
     OutputPlot(app, "plot").expect_rendered()
 
     NavPanel(app, "Summary").click()
-    controller.OutputTextVerbatim(app, "summary").expect.to_contain_text("Median")
+    controller.OutputCode(app, "summary").expect.to_contain_text("Median")
 
     NavPanel(app, "Table").click()
     table = controller.OutputTable(app, "table")
@@ -182,7 +182,7 @@ def test_007_widgets(page: Page) -> None:
     app = open_example(page, "r", "Widgets")
     dataset = InputSelectize(app, "dataset")
     update = controller.InputActionButton(app, "update")
-    summary = controller.OutputTextVerbatim(app, "summary")
+    summary = controller.OutputCode(app, "summary")
     view = controller.OutputTable(app, "view")
 
     update.expect_label("Update View")
@@ -201,7 +201,7 @@ def test_007_widgets(page: Page) -> None:
 
 def test_008_html(page: Page) -> None:
     app = open_example(page, "r", "Custom HTML UI")
-    summary = controller.OutputTextVerbatim(app, "summary")
+    summary = controller.OutputCode(app, "summary")
     plot = OutputPlot(app, "plot")
 
     # This app's inputs come from a hand-written HTML template and are bound by
