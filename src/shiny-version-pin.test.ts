@@ -210,6 +210,55 @@ describe("applyShinyVersionOption()", () => {
     );
   });
 
+  test("an unversioned shiny line in requirements.txt takes the option", () => {
+    const bare = [text("app.py", ""), text("requirements.txt", "shiny\n")];
+    const { files, note } = applyShinyVersionOption(
+      bare,
+      "python",
+      "1.6",
+      available,
+    );
+    expect(contentOf(files, "requirements.txt")).toBe("shiny==1.6.4\n");
+    expect(note).toBeNull();
+  });
+
+  test("an unversioned shiny entry in DESCRIPTION takes the option", () => {
+    const availableR = { "1.11": "1.11.1", "1.10": "1.10.0" };
+    const bare = [text("app.R", ""), text("DESCRIPTION", "Imports: shiny\n")];
+    const { files, note } = applyShinyVersionOption(
+      bare,
+      "r",
+      "1.11",
+      availableR,
+    );
+    expect(contentOf(files, "DESCRIPTION")).toBe(
+      "Imports: shiny (== 1.11.1)\n",
+    );
+    expect(note).toBeNull();
+  });
+
+  test("a full version is written as given, for the runtime to report", () => {
+    const { files, note } = applyShinyVersionOption(
+      app,
+      "python",
+      "1.6.3",
+      available,
+    );
+    expect(contentOf(files, "requirements.txt")).toBe("shiny==1.6.3\n");
+    expect(note).toBeNull();
+  });
+
+  test("a full version outside the window is written as given", () => {
+    const { files, note } = applyShinyVersionOption(
+      app,
+      "python",
+      "1.2.0",
+      available,
+    );
+    expect(contentOf(files, "requirements.txt")).toBe("shiny==1.2.0\n");
+    expect(note).toBeNull();
+  });
+
   test.each([1.1, 1.6, true, ["1.6"], { v: "1.6" }, null])(
     "rejects %p",
     (value) => {

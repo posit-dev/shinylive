@@ -128,6 +128,13 @@ export function writeShinyPin(
 /**
  * Apply a Quarto `#| shiny-version:` value. The value has to be a YAML string:
  * unquoted, `1.10` parses as the float 1.1, which cannot be told from "1.1".
+ *
+ * A pin with a version clause, or an unreadable shiny line, wins over the
+ * option. An unversioned shiny line counts as no pin and takes the option.
+ * A full x.y.z value is written as given, and the runtime resolver reports it
+ * when it differs from the version that runs. A minor value is written as the
+ * resolved exact version, and the note for a minor outside the bundled window
+ * is returned here.
  */
 export function applyShinyVersionOption(
   files: FileContent[],
@@ -143,7 +150,10 @@ export function applyShinyVersionOption(
       )}.`,
     );
   }
-  if (findShinySpec(files, engine).kind !== "none") {
+  const existing = findShinySpec(files, engine);
+  const unversioned =
+    existing.kind === "clauses" && existing.clauses.length === 0;
+  if (existing.kind !== "none" && !unversioned) {
     return {
       files,
       note: `shiny-version "${value}" ignored: ${PIN_FILE[engine]} already pins shiny`,
@@ -159,7 +169,7 @@ export function applyShinyVersionOption(
   };
   const resolved = resolveShinyVersion([probe], engine, available);
   return {
-    files: writeShinyPin(files, engine, resolved.exact),
-    note: resolved.note,
+    files: writeShinyPin(files, engine, resolved.requested ?? resolved.exact),
+    note: resolved.requested === null ? resolved.note : null,
   };
 }
