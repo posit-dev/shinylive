@@ -35,21 +35,15 @@ that are needed to add to the base Pyodide distribution.
 It proceeds in three steps:
 
 1. It reads shinylive_requirements.json to find the set of packages that we want to add
-   to pyodide. It finds all the dependencies for these packages, excluding packages that
-   are already included in Pyodide, and writes a new shinylive_lock.json file.
+   to pyodide. It resolves one package set per minor version in shiny_versions.json
+   with `uv pip compile` against the Pyodide platform, and writes shinylive_lock.json
+   (format 2).
 
 2. It retrieves the packages listed in shinylive_lock.json, from local directories, and
    from PyPI.
 
 3. It updates Pyodide's pyodide-lock.json file to include the new packages (the ones
    listed in shinylive_lock.json).
-
-Note that the dependency resolution in step 1 is not very smart about versions. The
-version for packages in shinylive_requirements.json can be either "latest" or a specific
-version like "1.2.1", but not constraints like "<1.2.1". Also, if a package depends on a
-constrained version of a package like "<1.2.1", then the constraint will be ignored for
-the dependency when generating the lockfile. It will simply use the most recent version
-for which there is a pure Python wheel.
 
 Usage:
   pyodide_packages.py generate_lockfile
@@ -232,49 +226,218 @@ class BasicPackageInfo(TypedDict):
 
 
 # =============================================================================
-# Functions for generating the lockfile from the requirements file.
+# Resolving one package set per shiny minor version with uv.
 # =============================================================================
-def update_lockfile_local() -> None:
-    """
-    Update the lockfile with local packages only (none from PyPI). This is
-    useful when the local package versions change. It will not recurse into
-    dependencies.
-    """
-    print(
-        f"Loading requirements package list from {os.path.relpath(requirements_file)}:"
-    )
-    with open(requirements_file) as f:
-        required_packages: list[RequirementsPackage] = json.load(f)
+shiny_versions_file = top_dir / "shiny_versions.json"
 
-    required_packages = [x for x in required_packages if x["source"] == "local"]
+# Pyodide 0.27.7 ships Python 3.12 and the pyodide_2024_0 platform tag.
+PYODIDE_PYTHON_VERSION = "3.12"
+UV_PYTHON_PLATFORM = "wasm32-pyodide2024"
 
-    print("  " + " ".join([x["name"] for x in required_packages]))
+# Extra constraints per minor version, for when the newest allowed dependency
+# breaks an older shiny at runtime. Lines in requirements syntax.
+VERSION_CONSTRAINTS: dict[str, list[str]] = {}
 
-    required_package_info = _find_package_info_lockfile(required_packages)
+# Stock Pyodide packages passed to uv as overrides instead of constraints.
+# htmltools requires typing-extensions>=4.12.0 while Pyodide 0.27.7 ships
+# 4.11.0, and shiny requires orjson>=3.10.7 while Pyodide ships 3.10.1. The
+# bundle runs with the stock versions, so the override keeps uv from rejecting
+# them, and any other conflict with a stock version still fails the resolution.
+STOCK_OVERRIDES = {"typing-extensions", "orjson"}
 
-    print(f"Updating {package_lock_file}")
+# Local wheels whose platform tag uv may not accept for the pyodide target.
+# They are added to each lock directly; none of them has dependencies that
+# need resolving.
+LOCAL_NOT_RESOLVED = {"libsass"}
+
+
+def bundled_python_minors() -> dict[str, str]:
+    """minor -> exact, newest first, from shiny_versions.json."""
+    with open(shiny_versions_file) as f:
+        return json.load(f)["python"]
+
+
+def normalize_name(name: str) -> str:
+    return re.sub(r"[-_.]+", "-", name).lower()
+
+
+def uv_requirements(required: list[RequirementsPackage], shiny_exact: str) -> list[str]:
+    """The requirements.in lines for one minor version."""
+    lines: list[str] = []
+    for pkg in required:
+        if pkg["name"] in LOCAL_NOT_RESOLVED:
+            continue
+        if pkg["name"] == "shiny":
+            lines.append(f"shiny=={shiny_exact}")
+        elif pkg["version"] == "latest":
+            lines.append(pkg["name"])
+        else:
+            lines.append(f"{pkg['name']}=={pkg['version']}")
+    return lines
+
+
+def uv_constraints(
+    stock: dict[str, Any], local: dict[str, str], extra: list[str]
+) -> list[str]:
+    """Constraint lines: every stock Pyodide package at its version, every
+    local wheel at its version, then the per-minor extras. Stock entries that
+    are shared libraries or CPython modules are skipped; they are not PyPI
+    distributions, and some (openssl 1.1.1w) have versions uv cannot parse.
+    STOCK_OVERRIDES go to uv_overrides instead."""
+    lines = [
+        f"{info['name']}=={info['version']}"
+        for info in _stock_python_packages(stock)
+        if normalize_name(info["name"]) not in STOCK_OVERRIDES
+    ]
+    lines += [f"{name}=={version}" for name, version in local.items()]
+    return lines + list(extra)
+
+
+def uv_overrides(stock: dict[str, Any]) -> list[str]:
+    """Override lines: the stock packages in STOCK_OVERRIDES at their stock
+    version."""
+    return [
+        f"{info['name']}=={info['version']}"
+        for info in _stock_python_packages(stock)
+        if normalize_name(info["name"]) in STOCK_OVERRIDES
+    ]
+
+
+def _stock_python_packages(stock: dict[str, Any]) -> list[Any]:
+    return [
+        info
+        for info in stock.values()
+        if info.get("package_type", "package") == "package"
+    ]
+
+
+PIN_LINE = re.compile(r"^([A-Za-z0-9][A-Za-z0-9._-]*)==(\S+)$")
+
+
+def parse_compiled(text: str) -> dict[str, str]:
+    """normalized name -> version, from `uv pip compile` output."""
+    pinned: dict[str, str] = {}
+    for raw in text.splitlines():
+        line = raw.split("#")[0].strip()
+        if not line:
+            continue
+        m = PIN_LINE.match(line)
+        if not m:
+            raise ValueError(f"unexpected line in uv output: {raw!r}")
+        pinned[normalize_name(m.group(1))] = m.group(2)
+    return pinned
+
+
+def local_wheel_versions(required: list[RequirementsPackage]) -> dict[str, str]:
+    """name -> version for every wheel in packages/ whose package has source
+    "local" in shinylive_requirements.json. Other wheels in packages/ (such as
+    a shiny wheel built from the submodule) are ignored."""
+    local_names = {normalize_name(x["name"]) for x in required if x["source"] == "local"}
+    versions: dict[str, str] = {}
+    for file in os.listdir(package_source_dir):
+        if file.endswith(".whl"):
+            info: Any = pkginfo.Wheel(os.path.join(package_source_dir, file))  # type: ignore
+            name = normalize_name(info.name)
+            if name in local_names:
+                versions[name] = info.version
+    return versions
+
+
+def resolve_with_uv(
+    required: list[RequirementsPackage],
+    shiny_exact: str,
+    stock: dict[str, Any],
+    extra_constraints: list[str],
+) -> dict[str, str]:
+    """Resolve the package set for one shiny version against the Pyodide
+    platform. Returns normalized name -> version for every package uv pinned,
+    including the stock ones."""
+    import subprocess
+    import tempfile
+
+    local = local_wheel_versions(required)
+    with tempfile.TemporaryDirectory() as tmp:
+        reqs = Path(tmp) / "requirements.in"
+        cons = Path(tmp) / "constraints.txt"
+        overrides = Path(tmp) / "overrides.txt"
+        reqs.write_text("\n".join(uv_requirements(required, shiny_exact)) + "\n")
+        cons.write_text(
+            "\n".join(uv_constraints(stock, local, extra_constraints)) + "\n"
+        )
+        overrides.write_text("\n".join(uv_overrides(stock)) + "\n")
+        cmd = [
+            sys.executable, "-m", "uv", "pip", "compile", str(reqs),
+            "--constraints", str(cons),
+            "--overrides", str(overrides),
+            "--find-links", str(package_source_dir),
+            "--find-links", str(pyodide_dir),
+            "--python-platform", UV_PYTHON_PLATFORM,
+            "--python-version", PYODIDE_PYTHON_VERSION,
+            "--only-binary", ":all:",
+            "--no-header", "--no-annotate", "--quiet",
+        ]  # fmt: skip
+        print("  " + " ".join(cmd[1:]))
+        result = subprocess.run(cmd, capture_output=True, text=True)
+        if result.returncode != 0:
+            raise Exception(
+                f"uv pip compile failed for shiny {shiny_exact}:\n{result.stderr}"
+            )
+        return parse_compiled(result.stdout)
+
+
+def locks_from_json(data: Any) -> dict[str, dict[str, LockfilePackageInfo]]:
+    if not isinstance(data, dict) or data.get("format") != 2 or "locks" not in data:
+        raise ValueError(
+            f"{package_lock_file.name} is not in format 2 (one package set per minor "
+            "version). Run `make update_packages_lock` to regenerate it."
+        )
+    return data["locks"]
+
+
+def load_lock() -> dict[str, dict[str, LockfilePackageInfo]]:
     with open(package_lock_file) as f:
-        lockfile_info: dict[str, LockfilePackageInfo] = json.load(f)
+        return locks_from_json(json.load(f))
 
-    lockfile_info.update(required_package_info)
 
-    # If any dependencies in the lockfile_info are not in the union of {lockfile_info,
-    # orig_pyodide_lock()["packages"]}, then we need to add them to the lockfile_info.
-    # This can happen when a local package adds a new dependency.
-    print("Searching for new dependencies")
-    # basic_package_info is the union of lockfile_info and original pyodide packages.
-    basic_package_info = _to_basic_package_info(lockfile_info)
-    basic_package_info.update(_to_basic_package_info(orig_pyodide_lock()["packages"]))
-    _recurse_dependencies_lockfile(lockfile_info, basic_package_info)
-
+def write_lock(locks: dict[str, dict[str, LockfilePackageInfo]]) -> None:
     print(f"Writing {package_lock_file}")
     with open(package_lock_file, "w") as f:
         json.dump(
-            _mark_no_indent(lockfile_info, _is_lockfile_dependency),
+            {"format": 2, "locks": _mark_no_indent(locks, _is_lockfile_dependency)},
             f,
             indent=2,
             cls=NoIndentEncoder,
         )
+        f.write("\n")
+
+
+# =============================================================================
+# Functions for generating the lockfile from the requirements file.
+# =============================================================================
+def _lock_entries_for(
+    pinned: dict[str, str], required: list[RequirementsPackage], stock: dict[str, Any]
+) -> dict[str, LockfilePackageInfo]:
+    """Lock entries for every pinned package that Pyodide does not already
+    ship. Local wheels are read from packages/, the rest from PyPI at the
+    pinned version."""
+    stock_names = {normalize_name(name) for name in stock}
+    local = local_wheel_versions(required)
+    entries: dict[str, LockfilePackageInfo] = {}
+    for name, version in pinned.items():
+        if name in stock_names:
+            continue
+        if name in local:
+            info = _find_package_info_lockfile_one(
+                {"name": name, "source": "local", "version": "latest"}
+            )
+        else:
+            info = _get_pypi_package_info(name, version)
+        entries[info["name"]] = info
+    for pkg in required:
+        if pkg["name"] in LOCAL_NOT_RESOLVED:
+            info = _find_package_info_lockfile_one(pkg)
+            entries[info["name"]] = info
+    return entries
 
 
 def generate_lockfile() -> None:
@@ -283,23 +446,34 @@ def generate_lockfile() -> None:
     )
     with open(requirements_file) as f:
         required_packages: list[RequirementsPackage] = json.load(f)
-
     print("  " + " ".join([x["name"] for x in required_packages]))
 
-    print("Finding dependencies...")
-    required_package_info = _find_package_info_lockfile(required_packages)
-    _recurse_dependencies_lockfile(required_package_info)
-    print("All required packages and dependencies:")
-    print("  " + " ".join(required_package_info.keys()))
-
-    print(f"Writing {package_lock_file}")
-    with open(package_lock_file, "w") as f:
-        json.dump(
-            _mark_no_indent(required_package_info, _is_lockfile_dependency),
-            f,
-            indent=2,
-            cls=NoIndentEncoder,
+    stock = orig_pyodide_lock()["packages"]
+    locks: dict[str, dict[str, LockfilePackageInfo]] = {}
+    for minor, exact in bundled_python_minors().items():
+        print(f"Resolving shiny {exact} (minor {minor}) with uv...")
+        pinned = resolve_with_uv(
+            required_packages, exact, stock, VERSION_CONSTRAINTS.get(minor, [])
         )
+        locks[minor] = _lock_entries_for(pinned, required_packages, stock)
+        print("  " + " ".join(sorted(locks[minor])))
+    write_lock(locks)
+
+
+def update_lockfile_local() -> None:
+    """Refresh the entries for local wheels in every minor version's lock.
+    Dependencies are not re-resolved; run generate_lockfile for that."""
+    with open(requirements_file) as f:
+        required_packages: list[RequirementsPackage] = json.load(f)
+    local_packages = [x for x in required_packages if x["source"] == "local"]
+    print("Updating local packages: " + " ".join(x["name"] for x in local_packages))
+
+    locks = load_lock()
+    for entries in locks.values():
+        for pkg in local_packages:
+            info = _find_package_info_lockfile_one(pkg)
+            entries[info["name"]] = info
+    write_lock(locks)
 
 
 def _recurse_dependencies_lockfile(

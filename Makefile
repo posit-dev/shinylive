@@ -365,8 +365,9 @@ update_shiny_versions:
 	python3 scripts/update_shiny_versions.py
 
 ## Run the stdlib unit tests for the build scripts
-test-scripts:
-	python3 -m unittest discover -s scripts -p 'test_*.py' -t .
+test-scripts: $(PYBIN)
+	$(PYBIN)/pip install -r requirements-dev.txt
+	$(PYBIN)/python -m unittest discover -s scripts -p 'test_*.py' -t .
 
 ## Type-check everything, including the unit tests (swc does not check types)
 type-check: node_modules
