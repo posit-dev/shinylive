@@ -450,10 +450,25 @@ export function App({
     [appEngine, loadShiny],
   );
 
+  // The restart in progress, if any. It settles once the new viewer is ready
+  // and has run the files that caused the restart. Every run waits for it
+  // before it reads the engine version or the viewer, so runs happen one at a
+  // time and a restart never starts while another is still waiting for its
+  // viewer.
+  const restartInFlightRef = React.useRef<Promise<unknown> | null>(null);
+
   // Every run goes through here: the files decide the version, and a change
   // of minor version restarts the engine first.
   const runAppWithVersion = React.useCallback(
     async (appCode: string | FileContent[]): Promise<void> => {
+      // A caller's stopApp during a restart finds no viewer to stop, so a run
+      // that waited stops the restart's app itself before running.
+      let waited = false;
+      while (restartInFlightRef.current) {
+        waited = true;
+        await restartInFlightRef.current;
+      }
+
       const files: FileContent[] =
         typeof appCode === "string"
           ? [
@@ -475,7 +490,10 @@ export function App({
         resolved.minor === engineStartRef.current.shinyMinor ||
         appInstances[appEngine] > 1
       ) {
-        if (current.ready) await current.runApp(files);
+        if (current.ready) {
+          if (waited) await current.stopApp();
+          await current.runApp(files);
+        }
         return;
       }
 
@@ -488,8 +506,19 @@ export function App({
       }
 
       setStartupResolution(resolved);
-      const ready = await restartEngine(resolved.minor);
-      await ready.runApp(files);
+      const restartAndRun = (async () => {
+        const ready = await restartEngine(resolved.minor);
+        await ready.runApp(files);
+      })();
+      const inFlight = restartAndRun
+        .catch(() => null)
+        .finally(() => {
+          if (restartInFlightRef.current === inFlight) {
+            restartInFlightRef.current = null;
+          }
+        });
+      restartInFlightRef.current = inFlight;
+      await restartAndRun;
     },
     [appEngine, restartEngine],
   );
