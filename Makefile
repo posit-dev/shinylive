@@ -24,6 +24,14 @@ PYODIDE_VERSION = 0.27.7
 PYODIDE_DIST_FILENAME = pyodide-$(PYODIDE_VERSION).tar.bz2
 DOWNLOAD_DIR = ./downloads
 R_SHINY_VERSION = 1.13.0.8000
+# Where the per-minor R library images are published, as
+# $(R_SHINY_IMAGE_BASE_URL)/v<exact>/library.data.gz and library.js.metadata.
+# Empty until the images exist (see the spec's open items): with it empty the
+# build downloads only the single R_SHINY_VERSION image, and the runtime falls
+# back to it with a warning for any other pinned version.
+R_SHINY_IMAGE_BASE_URL ?=
+R_SHINY_MINORS = $(shell python3 -c "import json; print(' '.join(json.load(open('shiny_versions.json'))['r']))")
+R_SHINY_NEWEST_MINOR = $(firstword $(R_SHINY_MINORS))
 BUILD_DIR = ./build
 PACKAGE_DIR = ./packages
 DIST_DIR = ./dist
@@ -159,8 +167,20 @@ $(BUILD_DIR)/shinylive/webr: webr
 webr:
 	mkdir -p $(BUILD_DIR)/shinylive/webr
 	cp -r node_modules/webr/dist/. $(BUILD_DIR)/shinylive/webr
+ifeq ($(R_SHINY_IMAGE_BASE_URL),)
 	curl --fail -L https://github.com/r-wasm/shiny/releases/download/v$(R_SHINY_VERSION)/library.data.gz -o $(BUILD_DIR)/shinylive/webr/library.data.gz
 	curl --fail -L https://github.com/r-wasm/shiny/releases/download/v$(R_SHINY_VERSION)/library.js.metadata -o $(BUILD_DIR)/shinylive/webr/library.js.metadata
+else
+	for minor in $(R_SHINY_MINORS); do \
+	  exact=$$(python3 -c "import json; print(json.load(open('shiny_versions.json'))['r']['$$minor'])"); \
+	  dir=$(BUILD_DIR)/shinylive/webr/shiny-$$minor; \
+	  mkdir -p $$dir; \
+	  curl --fail -L $(R_SHINY_IMAGE_BASE_URL)/v$$exact/library.data.gz -o $$dir/library.data.gz || exit 1; \
+	  curl --fail -L $(R_SHINY_IMAGE_BASE_URL)/v$$exact/library.js.metadata -o $$dir/library.js.metadata || exit 1; \
+	done
+	cp $(BUILD_DIR)/shinylive/webr/shiny-$(R_SHINY_NEWEST_MINOR)/library.data.gz $(BUILD_DIR)/shinylive/webr/library.data.gz
+	cp $(BUILD_DIR)/shinylive/webr/shiny-$(R_SHINY_NEWEST_MINOR)/library.js.metadata $(BUILD_DIR)/shinylive/webr/library.js.metadata
+endif
 # FIXME: GitHub Pages does not cache Partial Content downloads. Here, we reduce
 # the damage by forcing entire file downloads with Emscripten's lazy filesystem.
 # Potentially, we can add a switch to Emscripten to disable the mechanism.
@@ -324,7 +344,7 @@ distclean: clean
 
 ## Check the built locks, wheels and images against shiny_versions.json
 check_shiny_bundle:
-	python3 scripts/check_shiny_bundle.py
+	python3 scripts/check_shiny_bundle.py $(if $(R_SHINY_IMAGE_BASE_URL),--r)
 
 ## Check that every example on disk is listed in examples/index.json
 examples-check-index:

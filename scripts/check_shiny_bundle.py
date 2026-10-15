@@ -5,8 +5,9 @@ Python: every bundled minor has a pyodide-lock-shiny-<minor>.json whose shiny
 entry is the listed exact version, every dependency a lock names is in that
 lock, every wheel a lock names is on disk (apart from the test tarballs the
 build excludes), no lock exists for a minor outside the list, and
-pyodide-lock.json is the newest lock. R (with --r): every bundled minor has
-both image files.
+pyodide-lock.json is the newest lock. R, checked when run with --r: every
+bundled minor has both image files under webr/shiny-<minor>/, and the default
+image files exist in webr/.
 
 Deliberately stdlib-only, like scripts/check_examples_index.mjs.
 """
@@ -73,12 +74,24 @@ def check_python(versions: dict[str, str], pyodide_dir: Path) -> list[str]:
     return problems
 
 
+IMAGE_FILES = ("library.data.gz", "library.js.metadata")
+
+
+def check_r(versions: dict[str, str], webr_dir: Path) -> list[str]:
+    problems: list[str] = []
+    for minor in versions:
+        for file in IMAGE_FILES:
+            if not (webr_dir / f"shiny-{minor}" / file).exists():
+                problems.append(f"webr/shiny-{minor}/{file} is missing")
+    for file in IMAGE_FILES:
+        if not (webr_dir / file).exists():
+            problems.append(f"webr/{file} is missing")
+    return problems
+
 def main(argv: list[str]) -> int:
     versions = _load(ROOT / "shiny_versions.json")
     problems = check_python(versions["python"], BUILD / "pyodide")
     if "--r" in argv:
-        from scripts.check_shiny_bundle_r import check_r  # Task 18 provides this.
-
         problems += check_r(versions["r"], BUILD / "webr")
     for problem in problems:
         print(f"✖ {problem}", file=sys.stderr)

@@ -72,5 +72,44 @@ class CheckPythonTest(unittest.TestCase):
         )
 
 
+from scripts.check_shiny_bundle import check_r
+
+
+class CheckRTest(unittest.TestCase):
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.dir = Path(self.tmp.name)
+        self.versions = {"1.14": "1.14.0", "1.13": "1.13.0"}
+        for minor in self.versions:
+            d = self.dir / f"shiny-{minor}"
+            d.mkdir()
+            (d / "library.data.gz").write_bytes(b"")
+            (d / "library.js.metadata").write_bytes(b"")
+        (self.dir / "library.data.gz").write_bytes(b"")
+        (self.dir / "library.js.metadata").write_bytes(b"")
+
+    def tearDown(self):
+        self.tmp.cleanup()
+
+    def test_a_complete_set_has_no_problems(self):
+        self.assertEqual(check_r(self.versions, self.dir), [])
+
+    def test_a_missing_metadata_file_is_reported(self):
+        (self.dir / "shiny-1.13" / "library.js.metadata").unlink()
+        self.assertEqual(check_r(self.versions, self.dir), ["webr/shiny-1.13/library.js.metadata is missing"])
+
+    def test_a_missing_image_directory_reports_both_files(self):
+        import shutil
+        shutil.rmtree(self.dir / "shiny-1.14")
+        self.assertEqual(
+            check_r(self.versions, self.dir),
+            ["webr/shiny-1.14/library.data.gz is missing", "webr/shiny-1.14/library.js.metadata is missing"],
+        )
+
+    def test_the_default_image_must_exist(self):
+        (self.dir / "library.data.gz").unlink()
+        self.assertEqual(check_r(self.versions, self.dir), ["webr/library.data.gz is missing"])
+
+
 if __name__ == "__main__":
     unittest.main()
