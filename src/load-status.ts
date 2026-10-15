@@ -26,6 +26,7 @@ export type LoadStatusStore = {
   get: () => LoadStatus;
   set: (stage: LoadStage, error?: string) => void;
   subscribe: (onChange: () => void) => () => void;
+  reset: () => void;
 };
 
 // Shared so LoadingStatus and Viewer cannot drift apart.
@@ -59,6 +60,12 @@ function createLoadStatusStore(): LoadStatusStore {
       return () => {
         listeners.delete(onChange);
       };
+    },
+
+    // The only way out of "failed": a restart starts the stages over.
+    reset: () => {
+      status = IDLE;
+      listeners.forEach((listener) => listener());
     },
   };
 }
