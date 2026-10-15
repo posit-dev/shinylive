@@ -26,6 +26,11 @@ export type WebRProxyHandle =
       interrupt: () => void;
     };
 
+// True when the bundle was built with one R library image per bundled shiny
+// minor (scripts/build.ts sets it from R_SHINY_IMAGE_BASE_URL). When false,
+// the bundle has only the default image and R is version-unaware.
+export const R_VERSIONS_AVAILABLE = Boolean(process.env.R_SHINY_IMAGES);
+
 export function webrImageUrl(baseUrl: string, shinyMinor: string): string {
   return `${baseUrl}shiny-${shinyMinor}/library.data.gz`;
 }
@@ -68,12 +73,16 @@ export async function initWebR({
   try {
     status.set("engine-start");
     await webRProxy.webR.objs.globalEnv.bind(".base_url", baseUrl);
-    // The per-version image when this bundle has it, else the default one.
+    // A bundle built with per-version images loads the image for shinyMinor
+    // when it exists, else the default one. A bundle built without them has
+    // only the default image, so it mounts that without a probe.
     // webR's mount() reads the .js.metadata file next to the .data.gz itself.
-    const versioned = webrImageUrl(baseUrl, shinyMinor);
-    const imageUrl = (await assetExists(versioned))
-      ? versioned
-      : `${baseUrl}library.data.gz`;
+    const defaultImage = `${baseUrl}library.data.gz`;
+    let imageUrl = defaultImage;
+    if (R_VERSIONS_AVAILABLE) {
+      const versioned = webrImageUrl(baseUrl, shinyMinor);
+      if (await assetExists(versioned)) imageUrl = versioned;
+    }
     await webRProxy.runRAsync(
       `webr::mount("/shinylive/library", "${imageUrl}")`,
     );

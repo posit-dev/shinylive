@@ -10,7 +10,12 @@ import type { PyodideProxyHandle } from "../hooks/usePyodide";
 import { initPyodide, initShiny, usePyodide } from "../hooks/usePyodide";
 import { useRunOnceOnMount } from "../hooks/useRunOnceOnMount";
 import type { WebRProxyHandle } from "../hooks/useWebR";
-import { initRShiny, initWebR, useWebR } from "../hooks/useWebR";
+import {
+  R_VERSIONS_AVAILABLE,
+  initRShiny,
+  initWebR,
+  useWebR,
+} from "../hooks/useWebR";
 import { loadStatusStore } from "../load-status";
 import type { ProxyType } from "../pyodide-proxy";
 import type { ShinyVersionResolution } from "../shiny-version";
@@ -158,6 +163,26 @@ const engineShinyMinors: Record<AppEngine, string | null> = {
 
 export function engineShinyMinor(engine: AppEngine): string | null {
   return engineShinyMinors[engine];
+}
+
+// Whether apps on this engine choose their shiny version. Python always does.
+// R does only in a bundle built with per-version R images; otherwise every R
+// app runs on the single default image, with no version resolution, report,
+// picker, or engine restart.
+function engineIsVersionAware(engine: AppEngine): boolean {
+  return engine === "python" || R_VERSIONS_AVAILABLE;
+}
+
+// The resolution for an engine that is not version-aware: the newest bundled
+// version, with nothing requested.
+function unawareResolution(engine: AppEngine): ShinyVersionResolution {
+  const newest = newestBundled(bundledShinyVersions(engine));
+  return {
+    minor: newest.minor,
+    exact: newest.exact,
+    requested: null,
+    note: null,
+  };
 }
 
 function ensurePyodideProxyHandlePromise({
@@ -400,6 +425,7 @@ export function App({
   const reportedVersionFor = React.useRef<string | null>(null);
   const pendingStartupNotes = React.useRef<string[]>(startupNotes);
   React.useEffect(() => {
+    if (!engineIsVersionAware(appEngine)) return;
     if (!proxyHandle.ready) return;
     const actual = proxyHandle.shinyVersion;
     if (reportedVersionFor.current === actual) return;
@@ -420,7 +446,7 @@ export function App({
         terminalInterface.echo(line);
       }
     }
-  }, [proxyHandle, startupResolution, appMode]);
+  }, [proxyHandle, startupResolution, appMode, appEngine]);
 
   const [editorMethods, setEditorMethods] = React.useState<EditorMethods>({
     getActiveFileContents: null,
@@ -502,12 +528,21 @@ export function App({
               },
             ]
           : appCode;
+      const current = viewerMethodsRef.current;
+
+      if (!engineIsVersionAware(appEngine)) {
+        if (current.ready) {
+          if (waited) await current.stopApp();
+          await current.runApp(files);
+        }
+        return;
+      }
+
       const resolved = resolveShinyVersion(
         files,
         appEngine,
         bundledShinyVersions(appEngine),
       );
-      const current = viewerMethodsRef.current;
 
       if (
         resolved.minor === engineStartRef.current.shinyMinor ||
@@ -618,6 +653,7 @@ export function App({
 
   const shinyVersionPicker: ShinyVersionPicker | null = React.useMemo(() => {
     if (!appOptions.showVersionPicker) return null;
+    if (!engineIsVersionAware(appEngine)) return null;
     const available = bundledShinyVersions(appEngine);
     const newest = newestBundled(available).exact;
     const options = Object.values(available)
@@ -1129,23 +1165,27 @@ export function runApp(
       // FileContent[]. Ensure that they're all FileContent.
       startFiles = startFiles.map(FCorFCJSONtoFC);
 
-      // The shiny-version option writes a pin when the app has none, so it runs
-      // before the resolver reads the pin.
-      const applied = applyShinyVersionOption(
-        startFiles,
-        appEngine,
-        opts["shiny-version"],
-        bundledShinyVersions(appEngine),
-      );
-      startFiles = applied.files;
-      const startupNotes = applied.note ? [applied.note] : [];
-
       // Which bundled shiny this app needs, decided before the engine starts.
-      const shinyVersion = resolveShinyVersion(
-        startFiles,
-        appEngine,
-        bundledShinyVersions(appEngine),
-      );
+      // An engine that is not version-aware runs its newest bundled version.
+      let shinyVersion = unawareResolution(appEngine);
+      let startupNotes: string[] = [];
+      if (engineIsVersionAware(appEngine)) {
+        // The shiny-version option writes a pin when the app has none, so it
+        // runs before the resolver reads the pin.
+        const applied = applyShinyVersionOption(
+          startFiles,
+          appEngine,
+          opts["shiny-version"],
+          bundledShinyVersions(appEngine),
+        );
+        startFiles = applied.files;
+        startupNotes = applied.note ? [applied.note] : [];
+        shinyVersion = resolveShinyVersion(
+          startFiles,
+          appEngine,
+          bundledShinyVersions(appEngine),
+        );
+      }
 
       const { ...appOpts } = opts;
       delete appOpts.allowCodeUrl;

@@ -26,10 +26,13 @@ DOWNLOAD_DIR = ./downloads
 R_SHINY_VERSION = 1.13.0.8000
 # Where the per-minor R library images are published, as
 # $(R_SHINY_IMAGE_BASE_URL)/v<exact>/library.data.gz and library.js.metadata.
-# Empty until the images exist (see the spec's open items): with it empty the
-# build downloads only the single R_SHINY_VERSION image, and the runtime falls
-# back to it with a warning for any other pinned version.
+# Empty by default: the build then downloads only the single R_SHINY_VERSION
+# image, and the R engine is version-unaware (every R app runs on that image,
+# with no version probe, report, or picker). Set it to build one image per
+# bundled R shiny minor and enable the R version path. scripts/build.ts reads
+# it from the environment, so it is exported.
 R_SHINY_IMAGE_BASE_URL ?=
+export R_SHINY_IMAGE_BASE_URL
 R_SHINY_MINORS = $(shell python3 -c "import json; print(' '.join(json.load(open('shiny_versions.json'))['r']))")
 R_SHINY_NEWEST_MINOR = $(firstword $(R_SHINY_MINORS))
 BUILD_DIR = ./build

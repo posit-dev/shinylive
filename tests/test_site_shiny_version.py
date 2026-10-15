@@ -337,12 +337,20 @@ def r_image_is_bundled(minor: str) -> bool:
         return False
 
 
-@pytest.mark.parametrize("minor", list(R_MINORS))
-def test_each_bundled_r_version_runs(page: Page, minor: str) -> None:
+def skip_without_r_image(minor: str) -> None:
+    """Skip a test of the R version path when the build has no per-minor images.
+
+    Such a build is version-unaware for R: no probe, no report, no restart.
+    """
     if not r_image_is_bundled(minor):
         pytest.skip(
             f"no webr/shiny-{minor} image in this build (R_SHINY_IMAGE_BASE_URL unset)"
         )
+
+
+@pytest.mark.parametrize("minor", list(R_MINORS))
+def test_each_bundled_r_version_runs(page: Page, minor: str) -> None:
+    skip_without_r_image(minor)
     exact = R_MINORS[minor]
     page.goto(app_url_for_files("r", r_files(exact)))
     expect_running_version(page, exact)
@@ -352,6 +360,7 @@ def test_each_bundled_r_version_runs(page: Page, minor: str) -> None:
 @pytest.mark.allow_page_errors
 def test_a_missing_r_image_falls_back_to_the_default_with_a_warning(page: Page) -> None:
     oldest_minor, oldest_exact = list(R_MINORS.items())[-1]
+    skip_without_r_image(oldest_minor)
     errors = collect_console_errors(page)
     # The runtime probes the per-version image with a HEAD request; a 404 is
     # what a build without that image looks like.
@@ -367,16 +376,25 @@ def test_a_missing_r_image_falls_back_to_the_default_with_a_warning(page: Page) 
     expect_only_the_image_probe_failed(errors, oldest_minor)
 
 
-@pytest.mark.allow_page_errors
 def test_an_r_pin_outside_the_window_warns(page: Page) -> None:
-    oldest_minor = list(R_MINORS)[-1]
-    errors = collect_console_errors(page)
+    oldest_minor, oldest_exact = list(R_MINORS.items())[-1]
+    skip_without_r_image(oldest_minor)
     page.goto(app_url_for_files("r", r_files("0.1.0")))
-    wait_for_app_rendered(page)
+    expect_running_version(page, oldest_exact)
     assert "shiny 0.1.0 is outside the bundled versions" in terminal_text(page)
-    # The pin resolves to the oldest minor, whose image is probed. A build
-    # without per-minor images answers that probe with a 404.
-    if not r_image_is_bundled(oldest_minor):
-        expect_only_the_image_probe_failed(errors, oldest_minor)
-    else:
-        assert errors == []
+
+
+def test_a_pinned_r_app_in_a_build_without_r_images_ignores_the_pin(
+    page: Page,
+) -> None:
+    """A build without per-minor R images runs every R app on the default image,
+    with no probe, no version report, and no console error."""
+    newest_minor = next(iter(R_MINORS))
+    if r_image_is_bundled(newest_minor):
+        pytest.skip("this build has per-minor R images (R_SHINY_IMAGE_BASE_URL set)")
+    # conftest's fail_on_page_errors fails the test on any console error, which
+    # includes a 404 from an image probe.
+    page.goto(app_url_for_files("r", r_files(NEWEST_R)))
+    wait_for_app_rendered(page)
+    expect(page.frame_locator(APP_FRAME).locator("#version")).not_to_be_empty()
+    assert "requested shiny" not in terminal_text(page)

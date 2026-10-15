@@ -178,6 +178,8 @@ make update_packages_lock
 
 `shiny_versions.json` lists the bundled shiny versions for each language: the newest patch release of each of the last five minor versions. `make update_shiny_versions` recomputes it from PyPI and CRAN, and the "Update shiny versions" workflow does the same weekly and opens a pull request. The build, the runtime and the version picker all read this file.
 
+The R versions are available only in a bundle built with `R_SHINY_IMAGE_BASE_URL` set (see the `Makefile`): the build then downloads one webR library image per bundled R shiny minor version. With it empty (the default), the bundle has a single R library image, and every R app runs on it with no version picker.
+
 
 ## File overview
 
