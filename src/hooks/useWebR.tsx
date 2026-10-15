@@ -2,6 +2,7 @@ import React, { useEffect } from "react";
 import { ChannelType } from "webr";
 import { assetExists, checkEngineAssetReachable } from "../engine-load-guard";
 import { loadStatusStore } from "../load-status";
+import { bundledShinyVersions, newestBundled } from "../shiny-version";
 import * as utils from "../utils";
 import type { WebRProxy } from "../webr-proxy";
 import { loadWebRProxy } from "../webr-proxy";
@@ -74,12 +75,17 @@ export async function initWebR({
     status.set("engine-start");
     await webRProxy.webR.objs.globalEnv.bind(".base_url", baseUrl);
     // A bundle built with per-version images loads the image for shinyMinor
-    // when it exists, else the default one. A bundle built without them has
-    // only the default image, so it mounts that without a probe.
+    // when it exists, else the default one. The default image is a copy of
+    // the newest version's image, so the newest version mounts it without a
+    // probe. A bundle built without per-version images has only the default
+    // image, so it mounts that without a probe.
     // webR's mount() reads the .js.metadata file next to the .data.gz itself.
     const defaultImage = `${baseUrl}library.data.gz`;
     let imageUrl = defaultImage;
-    if (R_VERSIONS_AVAILABLE) {
+    if (
+      R_VERSIONS_AVAILABLE &&
+      shinyMinor !== newestBundled(bundledShinyVersions("r")).minor
+    ) {
       const versioned = webrImageUrl(baseUrl, shinyMinor);
       if (await assetExists(versioned)) imageUrl = versioned;
     }

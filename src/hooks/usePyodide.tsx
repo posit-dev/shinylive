@@ -3,6 +3,7 @@ import { assetExists, checkEngineAssetReachable } from "../engine-load-guard";
 import { loadStatusStore } from "../load-status";
 import type { ProxyType, PyodideProxy } from "../pyodide-proxy";
 import { loadPyodideProxy } from "../pyodide-proxy";
+import { bundledShinyVersions, newestBundled } from "../shiny-version";
 import * as utils from "../utils";
 
 export type PyodideProxyHandle =
@@ -60,11 +61,14 @@ export async function initPyodide({
   // The per-version lock, if this bundle has it. An export includes one lock
   // under the default name, so the fallback is the normal path there; the
   // version check in App.tsx reports if the fallback is not the version the
-  // app asked for.
-  const versionedLock = pyodideLockUrl(baseUrl, shinyMinor);
-  const lockFileURL = (await assetExists(versionedLock))
-    ? versionedLock
-    : baseUrl + "pyodide-lock.json";
+  // app asked for. pyodide-lock.json is a copy of the newest version's lock,
+  // so the newest version loads it without a probe.
+  const defaultLock = baseUrl + "pyodide-lock.json";
+  let lockFileURL = defaultLock;
+  if (shinyMinor !== newestBundled(bundledShinyVersions("python")).minor) {
+    const versionedLock = pyodideLockUrl(baseUrl, shinyMinor);
+    if (await assetExists(versionedLock)) lockFileURL = versionedLock;
+  }
 
   const pyodideProxy = await loadPyodideProxy(
     { type: proxyType, indexURL: baseUrl, lockFileURL },
