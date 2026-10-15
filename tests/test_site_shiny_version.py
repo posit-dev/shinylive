@@ -258,6 +258,32 @@ def test_a_failed_restart_can_be_retried_from_the_picker(page: Page) -> None:
     ), errors
 
 
+def test_a_rerun_with_a_changed_pin_on_the_same_version_reports_again(
+    page: Page,
+) -> None:
+    page.goto(app_url_for_files("py", py_files(f"shiny=={OLDEST_PY}")))
+    expect_running_version(page, OLDEST_PY)
+    assert "outside the bundled versions" not in terminal_text(page)
+
+    # 0.1.0 resolves to the oldest bundled version, which the engine already
+    # runs, so the re-run does not restart the engine.
+    page.locator(REQUIREMENTS_TAB).click()
+    editor = page.locator(".shinylive-editor .cm-content")
+    editor.click()
+    page.keyboard.press(f"{MOD_KEY}+a")
+    page.keyboard.type("shiny==0.1.0")
+    page.locator(RERUN_BUTTON).click()
+
+    expect_running_version(page, OLDEST_PY)
+    for _ in range(60):
+        if "shiny 0.1.0 is outside the bundled versions" in terminal_text(page):
+            break
+        page.wait_for_timeout(500)
+    text = terminal_text(page)
+    assert "shiny 0.1.0 is outside the bundled versions" in text, text
+    assert f"requested shiny 0.1.0, running {OLDEST_PY}" in text, text
+
+
 def test_the_picker_does_not_appear_without_the_option(page: Page) -> None:
     # The app view renders the same header bar, but never sets showVersionPicker.
     page.goto(app_url_for_files("py", py_files(None), view="app"))

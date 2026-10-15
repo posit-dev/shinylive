@@ -412,13 +412,16 @@ export function App({
     appEngine === "python" ? pyodideHandle : webRHandle;
 
   // The resolution the version report describes: the startup one, then the
-  // one that caused the latest restart.
+  // one from the latest run that restarted the engine or changed the pin.
   const [startupResolution, setStartupResolution] =
     React.useState<ShinyVersionResolution>(shinyVersion);
+  const startupResolutionRef = React.useRef(startupResolution);
+  startupResolutionRef.current = startupResolution;
 
-  // Report the version once, when the engine is up. The resolver's note says
-  // why the pin could not be honored as written; the message compares what
-  // the app asked for with what the engine really loaded. An empty
+  // Report the version once per engine and resolution, when the engine is
+  // up. The resolver's note says why the pin could not be honored as written;
+  // the message compares what the app asked for with what the engine really
+  // loaded. An empty
   // shinyVersion means startup failed before the engine read it, so only the
   // note prints. The startup notes (from the shiny-version option) print
   // before the first report only. Layouts with a terminal echo the lines
@@ -560,6 +563,16 @@ export function App({
         resolved.minor === engineStartRef.current.shinyMinor ||
         appInstances[appEngine] > 1
       ) {
+        // The engine keeps its version, but a changed pin can change what the
+        // report says, so the report prints again for the new resolution.
+        const reported = startupResolutionRef.current;
+        if (
+          resolved.note !== reported.note ||
+          resolved.requested !== reported.requested
+        ) {
+          reportedVersionFor.current = null;
+          setStartupResolution(resolved);
+        }
         if (current.ready) {
           if (waited) await current.stopApp();
           await current.runApp(files);
