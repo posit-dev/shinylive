@@ -18,6 +18,9 @@ export type WebRProxyHandle =
       webRProxy: WebRProxy;
       shinyReady: boolean;
       initError: boolean;
+      // The shiny version the engine really loaded. Empty until the R side
+      // reads it from the installed package.
+      shinyVersion: string;
       // Run code through webR REPL. Returns a promise to the next prompt.
       runCode: (command: string) => Promise<string>;
       tabComplete: (command: string) => Promise<string[]>;
@@ -88,6 +91,7 @@ export async function initWebR({
     webRProxy,
     shinyReady: false,
     initError: initError,
+    shinyVersion: "",
     runCode,
     tabComplete,
     interrupt,

@@ -13,7 +13,12 @@ import type { WebRProxyHandle } from "../hooks/useWebR";
 import { initRShiny, initWebR, useWebR } from "../hooks/useWebR";
 import { loadStatusStore } from "../load-status";
 import type { ProxyType } from "../pyodide-proxy";
-import { bundledShinyVersions, newestBundled } from "../shiny-version";
+import type { ShinyVersionResolution } from "../shiny-version";
+import {
+  bundledShinyVersions,
+  resolveShinyVersion,
+  shinyVersionMessage,
+} from "../shiny-version";
 import "./App.css";
 import { type EditorMethods } from "./Editor";
 import { ExampleSelector } from "./ExampleSelector";
@@ -129,6 +134,17 @@ export type ProxyHandle = PyodideProxyHandle | WebRProxyHandle;
 let pyodideProxyHandlePromise: Promise<PyodideProxyHandle> | null = null;
 let webRProxyHandlePromise: Promise<WebRProxyHandle> | null = null;
 
+// The minor version each singleton was started with. One engine per page, so
+// a second App on the page runs on this version even if it asked for another.
+const engineShinyMinors: Record<AppEngine, string | null> = {
+  python: null,
+  r: null,
+};
+
+export function engineShinyMinor(engine: AppEngine): string | null {
+  return engineShinyMinors[engine];
+}
+
 function ensurePyodideProxyHandlePromise({
   proxyType,
   shiny,
@@ -141,6 +157,7 @@ function ensurePyodideProxyHandlePromise({
   shinyMinor: string;
 }): Promise<PyodideProxyHandle> {
   if (!pyodideProxyHandlePromise) {
+    engineShinyMinors.python = shinyMinor;
     pyodideProxyHandlePromise = (async (): Promise<PyodideProxyHandle> => {
       let pyodideProxyHandle: PyodideProxyHandle;
 
@@ -193,10 +210,13 @@ function ensurePyodideProxyHandlePromise({
 
 function ensureWebRProxyHandlePromise({
   shiny,
+  shinyMinor,
 }: {
   shiny: boolean;
+  shinyMinor: string;
 }): Promise<WebRProxyHandle> {
   if (!webRProxyHandlePromise) {
+    engineShinyMinors.r = shinyMinor;
     webRProxyHandlePromise = (async (): Promise<WebRProxyHandle> => {
       let webRProxyHandle: WebRProxyHandle;
 
@@ -238,11 +258,13 @@ export function App({
   startFiles = [],
   appOptions = {},
   appEngine,
+  shinyVersion,
 }: {
   appMode: AppMode;
   startFiles: FileContent[];
   appOptions?: AppOptions;
   appEngine: AppEngine;
+  shinyVersion: ShinyVersionResolution;
 }) {
   if (startFiles.length === 0) {
     if (appMode.includes("viewer")) {
@@ -280,7 +302,7 @@ export function App({
         proxyType: pyodideProxyType,
         shiny: loadShiny,
         showStartBanner: false,
-        shinyMinor: newestBundled(bundledShinyVersions("python")).minor,
+        shinyMinor: shinyVersion.minor,
       });
       pyodideProxyHandlePromise = promise;
       useWasmEngine = () => usePyodide({ pyodideProxyHandlePromise: promise });
@@ -289,6 +311,7 @@ export function App({
     case "r": {
       const promise = (webRProxyHandlePromise = ensureWebRProxyHandlePromise({
         shiny: loadShiny,
+        shinyMinor: shinyVersion.minor,
       }));
       useWasmEngine = () => useWebR({ webRProxyHandlePromise: promise });
       break;
@@ -298,6 +321,32 @@ export function App({
   }
 
   const proxyHandle = useWasmEngine();
+
+  // Report the version once, when the engine is up. The resolver's note says
+  // why the pin could not be honored as written; the message compares what
+  // the app asked for with what the engine really loaded. An empty
+  // shinyVersion means the engine does not report one yet (webR), so only the
+  // note prints.
+  const reportedVersionFor = React.useRef<string | null>(null);
+  React.useEffect(() => {
+    if (!proxyHandle.ready) return;
+    const actual = proxyHandle.shinyVersion;
+    if (reportedVersionFor.current === actual) return;
+    reportedVersionFor.current = actual;
+
+    const lines = [
+      shinyVersion.note,
+      actual === "" ? null : shinyVersionMessage(shinyVersion, actual),
+    ].filter((l): l is string => l !== null);
+    for (const line of lines) {
+      if (appMode === "viewer") {
+        console.warn(`[shinylive] ${line}`);
+      } else {
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+        terminalInterface.echo(line);
+      }
+    }
+  }, [proxyHandle, shinyVersion, appMode]);
 
   const [editorMethods, setEditorMethods] = React.useState<EditorMethods>({
     getActiveFileContents: null,
@@ -796,6 +845,13 @@ export function runApp(
     // FileContent[]. Ensure that they're all FileContent.
     startFiles = startFiles.map(FCorFCJSONtoFC);
 
+    // Which bundled shiny this app needs, decided before the engine starts.
+    const shinyVersion = resolveShinyVersion(
+      startFiles,
+      appEngine,
+      bundledShinyVersions(appEngine),
+    );
+
     const { ...appOpts } = opts;
     delete appOpts.allowCodeUrl;
     delete appOpts.allowExampleUrl;
@@ -808,6 +864,7 @@ export function runApp(
           startFiles={startFiles}
           appOptions={appOpts}
           appEngine={appEngine}
+          shinyVersion={shinyVersion}
         />
       </React.StrictMode>,
     );
