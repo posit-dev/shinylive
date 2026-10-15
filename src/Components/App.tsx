@@ -16,13 +16,16 @@ import type { ProxyType } from "../pyodide-proxy";
 import type { ShinyVersionResolution } from "../shiny-version";
 import {
   bundledShinyVersions,
+  compareVersions,
+  newestBundled,
   resolveShinyVersion,
   shinyVersionMessage,
 } from "../shiny-version";
+import { writeShinyPin } from "../shiny-version-pin";
 import "./App.css";
 import { type EditorMethods } from "./Editor";
 import { ExampleSelector } from "./ExampleSelector";
-import type { HeaderBarCallbacks } from "./HeaderBar";
+import type { HeaderBarCallbacks, ShinyVersionPicker } from "./HeaderBar";
 import HeaderBar from "./HeaderBar";
 import { OutputCell } from "./OutputCell";
 import { ResizableGrid } from "./ResizableGrid/ResizableGrid";
@@ -33,7 +36,11 @@ import { Viewer } from "./Viewer";
 import type { FileContent, FileContentJson } from "./filecontent";
 import { FCorFCJSONtoFC } from "./filecontent";
 import { fetchGist, gistApiResponseToFileContents } from "./gist";
-import { editorUrlPrefix, fileContentsToUrlString } from "./share";
+import {
+  editorUrlPrefix,
+  fileContentsToUrlString,
+  fileContentsToUrlStringInWebWorker,
+} from "./share";
 import { asCssLengthUnit, minCssLengthUnit } from "./utils";
 
 // Load Editor component dynamically and lazily because it's large and not
@@ -117,6 +124,10 @@ type AppOptions = {
   // When the app is re-run from the Editor, should the URL hash be updated with
   // the encoded version of the app?
   updateUrlHashOnRerun?: boolean;
+
+  // Show the shiny version picker in the header bar. Only the full-page editor
+  // sets this; embedded layouts never get one.
+  showVersionPicker?: boolean;
 
   // Set window title based on the application iframe's title? If this is
   // not false, then the title from the Viewer iframe will be applied to the
@@ -565,6 +576,56 @@ export function App({
   const [headerBarCallbacks, setHeaderBarCallbacks] =
     React.useState<HeaderBarCallbacks>({});
 
+  const onSelectVersion = React.useCallback(
+    async (exact: string) => {
+      const files = editorMethods.getActiveFileContents
+        ? editorMethods.getActiveFileContents()
+        : currentFiles;
+      const pinned = writeShinyPin(files, appEngine, exact);
+      if (appOptions.updateUrlHashOnRerun) {
+        history.replaceState(
+          null,
+          "",
+          "#code=" + (await fileContentsToUrlStringInWebWorker(pinned)),
+        );
+      }
+      // The Editor runs the app when its files change, through
+      // runAppWithVersion.
+      setCurrentFiles(pinned);
+    },
+    [editorMethods, currentFiles, appEngine, appOptions.updateUrlHashOnRerun],
+  );
+
+  const shinyVersionPicker: ShinyVersionPicker | null = React.useMemo(() => {
+    if (!appOptions.showVersionPicker) return null;
+    const available = bundledShinyVersions(appEngine);
+    const newest = newestBundled(available).exact;
+    const options = Object.values(available)
+      .sort((a, b) => compareVersions(b, a))
+      .map((exact) => ({ exact, latest: exact === newest }));
+    // Until the engine reports the version it loaded (always, for webR), show
+    // the bundled version of the minor the engine starts on.
+    const starting = available[engineStart.shinyMinor] ?? newest;
+    return {
+      running:
+        proxyHandle.ready && proxyHandle.shinyVersion !== ""
+          ? proxyHandle.shinyVersion
+          : starting,
+      options,
+      disabled: !proxyHandle.ready,
+      onSelect: (exact) => {
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+        onSelectVersion(exact);
+      },
+    };
+  }, [
+    appOptions.showVersionPicker,
+    appEngine,
+    engineStart.shinyMinor,
+    proxyHandle,
+    onSelectVersion,
+  ]);
+
   React.useEffect(() => {
     if (appMode === "viewer" && editorViewerMethods.ready) {
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
@@ -674,6 +735,7 @@ export function App({
         <HeaderBar
           headerBarCallbacks={headerBarCallbacks}
           appEngine={appEngine}
+          shinyVersionPicker={shinyVersionPicker}
         ></HeaderBar>
         <ResizableGrid
           className="shinylive-container"
@@ -727,6 +789,7 @@ export function App({
         <HeaderBar
           headerBarCallbacks={headerBarCallbacks}
           appEngine={appEngine}
+          shinyVersionPicker={shinyVersionPicker}
         ></HeaderBar>
         <ResizableGrid
           className="shinylive-container"

@@ -17,12 +17,54 @@ export type HeaderBarCallbacks = {
   openEditorWindowFromViewer?: () => void;
 };
 
+export type ShinyVersionPicker = {
+  running: string;
+  options: { exact: string; latest: boolean }[];
+  disabled: boolean;
+  onSelect: (exact: string) => void;
+};
+
+function VersionPicker({ picker }: { picker: ShinyVersionPicker }) {
+  const options = picker.options.some((o) => o.exact === picker.running)
+    ? picker.options
+    : [{ exact: picker.running, latest: false }, ...picker.options];
+  const runningIsLatest = options.some(
+    (o) => o.exact === picker.running && o.latest,
+  );
+  return (
+    <label
+      className="shiny-version-picker"
+      data-balloon-pos="down"
+      aria-label="Pick the shiny version the app runs on"
+    >
+      <span className="picker-label">Shiny</span>
+      <select
+        className="shiny-version-select"
+        aria-label="Shiny version"
+        value={picker.running}
+        disabled={picker.disabled}
+        onChange={(e) => picker.onSelect(e.target.value)}
+      >
+        {options.map((o) => (
+          <option key={o.exact} value={o.exact}>
+            {o.exact}
+            {o.latest ? " (latest)" : ""}
+          </option>
+        ))}
+      </select>
+      {runningIsLatest ? <span className="latest-badge">latest</span> : null}
+    </label>
+  );
+}
+
 export default function HeaderBar({
   headerBarCallbacks = null,
   appEngine,
+  shinyVersionPicker = null,
 }: {
   headerBarCallbacks: HeaderBarCallbacks | null;
   appEngine: AppEngine;
+  shinyVersionPicker?: ShinyVersionPicker | null;
 }) {
   let loadButton = null;
   if (headerBarCallbacks?.loadLocalFiles) {
@@ -137,6 +179,9 @@ export default function HeaderBar({
         </a>
       }
       <div>
+        {shinyVersionPicker ? (
+          <VersionPicker picker={shinyVersionPicker} />
+        ) : null}
         {loadButton}
         {saveButton}
         {downloadButton}

@@ -1,7 +1,7 @@
 .HeaderBar {
   height: 30px;
   padding: 3px 8px;
-  background-color: #007BC2;
+  background-color: #007bc2;
   font-family: var(--font-face);
   font-size: 1.1rem;
   color: var(--colors-white);
@@ -50,4 +50,34 @@
 .HeaderBar .code-run-button:hover {
   color: var(--colors-white);
   fill: var(--colors-white);
+}
+
+.HeaderBar .shiny-version-picker {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35em;
+  margin-right: 0.8rem;
+  font-size: 0.9rem;
+}
+
+.HeaderBar .shiny-version-select {
+  font-size: 0.9rem;
+  padding: 0.1rem 0.3rem;
+  border-radius: 3px;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  background-color: rgba(255, 255, 255, 0.15);
+  color: var(--colors-white);
+}
+
+.HeaderBar .shiny-version-select option {
+  color: #000;
+}
+
+.HeaderBar .latest-badge {
+  font-size: 0.7rem;
+  padding: 0.05rem 0.35rem;
+  border-radius: 8px;
+  background-color: rgba(255, 255, 255, 0.85);
+  color: #007bc2;
+  text-transform: uppercase;
 }
