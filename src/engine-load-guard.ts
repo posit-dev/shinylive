@@ -105,3 +105,18 @@ export async function checkEngineAssetReachable(
 
   return null;
 }
+
+/**
+ * Whether an optional asset is there, by HEAD request. Used for the
+ * per-version lock and image files: an export includes only its own version
+ * under the default name, so a missing per-version file is expected and the
+ * caller falls back rather than failing.
+ */
+export async function assetExists(url: string): Promise<boolean> {
+  try {
+    const response = await fetch(url, { method: "HEAD" });
+    return response.ok;
+  } catch {
+    return false;
+  }
+}

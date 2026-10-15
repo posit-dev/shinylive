@@ -128,6 +128,9 @@ export function useWebR({
   );
 
   useEffect(() => {
+    // A new promise means a restart: drop back to not-ready so the previous
+    // engine's handle is not used while the new one loads.
+    setwebRProxyHandle({ ready: false, shinyReady: false, initError: false });
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     (async () => {
       const webRProxyHandle = await webRProxyHandlePromise;

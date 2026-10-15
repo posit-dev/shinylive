@@ -111,6 +111,9 @@ export interface PyodideProxy {
 
 export interface LoadPyodideConfig {
   indexURL: string;
+  // Default: `${indexURL}/pyodide-lock.json`. The per-version locks live
+  // next to it as pyodide-lock-shiny-<minor>.json.
+  lockFileURL?: string;
   fullStdLib?: boolean;
   stdin?: () => string;
   stdout?: (text: string) => void;

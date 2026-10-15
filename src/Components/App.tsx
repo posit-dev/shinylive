@@ -13,6 +13,7 @@ import type { WebRProxyHandle } from "../hooks/useWebR";
 import { initRShiny, initWebR, useWebR } from "../hooks/useWebR";
 import { loadStatusStore } from "../load-status";
 import type { ProxyType } from "../pyodide-proxy";
+import { bundledShinyVersions, newestBundled } from "../shiny-version";
 import "./App.css";
 import { type EditorMethods } from "./Editor";
 import { ExampleSelector } from "./ExampleSelector";
@@ -132,10 +133,12 @@ function ensurePyodideProxyHandlePromise({
   proxyType,
   shiny,
   showStartBanner,
+  shinyMinor,
 }: {
   proxyType: ProxyType;
   shiny: boolean;
   showStartBanner: boolean;
+  shinyMinor: string;
 }): Promise<PyodideProxyHandle> {
   if (!pyodideProxyHandlePromise) {
     pyodideProxyHandlePromise = (async (): Promise<PyodideProxyHandle> => {
@@ -148,6 +151,7 @@ function ensurePyodideProxyHandlePromise({
           proxyType,
           stdout: terminalInterface.echo,
           stderr: terminalInterface.error,
+          shinyMinor,
         });
 
         if (shiny) {
@@ -276,6 +280,7 @@ export function App({
         proxyType: pyodideProxyType,
         shiny: loadShiny,
         showStartBanner: false,
+        shinyMinor: newestBundled(bundledShinyVersions("python")).minor,
       });
       pyodideProxyHandlePromise = promise;
       useWasmEngine = () => usePyodide({ pyodideProxyHandlePromise: promise });

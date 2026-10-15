@@ -1,4 +1,4 @@
-import { checkEngineAssetReachable } from "./engine-load-guard";
+import { assetExists, checkEngineAssetReachable } from "./engine-load-guard";
 
 // The four-byte wasm preamble: \0asm
 const WASM = new Uint8Array([0x00, 0x61, 0x73, 0x6d]);
@@ -305,4 +305,24 @@ test("a body that throws mid-read does not fail the check", async () => {
   await expect(
     checkEngineAssetReachable("python", "/shinylive/pyodide/"),
   ).resolves.toBeNull();
+});
+
+describe("assetExists()", () => {
+  test("true for a 2xx HEAD response", async () => {
+    stubFetch(() => ({ ok: true, status: 200, body: null }));
+    await expect(assetExists("http://x/lock.json")).resolves.toBe(true);
+    expect(fetchSpy).toHaveBeenCalledWith("http://x/lock.json", {
+      method: "HEAD",
+    });
+  });
+
+  test("false for a 404", async () => {
+    stubFetch(() => ({ ok: false, status: 404, body: null }));
+    await expect(assetExists("http://x/lock.json")).resolves.toBe(false);
+  });
+
+  test("false when fetch rejects", async () => {
+    stubFetch(() => Promise.reject(new TypeError("offline")));
+    await expect(assetExists("http://x/lock.json")).resolves.toBe(false);
+  });
 });

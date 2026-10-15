@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { checkEngineAssetReachable } from "../engine-load-guard";
+import { assetExists, checkEngineAssetReachable } from "../engine-load-guard";
 import { loadStatusStore } from "../load-status";
 import type { ProxyType, PyodideProxy } from "../pyodide-proxy";
 import { loadPyodideProxy } from "../pyodide-proxy";
@@ -17,10 +17,16 @@ export type PyodideProxyHandle =
       pyodide: PyodideProxy;
       shinyReady: boolean;
       initError: boolean;
+      // The shiny version the engine really loaded, from its installed metadata.
+      shinyVersion: string;
       // Run code directly with Pyodide. (Output will print in the terminal.)
       runCode: (command: string) => Promise<void>;
       tabComplete: (command: string) => Promise<string[]>;
     };
+
+export function pyodideLockUrl(baseUrl: string, shinyMinor: string): string {
+  return `${baseUrl}pyodide-lock-shiny-${shinyMinor}.json`;
+}
 
 // =============================================================================
 // initPyodide
@@ -29,10 +35,12 @@ export async function initPyodide({
   proxyType = "webworker",
   stdout,
   stderr,
+  shinyMinor,
 }: {
   proxyType?: ProxyType;
   stdout?: (msg: string) => Promise<void>;
   stderr?: (msg: string) => void;
+  shinyMinor: string;
 }): Promise<PyodideProxyHandle> {
   // Defaults for stdout and stderr if not provided: log to console
   if (!stdout) stdout = async (x: string) => console.log("pyodide echo:" + x);
@@ -49,19 +57,37 @@ export async function initPyodide({
   const unreachable = await checkEngineAssetReachable("python", baseUrl);
   if (unreachable) throw new Error(unreachable);
 
+  // The per-version lock, if this bundle has it. An export includes one lock
+  // under the default name, so the fallback is the normal path there; the
+  // version check in App.tsx reports if the fallback is not the version the
+  // app asked for.
+  const versionedLock = pyodideLockUrl(baseUrl, shinyMinor);
+  const lockFileURL = (await assetExists(versionedLock))
+    ? versionedLock
+    : baseUrl + "pyodide-lock.json";
+
   const pyodideProxy = await loadPyodideProxy(
-    { type: proxyType, indexURL: baseUrl },
+    { type: proxyType, indexURL: baseUrl, lockFileURL },
     stdout,
     stderr,
   );
 
   let initError = false;
+  let shinyVersion = "";
   try {
     // One-time initialization of Python session. This await also loads the base
     // packages, since the worker calls loadPackagesFromImports before running
     // the code, so boot and package loading are reported as a single stage.
     status.set("engine-start");
     await pyodideProxy.runPyAsync(load_python_pre);
+    // The installed distribution's version, which matches shiny.__version__.
+    // Read from metadata so startup does not import shiny: that import takes
+    // about a second and is the app's to pay for, and in editor-terminal mode
+    // nothing else imports shiny at all.
+    shinyVersion = (await pyodideProxy.runPyAsync(
+      'from importlib.metadata import version\nversion("shiny")',
+      { returnResult: "value" },
+    )) as string;
     status.set("ready");
   } catch (e) {
     initError = true;
@@ -93,6 +119,7 @@ export async function initPyodide({
     pyodide: pyodideProxy,
     shinyReady: false,
     initError: initError,
+    shinyVersion,
     runCode,
     tabComplete,
   };
@@ -138,6 +165,13 @@ export function usePyodide({
     });
 
   useEffect(() => {
+    // A new promise means a restart: drop back to not-ready so the previous
+    // engine's handle is not used while the new one loads.
+    setPyodideProxyHandle({
+      ready: false,
+      shinyReady: false,
+      initError: false,
+    });
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     (async () => {
       const pyodideProxyHandle = await pyodideProxyHandlePromise;
