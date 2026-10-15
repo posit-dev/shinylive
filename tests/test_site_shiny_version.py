@@ -9,6 +9,7 @@ The app shows the version the engine really loaded, so every assertion is on
 from __future__ import annotations
 
 import json
+import urllib.request
 from collections.abc import Callable
 from pathlib import Path
 
@@ -17,6 +18,7 @@ from playwright.sync_api import ConsoleMessage, Page, expect
 
 from shinylive_app import (
     APP_FRAME,
+    BASE_URL,
     MOD_KEY,
     app_url_for_files,
     is_benign_console_error,
@@ -79,15 +81,24 @@ def collect_console_errors(page: Page) -> list[tuple[str, str]]:
     return errors
 
 
+def expect_only_the_probe_failed(errors: list[tuple[str, str]], path: str) -> None:
+    assert errors, f"expected the probe for {path} to fail on the console"
+    assert all(
+        url.endswith(path) and text.startswith("Failed to load resource")
+        for url, text in errors
+    ), errors
+
+
 def expect_only_the_lock_probe_failed(
     errors: list[tuple[str, str]], minor: str
 ) -> None:
-    lock = f"/pyodide-lock-shiny-{minor}.json"
-    assert errors, f"expected the probe for {lock} to fail on the console"
-    assert all(
-        url.endswith(lock) and text.startswith("Failed to load resource")
-        for url, text in errors
-    ), errors
+    expect_only_the_probe_failed(errors, f"/pyodide-lock-shiny-{minor}.json")
+
+
+def expect_only_the_image_probe_failed(
+    errors: list[tuple[str, str]], minor: str
+) -> None:
+    expect_only_the_probe_failed(errors, f"/webr/shiny-{minor}/library.data.gz")
 
 
 @pytest.mark.parametrize("minor", list(PY_MINORS))
@@ -294,3 +305,78 @@ def test_two_apps_on_one_page_share_the_engine_and_show_the_notice(
     expect(page.locator(".shinylive-version-notice")).to_have_text(
         f"This app requests shiny {oldest_minor}; this page runs {newest_minor}."
     )
+
+
+R_MINORS = VERSIONS["r"]
+NEWEST_R = next(iter(R_MINORS.values()))
+
+VERSION_APP_R = """library(shiny)
+
+ui <- fluidPage(h1(as.character(packageVersion("shiny")), id = "version"))
+server <- function(input, output, session) { }
+shinyApp(ui, server)
+"""
+
+
+def r_files(exact: str | None) -> dict[str, str]:
+    files = {"app.R": VERSION_APP_R}
+    if exact is not None:
+        files["DESCRIPTION"] = f"Imports: shiny (== {exact})\n"
+    return files
+
+
+def r_image_is_bundled(minor: str) -> bool:
+    """Whether the built site has a per-minor image; see R_SHINY_IMAGE_BASE_URL."""
+    request = urllib.request.Request(
+        f"{BASE_URL}/r/shinylive/webr/shiny-{minor}/library.data.gz", method="HEAD"
+    )
+    try:
+        with urllib.request.urlopen(request, timeout=10) as response:
+            return response.status == 200
+    except OSError:
+        return False
+
+
+@pytest.mark.parametrize("minor", list(R_MINORS))
+def test_each_bundled_r_version_runs(page: Page, minor: str) -> None:
+    if not r_image_is_bundled(minor):
+        pytest.skip(
+            f"no webr/shiny-{minor} image in this build (R_SHINY_IMAGE_BASE_URL unset)"
+        )
+    exact = R_MINORS[minor]
+    page.goto(app_url_for_files("r", r_files(exact)))
+    expect_running_version(page, exact)
+    assert "requested shiny" not in terminal_text(page)
+
+
+@pytest.mark.allow_page_errors
+def test_a_missing_r_image_falls_back_to_the_default_with_a_warning(page: Page) -> None:
+    oldest_minor, oldest_exact = list(R_MINORS.items())[-1]
+    errors = collect_console_errors(page)
+    # The runtime probes the per-version image with a HEAD request; a 404 is
+    # what a build without that image looks like.
+    page.route(
+        f"**/webr/shiny-{oldest_minor}/library.data.gz",
+        lambda r: r.fulfill(status=404, body=""),
+    )
+    page.goto(app_url_for_files("r", r_files(oldest_exact)))
+    wait_for_app_rendered(page)
+    running = page.frame_locator(APP_FRAME).locator("#version").inner_text()
+    assert running != oldest_exact
+    assert f"requested shiny {oldest_exact}, running {running}" in terminal_text(page)
+    expect_only_the_image_probe_failed(errors, oldest_minor)
+
+
+@pytest.mark.allow_page_errors
+def test_an_r_pin_outside_the_window_warns(page: Page) -> None:
+    oldest_minor = list(R_MINORS)[-1]
+    errors = collect_console_errors(page)
+    page.goto(app_url_for_files("r", r_files("0.1.0")))
+    wait_for_app_rendered(page)
+    assert "shiny 0.1.0 is outside the bundled versions" in terminal_text(page)
+    # The pin resolves to the oldest minor, whose image is probed. A build
+    # without per-minor images answers that probe with a 404.
+    if not r_image_is_bundled(oldest_minor):
+        expect_only_the_image_probe_failed(errors, oldest_minor)
+    else:
+        assert errors == []
