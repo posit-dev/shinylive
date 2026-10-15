@@ -34,11 +34,9 @@ SHINYLIVE_DIR = ./_shinylive
 # __version__ in __init__.py, _version.py, or __version.py (hatch-vcs).
 # We use a consistent helper that checks all three locations.
 _get_version = $(shell grep '^__version__ = ' $(1)/__version.py $(1)/__init__.py $(1)/_version.py 2>/dev/null | head -1 | sed -E "s/.*['\"]([^'\"]+)['\"]/\1/")
-HTMLTOOLS_VERSION = $(call _get_version,$(PACKAGE_DIR)/py-htmltools/htmltools)
 SHINYWIDGETS_VERSION = $(call _get_version,$(PACKAGE_DIR)/py-shinywidgets/shinywidgets)
 FAICONS_VERSION = $(call _get_version,$(PACKAGE_DIR)/py-faicons/faicons)
 
-HTMLTOOLS_WHEEL = htmltools-$(HTMLTOOLS_VERSION)-py3-none-any.whl
 SHINYWIDGETS_WHEEL = shinywidgets-$(SHINYWIDGETS_VERSION)-py3-none-any.whl
 FAICONS_WHEEL = faicons-$(FAICONS_VERSION)-py3-none-any.whl
 
@@ -178,16 +176,9 @@ pyodide_js:
 	cp $(BUILD_DIR)/shinylive/pyodide/ffi.d.ts src/pyodide/
 
 ## Copy local package wheels to the pyodide directory
-pyodide_packages_local: $(BUILD_DIR)/shinylive/pyodide/$(HTMLTOOLS_WHEEL) \
-	$(BUILD_DIR)/shinylive/pyodide/$(SHINYWIDGETS_WHEEL) \
+pyodide_packages_local: $(BUILD_DIR)/shinylive/pyodide/$(SHINYWIDGETS_WHEEL) \
 	$(BUILD_DIR)/shinylive/pyodide/$(FAICONS_WHEEL) \
 	$(BUILD_DIR)/shinylive/pyodide/$(LIBSASS_WHEEL)
-
-$(BUILD_DIR)/shinylive/pyodide/$(HTMLTOOLS_WHEEL): $(PACKAGE_DIR)/$(HTMLTOOLS_WHEEL)
-	mkdir -p $(BUILD_DIR)/shinylive/pyodide
-	# Remove any old copies of htmltools
-	rm -f $(BUILD_DIR)/shinylive/pyodide/htmltools*.whl
-	cp $(PACKAGE_DIR)/$(HTMLTOOLS_WHEEL) $(BUILD_DIR)/shinylive/pyodide/$(HTMLTOOLS_WHEEL)
 
 $(BUILD_DIR)/shinylive/pyodide/$(SHINYWIDGETS_WHEEL): $(PACKAGE_DIR)/$(SHINYWIDGETS_WHEEL)
 	mkdir -p $(BUILD_DIR)/shinylive/pyodide
@@ -258,27 +249,19 @@ _shinylive:
 	$(MAKE) buildjs-prod-r
 	cp -Lr $(SITE_DIR)/. $(SHINYLIVE_DIR)/r
 
-# Build htmltools, shinywidgets, and faicons. This target must be run manually after
+# Build shinywidgets and faicons. This target must be run manually after
 # updating the package submodules; it will not run automatically with `make all`
 # because I'm not sure how to set up the dependencies reliably.
-## Build htmltools, shinywidgets, and faicons wheels
+## Build shinywidgets and faicons wheels
 packages: clean-packages \
-	package-htmltools \
 	package-shinywidgets \
 	package-faicons
 
-
-package-htmltools: $(PACKAGE_DIR)/$(HTMLTOOLS_WHEEL)
 
 package-shinywidgets: $(PACKAGE_DIR)/$(SHINYWIDGETS_WHEEL)
 
 package-faicons: $(PACKAGE_DIR)/$(FAICONS_WHEEL)
 
-
-$(PACKAGE_DIR)/$(HTMLTOOLS_WHEEL): $(PYBIN) $(PACKAGE_DIR)/py-htmltools
-	# Remove any old copies of the package
-	rm -f $(PACKAGE_DIR)/htmltools*.whl
-	. $(PYBIN)/activate && cd $(PACKAGE_DIR)/py-htmltools && pip wheel --no-deps -w ../  .
 
 $(PACKAGE_DIR)/$(SHINYWIDGETS_WHEEL): $(PYBIN) $(PACKAGE_DIR)/py-shinywidgets
 	# Remove any old copies of the package
@@ -306,7 +289,6 @@ update_packages_lock_local: $(PYBIN) $(BUILD_DIR)/shinylive/pyodide
 
 ## Download packages in shinylive_lock.json from PyPI
 retrieve_packages: $(PYBIN) $(BUILD_DIR)/shinylive/pyodide \
-		$(BUILD_DIR)/shinylive/pyodide/$(HTMLTOOLS_WHEEL) \
 		$(BUILD_DIR)/shinylive/pyodide/$(SHINYWIDGETS_WHEEL) \
 		$(BUILD_DIR)/shinylive/pyodide/$(FAICONS_WHEEL)
 	$(PYBIN)/pip install -r requirements-dev.txt

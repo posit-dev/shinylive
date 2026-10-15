@@ -77,7 +77,7 @@ buildjs-r              Build JS resources with webR as the default engine
 buildjs-prod-r         Build JS resources for production with webR as the default engine
 serve-prod-r           Build JS resources for production and serve site with webR as the default engine
 serve-r                Build JS resources and serve site with webR as the default engine
-packages               Build htmltools, shiny, and shinywidgets wheels
+packages               Build shinywidgets and faicons wheels
 update_packages_lock   Update the shinylive_lock.json file, based on shinylive_requirements.json
 update_packages_lock_local Update the shinylive_lock.json file, but with local packages only
 retrieve_packages      Download packages in shinylive_lock.json from PyPI
@@ -189,10 +189,11 @@ This an overview of some of the important files and directories in this project.
 ├── pyodide-lock-shiny-*.json # Built into build/shinylive/pyodide/, one per bundled shiny minor version.
 ├── build                  # Generated JS/CSS/wasm components for shinylive (not committed to repo)
 ├── examples               # Shiny app examples used in Examples browser
-├── packages               # Git submodules for htmltools, shiny, and ipyshiny.
-│   ├── py-htmltools       #   Used for building wheel files for shinylive.
+├── packages               # Git submodules for htmltools, shiny, shinywidgets, and faicons.
+│   ├── py-faicons         #   Used for building wheel files for shinylive.
+│   ├── py-htmltools
 │   ├── py-shiny
-│   └── ipyshiny
+│   └── py-shinywidgets    #   Used for building wheel files for shinylive.
 ├── export_template        # Files used for deployment via `shinylive deploy`
 ├── scripts
 │   └── pyodide_packages.py # Script for downloading PyPI packages and inserting

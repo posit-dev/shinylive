@@ -1,5 +1,5 @@
 [
-  { "name": "htmltools", "source": "local", "version": "latest" },
+  { "name": "htmltools", "source": "pypi", "version": "latest" },
   {
     "name": "shiny",
     "source": "pypi",

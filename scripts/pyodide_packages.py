@@ -237,7 +237,16 @@ UV_PYTHON_PLATFORM = "wasm32-pyodide2024"
 
 # Extra constraints per minor version, for when the newest allowed dependency
 # breaks an older shiny at runtime. Lines in requirements syntax.
-VERSION_CONSTRAINTS: dict[str, list[str]] = {}
+#
+# shiny 1.4.0 and 1.5.1 require htmltools>=0.6.0 with no upper bound, so uv
+# resolves htmltools 0.7.0 for them. Shiny Express apps on that pairing fail at
+# startup with a TypeError from htmltools' tagify(), which rejects the
+# un-tagified Tag that shiny returns. shiny 1.6.4 and later require
+# htmltools>=0.7.0 and run on it.
+VERSION_CONSTRAINTS: dict[str, list[str]] = {
+    "1.4": ["htmltools<0.7"],
+    "1.5": ["htmltools<0.7"],
+}
 
 # Constraints applied to every minor version, ahead of VERSION_CONSTRAINTS.
 # starlette 1.3 and later call .decode() on scope["query_string"], and
@@ -338,7 +347,7 @@ def parse_compiled(text: str) -> dict[str, str]:
 def local_wheel_versions(required: list[RequirementsPackage]) -> dict[str, str]:
     """name -> version for every wheel in packages/ whose package has source
     "local" in shinylive_requirements.json. Other wheels in packages/ (such as
-    a shiny wheel built from the submodule) are ignored."""
+    a shiny or htmltools wheel built from its submodule) are ignored."""
     local_names = {normalize_name(x["name"]) for x in required if x["source"] == "local"}
     versions: dict[str, str] = {}
     for file in os.listdir(package_source_dir):

@@ -87,8 +87,8 @@
         "name": "htmltools",
         "version": "0.7.0",
         "filename": "htmltools-0.7.0-py3-none-any.whl",
-        "sha256": null,
-        "url": null,
+        "sha256": "92e5d06aeadb56e0ff63b236971bc58bb9cf6058c7235e3af57868e7bf113e1b",
+        "url": "https://files.pythonhosted.org/packages/2f/b2/bd9bfa6d77641bd3be57c7cd6ce10294d26db20cb9aedf19ac5d78845886/htmltools-0.7.0-py3-none-any.whl",
         "depends": [
           {"name": "typing-extensions", "specs": [[">=", "4.12.0"]]},
           {"name": "packaging", "specs": [[">=", "20.9"]]}
@@ -604,8 +604,8 @@
         "name": "htmltools",
         "version": "0.7.0",
         "filename": "htmltools-0.7.0-py3-none-any.whl",
-        "sha256": null,
-        "url": null,
+        "sha256": "92e5d06aeadb56e0ff63b236971bc58bb9cf6058c7235e3af57868e7bf113e1b",
+        "url": "https://files.pythonhosted.org/packages/2f/b2/bd9bfa6d77641bd3be57c7cd6ce10294d26db20cb9aedf19ac5d78845886/htmltools-0.7.0-py3-none-any.whl",
         "depends": [
           {"name": "typing-extensions", "specs": [[">=", "4.12.0"]]},
           {"name": "packaging", "specs": [[">=", "20.9"]]}
@@ -1121,8 +1121,8 @@
         "name": "htmltools",
         "version": "0.7.0",
         "filename": "htmltools-0.7.0-py3-none-any.whl",
-        "sha256": null,
-        "url": null,
+        "sha256": "92e5d06aeadb56e0ff63b236971bc58bb9cf6058c7235e3af57868e7bf113e1b",
+        "url": "https://files.pythonhosted.org/packages/2f/b2/bd9bfa6d77641bd3be57c7cd6ce10294d26db20cb9aedf19ac5d78845886/htmltools-0.7.0-py3-none-any.whl",
         "depends": [
           {"name": "typing-extensions", "specs": [[">=", "4.12.0"]]},
           {"name": "packaging", "specs": [[">=", "20.9"]]}
@@ -1636,12 +1636,12 @@
       },
       "htmltools": {
         "name": "htmltools",
-        "version": "0.7.0",
-        "filename": "htmltools-0.7.0-py3-none-any.whl",
-        "sha256": null,
-        "url": null,
+        "version": "0.6.1",
+        "filename": "htmltools-0.6.1-py3-none-any.whl",
+        "sha256": "e8ac407d1ac2f88d5c034fdccb390f7fbdda31cd33e24026652d989bb1509c5b",
+        "url": "https://files.pythonhosted.org/packages/9d/90/2fdfdc774196f67496281a8372a673c834db71c4c058f45bc11fb439e50c/htmltools-0.6.1-py3-none-any.whl",
         "depends": [
-          {"name": "typing-extensions", "specs": [[">=", "4.12.0"]]},
+          {"name": "typing-extensions", "specs": [[">=", "3.10.0.0"]]},
           {"name": "packaging", "specs": [[">=", "20.9"]]}
         ],
         "imports": [
@@ -1933,13 +1933,12 @@
       },
       "shinychat": {
         "name": "shinychat",
-        "version": "0.6.1",
-        "filename": "shinychat-0.6.1-py3-none-any.whl",
-        "sha256": "dc4c742bfec391e933ceaa470c12c7c5f204ba6bb53f97cc5ba3567720b0e525",
-        "url": "https://files.pythonhosted.org/packages/1b/a6/03d47e4257a9dce48f07a4c5934de02e300749c9a58f873294fc92652f8a/shinychat-0.6.1-py3-none-any.whl",
+        "version": "0.3.1",
+        "filename": "shinychat-0.3.1-py3-none-any.whl",
+        "sha256": "4fbe3f06dd7501412323eaaaa16c0af3c32bbb74b57f454574796846e0e40494",
+        "url": "https://files.pythonhosted.org/packages/f9/96/1bc079897a0c2c2ec6356b684eb2b83c6fd3ae84ff1084170a0128bd8973/shinychat-0.3.1-py3-none-any.whl",
         "depends": [
-          {"name": "htmltools", "specs": [[">=", "0.7.0"]]},
-          {"name": "pydantic", "specs": []},
+          {"name": "htmltools", "specs": [[">=", "0.6.0"]]},
           {"name": "shiny", "specs": [[">=", "1.4.0"]]}
         ],
         "imports": [
@@ -2150,12 +2149,12 @@
       },
       "htmltools": {
         "name": "htmltools",
-        "version": "0.7.0",
-        "filename": "htmltools-0.7.0-py3-none-any.whl",
-        "sha256": null,
-        "url": null,
+        "version": "0.6.1",
+        "filename": "htmltools-0.6.1-py3-none-any.whl",
+        "sha256": "e8ac407d1ac2f88d5c034fdccb390f7fbdda31cd33e24026652d989bb1509c5b",
+        "url": "https://files.pythonhosted.org/packages/9d/90/2fdfdc774196f67496281a8372a673c834db71c4c058f45bc11fb439e50c/htmltools-0.6.1-py3-none-any.whl",
         "depends": [
-          {"name": "typing-extensions", "specs": [[">=", "4.12.0"]]},
+          {"name": "typing-extensions", "specs": [[">=", "3.10.0.0"]]},
           {"name": "packaging", "specs": [[">=", "20.9"]]}
         ],
         "imports": [
