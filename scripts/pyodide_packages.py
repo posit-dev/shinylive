@@ -237,22 +237,13 @@ UV_PYTHON_PLATFORM = "wasm32-pyodide2024"
 
 # Extra constraints per minor version, for when the newest allowed dependency
 # breaks an older shiny at runtime. Lines in requirements syntax.
-#
-# starlette 1.3.0 and later call .decode() on scope["query_string"] whenever a
-# request reads its URL. shinylive's ASGI bridge (src/messageporthttp.ts) sends
-# query_string as a str, and shiny encodes it to bytes only when it is
-# non-empty, so a plain page load fails with "'str' object has no attribute
-# 'decode'". shiny 1.6 and later read the URL on every root request; 1.4 and
-# 1.5 read it on fewer paths, and get the same cap so that every bundled
-# version runs on a starlette the bridge supports.
-_STARLETTE_FOR_STR_QUERY_STRING = ["starlette<1.3"]
-VERSION_CONSTRAINTS: dict[str, list[str]] = {
-    "1.8": _STARLETTE_FOR_STR_QUERY_STRING,
-    "1.7": _STARLETTE_FOR_STR_QUERY_STRING,
-    "1.6": _STARLETTE_FOR_STR_QUERY_STRING,
-    "1.5": _STARLETTE_FOR_STR_QUERY_STRING,
-    "1.4": _STARLETTE_FOR_STR_QUERY_STRING,
-}
+VERSION_CONSTRAINTS: dict[str, list[str]] = {}
+
+# Constraints applied to every minor version, ahead of VERSION_CONSTRAINTS.
+# starlette 1.3 and later call .decode() on scope["query_string"], and
+# shinylive's HTTP bridge in src/messageporthttp.ts sends it as a str, so page
+# loads fail. The cap holds until the bridge sends bytes.
+SHARED_CONSTRAINTS: list[str] = ["starlette<1.3"]
 
 # Stock Pyodide packages passed to uv as overrides instead of constraints.
 # htmltools requires typing-extensions>=4.12.0 while Pyodide 0.27.7 ships
@@ -476,7 +467,10 @@ def generate_lockfile() -> None:
     for minor, exact in bundled_python_minors().items():
         print(f"Resolving shiny {exact} (minor {minor}) with uv...")
         pinned = resolve_with_uv(
-            required_packages, exact, stock, VERSION_CONSTRAINTS.get(minor, [])
+            required_packages,
+            exact,
+            stock,
+            SHARED_CONSTRAINTS + VERSION_CONSTRAINTS.get(minor, []),
         )
         locks[minor] = _lock_entries_for(pinned, required_packages, stock)
         print("  " + " ".join(sorted(locks[minor])))
