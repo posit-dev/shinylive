@@ -43,6 +43,16 @@ jobs:
       - name: Run unit tests
         run: npm run test:unit
 
+      # unittest suites for the build scripts in scripts/ (lock writing, the
+      # bundle check, the shiny version update).
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.11"
+
+      - name: Run build script tests
+        run: make test-scripts
+
       # Coverage is measured but never enforced: no threshold, and the figure
       # only covers the modules these tests import.
       - name: Measure coverage
