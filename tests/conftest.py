@@ -14,7 +14,7 @@ from pathlib import Path
 from typing import Any
 
 import pytest
-from export_app import export_app
+from export_app import export_app, export_quarto_page
 from playwright.sync_api import ConsoleMessage, Page, expect
 from shinylive_app import (
     ANALYTICS_URL,
@@ -285,6 +285,17 @@ def exported_app(export_root: Path, export_server: str) -> Callable[..., str]:
         return f"{export_server}/{name}/"
 
     return _exported_app
+
+
+@pytest.fixture
+def quarto_page(export_root: Path, export_server: str) -> Callable[..., str]:
+    """Write a Quarto-style page with one shinylive block, and return its URL."""
+
+    def _quarto_page(block: str, *, name: str = "quarto", **kwargs: Any) -> str:
+        export_quarto_page(block, export_root / name, **kwargs)
+        return f"{export_server}/{name}/"
+
+    return _quarto_page
 
 
 def _port_is_open() -> bool:

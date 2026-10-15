@@ -128,3 +128,39 @@ def _render_index(*, engine: str, title: str | None, rel_path: str = "") -> str:
             lambda match: match.group(1).replace("{{.}}", escape(title)), html
         )
     return _INCLUDE_SLOT.sub("", html)
+
+
+_QUARTO_PAGE = """<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <script src="./shinylive/load-shinylive-sw.js" type="module"></script>
+    <script src="./shinylive/run-python-blocks.js" type="module"></script>
+    <link rel="stylesheet" href="./shinylive/shinylive.css" />
+  </head>
+  <body>
+    <pre class="shinylive-{engine_class}" style="height: 600px">
+{block}</pre>
+  </body>
+</html>
+"""
+
+
+def export_quarto_page(block: str, dest: Path, *, engine: str = "python") -> Path:
+    """A page the way the Quarto shinylive extension renders one code block.
+
+    `block` is the block's text: `#|` options, `## file:` sections and code,
+    exactly as it would appear inside the <pre>. run-python-blocks.js finds the
+    block by class, parses it with parseCodeBlock(), and calls runApp() with
+    the options it declares, so this exercises the Quarto path end to end.
+    """
+    if dest.exists():
+        shutil.rmtree(dest)
+    dest.mkdir(parents=True)
+    engine_class = "r" if engine == "r" else "python"
+    (dest / "index.html").write_text(
+        _QUARTO_PAGE.format(engine_class=engine_class, block=escape(block))
+    )
+    _link_bundle(dest, None)
+    (dest / "shinylive-sw.js").symlink_to(BUILD_DIR / "shinylive-sw.js")
+    return dest

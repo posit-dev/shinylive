@@ -17,6 +17,7 @@ from playwright.sync_api import ConsoleMessage, Page, expect
 
 from shinylive_app import (
     APP_FRAME,
+    MOD_KEY,
     app_url_for_files,
     is_benign_console_error,
     terminal_text,
@@ -154,3 +155,142 @@ def test_an_export_of_a_pinned_app_runs_that_version_quietly(
     expect_running_version(page, OLDEST_PY)
     assert warnings == []
     expect_only_the_lock_probe_failed(errors, oldest_minor)
+
+
+PICKER = 'select[aria-label="Shiny version"]'
+# The file tab list in FileTabs.tsx; each tab's name sits in .editor-filename.
+REQUIREMENTS_TAB = (
+    ".shinylive-editor .editor-files .editor-filename:has-text('requirements.txt')"
+)
+# Editor.tsx labels the button "Re-run app (<mod>-Shift-Enter)"; the modifier varies by platform.
+RERUN_BUTTON = '.shinylive-editor button[aria-label^="Re-run app"]'
+
+
+def test_the_picker_switches_the_version_and_writes_the_pin(page: Page) -> None:
+    page.goto(app_url_for_files("py", py_files(None)))
+    expect_running_version(page, NEWEST_PY)
+    expect(page.locator(PICKER)).to_have_value(NEWEST_PY)
+    expect(page.locator(".HeaderBar .latest-badge")).to_be_visible()
+
+    page.select_option(PICKER, OLDEST_PY)
+    # The engine restarts: the loader shows, then the app comes back on the
+    # other version.
+    expect(page.locator(".shinylive-viewer .loading-status")).to_be_visible()
+    expect_running_version(page, OLDEST_PY)
+    expect(page.locator(PICKER)).to_have_value(OLDEST_PY)
+    expect(page.locator(".HeaderBar .latest-badge")).to_have_count(0)
+
+    page.locator(REQUIREMENTS_TAB).click()
+    expect(page.locator(".shinylive-editor .cm-content")).to_contain_text(
+        f"shiny=={OLDEST_PY}"
+    )
+    assert "requested shiny" not in terminal_text(page)
+    assert "#code=" in page.url
+
+
+def test_the_picker_is_disabled_while_the_engine_starts(page: Page) -> None:
+    page.goto(app_url_for_files("py", py_files(None)))
+    expect(page.locator(PICKER)).to_be_disabled()
+    expect_running_version(page, NEWEST_PY)
+    expect(page.locator(PICKER)).to_be_enabled()
+
+
+def test_editing_the_pin_and_rerunning_restarts_the_engine(page: Page) -> None:
+    page.goto(
+        app_url_for_files(
+            "py", {**py_files(None), "requirements.txt": f"shiny=={NEWEST_PY}\n"}
+        )
+    )
+    expect_running_version(page, NEWEST_PY)
+
+    page.locator(REQUIREMENTS_TAB).click()
+    editor = page.locator(".shinylive-editor .cm-content")
+    editor.click()
+    page.keyboard.press(f"{MOD_KEY}+a")
+    page.keyboard.type(f"shiny=={OLDEST_PY}")
+    page.locator(RERUN_BUTTON).click()
+
+    expect_running_version(page, OLDEST_PY)
+    expect(page.locator(PICKER)).to_have_value(OLDEST_PY)
+
+
+def test_the_picker_does_not_appear_without_the_option(page: Page) -> None:
+    # The app view renders the same header bar, but never sets showVersionPicker.
+    page.goto(app_url_for_files("py", py_files(None), view="app"))
+    expect(page.locator(".HeaderBar")).to_be_visible()
+    expect(page.locator(PICKER)).to_have_count(0)
+
+
+QUARTO_BLOCK = """#| standalone: true
+#| components: [editor, terminal, viewer]
+#| shiny-version: "{minor}"
+## file: app.py
+{app}"""
+
+
+def test_a_quarto_embed_honors_shiny_version_and_has_no_picker(
+    page: Page, quarto_page: Callable[..., str]
+) -> None:
+    oldest_minor = list(PY_MINORS)[-1]
+    page.goto(quarto_page(QUARTO_BLOCK.format(minor=oldest_minor, app=VERSION_APP_PY)))
+    expect_running_version(page, OLDEST_PY)
+    expect(page.locator(".HeaderBar")).to_be_visible()
+    expect(page.locator(PICKER)).to_have_count(0)
+    page.locator(REQUIREMENTS_TAB).click()
+    expect(page.locator(".shinylive-editor .cm-content")).to_contain_text(
+        f"shiny=={OLDEST_PY}"
+    )
+
+
+@pytest.mark.allow_page_errors
+def test_an_unquoted_shiny_version_is_rejected(
+    page: Page, quarto_page: Callable[..., str]
+) -> None:
+    errors: list[str] = []
+    page.on("console", lambda m: errors.append(m.text) if m.type == "error" else None)
+    page.on("pageerror", lambda e: errors.append(str(e)))
+    block = QUARTO_BLOCK.replace('"{minor}"', "1.10").format(
+        minor="", app=VERSION_APP_PY
+    )
+    page.goto(quarto_page(block, name="quarto-unquoted"))
+    page.wait_for_timeout(2000)
+    assert any("shiny-version option must be a quoted string" in e for e in errors), (
+        errors
+    )
+
+
+def test_two_apps_on_one_page_share_the_engine_and_show_the_notice(
+    page: Page, quarto_page: Callable[..., str]
+) -> None:
+    newest_minor = next(iter(PY_MINORS))
+    oldest_minor = list(PY_MINORS)[-1]
+    first = QUARTO_BLOCK.replace("[editor, terminal, viewer]", "[viewer]").format(
+        minor=newest_minor, app=VERSION_APP_PY
+    )
+    second = QUARTO_BLOCK.replace("[editor, terminal, viewer]", "[viewer]").format(
+        minor=oldest_minor, app=VERSION_APP_PY
+    )
+    url = quarto_page(first, name="quarto-two")
+    page.goto(url)
+    # The helper writes one block per page; the second is appended here and
+    # processed by loading run-python-blocks.js again.
+    page.evaluate(
+        """(block) => {
+            const pre = document.createElement("pre");
+            pre.className = "shinylive-python";
+            pre.style.height = "400px";
+            pre.textContent = block;
+            document.body.appendChild(pre);
+            const s = document.createElement("script");
+            s.type = "module";
+            s.src = "./shinylive/run-python-blocks.js?second";
+            document.body.appendChild(s);
+        }""",
+        second,
+    )
+    frames = page.locator(APP_FRAME)
+    expect(frames).to_have_count(2)
+    expect(frames.nth(1).content_frame.locator("#version")).to_have_text(NEWEST_PY)
+    expect(page.locator(".shinylive-version-notice")).to_have_text(
+        f"This app requests shiny {oldest_minor}; this page runs {newest_minor}."
+    )
