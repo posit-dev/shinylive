@@ -6,6 +6,7 @@ import {
   getExampleCategories,
   sanitizeTitleForUrl,
 } from "../examples";
+import { useLoadStatus } from "../hooks/useLoadStatus";
 import type { PyodideProxyHandle } from "../hooks/usePyodide";
 import { initPyodide, initShiny, usePyodide } from "../hooks/usePyodide";
 import { useRunOnceOnMount } from "../hooks/useRunOnceOnMount";
@@ -486,14 +487,25 @@ export function App({
 
       loadStatusStore(appEngine).reset();
       clearEngineSingleton(appEngine);
-      const ready = new Promise<ReadyViewerMethods>((resolve) => {
+      const promise = startEngine(appEngine, minor, loadShiny);
+      // Resolves when the new viewer reports ready. Rejects when the new
+      // engine fails to load, so a failed restart does not block later runs.
+      const ready = new Promise<ReadyViewerMethods>((resolve, reject) => {
         pendingViewerRef.current = resolve;
+        const fail = (e: unknown) => {
+          if (pendingViewerRef.current === resolve) {
+            pendingViewerRef.current = null;
+          }
+          reject(e);
+        };
+        promise.then((handle) => {
+          if (handle.initError) {
+            fail(new Error(`The engine failed to start shiny ${minor}.`));
+          }
+        }, fail);
       });
       reportedVersionFor.current = null;
-      setEngineStart({
-        promise: startEngine(appEngine, minor, loadShiny),
-        shinyMinor: minor,
-      });
+      setEngineStart({ promise, shinyMinor: minor });
       return ready;
     },
     [appEngine, loadShiny],
@@ -651,6 +663,7 @@ export function App({
     [editorMethods, currentFiles, appEngine, appOptions.updateUrlHashOnRerun],
   );
 
+  const loadStatus = useLoadStatus(appEngine);
   const shinyVersionPicker: ShinyVersionPicker | null = React.useMemo(() => {
     if (!appOptions.showVersionPicker) return null;
     if (!engineIsVersionAware(appEngine)) return null;
@@ -668,7 +681,9 @@ export function App({
           ? proxyHandle.shinyVersion
           : starting,
       options,
-      disabled: !proxyHandle.ready,
+      // A failed load leaves the engine not ready, and the picker stays
+      // usable so that another version can be picked.
+      disabled: !proxyHandle.ready && loadStatus.stage !== "failed",
       onSelect: (exact) => {
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
         onSelectVersion(exact);
@@ -679,6 +694,7 @@ export function App({
     appEngine,
     engineStart.shinyMinor,
     proxyHandle,
+    loadStatus.stage,
     onSelectVersion,
   ]);
 

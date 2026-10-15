@@ -225,6 +225,39 @@ def test_editing_the_pin_and_rerunning_restarts_the_engine(page: Page) -> None:
     expect(page.locator(PICKER)).to_have_value(OLDEST_PY)
 
 
+@pytest.mark.allow_page_errors
+def test_a_failed_restart_can_be_retried_from_the_picker(page: Page) -> None:
+    oldest_minor = list(PY_MINORS)[-1]
+    page.goto(app_url_for_files("py", py_files(None)))
+    expect_running_version(page, NEWEST_PY)
+    errors = collect_console_errors(page)
+
+    # Both locks the restart could load fail, so the new engine cannot start.
+    lock_patterns = [
+        f"**/pyodide-lock-shiny-{oldest_minor}.json",
+        "**/pyodide-lock.json",
+    ]
+    for pattern in lock_patterns:
+        page.route(pattern, lambda route: route.abort())
+    page.select_option(PICKER, OLDEST_PY)
+    expect(page.locator(".error-message")).to_have_text("Error loading Python!")
+    expect(page.locator(PICKER)).to_be_enabled()
+
+    for pattern in lock_patterns:
+        page.unroute(pattern)
+    page.select_option(PICKER, NEWEST_PY)
+    expect_running_version(page, NEWEST_PY)
+    expect(page.locator(PICKER)).to_have_value(NEWEST_PY)
+
+    # The aborted lock requests, and the engine load that they made fail.
+    assert errors
+    assert all(
+        url.endswith(f"/pyodide-lock-shiny-{oldest_minor}.json")
+        or "Failed to fetch" in text
+        for url, text in errors
+    ), errors
+
+
 def test_the_picker_does_not_appear_without_the_option(page: Page) -> None:
     # The app view renders the same header bar, but never sets showVersionPicker.
     page.goto(app_url_for_files("py", py_files(None), view="app"))
