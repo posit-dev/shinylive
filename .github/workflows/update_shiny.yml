@@ -1,14 +1,21 @@
-name: Update py-shiny submodule
+name: Update shiny versions
 
+# Moves the bundled window forward: recomputes shiny_versions.json from the
+# PyPI and CRAN release lists, pins the py-shiny submodule to the newest
+# Python release tag (the test controllers install from it), rebuilds the
+# locks, and opens a pull request when anything changed.
 on:
   workflow_dispatch:
+  schedule:
+    - cron: "0 6 * * 1"
 
 jobs:
   update-shiny:
-    name: Update py-shiny submodule
+    name: Update shiny versions
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      pull-requests: write
 
     steps:
       - uses: actions/checkout@v7
@@ -21,23 +28,35 @@ jobs:
         run: python -m pip install --upgrade pip
 
       - name: Check out submodules
-        run: |
-          make submodules
+        run: make submodules
 
-      - name: Pull latest py-shiny
+      - name: Recompute shiny_versions.json
+        run: python3 scripts/update_shiny_versions.py
+
+      - name: Pin py-shiny to the newest bundled release
         run: |
-          make submodules-pull-shiny
+          NEWEST=$(python3 -c "import json; print(next(iter(json.load(open('shiny_versions.json'))['python'].values())))")
+          git -C packages/py-shiny fetch --tags
+          git -C packages/py-shiny checkout "v$NEWEST"
 
       - name: Build shinylive
-        run: |
-          make all
+        run: make all
 
       - name: Set up git within GHA
         uses: actions4git/setup-git@v1
 
-      - name: Commit and push changes
+      - name: Open a pull request when anything changed
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
-          PY_SHINY_SHA=$(git -C packages/py-shiny rev-parse --short HEAD)
-          git add packages/py-shiny shinylive_lock.json && \
-            git commit --message "Pull latest posit-dev/py-shiny@$PY_SHINY_SHA" && \
-            git push origin HEAD:main
+          if git diff --quiet -- shiny_versions.json shinylive_lock.json packages/py-shiny; then
+            echo "Nothing changed"
+            exit 0
+          fi
+          BRANCH=update-shiny-versions
+          git checkout -B "$BRANCH"
+          git add shiny_versions.json shinylive_lock.json packages/py-shiny
+          git commit --message "build: move the bundled shiny window forward"
+          git push --force origin "$BRANCH"
+          gh pr create --fill --head "$BRANCH" --base main \
+            || gh pr edit "$BRANCH" --title "build: move the bundled shiny window forward"

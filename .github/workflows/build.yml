@@ -8,7 +8,7 @@ on:
   release:
     types: [published]
   workflow_run:
-    workflows: [Update py-shiny submodule]
+    workflows: [Update shiny versions]
     types:
       - completed
 jobs:

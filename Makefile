@@ -10,6 +10,7 @@
 	packages \
 	clean-packages clean distclean \
 	examples-check-index type-check \
+	update_shiny_versions test-scripts \
 	test-deps test-unit test-unit-coverage \
 	test-examples test-examples-intent test-site test-loader webr \
 	_shinylive
@@ -107,6 +108,8 @@ submodules-pull-htmltools:
 ## Build everything _except_ the shinylive.tar.gz distribution file
 all: node_modules \
 	$(BUILD_DIR)/shinylive/style-resets.css \
+	$(BUILD_DIR)/shinylive/shiny_versions.json \
+	$(BUILD_DIR)/shinylive/shiny_version_cases.json \
 	$(BUILD_DIR)/shinylive/pyodide \
 	$(BUILD_DIR)/shinylive/webr \
 	pyodide_js \
@@ -134,6 +137,14 @@ node_modules: package.json
 $(BUILD_DIR)/shinylive/style-resets.css: src/style-resets.css
 	mkdir -p $(BUILD_DIR)/shinylive
 	cp src/style-resets.css $(BUILD_DIR)/shinylive
+
+$(BUILD_DIR)/shinylive/shiny_versions.json: shiny_versions.json
+	mkdir -p $(BUILD_DIR)/shinylive
+	cp shiny_versions.json $(BUILD_DIR)/shinylive/
+
+$(BUILD_DIR)/shinylive/shiny_version_cases.json: shiny_version_cases.json
+	mkdir -p $(BUILD_DIR)/shinylive
+	cp shiny_version_cases.json $(BUILD_DIR)/shinylive/
 
 $(DOWNLOAD_DIR)/$(PYODIDE_DIST_FILENAME):
 	mkdir -p $(DOWNLOAD_DIR)
@@ -348,6 +359,14 @@ distclean: clean
 ## Check that every example on disk is listed in examples/index.json
 examples-check-index:
 	node scripts/check_examples_index.mjs
+
+## Recompute shiny_versions.json from the PyPI and CRAN release lists
+update_shiny_versions:
+	python3 scripts/update_shiny_versions.py
+
+## Run the stdlib unit tests for the build scripts
+test-scripts:
+	python3 -m unittest discover -s scripts -p 'test_*.py' -t .
 
 ## Type-check everything, including the unit tests (swc does not check types)
 type-check: node_modules

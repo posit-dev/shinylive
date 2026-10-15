@@ -176,6 +176,8 @@ If you add a package to `shinylive_requirements.json`, or want to update package
 make update_packages_lock
 ```
 
+`shiny_versions.json` lists the bundled shiny versions for each language: the newest patch release of each of the last five minor versions. `make update_shiny_versions` recomputes it from PyPI and CRAN, and the "Update shiny versions" workflow does the same weekly and opens a pull request. The build, the runtime and the version picker all read this file.
+
 
 ## File overview
 
