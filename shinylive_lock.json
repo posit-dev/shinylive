@@ -460,12 +460,12 @@
       },
       "starlette": {
         "name": "starlette",
-        "version": "1.8.0",
-        "filename": "starlette-1.8.0-py3-none-any.whl",
-        "sha256": "dfdd6b29c26483288088d990eee59631dedadd66ce20d203402a7ca8e3c4656f",
-        "url": "https://files.pythonhosted.org/packages/c1/b0/5742e4ac7af5eb58ec3470a537a49d7aa507e5539413e504b3a65ef50ba8/starlette-1.8.0-py3-none-any.whl",
+        "version": "1.2.1",
+        "filename": "starlette-1.2.1-py3-none-any.whl",
+        "sha256": "4de0082d08c8f6764a85a54cf1120d6939507a19905c7768acad2a9f875d2b89",
+        "url": "https://files.pythonhosted.org/packages/1c/54/196d0c1db10af76baa4f64894448505d60d3cdf70ef92cbb35f46a4e4c71/starlette-1.2.1-py3-none-any.whl",
         "depends": [
-          {"name": "anyio", "specs": [["<", "5"], [">=", "4.0.0"]]}
+          {"name": "anyio", "specs": [["<", "5"], [">=", "3.6.2"]]}
         ],
         "imports": [
           "starlette"
@@ -977,12 +977,12 @@
       },
       "starlette": {
         "name": "starlette",
-        "version": "1.8.0",
-        "filename": "starlette-1.8.0-py3-none-any.whl",
-        "sha256": "dfdd6b29c26483288088d990eee59631dedadd66ce20d203402a7ca8e3c4656f",
-        "url": "https://files.pythonhosted.org/packages/c1/b0/5742e4ac7af5eb58ec3470a537a49d7aa507e5539413e504b3a65ef50ba8/starlette-1.8.0-py3-none-any.whl",
+        "version": "1.2.1",
+        "filename": "starlette-1.2.1-py3-none-any.whl",
+        "sha256": "4de0082d08c8f6764a85a54cf1120d6939507a19905c7768acad2a9f875d2b89",
+        "url": "https://files.pythonhosted.org/packages/1c/54/196d0c1db10af76baa4f64894448505d60d3cdf70ef92cbb35f46a4e4c71/starlette-1.2.1-py3-none-any.whl",
         "depends": [
-          {"name": "anyio", "specs": [["<", "5"], [">=", "4.0.0"]]}
+          {"name": "anyio", "specs": [["<", "5"], [">=", "3.6.2"]]}
         ],
         "imports": [
           "starlette"
@@ -1494,12 +1494,12 @@
       },
       "starlette": {
         "name": "starlette",
-        "version": "1.8.0",
-        "filename": "starlette-1.8.0-py3-none-any.whl",
-        "sha256": "dfdd6b29c26483288088d990eee59631dedadd66ce20d203402a7ca8e3c4656f",
-        "url": "https://files.pythonhosted.org/packages/c1/b0/5742e4ac7af5eb58ec3470a537a49d7aa507e5539413e504b3a65ef50ba8/starlette-1.8.0-py3-none-any.whl",
+        "version": "1.2.1",
+        "filename": "starlette-1.2.1-py3-none-any.whl",
+        "sha256": "4de0082d08c8f6764a85a54cf1120d6939507a19905c7768acad2a9f875d2b89",
+        "url": "https://files.pythonhosted.org/packages/1c/54/196d0c1db10af76baa4f64894448505d60d3cdf70ef92cbb35f46a4e4c71/starlette-1.2.1-py3-none-any.whl",
         "depends": [
-          {"name": "anyio", "specs": [["<", "5"], [">=", "4.0.0"]]}
+          {"name": "anyio", "specs": [["<", "5"], [">=", "3.6.2"]]}
         ],
         "imports": [
           "starlette"
@@ -1997,12 +1997,12 @@
       },
       "starlette": {
         "name": "starlette",
-        "version": "1.8.0",
-        "filename": "starlette-1.8.0-py3-none-any.whl",
-        "sha256": "dfdd6b29c26483288088d990eee59631dedadd66ce20d203402a7ca8e3c4656f",
-        "url": "https://files.pythonhosted.org/packages/c1/b0/5742e4ac7af5eb58ec3470a537a49d7aa507e5539413e504b3a65ef50ba8/starlette-1.8.0-py3-none-any.whl",
+        "version": "1.2.1",
+        "filename": "starlette-1.2.1-py3-none-any.whl",
+        "sha256": "4de0082d08c8f6764a85a54cf1120d6939507a19905c7768acad2a9f875d2b89",
+        "url": "https://files.pythonhosted.org/packages/1c/54/196d0c1db10af76baa4f64894448505d60d3cdf70ef92cbb35f46a4e4c71/starlette-1.2.1-py3-none-any.whl",
         "depends": [
-          {"name": "anyio", "specs": [["<", "5"], [">=", "4.0.0"]]}
+          {"name": "anyio", "specs": [["<", "5"], [">=", "3.6.2"]]}
         ],
         "imports": [
           "starlette"
@@ -2495,12 +2495,12 @@
       },
       "starlette": {
         "name": "starlette",
-        "version": "1.8.0",
-        "filename": "starlette-1.8.0-py3-none-any.whl",
-        "sha256": "dfdd6b29c26483288088d990eee59631dedadd66ce20d203402a7ca8e3c4656f",
-        "url": "https://files.pythonhosted.org/packages/c1/b0/5742e4ac7af5eb58ec3470a537a49d7aa507e5539413e504b3a65ef50ba8/starlette-1.8.0-py3-none-any.whl",
+        "version": "1.2.1",
+        "filename": "starlette-1.2.1-py3-none-any.whl",
+        "sha256": "4de0082d08c8f6764a85a54cf1120d6939507a19905c7768acad2a9f875d2b89",
+        "url": "https://files.pythonhosted.org/packages/1c/54/196d0c1db10af76baa4f64894448505d60d3cdf70ef92cbb35f46a4e4c71/starlette-1.2.1-py3-none-any.whl",
         "depends": [
-          {"name": "anyio", "specs": [["<", "5"], [">=", "4.0.0"]]}
+          {"name": "anyio", "specs": [["<", "5"], [">=", "3.6.2"]]}
         ],
         "imports": [
           "starlette"

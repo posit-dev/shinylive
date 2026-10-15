@@ -168,7 +168,7 @@ make submodules
 
 ## Adding new packages or updating package versions
 
-The `shinylive_lock.json` file lists specific versions of packages which will be included in the Shinylive distribution (in addition to the base Pyodide packages). This file is generated from `shinylive_requirements.json`.
+`shinylive_lock.json` lists, for each bundled shiny minor version, the packages added on top of the base Pyodide packages. It is generated from `shinylive_requirements.json` and `shiny_versions.json` by resolving each shiny version with `uv pip compile` against the Pyodide platform. The build writes one `pyodide-lock-shiny-<minor>.json` per version into `build/shinylive/pyodide/`; `pyodide-lock.json` is a copy of the newest one.
 
 If you add a package to `shinylive_requirements.json`, or want to update package versions, the lockfile must also be regenerated:
 
@@ -186,6 +186,7 @@ This an overview of some of the important files and directories in this project.
 ```
 ├── shinylive_requirements.json # List of packages to add on top of standard Pyodide installation.
 ├── shinylive_lock.json    # Lockfile generated from shinylive_requirements.json.
+├── pyodide-lock-shiny-*.json # Built into build/shinylive/pyodide/, one per bundled shiny minor version.
 ├── build                  # Generated JS/CSS/wasm components for shinylive (not committed to repo)
 ├── examples               # Shiny app examples used in Examples browser
 ├── packages               # Git submodules for htmltools, shiny, and ipyshiny.

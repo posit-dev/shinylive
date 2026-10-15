@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import copy
 import functools
 import hashlib
 import json
@@ -236,7 +237,22 @@ UV_PYTHON_PLATFORM = "wasm32-pyodide2024"
 
 # Extra constraints per minor version, for when the newest allowed dependency
 # breaks an older shiny at runtime. Lines in requirements syntax.
-VERSION_CONSTRAINTS: dict[str, list[str]] = {}
+#
+# starlette 1.3.0 and later call .decode() on scope["query_string"] whenever a
+# request reads its URL. shinylive's ASGI bridge (src/messageporthttp.ts) sends
+# query_string as a str, and shiny encodes it to bytes only when it is
+# non-empty, so a plain page load fails with "'str' object has no attribute
+# 'decode'". shiny 1.6 and later read the URL on every root request; 1.4 and
+# 1.5 read it on fewer paths, and get the same cap so that every bundled
+# version runs on a starlette the bridge supports.
+_STARLETTE_FOR_STR_QUERY_STRING = ["starlette<1.3"]
+VERSION_CONSTRAINTS: dict[str, list[str]] = {
+    "1.8": _STARLETTE_FOR_STR_QUERY_STRING,
+    "1.7": _STARLETTE_FOR_STR_QUERY_STRING,
+    "1.6": _STARLETTE_FOR_STR_QUERY_STRING,
+    "1.5": _STARLETTE_FOR_STR_QUERY_STRING,
+    "1.4": _STARLETTE_FOR_STR_QUERY_STRING,
+}
 
 # Stock Pyodide packages passed to uv as overrides instead of constraints.
 # htmltools requires typing-extensions>=4.12.0 while Pyodide 0.27.7 ships
@@ -750,44 +766,44 @@ def _to_basic_package_info(
 # Functions for copying and downloading the wheel files.
 # =============================================================================
 def retrieve_packages():
-    """
-    Download packages listed in the lockfile, either from PyPI, or from local wheels, as
-    specified in the lockfile.
-    """
-    with open(package_lock_file, "r") as f:
-        packages: dict[str, LockfilePackageInfo] = json.load(f)
-
+    """Download or copy every wheel any minor version's lock names. A wheel
+    shared by several locks is fetched once."""
+    locks = load_lock()
+    seen: set[str] = set()
     print(f"Copying packages to {os.path.relpath(pyodide_dir)}")
+    for entries in locks.values():
+        for pkg_info in entries.values():
+            if pkg_info["filename"] in seen:
+                continue
+            seen.add(pkg_info["filename"])
+            _retrieve_one(pkg_info)
 
-    for pkg_info in packages.values():
-        destfile = os.path.join(pyodide_dir, pkg_info["filename"])
 
-        if pkg_info["url"] is None:
-            srcfile = os.path.join(package_source_dir, pkg_info["filename"])
-            print("  Copying " + os.path.relpath(srcfile))
-            shutil.copyfile(srcfile, destfile)
-        else:
-            if os.path.exists(destfile):
-                print(f"  {destfile} already exists. Checking SHA256... ", end="")
-                if _sha256_file(destfile) == pkg_info["sha256"]:
-                    print("OK")
-                    continue
-                else:
-                    print("Mismatch! Downloading...")
+def _retrieve_one(pkg_info: LockfilePackageInfo) -> None:
+    destfile = os.path.join(pyodide_dir, pkg_info["filename"])
+    if pkg_info["url"] is None:
+        srcfile = os.path.join(package_source_dir, pkg_info["filename"])
+        print("  Copying " + os.path.relpath(srcfile))
+        shutil.copyfile(srcfile, destfile)
+    else:
+        if os.path.exists(destfile):
+            print(f"  {destfile} already exists. Checking SHA256... ", end="")
+            if _sha256_file(destfile) == pkg_info["sha256"]:
+                print("OK")
+                return
+            print("Mismatch! Downloading...")
+        print("  " + pkg_info["url"])
+        req = urllib.request.urlopen(pkg_info["url"])
+        with open(destfile, "b+w") as f:
+            f.write(req.read())
 
-            print("  " + pkg_info["url"])
-            req = urllib.request.urlopen(pkg_info["url"])
-            with open(destfile, "b+w") as f:
-                f.write(req.read())
-
-        if pkg_info["sha256"] is not None:
-            sha256 = _sha256_file(destfile)
-            if sha256 != pkg_info["sha256"]:
-                raise Exception(
-                    f"SHA256 mismatch for {pkg_info['url']}.\n"
-                    + f"  Expected {pkg_info['sha256']}\n"
-                    + f"  Actual   {sha256}"
-                )
+    if pkg_info["sha256"] is not None:
+        sha256 = _sha256_file(destfile)
+        if sha256 != pkg_info["sha256"]:
+            raise Exception(
+                f"SHA256 mismatch for {pkg_info['url']}.\n"
+                + f"  Expected {pkg_info['sha256']}\n  Actual   {sha256}"
+            )
 
 
 def _sha256_file(filename: str) -> str:
@@ -798,45 +814,63 @@ def _sha256_file(filename: str) -> str:
 # ===================================================================================
 # Functions for modifying the pyodide/pyodide-lock.json file with the extra packages.
 # ===================================================================================
+def pyodide_lock_path(minor: str) -> Path:
+    return pyodide_dir / f"pyodide-lock-shiny-{minor}.json"
+
+
 def update_pyodide_pyodide_lock_json():
-    pyodide_packages = orig_pyodide_lock()
+    stock = orig_pyodide_lock()
+    locks = load_lock()
+    minors = bundled_python_minors()
+    newest = next(iter(minors))
 
-    print(
-        f"Adding package information from {package_lock_file} into {pyodide_lock_json_file}"
-    )
+    for minor, entries in locks.items():
+        out = pyodide_lock_path(minor)
+        print(f"Writing {os.path.relpath(out)} (shiny {minors[minor]})")
+        # A deep copy, because the dependency edits below change the stock
+        # packages' depends lists and every minor starts from the same stock.
+        merged = copy.deepcopy(stock)
+        for name, pkg_info in entries.items():
+            key = normalize_name(name)
+            if key in merged["packages"]:
+                # Pyodide ships this package too. The lockfile's version replaces it.
+                pyodide_version = merged["packages"][key]["version"]
+                print(f"  {name} (replaces Pyodide's {pyodide_version})")
+            p_pkg_info = _lockfile_to_pyodide_package_info(pkg_info)
+            # A sha256 of "" marks a local wheel, whose hash is computed here.
+            if p_pkg_info["sha256"] == "":
+                p_pkg_info["sha256"] = _sha256_file(
+                    str(package_source_dir / p_pkg_info["file_name"])
+                )
+            merged["packages"][key] = p_pkg_info
 
-    with open(package_lock_file, "r") as f:
-        lockfile_packages = cast(dict[str, LockfilePackageInfo], json.load(f))
+        for name, extra in EXTRA_DEPENDENCIES.items():
+            if name in merged["packages"]:
+                merged["packages"][name]["depends"].extend(extra)
+        for name, omit in OMIT_DEPENDENCIES.items():
+            if name in merged["packages"]:
+                depends = set(merged["packages"][name]["depends"])
+                merged["packages"][name]["depends"] = sorted(depends.difference(omit))
 
-    print("Adding packages to Pyodide packages:")
-    for name, pkg_info in lockfile_packages.items():
-        if name in pyodide_packages["packages"]:
-            # Pyodide ships this package too. The lockfile's version replaces it.
-            pyodide_version = pyodide_packages["packages"][name]["version"]
-            print(f"  {name} (replaces Pyodide's {pyodide_version})")
-        else:
-            print(f"  {name}")
-        p_pkg_info = _lockfile_to_pyodide_package_info(pkg_info)
-        # If the sha256 is "", then that's a signal that this is a local file and we
-        # need to compute the sha256 here.
-        if p_pkg_info["sha256"] == "":
-            p_pkg_info["sha256"] = _sha256_file(
-                str(package_source_dir / p_pkg_info["file_name"])
-            )
-        pyodide_packages["packages"][name] = p_pkg_info
+        # A dependency that uv excluded for this platform (an environment
+        # marker) is not in the lock, and Pyodide refuses a lock that names
+        # a package it does not have. Keep only the ones present.
+        present = set(merged["packages"])
+        for pkg in merged["packages"].values():
+            dropped = [d for d in pkg["depends"] if normalize_name(d) not in present]
+            if dropped:
+                print(f"    {pkg['name']}: dropping platform-excluded depends {dropped}")
+            # Normalized as well: PyPI metadata may spell a name typing_extensions
+            # while the lock keys it typing-extensions.
+            pkg["depends"] = [
+                normalize_name(d) for d in pkg["depends"] if normalize_name(d) in present
+            ]
 
-    print("Injecting extra dependencies")
-    for name in EXTRA_DEPENDENCIES:
-        pyodide_packages["packages"][name]["depends"].extend(EXTRA_DEPENDENCIES[name])
+        with open(out, "w") as f:
+            json.dump(merged, f)
 
-    print("Removing circular dependencies")
-    for key, val in OMIT_DEPENDENCIES.items():
-        depends = set(pyodide_packages["packages"][key]["depends"])
-        pyodide_packages["packages"][key]["depends"] = list(depends.difference(val))
-
-    print("Writing pyodide/pyodide-lock.json")
-    with open(pyodide_lock_json_file, "w") as f:
-        json.dump(pyodide_packages, f)
+    print(f"Copying the newest lock (shiny {minors[newest]}) to pyodide-lock.json")
+    shutil.copy(pyodide_lock_path(newest), pyodide_lock_json_file)
 
 
 def _lockfile_to_pyodide_package_info(pkg: LockfilePackageInfo) -> PyodidePackageInfo:

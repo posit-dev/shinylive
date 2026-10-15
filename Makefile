@@ -34,12 +34,10 @@ SHINYLIVE_DIR = ./_shinylive
 # We use a consistent helper that checks all three locations.
 _get_version = $(shell grep '^__version__ = ' $(1)/__version.py $(1)/__init__.py $(1)/_version.py 2>/dev/null | head -1 | sed -E "s/.*['\"]([^'\"]+)['\"]/\1/")
 HTMLTOOLS_VERSION = $(call _get_version,$(PACKAGE_DIR)/py-htmltools/htmltools)
-SHINY_VERSION = $(call _get_version,$(PACKAGE_DIR)/py-shiny/shiny)
 SHINYWIDGETS_VERSION = $(call _get_version,$(PACKAGE_DIR)/py-shinywidgets/shinywidgets)
 FAICONS_VERSION = $(call _get_version,$(PACKAGE_DIR)/py-faicons/faicons)
 
 HTMLTOOLS_WHEEL = htmltools-$(HTMLTOOLS_VERSION)-py3-none-any.whl
-SHINY_WHEEL = shiny-$(SHINY_VERSION)-py3-none-any.whl
 SHINYWIDGETS_WHEEL = shinywidgets-$(SHINYWIDGETS_VERSION)-py3-none-any.whl
 FAICONS_WHEEL = faicons-$(FAICONS_VERSION)-py3-none-any.whl
 
@@ -179,7 +177,6 @@ pyodide_js:
 
 ## Copy local package wheels to the pyodide directory
 pyodide_packages_local: $(BUILD_DIR)/shinylive/pyodide/$(HTMLTOOLS_WHEEL) \
-	$(BUILD_DIR)/shinylive/pyodide/$(SHINY_WHEEL) \
 	$(BUILD_DIR)/shinylive/pyodide/$(SHINYWIDGETS_WHEEL) \
 	$(BUILD_DIR)/shinylive/pyodide/$(FAICONS_WHEEL) \
 	$(BUILD_DIR)/shinylive/pyodide/$(LIBSASS_WHEEL)
@@ -189,12 +186,6 @@ $(BUILD_DIR)/shinylive/pyodide/$(HTMLTOOLS_WHEEL): $(PACKAGE_DIR)/$(HTMLTOOLS_WH
 	# Remove any old copies of htmltools
 	rm -f $(BUILD_DIR)/shinylive/pyodide/htmltools*.whl
 	cp $(PACKAGE_DIR)/$(HTMLTOOLS_WHEEL) $(BUILD_DIR)/shinylive/pyodide/$(HTMLTOOLS_WHEEL)
-
-$(BUILD_DIR)/shinylive/pyodide/$(SHINY_WHEEL): $(PACKAGE_DIR)/$(SHINY_WHEEL)
-	mkdir -p $(BUILD_DIR)/shinylive/pyodide
-	# Remove any old copies of shiny
-	rm -f $(BUILD_DIR)/shinylive/pyodide/shiny*.whl
-	cp $(PACKAGE_DIR)/$(SHINY_WHEEL) $(BUILD_DIR)/shinylive/pyodide/$(SHINY_WHEEL)
 
 $(BUILD_DIR)/shinylive/pyodide/$(SHINYWIDGETS_WHEEL): $(PACKAGE_DIR)/$(SHINYWIDGETS_WHEEL)
 	mkdir -p $(BUILD_DIR)/shinylive/pyodide
@@ -265,20 +256,17 @@ _shinylive:
 	$(MAKE) buildjs-prod-r
 	cp -Lr $(SITE_DIR)/. $(SHINYLIVE_DIR)/r
 
-# Build htmltools, shiny, and shinywidgets. This target must be run manually after
+# Build htmltools, shinywidgets, and faicons. This target must be run manually after
 # updating the package submodules; it will not run automatically with `make all`
 # because I'm not sure how to set up the dependencies reliably.
-## Build htmltools, shiny, and shinywidgets wheels
+## Build htmltools, shinywidgets, and faicons wheels
 packages: clean-packages \
 	package-htmltools \
-	package-shiny \
 	package-shinywidgets \
 	package-faicons
 
 
 package-htmltools: $(PACKAGE_DIR)/$(HTMLTOOLS_WHEEL)
-
-package-shiny: $(PACKAGE_DIR)/$(SHINY_WHEEL)
 
 package-shinywidgets: $(PACKAGE_DIR)/$(SHINYWIDGETS_WHEEL)
 
@@ -289,11 +277,6 @@ $(PACKAGE_DIR)/$(HTMLTOOLS_WHEEL): $(PYBIN) $(PACKAGE_DIR)/py-htmltools
 	# Remove any old copies of the package
 	rm -f $(PACKAGE_DIR)/htmltools*.whl
 	. $(PYBIN)/activate && cd $(PACKAGE_DIR)/py-htmltools && pip wheel --no-deps -w ../  .
-
-$(PACKAGE_DIR)/$(SHINY_WHEEL): $(PYBIN) $(PACKAGE_DIR)/py-shiny
-	# Remove any old copies of the package
-	rm -f $(PACKAGE_DIR)/shiny*.whl
-	. $(PYBIN)/activate && cd $(PACKAGE_DIR)/py-shiny && pip wheel --no-deps -w ../ .
 
 $(PACKAGE_DIR)/$(SHINYWIDGETS_WHEEL): $(PYBIN) $(PACKAGE_DIR)/py-shinywidgets
 	# Remove any old copies of the package
@@ -322,7 +305,6 @@ update_packages_lock_local: $(PYBIN) $(BUILD_DIR)/shinylive/pyodide
 ## Download packages in shinylive_lock.json from PyPI
 retrieve_packages: $(PYBIN) $(BUILD_DIR)/shinylive/pyodide \
 		$(BUILD_DIR)/shinylive/pyodide/$(HTMLTOOLS_WHEEL) \
-		$(BUILD_DIR)/shinylive/pyodide/$(SHINY_WHEEL) \
 		$(BUILD_DIR)/shinylive/pyodide/$(SHINYWIDGETS_WHEEL) \
 		$(BUILD_DIR)/shinylive/pyodide/$(FAICONS_WHEEL)
 	$(PYBIN)/pip install -r requirements-dev.txt
@@ -383,7 +365,7 @@ test-unit-coverage: node_modules
 
 # The example tests drive apps with `shiny.playwright.controller`, whose locators
 # track the markup a given Shiny renders, so the installed Shiny has to be the
-# one shinylive bundles -- the submodule $(SHINY_WHEEL) is built from.
+# newest bundled version, which the submodule is pinned to.
 #
 # The `##` line has to sit directly above the target for `make help` to find it.
 ## Install the Python dependencies for the tests in tests/
