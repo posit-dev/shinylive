@@ -188,6 +188,10 @@ function satisfies(exact: string, clause: Clause): boolean {
     case "==":
       return minorOf(exact) === minorOf(clause.version);
     case "!=":
+      // `!=1.8.*` excludes every 1.8 patch, so a wildcard compares by minor.
+      if (clause.version.endsWith(".*")) {
+        return minorOf(exact) !== minorOf(clause.version);
+      }
       return c !== 0;
     case ">=":
       return c >= 0;

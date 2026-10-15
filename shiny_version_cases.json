@@ -50,6 +50,28 @@
       }
     },
     {
+      "name": "wildcard exclusion skips the whole minor",
+      "engine": "python",
+      "files": { "requirements.txt": "shiny!=1.8.*\n" },
+      "expect": {
+        "minor": "1.7",
+        "exact": "1.7.0",
+        "requested": null,
+        "note": null
+      }
+    },
+    {
+      "name": "wildcard exclusion with an upper bound",
+      "engine": "python",
+      "files": { "requirements.txt": "shiny!=1.6.*,<1.7\n" },
+      "expect": {
+        "minor": "1.5",
+        "exact": "1.5.1",
+        "requested": null,
+        "note": null
+      }
+    },
+    {
       "name": "compatible release",
       "engine": "python",
       "files": { "requirements.txt": "shiny~=1.6.0\n" },
