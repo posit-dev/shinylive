@@ -100,7 +100,7 @@ describe("findShinySpec() for Python", () => {
     expect(spec).toMatchObject({ clauses: [{ op: "==", version: "1.5.0" }] });
   });
 
-  test("CRLF line endings do not reach the clause", () => {
+  test("CRLF line endings are not part of the clause", () => {
     const spec = findShinySpec(files("numpy\r\nshiny==1.6.3\r\n"), "python");
     expect(spec).toMatchObject({
       line: "shiny==1.6.3",

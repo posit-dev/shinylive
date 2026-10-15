@@ -188,8 +188,10 @@ This an overview of some of the important files and directories in this project.
 ```
 ├── shinylive_requirements.json # List of packages to add on top of standard Pyodide installation.
 ├── shinylive_lock.json    # Lockfile generated from shinylive_requirements.json.
-├── pyodide-lock-shiny-*.json # Built into build/shinylive/pyodide/, one per bundled shiny minor version.
 ├── build                  # Generated JS/CSS/wasm components for shinylive (not committed to repo)
+│   └── shinylive
+│       └── pyodide
+│           └── pyodide-lock-shiny-*.json # One lock per bundled shiny minor version.
 ├── examples               # Shiny app examples used in Examples browser
 ├── packages               # Git submodules for htmltools, shiny, shinywidgets, and faicons.
 │   ├── py-faicons         #   Used for building wheel files for shinylive.

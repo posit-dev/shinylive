@@ -625,7 +625,7 @@ export function App({
             runApp: runAppWithVersion,
             stopApp: async () => {
               // A stop during a restart waits for it to finish. Otherwise the
-              // stop reaches the new viewer while it is still starting the
+              // stop runs on the new viewer while it is still starting the
               // restart's app: the engine removes the app as soon as it is
               // registered, and the iframe then requests an app that the
               // engine no longer has.

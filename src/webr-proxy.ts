@@ -1,5 +1,5 @@
-import type { Shelter, WebROptions } from "webr";
-import { EvalROptions, WebR } from "webr";
+import type { EvalROptions, Shelter, WebROptions } from "webr";
+import { WebR } from "webr";
 import type { ASGIHTTPRequestScope } from "./messageporthttp.js";
 import { makeHttpuvRequest } from "./messageporthttp.js";
 import { openChannelHttpuv } from "./messageportwebsocket-channel.js";

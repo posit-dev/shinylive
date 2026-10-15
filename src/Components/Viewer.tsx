@@ -26,12 +26,12 @@ export type ViewerMethods =
 
 // Register a unique app path with the service worker. When fetches in our
 // origin match against the app path, navigation should be proxied through
-// the current window (eventually making its way to the Wasm engine).
+// the current window and then passed to the Wasm engine.
 //
-// Requests reach the engine only while the app is running, as set with
-// `setServing()`. The iframe's requests are asynchronous, so one can arrive
-// after `stopApp()` has removed the app from the engine's registry (for
-// example, a navigation that started just before the stop). The engine fails
+// The engine answers requests only while the app is running, as set with
+// `setServing()`. The iframe's requests are asynchronous, so the viewer can
+// receive one after `stopApp()` has removed the app from the engine's
+// registry (for example, a navigation that started just before the stop). The engine fails
 // such a request (Pyodide raises an uncaught KeyError), so the viewer answers
 // it with a 503 instead.
 function setupAppProxyPath(proxy: PyodideProxy | WebRProxy): {
@@ -333,7 +333,7 @@ export function Viewer({
           });
           // .start_app reports failure by returning a status list rather than
           // raising, because captureConditions is false here: a raised error would
-          // go to the terminal and never reach this catch, and the viewer would
+          // print in the terminal without triggering this catch, and the viewer would
           // show an app that never started. We evaluate on the shelter rather
           // than through runRAsync because runRAsync purges its own shelter
           // before returning, and we need the list to outlive the call to show

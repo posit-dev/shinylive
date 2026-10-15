@@ -231,12 +231,13 @@ class BasicPackageInfo(TypedDict):
 # =============================================================================
 shiny_versions_file = top_dir / "shiny_versions.json"
 
-# Pyodide 0.27.7 ships Python 3.12 and the pyodide_2024_0 platform tag.
+# Pyodide 0.27.7 uses Python 3.12 and the pyodide_2024_0 platform tag.
 PYODIDE_PYTHON_VERSION = "3.12"
 UV_PYTHON_PLATFORM = "wasm32-pyodide2024"
 
 # Extra constraints per minor version, for when the newest allowed dependency
-# breaks an older shiny at runtime. Lines in requirements syntax.
+# breaks an older shiny at runtime. Lines in requirements syntax. An entry is
+# removed when its minor leaves shiny_versions.json.
 #
 # shiny 1.4.0 and 1.5.1 require htmltools>=0.6.0 with no upper bound, so uv
 # resolves htmltools 0.7.0 for them. Shiny Express apps on that pairing fail at
@@ -251,12 +252,13 @@ VERSION_CONSTRAINTS: dict[str, list[str]] = {
 # Constraints applied to every minor version, ahead of VERSION_CONSTRAINTS.
 # starlette 1.3 and later call .decode() on scope["query_string"], and
 # shinylive's HTTP bridge in src/messageporthttp.ts sends it as a str, so page
-# loads fail. The cap holds until the bridge sends bytes.
+# loads fail. The cap stays until the bridge sends bytes.
 SHARED_CONSTRAINTS: list[str] = ["starlette<1.3"]
 
 # Stock Pyodide packages passed to uv as overrides instead of constraints.
-# htmltools requires typing-extensions>=4.12.0 while Pyodide 0.27.7 ships
-# 4.11.0, and shiny requires orjson>=3.10.7 while Pyodide ships 3.10.1. The
+# htmltools 0.7.0 requires typing-extensions>=4.12.0 while Pyodide 0.27.7
+# includes 4.11.0, and shiny requires orjson>=3.10.7 while Pyodide includes
+# 3.10.1. The
 # bundle runs with the stock versions, so the override keeps uv from rejecting
 # them, and any other conflict with a stock version still fails the resolution.
 STOCK_OVERRIDES = {"typing-extensions", "orjson"}
@@ -385,6 +387,8 @@ def resolve_with_uv(
             sys.executable, "-m", "uv", "pip", "compile", str(reqs),
             "--constraints", str(cons),
             "--overrides", str(overrides),
+            # Lets uv use the wheels in the build directories. The PyPI
+            # cross-check fails the lock on any mismatch with them.
             "--find-links", str(package_source_dir),
             "--find-links", str(pyodide_dir),
             "--python-platform", UV_PYTHON_PLATFORM,
@@ -434,7 +438,7 @@ def _lock_entries_for(
     pinned: dict[str, str], required: list[RequirementsPackage], stock: dict[str, Any]
 ) -> dict[str, LockfilePackageInfo]:
     """Lock entries for every pinned package that Pyodide does not already
-    ship. Local wheels are read from packages/, the rest from PyPI at the
+    include. Local wheels are read from packages/, the rest from PyPI at the
     pinned version."""
     stock_names = {normalize_name(name) for name in stock}
     local = local_wheel_versions(required)

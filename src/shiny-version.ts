@@ -282,7 +282,7 @@ export function resolveShinyVersion(
 }
 
 /**
- * The terminal line for a version the engine did not deliver, or null.
+ * The terminal line for a version the engine did not load, or null.
  * Compares what the app asked for against what the engine really loaded.
  */
 export function shinyVersionMessage(
