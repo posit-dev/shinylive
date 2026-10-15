@@ -120,3 +120,11 @@
     opacity: 1;
   }
 }
+
+.shinylive-viewer .shinylive-version-notice {
+  padding: 4px 10px;
+  font-size: 0.85rem;
+  background-color: #fff3cd;
+  color: #664d03;
+  border-bottom: 1px solid #ffe69c;
+}

@@ -1,9 +1,9 @@
 import * as React from "react";
-import { rCharacterField } from "../r-status";
 import { useLoadStatus } from "../hooks/useLoadStatus";
 import type { EngineName } from "../load-status";
 import { ENGINE_LABEL } from "../load-status";
 import type { PyodideProxy } from "../pyodide-proxy";
+import { rCharacterField } from "../r-status";
 import * as utils from "../utils";
 import type { WebRProxy } from "../webr-proxy";
 import type { ProxyHandle } from "./App";
@@ -30,6 +30,7 @@ export type ViewerMethods =
 function setupAppProxyPath(proxy: PyodideProxy | WebRProxy): {
   appName: string;
   urlPath: string;
+  dispose: () => void;
 } {
   const appName = `app_${utils.makeRandomKey(20)}`;
   const urlPath = appName + "/";
@@ -46,14 +47,26 @@ function setupAppProxyPath(proxy: PyodideProxy | WebRProxy): {
   // it restarts, we need to re-register with the service worker.
   createHttpRequestChannel(proxy, appName, urlPath);
 
-  // Listen for the service worker's restart messages and re-register.
-  navigator.serviceWorker.addEventListener("message", (event) => {
+  // Re-register when the service worker restarts (see the comment above).
+  // Removed on dispose: after an engine restart this proxy is gone, and
+  // re-registering a port to a terminated worker would only leak.
+  const onServiceWorkerMessage = (event: MessageEvent) => {
     if (event.data.type === "serviceworkerStart") {
       createHttpRequestChannel(proxy, appName, urlPath);
     }
-  });
+  };
+  navigator.serviceWorker.addEventListener("message", onServiceWorkerMessage);
 
-  return { appName, urlPath };
+  return {
+    appName,
+    urlPath,
+    dispose: () => {
+      navigator.serviceWorker.removeEventListener(
+        "message",
+        onServiceWorkerMessage,
+      );
+    },
+  };
 }
 
 // Register the app path with the service worker
@@ -173,7 +186,6 @@ async function resetRAppFrame(
   await utils.sleep(200);
 }
 
-
 // =============================================================================
 // Viewer component
 // =============================================================================
@@ -183,6 +195,7 @@ export function Viewer({
   devMode = false,
   setWindowTitle = false,
   engine,
+  notice = null,
 }: {
   proxyHandle: ProxyHandle;
   setViewerMethods: React.Dispatch<React.SetStateAction<ViewerMethods>>;
@@ -194,6 +207,7 @@ export function Viewer({
       }
     | false;
   engine: EngineName;
+  notice?: string | null;
 }) {
   const viewerFrameRef = React.useRef<HTMLIFrameElement>(null);
   const [appRunningState, setAppRunningState] = React.useState<
@@ -354,6 +368,12 @@ export function Viewer({
       runApp,
       stopApp,
     });
+
+    return () => {
+      if (shinyIntervalRef.current) clearInterval(shinyIntervalRef.current);
+      appInfo.dispose();
+      setViewerMethods({ ready: false });
+    };
   }, [proxyHandle.shinyReady]);
 
   // Shiny for Python
@@ -425,12 +445,22 @@ export function Viewer({
       runApp,
       stopApp,
     });
+
+    return () => {
+      appInfo.dispose();
+      setViewerMethods({ ready: false });
+    };
   }, [proxyHandle.shinyReady]);
 
   const engineFailed = engineStatus.stage === "failed";
 
   return (
     <div className="shinylive-viewer">
+      {notice ? (
+        <div className="shinylive-version-notice" role="status">
+          {notice}
+        </div>
+      ) : null}
       <iframe ref={viewerFrameRef} className="app-frame" />
       {engineFailed || appRunningState === "errored" ? (
         <ViewerError
