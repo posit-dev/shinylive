@@ -4,8 +4,11 @@
 import type { FileContent } from "./Components/filecontent";
 import {
   PIN_FILE,
+  findShinySpec,
   parseDescriptionEntry,
   parseRequirementsLine,
+  resolveShinyVersion,
+  type AvailableVersions,
   type Engine,
 } from "./shiny-version";
 
@@ -120,4 +123,43 @@ export function writeShinyPin(
       ? { name, type: "text", content: rewrite(existing.content, exact) }
       : f,
   );
+}
+
+/**
+ * Apply a Quarto `#| shiny-version:` value. The value has to be a YAML string:
+ * unquoted, `1.10` parses as the float 1.1, which cannot be told from "1.1".
+ */
+export function applyShinyVersionOption(
+  files: FileContent[],
+  engine: Engine,
+  value: unknown,
+  available: AvailableVersions,
+): { files: FileContent[]; note: string | null } {
+  if (value === undefined) return { files, note: null };
+  if (typeof value !== "string") {
+    throw new Error(
+      `The shiny-version option must be a quoted string, for example #| shiny-version: "1.10"; got ${JSON.stringify(
+        value,
+      )}.`,
+    );
+  }
+  if (findShinySpec(files, engine).kind !== "none") {
+    return {
+      files,
+      note: `shiny-version "${value}" ignored: ${PIN_FILE[engine]} already pins shiny`,
+    };
+  }
+  const probe: FileContent = {
+    name: PIN_FILE[engine],
+    type: "text",
+    content:
+      engine === "python"
+        ? `shiny==${value}\n`
+        : `Imports: shiny (== ${value})\n`,
+  };
+  const resolved = resolveShinyVersion([probe], engine, available);
+  return {
+    files: writeShinyPin(files, engine, resolved.exact),
+    note: resolved.note,
+  };
 }

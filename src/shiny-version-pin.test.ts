@@ -156,3 +156,72 @@ describe("writeShinyPin() for R", () => {
     );
   });
 });
+
+import { applyShinyVersionOption } from "./shiny-version-pin";
+
+describe("applyShinyVersionOption()", () => {
+  const available = { "1.8": "1.8.0", "1.6": "1.6.4" };
+  const app = [text("app.py", "")];
+
+  test("undefined leaves the files alone", () => {
+    expect(
+      applyShinyVersionOption(app, "python", undefined, available),
+    ).toEqual({ files: app, note: null });
+  });
+
+  test("writes a pin for the exact version of the named minor", () => {
+    const { files, note } = applyShinyVersionOption(
+      app,
+      "python",
+      "1.6",
+      available,
+    );
+    expect(contentOf(files, "requirements.txt")).toBe("shiny==1.6.4\n");
+    expect(note).toBeNull();
+  });
+
+  test("the app's own pin wins, with a note", () => {
+    const pinned = [
+      text("app.py", ""),
+      text("requirements.txt", "shiny==1.8.0\n"),
+    ];
+    const { files, note } = applyShinyVersionOption(
+      pinned,
+      "python",
+      "1.6",
+      available,
+    );
+    expect(files).toBe(pinned);
+    expect(note).toBe(
+      'shiny-version "1.6" ignored: requirements.txt already pins shiny',
+    );
+  });
+
+  test("a minor outside the window pins the closest, and passes the resolver's note on", () => {
+    const { files, note } = applyShinyVersionOption(
+      app,
+      "python",
+      "1.2",
+      available,
+    );
+    expect(contentOf(files, "requirements.txt")).toBe("shiny==1.6.4\n");
+    expect(note).toBe(
+      "shiny 1.2 is outside the bundled versions (1.6.4 to 1.8.0); running 1.6.4",
+    );
+  });
+
+  test.each([1.1, 1.6, true, ["1.6"], { v: "1.6" }, null])(
+    "rejects %p",
+    (value) => {
+      expect(() =>
+        applyShinyVersionOption(app, "python", value, available),
+      ).toThrow(/shiny-version option must be a quoted string/);
+    },
+  );
+
+  test("the error shows the quoted form", () => {
+    expect(() =>
+      applyShinyVersionOption(app, "python", 1.1, available),
+    ).toThrow('for example #| shiny-version: "1.10"');
+  });
+});
