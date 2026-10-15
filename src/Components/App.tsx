@@ -472,8 +472,8 @@ export function App({
   // of minor version restarts the engine first.
   const runAppWithVersion = React.useCallback(
     async (appCode: string | FileContent[]): Promise<void> => {
-      // A caller's stopApp during a restart finds no viewer to stop, so a run
-      // that waited stops the restart's app itself before running.
+      // A caller's stopApp that ran before the restart began did not stop the
+      // restart's app, so a run that waited stops it before running.
       let waited = false;
       while (restartInFlightRef.current) {
         waited = true;
@@ -552,6 +552,14 @@ export function App({
             ready: true,
             runApp: runAppWithVersion,
             stopApp: async () => {
+              // A stop during a restart waits for it to finish. Otherwise the
+              // stop reaches the new viewer while it is still starting the
+              // restart's app: the engine removes the app as soon as it is
+              // registered, and the iframe then requests an app that the
+              // engine no longer has.
+              while (restartInFlightRef.current) {
+                await restartInFlightRef.current;
+              }
               const current = viewerMethodsRef.current;
               if (current.ready) await current.stopApp();
             },

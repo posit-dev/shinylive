@@ -510,25 +510,28 @@ async def _stop_app(app_name, scope = _shiny_app_registry):
 // Misc stuff
 // =============================================================================
 
-// TODO: Generalize this so it's not always tied to a single pyodideproxy
-let channelListenerRegistered = false;
+// The window has one "openChannel" listener, and it answers with the proxy of
+// the engine that most recently started shiny. An engine restart replaces the
+// proxy, and the listener must not keep sending channels to the terminated one.
+let channelProxy: PyodideProxy | null = null;
 function ensureOpenChannelListener(pyodideProxy: PyodideProxy): void {
-  if (channelListenerRegistered) return;
+  const alreadyListening = channelProxy !== null;
+  channelProxy = pyodideProxy;
+  if (alreadyListening) return;
 
   window.addEventListener("message", async (event) => {
     const msg = event.data;
     if (msg.type === "openChannel") {
-      const appExists = await pyodideProxy.runPyAsync(
+      const proxy = channelProxy!;
+      const appExists = await proxy.runPyAsync(
         `
         "${msg.appName}" in _shiny_app_registry
       `,
         { returnResult: "value" },
       );
       if (appExists) {
-        await pyodideProxy.openChannel(msg.path, msg.appName, event.ports[0]);
+        await proxy.openChannel(msg.path, msg.appName, event.ports[0]);
       }
     }
   });
-
-  channelListenerRegistered = true;
 }

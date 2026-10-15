@@ -27,13 +27,23 @@ export type ViewerMethods =
 // Register a unique app path with the service worker. When fetches in our
 // origin match against the app path, navigation should be proxied through
 // the current window (eventually making its way to the Wasm engine).
+//
+// Requests reach the engine only while the app is running, as set with
+// `setServing()`. The iframe's requests are asynchronous, so one can arrive
+// after `stopApp()` has removed the app from the engine's registry (for
+// example, a navigation that started just before the stop). The engine fails
+// such a request (Pyodide raises an uncaught KeyError), so the viewer answers
+// it with a 503 instead.
 function setupAppProxyPath(proxy: PyodideProxy | WebRProxy): {
   appName: string;
   urlPath: string;
+  setServing: (serving: boolean) => void;
   dispose: () => void;
 } {
   const appName = `app_${utils.makeRandomKey(20)}`;
   const urlPath = appName + "/";
+  let serving = false;
+  const isServing = () => serving;
 
   if (!navigator.serviceWorker.controller) {
     throw new Error("ServiceWorker controller was not found!");
@@ -45,14 +55,14 @@ function setupAppProxyPath(proxy: PyodideProxy | WebRProxy): {
   // and will restart as needed. When the service worker shuts down, it will
   // lose the state that tells it how to proxy requests for `urlPath`, so when
   // it restarts, we need to re-register with the service worker.
-  createHttpRequestChannel(proxy, appName, urlPath);
+  createHttpRequestChannel(proxy, appName, urlPath, isServing);
 
   // Re-register when the service worker restarts (see the comment above).
   // Removed on dispose: after an engine restart this proxy is gone, and
   // re-registering a port to a terminated worker would only leak.
   const onServiceWorkerMessage = (event: MessageEvent) => {
     if (event.data.type === "serviceworkerStart") {
-      createHttpRequestChannel(proxy, appName, urlPath);
+      createHttpRequestChannel(proxy, appName, urlPath, isServing);
     }
   };
   navigator.serviceWorker.addEventListener("message", onServiceWorkerMessage);
@@ -60,7 +70,11 @@ function setupAppProxyPath(proxy: PyodideProxy | WebRProxy): {
   return {
     appName,
     urlPath,
+    setServing: (value: boolean) => {
+      serving = value;
+    },
     dispose: () => {
+      serving = false;
       navigator.serviceWorker.removeEventListener(
         "message",
         onServiceWorkerMessage,
@@ -74,6 +88,7 @@ function createHttpRequestChannel(
   proxy: PyodideProxy | WebRProxy,
   appName: string,
   urlPath: string,
+  isServing: () => boolean,
 ): MessageChannel {
   if (!navigator.serviceWorker.controller) {
     throw new Error("ServiceWorker controller was not found!");
@@ -85,6 +100,10 @@ function createHttpRequestChannel(
   httpRequestChannel.port1.addEventListener("message", (event) => {
     const msg = event.data;
     if (msg.type === "makeRequest") {
+      if (!isServing()) {
+        respondUnavailable(event.ports[0]);
+        return;
+      }
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
       proxy.makeRequest(msg.scope, appName, event.ports[0]);
     }
@@ -100,6 +119,21 @@ function createHttpRequestChannel(
   );
 
   return httpRequestChannel;
+}
+
+// Answer a proxied request with an empty 503, in the message format that
+// fetchASGI() in messageporthttp.ts reads.
+function respondUnavailable(clientPort: MessagePort): void {
+  clientPort.postMessage({
+    type: "http.response.start",
+    status: 503,
+    headers: {},
+  });
+  clientPort.postMessage({
+    type: "http.response.body",
+    body: new Uint8Array(0),
+    more_body: false,
+  });
 }
 
 // Recovery hint shown above the error log when the engine itself fails to load.
@@ -340,6 +374,7 @@ export function Viewer({
           webRProxy.runRAsync(".shiny_tick()");
         }, 100);
 
+        appInfo.setServing(true);
         viewerFrameRef.current.src = appInfo.urlPath;
         setAppRunningState("running");
       } catch (e) {
@@ -358,6 +393,8 @@ export function Viewer({
 
       // Stop the periodic R Shiny housekeeping
       if (shinyIntervalRef.current) clearTimeout(shinyIntervalRef.current);
+
+      appInfo.setServing(false);
 
       await resetRAppFrame(webRProxy, appInfo.appName, viewerFrameRef.current);
       setAppRunningState("empty");
@@ -416,6 +453,7 @@ export function Viewer({
           kwargs: { dev_mode: devMode },
         });
 
+        appInfo.setServing(true);
         viewerFrameRef.current.src = appInfo.urlPath;
         setAppRunningState("running");
       } catch (e) {
@@ -432,6 +470,7 @@ export function Viewer({
     async function stopApp(): Promise<void> {
       if (!viewerFrameRef.current) return;
 
+      appInfo.setServing(false);
       await resetPyAppFrame(
         pyodideproxy,
         appInfo.appName,

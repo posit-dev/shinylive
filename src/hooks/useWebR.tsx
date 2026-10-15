@@ -149,23 +149,27 @@ export function useWebR({
   return webRProxyHandle;
 }
 
-let channelListenerRegistered = false;
+// The window has one "openChannel" listener, and it answers with the proxy of
+// the engine that most recently started shiny. An engine restart replaces the
+// proxy, and the listener must not keep sending channels to the terminated one.
+let channelProxy: WebRProxy | null = null;
 function ensureOpenChannelListener(webRProxy: WebRProxy): void {
-  if (channelListenerRegistered) return;
+  const alreadyListening = channelProxy !== null;
+  channelProxy = webRProxy;
+  if (alreadyListening) return;
 
   window.addEventListener("message", async (event) => {
     const msg = event.data;
     if (msg.type === "openChannel") {
-      const appExists = await webRProxy.runRAsync(`
+      const proxy = channelProxy!;
+      const appExists = await proxy.runRAsync(`
         exists("${msg.appName}", envir = .shiny_app_registry)
       `);
       if (await appExists.toBoolean()) {
-        await webRProxy.openChannel(msg.path, msg.appName, event.ports[0]);
+        await proxy.openChannel(msg.path, msg.appName, event.ports[0]);
       }
     }
   });
-
-  channelListenerRegistered = true;
 }
 
 const load_r_pre = `
