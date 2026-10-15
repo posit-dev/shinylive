@@ -241,6 +241,7 @@ function ensureWebRProxyHandlePromise({
         webRProxyHandle = await initWebR({
           stdout: terminalInterface.echo,
           stderr: terminalInterface.error,
+          shinyMinor,
         });
 
         if (shiny) {
@@ -392,7 +393,7 @@ export function App({
   // Report the version once, when the engine is up. The resolver's note says
   // why the pin could not be honored as written; the message compares what
   // the app asked for with what the engine really loaded. An empty
-  // shinyVersion means the engine does not report one yet (webR), so only the
+  // shinyVersion means startup failed before the engine read it, so only the
   // note prints. The startup notes (from the shiny-version option) print
   // before the first report only. Layouts with a terminal echo the lines
   // there; every layout without a terminal sends them to console.warn.
@@ -622,8 +623,8 @@ export function App({
     const options = Object.values(available)
       .sort((a, b) => compareVersions(b, a))
       .map((exact) => ({ exact, latest: exact === newest }));
-    // Until the engine reports the version it loaded (always, for webR), show
-    // the bundled version of the minor the engine starts on.
+    // Until the engine reports the version it loaded, show the bundled version
+    // of the minor the engine starts on.
     const starting = available[engineStart.shinyMinor] ?? newest;
     return {
       running:

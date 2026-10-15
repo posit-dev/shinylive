@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { ChannelType } from "webr";
-import { checkEngineAssetReachable } from "../engine-load-guard";
+import { assetExists, checkEngineAssetReachable } from "../engine-load-guard";
 import { loadStatusStore } from "../load-status";
 import * as utils from "../utils";
 import type { WebRProxy } from "../webr-proxy";
@@ -18,8 +18,7 @@ export type WebRProxyHandle =
       webRProxy: WebRProxy;
       shinyReady: boolean;
       initError: boolean;
-      // The shiny version the engine really loaded. Empty until the R side
-      // reads it from the installed package.
+      // The shiny version the engine really loaded, from the installed package.
       shinyVersion: string;
       // Run code through webR REPL. Returns a promise to the next prompt.
       runCode: (command: string) => Promise<string>;
@@ -27,12 +26,18 @@ export type WebRProxyHandle =
       interrupt: () => void;
     };
 
+export function webrImageUrl(baseUrl: string, shinyMinor: string): string {
+  return `${baseUrl}shiny-${shinyMinor}/library.data.gz`;
+}
+
 export async function initWebR({
   stdout,
   stderr,
+  shinyMinor,
 }: {
   stdout?: (msg: string) => any;
   stderr?: (msg: string) => any;
+  shinyMinor: string;
 }): Promise<WebRProxyHandle> {
   // Defaults for stdout and stderr if not provided: log to console
   if (!stdout) stdout = (x: string) => console.log("webR echo:" + x);
@@ -59,13 +64,23 @@ export async function initWebR({
   );
 
   let initError = false;
+  let shinyVersion = "";
   try {
     status.set("engine-start");
     await webRProxy.webR.objs.globalEnv.bind(".base_url", baseUrl);
+    // The per-version image when this bundle has it, else the default one.
+    // webR's mount() reads the .js.metadata file next to the .data.gz itself.
+    const versioned = webrImageUrl(baseUrl, shinyMinor);
+    const imageUrl = (await assetExists(versioned))
+      ? versioned
+      : `${baseUrl}library.data.gz`;
     await webRProxy.runRAsync(
-      `webr::mount("/shinylive/library", "${baseUrl}library.data.gz")`,
+      `webr::mount("/shinylive/library", "${imageUrl}")`,
     );
     await webRProxy.runRAsync(load_r_pre);
+    shinyVersion = await webRProxy.webR.evalRString(
+      'as.character(utils::packageVersion("shiny"))',
+    );
     status.set("ready");
   } catch (e) {
     initError = true;
@@ -91,7 +106,7 @@ export async function initWebR({
     webRProxy,
     shinyReady: false,
     initError: initError,
-    shinyVersion: "",
+    shinyVersion,
     runCode,
     tabComplete,
     interrupt,
