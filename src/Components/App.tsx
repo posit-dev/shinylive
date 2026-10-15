@@ -253,6 +253,43 @@ function ensureWebRProxyHandlePromise({
   return webRProxyHandlePromise as Promise<WebRProxyHandle>;
 }
 
+export function clearEngineSingleton(engine: AppEngine): void {
+  if (engine === "python") pyodideProxyHandlePromise = null;
+  else webRProxyHandlePromise = null;
+  engineShinyMinors[engine] = null;
+}
+
+// How many App components on this page use each engine. A restart is only
+// safe when this App is the sole user: with several apps on one page, one
+// engine per page is the rule and a later app runs on the engine's version.
+const appInstances: Record<AppEngine, number> = { python: 0, r: 0 };
+
+function startEngine(
+  engine: AppEngine,
+  shinyMinor: string,
+  loadShiny: boolean,
+): Promise<ProxyHandle> {
+  if (engine === "python") {
+    return ensurePyodideProxyHandlePromise({
+      proxyType: pyodideProxyType,
+      shiny: loadShiny,
+      showStartBanner: false,
+      shinyMinor,
+    });
+  }
+  if (engine === "r") {
+    return ensureWebRProxyHandlePromise({ shiny: loadShiny, shinyMinor });
+  }
+  throw new Error(`Unrecognised Wasm engine: "${engine}".`);
+}
+
+type EngineStart = { promise: Promise<ProxyHandle>; shinyMinor: string };
+
+// Hooks cannot be called conditionally, so the engine not in use gets a
+// promise that never settles.
+const NEVER_PYODIDE = new Promise<PyodideProxyHandle>(() => {});
+const NEVER_WEBR = new Promise<WebRProxyHandle>(() => {});
+
 export function App({
   appMode = "examples-editor-terminal-viewer",
   startFiles = [],
@@ -292,35 +329,48 @@ export function App({
   // For most but not all appMode, set up pyodide for shiny.
   const loadShiny = !["editor-terminal"].includes(appMode);
 
-  let useWasmEngine: () => ProxyHandle;
-  switch (appEngine) {
-    case "python": {
-      // Temporarily disabled
-      // Modes in which _not_ to show Pyodide startup message.
-      // const showStartBanner = !["editor-terminal"].includes(appMode);
-      const promise = ensurePyodideProxyHandlePromise({
-        proxyType: pyodideProxyType,
-        shiny: loadShiny,
-        showStartBanner: false,
-        shinyMinor: shinyVersion.minor,
-      });
-      pyodideProxyHandlePromise = promise;
-      useWasmEngine = () => usePyodide({ pyodideProxyHandlePromise: promise });
-      break;
-    }
-    case "r": {
-      const promise = (webRProxyHandlePromise = ensureWebRProxyHandlePromise({
-        shiny: loadShiny,
-        shinyMinor: shinyVersion.minor,
-      }));
-      useWasmEngine = () => useWebR({ webRProxyHandlePromise: promise });
-      break;
-    }
-    default:
-      throw new Error(`Unrecognised Wasm engine: "${appEngine}".`);
-  }
+  // A second App for the same engine finds the singleton already running,
+  // possibly on another version; it gets a notice rather than a restart.
+  const priorMinor = engineShinyMinor(appEngine);
+  const [engineStart, setEngineStart] = React.useState<EngineStart>(() => ({
+    promise: startEngine(appEngine, shinyVersion.minor, loadShiny),
+    shinyMinor: engineShinyMinor(appEngine) ?? shinyVersion.minor,
+  }));
+  const engineStartRef = React.useRef(engineStart);
+  engineStartRef.current = engineStart;
 
-  const proxyHandle = useWasmEngine();
+  const [versionNotice] = React.useState<string | null>(() =>
+    priorMinor !== null && priorMinor !== shinyVersion.minor
+      ? `This app requests shiny ${shinyVersion.minor}; this page runs ${priorMinor}.`
+      : null,
+  );
+
+  React.useEffect(() => {
+    appInstances[appEngine] += 1;
+    return () => {
+      appInstances[appEngine] -= 1;
+    };
+  }, [appEngine]);
+
+  const pyodideHandle = usePyodide({
+    pyodideProxyHandlePromise:
+      appEngine === "python"
+        ? (engineStart.promise as Promise<PyodideProxyHandle>)
+        : NEVER_PYODIDE,
+  });
+  const webRHandle = useWebR({
+    webRProxyHandlePromise:
+      appEngine === "r"
+        ? (engineStart.promise as Promise<WebRProxyHandle>)
+        : NEVER_WEBR,
+  });
+  const proxyHandle: ProxyHandle =
+    appEngine === "python" ? pyodideHandle : webRHandle;
+
+  // The resolution the version report describes: the startup one, then the
+  // one that caused the latest restart.
+  const [startupResolution, setStartupResolution] =
+    React.useState<ShinyVersionResolution>(shinyVersion);
 
   // Report the version once, when the engine is up. The resolver's note says
   // why the pin could not be honored as written; the message compares what
@@ -336,8 +386,8 @@ export function App({
     reportedVersionFor.current = actual;
 
     const lines = [
-      shinyVersion.note,
-      actual === "" ? null : shinyVersionMessage(shinyVersion, actual),
+      startupResolution.note,
+      actual === "" ? null : shinyVersionMessage(startupResolution, actual),
     ].filter((l): l is string => l !== null);
     for (const line of lines) {
       if (!appMode.includes("terminal")) {
@@ -347,7 +397,7 @@ export function App({
         terminalInterface.echo(line);
       }
     }
-  }, [proxyHandle, shinyVersion, appMode]);
+  }, [proxyHandle, startupResolution, appMode]);
 
   const [editorMethods, setEditorMethods] = React.useState<EditorMethods>({
     getActiveFileContents: null,
@@ -356,6 +406,119 @@ export function App({
   const [viewerMethods, setViewerMethods] = React.useState<ViewerMethods>({
     ready: false,
   });
+
+  type ReadyViewerMethods = Extract<ViewerMethods, { ready: true }>;
+
+  const viewerMethodsRef = React.useRef(viewerMethods);
+  viewerMethodsRef.current = viewerMethods;
+
+  // Resolved when the viewer reports ready after a restart.
+  const pendingViewerRef = React.useRef<
+    ((m: ReadyViewerMethods) => void) | null
+  >(null);
+  React.useEffect(() => {
+    if (viewerMethods.ready && pendingViewerRef.current) {
+      const resolve = pendingViewerRef.current;
+      pendingViewerRef.current = null;
+      resolve(viewerMethods);
+    }
+  }, [viewerMethods]);
+
+  const restartEngine = React.useCallback(
+    async (minor: string): Promise<ReadyViewerMethods> => {
+      const current = viewerMethodsRef.current;
+      if (current.ready) await current.stopApp();
+
+      const old = await engineStartRef.current.promise.catch(() => null);
+      if (old && old.ready) {
+        if (old.engine === "pyodide") old.pyodide.terminate();
+        else old.webRProxy.terminate();
+      }
+
+      loadStatusStore(appEngine).reset();
+      clearEngineSingleton(appEngine);
+      const ready = new Promise<ReadyViewerMethods>((resolve) => {
+        pendingViewerRef.current = resolve;
+      });
+      reportedVersionFor.current = null;
+      setEngineStart({
+        promise: startEngine(appEngine, minor, loadShiny),
+        shinyMinor: minor,
+      });
+      return ready;
+    },
+    [appEngine, loadShiny],
+  );
+
+  // Every run goes through here: the files decide the version, and a change
+  // of minor version restarts the engine first.
+  const runAppWithVersion = React.useCallback(
+    async (appCode: string | FileContent[]): Promise<void> => {
+      const files: FileContent[] =
+        typeof appCode === "string"
+          ? [
+              {
+                name: appEngine === "r" ? "app.R" : "app.py",
+                content: appCode,
+                type: "text",
+              },
+            ]
+          : appCode;
+      const resolved = resolveShinyVersion(
+        files,
+        appEngine,
+        bundledShinyVersions(appEngine),
+      );
+      const current = viewerMethodsRef.current;
+
+      if (
+        resolved.minor === engineStartRef.current.shinyMinor ||
+        appInstances[appEngine] > 1
+      ) {
+        if (current.ready) await current.runApp(files);
+        return;
+      }
+
+      if (appEngine === "python" && pyodideProxyType === "normal") {
+        // Pyodide on the main thread cannot be torn down, so the files go
+        // into the URL hash and the page starts over.
+        window.location.hash = "code=" + fileContentsToUrlString(files);
+        window.location.reload();
+        return;
+      }
+
+      setStartupResolution(resolved);
+      const ready = await restartEngine(resolved.minor);
+      await ready.runApp(files);
+    },
+    [appEngine, restartEngine],
+  );
+
+  // The Editor's run-on-load effect and the viewer-only effect below run the
+  // app whenever these methods change identity, with the files the page
+  // started with. A restart replaces the Viewer's methods, so these methods
+  // change identity only once, when the viewer first becomes ready, and
+  // delegate to whichever viewer is current. Otherwise the startup files would
+  // run again after every restart and restart the engine back to their pin.
+  const [viewerStarted, setViewerStarted] = React.useState(false);
+  React.useEffect(() => {
+    if (viewerMethods.ready) setViewerStarted(true);
+  }, [viewerMethods]);
+
+  const editorViewerMethods: ViewerMethods = React.useMemo(
+    () =>
+      viewerStarted
+        ? {
+            ready: true,
+            runApp: runAppWithVersion,
+            stopApp: async () => {
+              const current = viewerMethodsRef.current;
+              if (current.ready) await current.stopApp();
+            },
+          }
+        : { ready: false },
+    [viewerStarted, runAppWithVersion],
+  );
 
   // TODO: Customize these methods so that print output is sent to the specific
   // terminal.
@@ -374,11 +537,11 @@ export function App({
     React.useState<HeaderBarCallbacks>({});
 
   React.useEffect(() => {
-    if (appMode === "viewer" && viewerMethods.ready) {
+    if (appMode === "viewer" && editorViewerMethods.ready) {
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      viewerMethods.runApp(currentFiles);
+      runAppWithVersion(currentFiles);
     }
-  }, [appMode, currentFiles, viewerMethods]);
+  }, [appMode, currentFiles, editorViewerMethods, runAppWithVersion]);
 
   // Experimental code: For non-apps, save the code to /home/pyodide. This will
   // probably have to change in the future, because it (1) doesn't work well
@@ -506,7 +669,7 @@ export function App({
               setHeaderBarCallbacks={setHeaderBarCallbacks}
               setEditorMethods={setEditorMethods}
               terminalMethods={terminalMethods}
-              viewerMethods={viewerMethods}
+              viewerMethods={editorViewerMethods}
               utilityMethods={utilityMethods}
               runOnLoad={isRunnableApp(currentFiles)}
               updateUrlHashOnRerun={appOptions.updateUrlHashOnRerun}
@@ -524,6 +687,7 @@ export function App({
             devMode={true}
             setWindowTitle={appOptions.setWindowTitle}
             engine={appEngine}
+            notice={versionNotice}
           />
         </ResizableGrid>
       </>
@@ -558,7 +722,7 @@ export function App({
               setHeaderBarCallbacks={setHeaderBarCallbacks}
               setEditorMethods={setEditorMethods}
               terminalMethods={terminalMethods}
-              viewerMethods={viewerMethods}
+              viewerMethods={editorViewerMethods}
               utilityMethods={utilityMethods}
               runOnLoad={isRunnableApp(currentFiles)}
               updateUrlHashOnRerun={appOptions.updateUrlHashOnRerun}
@@ -576,6 +740,7 @@ export function App({
             devMode={true}
             setWindowTitle={appOptions.setWindowTitle}
             engine={appEngine}
+            notice={versionNotice}
           />
         </ResizableGrid>
       </>
@@ -671,7 +836,7 @@ export function App({
             setEditorMethods={setEditorMethods}
             terminalMethods={terminalMethods}
             utilityMethods={utilityMethods}
-            viewerMethods={viewerMethods}
+            viewerMethods={editorViewerMethods}
             updateUrlHashOnRerun={appOptions.updateUrlHashOnRerun}
             appEngine={appEngine}
           />
@@ -682,6 +847,7 @@ export function App({
           devMode={true}
           setWindowTitle={appOptions.setWindowTitle}
           engine={appEngine}
+          notice={versionNotice}
         />
       </ResizableGrid>
     );
@@ -706,6 +872,7 @@ export function App({
             devMode={false}
             setWindowTitle={appOptions.setWindowTitle}
             engine={appEngine}
+            notice={versionNotice}
           />
         </div>
       </>
