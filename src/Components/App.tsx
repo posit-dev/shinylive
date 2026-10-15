@@ -326,7 +326,8 @@ export function App({
   // why the pin could not be honored as written; the message compares what
   // the app asked for with what the engine really loaded. An empty
   // shinyVersion means the engine does not report one yet (webR), so only the
-  // note prints.
+  // note prints. Layouts with a terminal echo the lines there; every layout
+  // without a terminal sends them to console.warn.
   const reportedVersionFor = React.useRef<string | null>(null);
   React.useEffect(() => {
     if (!proxyHandle.ready) return;
@@ -339,7 +340,7 @@ export function App({
       actual === "" ? null : shinyVersionMessage(shinyVersion, actual),
     ].filter((l): l is string => l !== null);
     for (const line of lines) {
-      if (appMode === "viewer") {
+      if (!appMode.includes("terminal")) {
         console.warn(`[shinylive] ${line}`);
       } else {
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
