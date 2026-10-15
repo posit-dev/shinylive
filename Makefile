@@ -1,6 +1,7 @@
 .PHONY: all dist \
 	packages \
 	update_packages_lock retrieve_packages update_pyodide_lock_json \
+	check_shiny_bundle \
 	pyodide_js \
 	pyodide_packages_local \
 	create_typeshed_json \
@@ -115,6 +116,7 @@ all: node_modules \
 	update_packages_lock_local \
 	retrieve_packages \
 	update_pyodide_lock_json \
+	check_shiny_bundle \
 	create_typeshed_json \
 	copy_pyright \
 	$(BUILD_DIR)/export_template/index.html \
@@ -337,6 +339,10 @@ clean:
 ## Remove all build files, venv/, and downloads/
 distclean: clean
 	rm -rf $(VENV) $(DOWNLOAD_DIR)
+
+## Check the built locks, wheels and images against shiny_versions.json
+check_shiny_bundle:
+	python3 scripts/check_shiny_bundle.py
 
 ## Check that every example on disk is listed in examples/index.json
 examples-check-index:
