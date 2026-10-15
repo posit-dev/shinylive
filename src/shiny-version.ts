@@ -4,6 +4,8 @@
 // DESCRIPTION (`Imports: shiny (== 1.11.1)`). Matching compares major.minor
 // against the bundled versions; see resolveShinyVersion().
 
+import shinyVersionsJson from "../shiny_versions.json";
+
 export type Engine = "python" | "r";
 
 export type PinFile = { name: string; content: string | Uint8Array };
@@ -127,4 +129,167 @@ export function findShinySpec(files: PinFile[], engine: Engine): ShinySpec {
     }
   }
   return { kind: "none" };
+}
+
+export type AvailableVersions = Record<string, string>;
+
+export type ShinyVersionResolution = {
+  minor: string;
+  exact: string;
+  requested: string | null;
+  note: string | null;
+};
+
+/** The versions this build of shinylive bundles, from shiny_versions.json. */
+export function bundledShinyVersions(engine: Engine): AvailableVersions {
+  return (shinyVersionsJson as Record<Engine, AvailableVersions>)[engine];
+}
+
+function parts(version: string): number[] {
+  return version
+    .split(".")
+    .filter((p) => p !== "*")
+    .map((p) => parseInt(p, 10));
+}
+
+// Compare two dotted versions numerically, padding the shorter with zeros.
+export function compareVersions(a: string, b: string): number {
+  const pa = parts(a);
+  const pb = parts(b);
+  const n = Math.max(pa.length, pb.length);
+  for (let i = 0; i < n; i++) {
+    const d = (pa[i] ?? 0) - (pb[i] ?? 0);
+    if (d !== 0) return d;
+  }
+  return 0;
+}
+
+// "1.6.3" -> "1.6", "1.6" -> "1.6", "1.6.*" -> "1.6", "2" -> "2.0"
+export function minorOf(version: string): string {
+  const p = parts(version);
+  return `${p[0] ?? 0}.${p[1] ?? 0}`;
+}
+
+type Bundled = { minor: string; exact: string };
+
+function sortedNewestFirst(available: AvailableVersions): Bundled[] {
+  return Object.entries(available)
+    .map(([minor, exact]) => ({ minor, exact }))
+    .sort((a, b) => compareVersions(b.minor, a.minor));
+}
+
+export function newestBundled(available: AvailableVersions): Bundled {
+  return sortedNewestFirst(available)[0];
+}
+
+function satisfies(exact: string, clause: Clause): boolean {
+  const c = compareVersions(exact, clause.version);
+  switch (clause.op) {
+    case "==":
+      return minorOf(exact) === minorOf(clause.version);
+    case "!=":
+      return c !== 0;
+    case ">=":
+      return c >= 0;
+    case ">":
+      return c > 0;
+    case "<=":
+      return c <= 0;
+    case "<":
+      return c < 0;
+    case "~=": {
+      // >= version, and the same prefix with the last component dropped.
+      const prefix = parts(clause.version).slice(0, -1);
+      const ep = parts(exact);
+      return c >= 0 && prefix.every((v, i) => (ep[i] ?? 0) === v);
+    }
+  }
+}
+
+function isFullVersion(version: string): boolean {
+  return /^\d+\.\d+\.\d+$/.test(version);
+}
+
+export function resolveShinyVersion(
+  files: PinFile[],
+  engine: Engine,
+  available: AvailableVersions,
+): ShinyVersionResolution {
+  const bundled = sortedNewestFirst(available);
+  const newest = bundled[0];
+  const oldest = bundled[bundled.length - 1];
+  const range = `${oldest.exact} to ${newest.exact}`;
+  const clean = (
+    b: Bundled,
+    requested: string | null,
+    note: string | null,
+  ) => ({
+    minor: b.minor,
+    exact: b.exact,
+    requested,
+    note,
+  });
+
+  const spec = findShinySpec(files, engine);
+  if (spec.kind === "none") return clean(newest, null, null);
+  if (spec.kind === "unparseable") {
+    return clean(
+      newest,
+      null,
+      `could not read the shiny line "${spec.line}"; running ${newest.exact}`,
+    );
+  }
+  if (spec.clauses.length === 0) return clean(newest, null, null);
+
+  const pin = spec.clauses.find((c) => c.op === "==");
+  const requested = pin && isFullVersion(pin.version) ? pin.version : null;
+
+  // A pin picks a minor directly; anything else is a range over the bundled set.
+  if (pin && spec.clauses.length === 1) {
+    const wanted = minorOf(pin.version);
+    const hit = bundled.find((b) => b.minor === wanted);
+    if (hit) return clean(hit, requested, null);
+    const closest = compareVersions(wanted, oldest.minor) < 0 ? oldest : newest;
+    return clean(
+      closest,
+      requested,
+      `shiny ${pin.version} is outside the bundled versions (${range}); running ${closest.exact}`,
+    );
+  }
+
+  const hit = bundled.find((b) =>
+    spec.clauses.every((c) => satisfies(b.exact, c)),
+  );
+  if (hit) return clean(hit, requested, null);
+
+  // Nothing fits. Below the window (an upper bound under the oldest) takes the
+  // oldest; everything else takes the newest.
+  const belowWindow = spec.clauses.some(
+    (c) =>
+      (c.op === "<" || c.op === "<=") &&
+      compareVersions(oldest.exact, c.version) >= 0,
+  );
+  const closest = belowWindow ? oldest : newest;
+  return clean(
+    closest,
+    requested,
+    `no bundled shiny version satisfies "${spec.line}" (bundled: ${range}); running ${closest.exact}`,
+  );
+}
+
+/**
+ * The terminal line for a version the engine did not deliver, or null.
+ * Compares what the app asked for against what the engine really loaded.
+ */
+export function shinyVersionMessage(
+  resolved: ShinyVersionResolution,
+  actual: string,
+): string | null {
+  if (resolved.requested !== null && resolved.requested !== actual) {
+    return `requested shiny ${resolved.requested}, running ${actual}`;
+  }
+  if (resolved.exact !== actual) {
+    return `requested shiny ${resolved.exact}, running ${actual}`;
+  }
+  return null;
 }

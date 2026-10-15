@@ -1,4 +1,13 @@
-import { findShinySpec, parseRequirementsLine } from "./shiny-version";
+import cases from "../shiny_version_cases.json";
+import {
+  findShinySpec,
+  newestBundled,
+  parseRequirementsLine,
+  resolveShinyVersion,
+  shinyVersionMessage,
+  type AvailableVersions,
+  type Engine,
+} from "./shiny-version";
 
 describe("parseRequirementsLine()", () => {
   test("returns null for lines that are not about shiny", () => {
@@ -175,5 +184,66 @@ describe("findShinySpec() for R", () => {
         "r",
       ),
     ).toEqual({ kind: "none" });
+  });
+});
+
+type Case = {
+  name: string;
+  engine: Engine;
+  files: Record<string, string>;
+  expect: {
+    minor: string;
+    exact: string;
+    requested: string | null;
+    note: string | null;
+  };
+};
+
+describe("resolveShinyVersion() against shiny_version_cases.json", () => {
+  const available = cases.available as Record<Engine, AvailableVersions>;
+  // TypeScript infers a separate object type for each JSON case, with the
+  // file names of the other cases as optional undefined keys, so the cast
+  // to Case[] goes through unknown.
+  test.each(
+    (cases.cases as unknown as Case[]).map((c) => [c.name, c] as const),
+  )("%s", (_name, c) => {
+    const files = Object.entries(c.files).map(([name, content]) => ({
+      name,
+      content,
+    }));
+    expect(resolveShinyVersion(files, c.engine, available[c.engine])).toEqual(
+      c.expect,
+    );
+  });
+});
+
+describe("newestBundled()", () => {
+  test("orders minors numerically", () => {
+    expect(newestBundled({ "1.9": "1.9.1", "1.10": "1.10.0" })).toEqual({
+      minor: "1.10",
+      exact: "1.10.0",
+    });
+  });
+});
+
+describe("shinyVersionMessage()", () => {
+  const resolved = {
+    minor: "1.6",
+    exact: "1.6.5",
+    requested: null,
+    note: null,
+  };
+  test("nothing when the engine runs the resolved version", () => {
+    expect(shinyVersionMessage(resolved, "1.6.5")).toBeNull();
+  });
+  test("names the requested exact version when it differs from the running one", () => {
+    expect(
+      shinyVersionMessage({ ...resolved, requested: "1.6.3" }, "1.6.5"),
+    ).toBe("requested shiny 1.6.3, running 1.6.5");
+  });
+  test("names the resolved version when the engine fell back to another", () => {
+    expect(shinyVersionMessage(resolved, "1.8.0")).toBe(
+      "requested shiny 1.6.5, running 1.8.0",
+    );
   });
 });
