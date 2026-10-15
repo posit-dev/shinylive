@@ -432,6 +432,13 @@ def _lock_entries_for(
             )
         else:
             info = _get_pypi_package_info(name, version)
+            # _get_pypi_package_info falls back to the newest release with a
+            # pure Python wheel, which can differ from the release uv pinned.
+            if Version(info["version"]) != Version(version):
+                raise RuntimeError(
+                    f"{name}: uv pinned {version}, but PyPI metadata produced "
+                    f"{info['version']}. The pinned release has no py3-none-any wheel."
+                )
         entries[info["name"]] = info
     for pkg in required:
         if pkg["name"] in LOCAL_NOT_RESOLVED:

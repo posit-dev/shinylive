@@ -6,6 +6,7 @@ an old flat lock. Resolution itself needs the network and runs under
 """
 
 import unittest
+from unittest import mock
 
 from scripts import pyodide_packages as pp
 
@@ -69,6 +70,29 @@ class LockFormatTest(unittest.TestCase):
     def test_refuses_the_old_flat_format(self):
         with self.assertRaises(ValueError):
             pp.locks_from_json({"shiny": {"name": "shiny"}})
+
+
+class LockEntriesTest(unittest.TestCase):
+    def _pypi_info(self, version):
+        return {
+            "name": "siuba",
+            "version": version,
+            "filename": f"siuba-{version}-py3-none-any.whl",
+            "sha256": "0" * 64,
+            "url": "https://example.invalid/siuba.whl",
+            "depends": [],
+            "imports": ["siuba"],
+        }
+
+    def test_raises_when_pypi_version_differs_from_uv_pin(self):
+        with mock.patch.object(pp, "_get_pypi_package_info", return_value=self._pypi_info("0.4.2")):
+            with self.assertRaisesRegex(RuntimeError, "siuba.*0.4.4.*0.4.2"):
+                pp._lock_entries_for({"siuba": "0.4.4"}, [], {})
+
+    def test_keeps_entry_when_pypi_version_matches_uv_pin(self):
+        with mock.patch.object(pp, "_get_pypi_package_info", return_value=self._pypi_info("0.4.4")):
+            entries = pp._lock_entries_for({"siuba": "0.4.4"}, [], {})
+        self.assertEqual(entries["siuba"]["version"], "0.4.4")
 
 
 if __name__ == "__main__":
