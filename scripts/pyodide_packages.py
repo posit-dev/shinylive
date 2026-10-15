@@ -818,6 +818,11 @@ def update_pyodide_pyodide_lock_json():
     minors = bundled_python_minors()
     newest = next(iter(minors))
 
+    # A minor that left the window must not leave a lock behind, because
+    # check_shiny_bundle reports it.
+    for old in pyodide_dir.glob("pyodide-lock-shiny-*.json"):
+        old.unlink()
+
     for minor, entries in locks.items():
         out = pyodide_lock_path(minor)
         print(f"Writing {os.path.relpath(out)} (shiny {minors[minor]})")
