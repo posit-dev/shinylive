@@ -33,6 +33,7 @@ def export_app(
     *,
     engine: str = "python",
     title: str | None = None,
+    shiny_minor: str | None = None,
 ) -> Path:
     """Write a static export of `files` to `dest`, and return `dest`.
 
@@ -67,10 +68,41 @@ def export_app(
         EXPORT_TEMPLATE_DIR / "edit" / "index.html", dest / "edit" / "index.html"
     )
 
-    (dest / "shinylive").symlink_to(BUILD_DIR / "shinylive", target_is_directory=True)
+    _link_bundle(dest, shiny_minor)
     (dest / "shinylive-sw.js").symlink_to(BUILD_DIR / "shinylive-sw.js")
 
     return dest
+
+
+def _link_bundle(dest: Path, shiny_minor: str | None) -> None:
+    """Put the shinylive bundle under `dest/shinylive/`.
+
+    Without `shiny_minor`, one symlink to the whole built bundle. With it, the
+    shape `shinylive export` will produce for a pinned app: every file linked,
+    except that the pyodide directory has no per-version locks and
+    `pyodide-lock.json` is a copy of that version's lock. The runtime then has
+    to take its fallback path, which is what the export tests check.
+    """
+    bundle = BUILD_DIR / "shinylive"
+    if shiny_minor is None:
+        (dest / "shinylive").symlink_to(bundle, target_is_directory=True)
+        return
+
+    root = dest / "shinylive"
+    root.mkdir()
+    for entry in bundle.iterdir():
+        if entry.name != "pyodide":
+            (root / entry.name).symlink_to(entry, target_is_directory=entry.is_dir())
+    pyodide = root / "pyodide"
+    pyodide.mkdir()
+    for entry in (bundle / "pyodide").iterdir():
+        if entry.name.startswith("pyodide-lock"):
+            continue
+        (pyodide / entry.name).symlink_to(entry)
+    shutil.copyfile(
+        bundle / "pyodide" / f"pyodide-lock-shiny-{shiny_minor}.json",
+        pyodide / "pyodide-lock.json",
+    )
 
 
 # Mustache's section tag: the `<title>` is only rendered when a title was given,

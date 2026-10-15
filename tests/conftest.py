@@ -272,10 +272,10 @@ def exported_app(export_root: Path, export_server: str) -> Callable[..., str]:
     page.goto(url)
     ```
 
-    The keyword arguments are `export_app()`'s, plus the `name` of the directory
-    to export into. Names are reused across tests on purpose: an export is a few
-    files and two symlinks, so rewriting one is cheaper than reasoning about
-    which test wrote what.
+    The keyword arguments are `export_app()`'s (`engine`, `title` and
+    `shiny_minor`), plus the `name` of the directory to export into. Names are
+    reused across tests on purpose: an export is a few files and symlinks, so
+    rewriting one is cheaper than reasoning about which test wrote what.
     """
 
     def _exported_app(

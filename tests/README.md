@@ -23,6 +23,10 @@ quietly never run.
   three views, and checks the `h=0` option only the app view honours.
 - **`test_site_export.py`** covers a static export: the app page, the `edit/`
   page, and the editor-cell mode.
+- **`test_site_shiny_version.py`** pins shiny to each bundled version and checks
+  the version the engine really loaded, the fallback when a per-version lock is
+  missing, the warning for a pin outside the window, and an export that includes
+  one version.
 
 Every test also fails on terminal tracebacks or warnings, Shiny output errors,
 and browser console errors, including errors emitted after an interaction. A
