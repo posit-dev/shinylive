@@ -21,7 +21,7 @@ import {
   resolveShinyVersion,
   shinyVersionMessage,
 } from "../shiny-version";
-import { writeShinyPin } from "../shiny-version-pin";
+import { applyShinyVersionOption, writeShinyPin } from "../shiny-version-pin";
 import "./App.css";
 import { type EditorMethods } from "./Editor";
 import { ExampleSelector } from "./ExampleSelector";
@@ -128,6 +128,10 @@ type AppOptions = {
   // Show the shiny version picker in the header bar. Only the full-page editor
   // sets this; embedded layouts never get one.
   showVersionPicker?: boolean;
+
+  // Pin the app to a bundled shiny minor version, as a string ("1.6"). Writes
+  // the pin file when the app has none; an existing pin wins.
+  "shiny-version"?: string;
 
   // Set window title based on the application iframe's title? If this is
   // not false, then the title from the Viewer iframe will be applied to the
@@ -307,12 +311,14 @@ export function App({
   appOptions = {},
   appEngine,
   shinyVersion,
+  startupNotes,
 }: {
   appMode: AppMode;
   startFiles: FileContent[];
   appOptions?: AppOptions;
   appEngine: AppEngine;
   shinyVersion: ShinyVersionResolution;
+  startupNotes: string[];
 }) {
   if (startFiles.length === 0) {
     if (appMode.includes("viewer")) {
@@ -387,16 +393,21 @@ export function App({
   // why the pin could not be honored as written; the message compares what
   // the app asked for with what the engine really loaded. An empty
   // shinyVersion means the engine does not report one yet (webR), so only the
-  // note prints. Layouts with a terminal echo the lines there; every layout
-  // without a terminal sends them to console.warn.
+  // note prints. The startup notes (from the shiny-version option) print
+  // before the first report only. Layouts with a terminal echo the lines
+  // there; every layout without a terminal sends them to console.warn.
   const reportedVersionFor = React.useRef<string | null>(null);
+  const pendingStartupNotes = React.useRef<string[]>(startupNotes);
   React.useEffect(() => {
     if (!proxyHandle.ready) return;
     const actual = proxyHandle.shinyVersion;
     if (reportedVersionFor.current === actual) return;
     reportedVersionFor.current = actual;
 
+    const notes = pendingStartupNotes.current;
+    pendingStartupNotes.current = [];
     const lines = [
+      ...notes,
       startupResolution.note,
       actual === "" ? null : shinyVersionMessage(startupResolution, actual),
     ].filter((l): l is string => l !== null);
@@ -1043,99 +1054,119 @@ export function runApp(
 
   // eslint-disable-next-line @typescript-eslint/no-floating-promises
   (async () => {
-    if (startFiles === undefined) {
-      // Use the URL hash to determine what files to start with.
-      const hashContent = window.location.hash.replace(/^#/, "");
-      const hashParams = new URLSearchParams(hashContent);
+    // Log here too: a caller that ignores the rejection would hide the error.
+    try {
+      if (startFiles === undefined) {
+        // Use the URL hash to determine what files to start with.
+        const hashContent = window.location.hash.replace(/^#/, "");
+        const hashParams = new URLSearchParams(hashContent);
 
-      // Handle URL hash with "#code="
-      if (opts.allowCodeUrl && hashParams.has("code")) {
-        try {
-          const codeEncoded = hashParams.get("code") ?? "";
-          // Returns null if decoding fails
-          const code = LZString.decompressFromEncodedURIComponent(codeEncoded);
-          if (code) {
-            // Throws if parsing fails
-            startFiles = JSON.parse(code) as FileContentJson[];
-          } else {
+        // Handle URL hash with "#code="
+        if (opts.allowCodeUrl && hashParams.has("code")) {
+          try {
+            const codeEncoded = hashParams.get("code") ?? "";
+            // Returns null if decoding fails
+            const code =
+              LZString.decompressFromEncodedURIComponent(codeEncoded);
+            if (code) {
+              // Throws if parsing fails
+              startFiles = JSON.parse(code) as FileContentJson[];
+            } else {
+              startFiles = [];
+            }
+          } catch (e) {
+            console.log("Could not parse JSON from URL hash.");
             startFiles = [];
           }
-        } catch (e) {
-          console.log("Could not parse JSON from URL hash.");
+        }
+        // Handle URL hash with "#gist="
+        else if (opts.allowGistUrl && hashParams.has("gist")) {
+          const gistId = hashParams.get("gist") ?? "";
+          try {
+            const gistApiResponse = await fetchGist(gistId);
+            startFiles = await gistApiResponseToFileContents(gistApiResponse);
+          } catch (e) {
+            console.log("Could not parse JSON from gist " + gistId);
+            startFiles = [];
+          }
+        }
+        // Look for URL hash with example name, like "#app-with-plot"
+        else if (opts.allowExampleUrl) {
+          let exampleName = "";
+          // For example names, the key-value pair won't have a value.
+          for (const [key, value] of hashParams.entries()) {
+            if (value === "") exampleName = key;
+          }
+
+          const exampleCategories = await getExampleCategories(appEngine);
+          let pos = findExampleByTitle(exampleName, exampleCategories);
+          if (pos) {
+            opts.selectedExample = exampleName;
+          } else {
+            // If we didn't find an example name from the URL hash, we'll just use
+            // the first available example.
+            pos = { categoryIndex: 0, index: 0 };
+            opts.selectedExample = sanitizeTitleForUrl(
+              exampleCategories[pos.categoryIndex].apps[pos.index].title,
+            );
+          }
+          startFiles =
+            exampleCategories[pos.categoryIndex].apps[pos.index].files;
+        }
+        // If we get here, we're either not looking for a URL hash that points to
+        // code, or we didn't find such a hash.
+        else {
           startFiles = [];
         }
-      }
-      // Handle URL hash with "#gist="
-      else if (opts.allowGistUrl && hashParams.has("gist")) {
-        const gistId = hashParams.get("gist") ?? "";
-        try {
-          const gistApiResponse = await fetchGist(gistId);
-          startFiles = await gistApiResponseToFileContents(gistApiResponse);
-        } catch (e) {
-          console.log("Could not parse JSON from gist " + gistId);
-          startFiles = [];
-        }
-      }
-      // Look for URL hash with example name, like "#app-with-plot"
-      else if (opts.allowExampleUrl) {
-        let exampleName = "";
-        // For example names, the key-value pair won't have a value.
-        for (const [key, value] of hashParams.entries()) {
-          if (value === "") exampleName = key;
-        }
 
-        const exampleCategories = await getExampleCategories(appEngine);
-        let pos = findExampleByTitle(exampleName, exampleCategories);
-        if (pos) {
-          opts.selectedExample = exampleName;
-        } else {
-          // If we didn't find an example name from the URL hash, we'll just use
-          // the first available example.
-          pos = { categoryIndex: 0, index: 0 };
-          opts.selectedExample = sanitizeTitleForUrl(
-            exampleCategories[pos.categoryIndex].apps[pos.index].title,
-          );
-        }
-        startFiles = exampleCategories[pos.categoryIndex].apps[pos.index].files;
-      }
-      // If we get here, we're either not looking for a URL hash that points to
-      // code, or we didn't find such a hash.
-      else {
-        startFiles = [];
+        // Look for "h=0". This value is used only in Viewer-only mode to
+        // determine whether or not to hide the header bar.
+        opts.showHeaderBar = hashParams.get("h") !== "0";
       }
 
-      // Look for "h=0". This value is used only in Viewer-only mode to
-      // determine whether or not to hide the header bar.
-      opts.showHeaderBar = hashParams.get("h") !== "0";
+      // At this point we know that startFiles is a FileContentJson[] or
+      // FileContent[]. Ensure that they're all FileContent.
+      startFiles = startFiles.map(FCorFCJSONtoFC);
+
+      // The shiny-version option writes a pin when the app has none, so it runs
+      // before the resolver reads the pin.
+      const applied = applyShinyVersionOption(
+        startFiles,
+        appEngine,
+        opts["shiny-version"],
+        bundledShinyVersions(appEngine),
+      );
+      startFiles = applied.files;
+      const startupNotes = applied.note ? [applied.note] : [];
+
+      // Which bundled shiny this app needs, decided before the engine starts.
+      const shinyVersion = resolveShinyVersion(
+        startFiles,
+        appEngine,
+        bundledShinyVersions(appEngine),
+      );
+
+      const { ...appOpts } = opts;
+      delete appOpts.allowCodeUrl;
+      delete appOpts.allowExampleUrl;
+
+      const root = createRoot(domTarget);
+      root.render(
+        <React.StrictMode>
+          <App
+            appMode={mode}
+            startFiles={startFiles}
+            appOptions={appOpts}
+            appEngine={appEngine}
+            shinyVersion={shinyVersion}
+            startupNotes={startupNotes}
+          />
+        </React.StrictMode>,
+      );
+    } catch (e) {
+      console.error(e);
+      throw e;
     }
-
-    // At this point we know that startFiles is a FileContentJson[] or
-    // FileContent[]. Ensure that they're all FileContent.
-    startFiles = startFiles.map(FCorFCJSONtoFC);
-
-    // Which bundled shiny this app needs, decided before the engine starts.
-    const shinyVersion = resolveShinyVersion(
-      startFiles,
-      appEngine,
-      bundledShinyVersions(appEngine),
-    );
-
-    const { ...appOpts } = opts;
-    delete appOpts.allowCodeUrl;
-    delete appOpts.allowExampleUrl;
-
-    const root = createRoot(domTarget);
-    root.render(
-      <React.StrictMode>
-        <App
-          appMode={mode}
-          startFiles={startFiles}
-          appOptions={appOpts}
-          appEngine={appEngine}
-          shinyVersion={shinyVersion}
-        />
-      </React.StrictMode>,
-    );
   })();
 }
 

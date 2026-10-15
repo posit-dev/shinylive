@@ -8,6 +8,7 @@ export type Component = "editor" | "terminal" | "viewer" | "examples" | "cell";
 export type QuartoArgs = {
   components?: Component[];
   standalone?: boolean;
+  "shiny-version"?: string;
   [name: string]: any;
 };
 
