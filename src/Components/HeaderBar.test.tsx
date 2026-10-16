@@ -34,18 +34,6 @@ describe("HeaderBar shiny version picker", () => {
     expect(html).toMatch(
       /<option (?=[^>]*selected="")(?=[^>]*value="1\.6\.4")[^>]*>1\.6\.4<\/option>/,
     );
-    expect(html).not.toContain("latest-badge");
-  });
-
-  test("shows the latest badge when running the newest", () => {
-    const html = renderToStaticMarkup(
-      <HeaderBar
-        headerBarCallbacks={{}}
-        appEngine="python"
-        shinyVersionPicker={{ ...picker, running: "1.8.0" }}
-      />,
-    );
-    expect(html).toContain('class="latest-badge"');
   });
 
   test("adds the running version as an option when it is not bundled", () => {

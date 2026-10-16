@@ -181,7 +181,6 @@ def test_the_picker_switches_the_version_and_writes_the_pin(page: Page) -> None:
     page.goto(app_url_for_files("py", py_files(None)))
     expect_running_version(page, NEWEST_PY)
     expect(page.locator(PICKER)).to_have_value(NEWEST_PY)
-    expect(page.locator(".HeaderBar .latest-badge")).to_be_visible()
 
     page.select_option(PICKER, OLDEST_PY)
     # The engine restarts: the loader shows, then the app comes back on the
@@ -189,7 +188,6 @@ def test_the_picker_switches_the_version_and_writes_the_pin(page: Page) -> None:
     expect(page.locator(".shinylive-viewer .loading-status")).to_be_visible()
     expect_running_version(page, OLDEST_PY)
     expect(page.locator(PICKER)).to_have_value(OLDEST_PY)
-    expect(page.locator(".HeaderBar .latest-badge")).to_have_count(0)
 
     page.locator(REQUIREMENTS_TAB).click()
     expect(page.locator(".shinylive-editor .cm-content")).to_contain_text(

@@ -28,9 +28,6 @@ function VersionPicker({ picker }: { picker: ShinyVersionPicker }) {
   const options = picker.options.some((o) => o.exact === picker.running)
     ? picker.options
     : [{ exact: picker.running, latest: false }, ...picker.options];
-  const runningIsLatest = options.some(
-    (o) => o.exact === picker.running && o.latest,
-  );
   return (
     <label
       className="shiny-version-picker"
@@ -52,7 +49,6 @@ function VersionPicker({ picker }: { picker: ShinyVersionPicker }) {
           </option>
         ))}
       </select>
-      {runningIsLatest ? <span className="latest-badge">latest</span> : null}
     </label>
   );
 }
