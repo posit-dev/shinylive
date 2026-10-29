@@ -268,7 +268,7 @@ def test_extra_packages(page: Page) -> None:
 
 def test_fetch(page: Page) -> None:
     page.context.route(
-        "https://goweather.herokuapp.com/weather/**",
+        "https://api.open-meteo.com/v1/forecast**",
         lambda route: route.fulfill(
             status=200,
             headers={
@@ -276,8 +276,8 @@ def test_fetch(page: Page) -> None:
                 "content-type": "application/json",
             },
             body=(
-                '{"temperature":"20 C","wind":"10 km/h",'
-                '"description":"Test sunshine"}'
+                '{"current_units":{"temperature_2m":"°C"},'
+                '"current":{"temperature_2m":20.5,"wind_speed_10m":10.0}}'
             ),
         ),
     )
@@ -294,10 +294,12 @@ def test_fetch(page: Page) -> None:
     city.set("Paris")
     city.expect_selected(["Paris"])
     info.expect.to_contain_text(
-        "Request URL: https://goweather.herokuapp.com/weather/Paris"
+        "Request URL: https://api.open-meteo.com/v1/forecast"
+        "?latitude=48.86&longitude=2.35"
+        "&current=temperature_2m,wind_speed_10m,weather_code"
     )
     info.expect.to_contain_text("Result type: <class 'dict'>")
-    info.expect.to_contain_text("Test sunshine")
+    info.expect.to_contain_text("20.5")
 
 
 def test_brand(page: Page) -> None:

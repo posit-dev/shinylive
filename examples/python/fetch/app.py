@@ -29,9 +29,37 @@ from shiny import reactive
 from shiny.express import input, render, ui
 
 
+# Open-Meteo (https://open-meteo.com) is a free weather API that needs no API key and
+# allows cross-origin requests. It looks up weather by coordinates, so each city maps to
+# its (latitude, longitude).
+CITIES = {
+    "Berlin": (52.52, 13.41),
+    "Cairo": (30.04, 31.24),
+    "Chicago": (41.88, -87.63),
+    "Kyiv": (50.45, 30.52),
+    "London": (51.51, -0.13),
+    "Lima": (-12.05, -77.04),
+    "Los Angeles": (34.05, -118.24),
+    "Mexico City": (19.43, -99.13),
+    "Mumbai": (19.08, 72.88),
+    "New York": (40.71, -74.01),
+    "Paris": (48.86, 2.35),
+    "São Paulo": (-23.55, -46.63),
+    "Seoul": (37.57, 126.98),
+    "Shanghai": (31.23, 121.47),
+    "Taipei": (25.03, 121.57),
+    "Tokyo": (35.68, 139.69),
+}
+
+
 @reactive.calc
 def url():
-    return f"https://goweather.herokuapp.com/weather/{input.city()}"
+    lat, lon = CITIES[input.city()]
+    return (
+        "https://api.open-meteo.com/v1/forecast"
+        f"?latitude={lat}&longitude={lon}"
+        "&current=temperature_2m,wind_speed_10m,weather_code"
+    )
 
 
 @reactive.calc
@@ -56,29 +84,7 @@ async def weather_data():
     return data
 
 
-ui.input_selectize(
-    "city",
-    "Select a city:",
-    [
-        "",
-        "Berlin",
-        "Cairo",
-        "Chicago",
-        "Kyiv",
-        "London",
-        "Lima",
-        "Los Angeles",
-        "Mexico City",
-        "Mumbai",
-        "New York",
-        "Paris",
-        "São Paulo",
-        "Seoul",
-        "Shanghai",
-        "Taipei",
-        "Tokyo",
-    ],
-)
+ui.input_selectize("city", "Select a city:", ["", *CITIES])
 ui.input_radio_buttons(
     "data_type",
     "Data conversion type",
