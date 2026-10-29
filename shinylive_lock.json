@@ -503,6 +503,22 @@
       "sniffio"
     ]
   },
+  "altair": {
+    "name": "altair",
+    "version": "5.5.0",
+    "filename": "altair-5.5.0-py3-none-any.whl",
+    "sha256": "91a310b926508d560fe0148d02a194f38b824122641ef528113d029fcd129f8c",
+    "url": "https://files.pythonhosted.org/packages/aa/f3/0b6ced594e51cc95d8c1fc1640d3623770d01e4969d29c0bd09945fafefa/altair-5.5.0-py3-none-any.whl",
+    "depends": [
+      {"name": "jinja2", "specs": []},
+      {"name": "jsonschema", "specs": [[">=", "3.0"]]},
+      {"name": "narwhals", "specs": [[">=", "1.14.2"]]},
+      {"name": "packaging", "specs": []}
+    ],
+    "imports": [
+      "altair"
+    ]
+  },
   "narwhals": {
     "name": "narwhals",
     "version": "2.28.0",
