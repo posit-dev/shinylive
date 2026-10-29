@@ -93,10 +93,11 @@ class NavPanel(controller.NavPanel):
 def sidebar(page: Page, *, nth: int = 0) -> controller.Sidebar:
     """`controller.Sidebar` for a sidebar whose id bslib generated.
 
-    py-shiny keys on `aside#{id}`; these apps call `sidebar()` without an id, so
-    the id only exists once the page has rendered.
+    py-shiny keys on the sidebar's id; these apps call `sidebar()` without an id,
+    so the id only exists once the page has rendered. The sidebar is an `<aside>`
+    before shiny 1.9.0 and a `<div>` from 1.9.0 on, so match on class alone.
     """
-    aside = page.locator("div.bslib-sidebar-layout > aside.sidebar").nth(nth)
+    aside = page.locator("div.bslib-sidebar-layout > .sidebar").nth(nth)
     aside_id = aside.get_attribute("id")
     if aside_id is None:
         raise AssertionError("sidebar has no id to key on")

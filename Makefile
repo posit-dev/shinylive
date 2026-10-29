@@ -91,11 +91,13 @@ submodules:
 	git submodule init
 	git submodule update --depth=20
 	cd packages/py-shiny && git fetch --tags --unshallow
+	cd packages/py-shinywidgets && git fetch --tags --unshallow
 
 ## Pull latest changes in git submodules
 submodules-pull:
 	git submodule update --recursive --remote
 	cd packages/py-shiny && git fetch --tags
+	cd packages/py-shinywidgets && git fetch --tags
 submodules-pull-shiny:
 	git submodule update --remote packages/py-shiny
 	cd packages/py-shiny && git fetch --tags
