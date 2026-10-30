@@ -394,7 +394,7 @@ test-deps: $(PYBIN) $(PACKAGE_DIR)/py-shiny
 EXAMPLES_PYTEST_ARGS = \
   -m "examples$(if $(EXAMPLES_ENGINE), and $(EXAMPLES_ENGINE))" \
   $(if $(EXAMPLES_SHARD),--shard=$(EXAMPLES_SHARD)) \
-  $(if $(CI),--reruns 1 --tracing retain-on-failure)
+  $(if $(CI),--reruns 1 --rerun-except "shinylive socket shim missing" --tracing retain-on-failure)
 
 ## Run the smoke and intent tests for every example app (needs `make all`)
 test-examples: test-deps
