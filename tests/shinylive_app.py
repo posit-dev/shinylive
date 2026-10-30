@@ -237,13 +237,15 @@ def wait_for_app_rendered(page: Page) -> None:
     wait_for_terminal_quiet(page)
 
 
-# Resolves once Shiny has stayed idle for `duration` ms: an idle event starts the
-# timer and a busy event cancels it, the same approach as shinytest2's
-# `wait_for_idle()`. Shiny fires these events with jQuery's `trigger()`, which
-# only reaches jQuery handlers, so `addEventListener` would never see them. The
-# duration also covers the gap between connecting and the server's first busy
-# message, during which the app looks idle but has not started.
-_WAIT_FOR_IDLE_JS = """([duration, timeout]) => new Promise((resolve, reject) => {
+# Resolves `true` once Shiny has stayed idle for `duration` ms: an idle event
+# starts the timer and a busy event cancels it, the same approach as shinytest2's
+# `wait_for_idle()`. Resolves `false` if that does not happen within `timeout`
+# ms, which is normal for an app that re-renders on a timer. Shiny fires these
+# events with jQuery's `trigger()`, which only reaches jQuery handlers, so
+# `addEventListener` would never see them. The duration also covers the gap
+# between connecting and the server's first busy message, during which the app
+# looks idle but has not started.
+_WAIT_FOR_IDLE_JS = """([duration, timeout]) => new Promise((resolve) => {
   const $ = window.jQuery;
   let idleId = null;
   const cleanup = () => {
@@ -251,14 +253,11 @@ _WAIT_FOR_IDLE_JS = """([duration, timeout]) => new Promise((resolve, reject) =>
     clearTimeout(idleId);
     clearTimeout(timeoutId);
   };
-  const timeoutId = setTimeout(() => {
-    cleanup();
-    reject(new Error(`Shiny did not become idle within ${timeout}ms`));
-  }, timeout);
+  const timeoutId = setTimeout(() => { cleanup(); resolve(false); }, timeout);
   const onBusy = () => clearTimeout(idleId);
   const onIdle = () => {
     clearTimeout(idleId);
-    idleId = setTimeout(() => { cleanup(); resolve(); }, duration);
+    idleId = setTimeout(() => { cleanup(); resolve(true); }, duration);
   };
   $(document).on("shiny:busy", onBusy).on("shiny:idle", onIdle);
   if (!document.documentElement.classList.contains("shiny-busy")) onIdle();
@@ -266,20 +265,24 @@ _WAIT_FOR_IDLE_JS = """([duration, timeout]) => new Promise((resolve, reject) =>
 
 
 def wait_for_shiny_idle(
-    page: Page, *, duration: int = 500, timeout: int = 60_000
-) -> None:
+    page: Page, *, duration: int = 500, timeout: int = 5_000
+) -> bool:
     """Wait until the app's Shiny session has been idle for `duration` ms.
 
-    Waits for Shiny to report it is done rather than for a fixed time, so a slow
-    output is waited for in full and a quick app is not held up.
+    Waits for Shiny to report it is done rather than for a fixed time, so an
+    output that takes a few seconds is waited for and a quick app is not held
+    up. Returns whether it went idle within `timeout` ms. An app that re-renders on a timer, like the
+    cpuinfo example, may never stay idle that long on a slow runner; callers that
+    only want the app to settle carry on either way. Raises if Shiny never
+    connects.
     """
     handle = page.locator(APP_FRAME).element_handle()
     frame = handle.content_frame() if handle else None
     assert frame is not None, "app iframe has no document"
     frame.wait_for_function(
-        "() => window.Shiny?.shinyapp?.isConnected?.()", timeout=timeout
+        "() => window.Shiny?.shinyapp?.isConnected?.()", timeout=60_000
     )
-    frame.evaluate(_WAIT_FOR_IDLE_JS, [duration, timeout])
+    return frame.evaluate(_WAIT_FOR_IDLE_JS, [duration, timeout])
 
 
 def wait_for_terminal_quiet(page: Page, *, quiet: int = 300) -> None:
