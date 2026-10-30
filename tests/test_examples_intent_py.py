@@ -19,7 +19,7 @@ from playwright.sync_api import Page
 from playwright.sync_api import expect as playwright_expect
 from shiny.playwright import controller
 
-from controller_shims import InputSelectize, NavPanel, OutputPlot, sidebar
+from controller_shims import NavPanel, OutputPlot, sidebar
 from shinylive_app import (
     brush,
     expect_plot_to_redraw,
@@ -138,7 +138,7 @@ def test_plotly(page: Page) -> None:
 
 def test_altair(page: Page) -> None:
     app = open_example(page, "py", "altair")
-    variable = InputSelectize(app, "var")
+    variable = controller.InputSelectize(app, "var")
     chart = app.locator("#hist.shiny-ipywidget-output")
     chart_surface = chart.locator("canvas, svg").first
 
@@ -282,7 +282,7 @@ def test_fetch(page: Page) -> None:
         ),
     )
     app = open_example(page, "py", "Fetch data from a web API")
-    city = InputSelectize(app, "city")
+    city = controller.InputSelectize(app, "city")
     data_type = controller.InputRadioButtons(app, "data_type")
     info = controller.OutputCode(app, "info")
 
