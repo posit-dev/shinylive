@@ -257,20 +257,39 @@ const buildmap = {
 // Build shinylive website HTML in /site for R or Python as requested
 buildSiteHtml(appEngine, googleTagManagerId);
 
-Object.values(buildmap).forEach((build) =>
-  build
-    .then(async (context) => {
-      if (watch) {
-        await context.watch();
-      } else if (serve) {
-        await context.rebuild();
-      } else {
-        await context.rebuild();
-        await context.dispose();
-      }
-    })
-    .catch(() => process.exit(1)),
-);
+// shinylive-sw embeds src/assets/shinylive-inject-socket.txt, which the
+// shinylive-inject-socket build writes. Write that file before starting the
+// other builds: esbuild empties a file before writing it, so if shinylive-sw
+// reads it at that moment it embeds an empty shim and no app can connect.
+// (In watch mode, watch() builds the shim again, but esbuild does not rewrite
+// an output file that hasn't changed.)
+const { "shinylive-inject-socket": injectSocket, ...otherBuilds } = buildmap;
+injectSocket
+  .then(async (context) => {
+    await context.rebuild();
+    if (watch) {
+      await context.watch();
+    } else if (!serve) {
+      await context.dispose();
+    }
+  })
+  .then(() =>
+    Object.values(otherBuilds).forEach((build) =>
+      build
+        .then(async (context) => {
+          if (watch) {
+            await context.watch();
+          } else if (serve) {
+            await context.rebuild();
+          } else {
+            await context.rebuild();
+            await context.dispose();
+          }
+        })
+        .catch(() => process.exit(1)),
+    ),
+  )
+  .catch(() => process.exit(1));
 
 if (serve) {
   buildmap["app"]
