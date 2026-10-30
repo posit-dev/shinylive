@@ -46,7 +46,7 @@ jobs:
       fail-fast: false
       matrix:
         engine: [py, r]
-        shard: [1, 2, 3]
+        shard: [1, 2, 3, 4]
     steps:
       - uses: actions/checkout@v7
 
@@ -69,10 +69,10 @@ jobs:
       # The site tests are not part of this matrix -- they test the build rather
       # than the examples, and run in build.yml. `make test-examples`
       # selects on the `examples` marker, so they are not swept in here.
-      - name: Run examples smoke and intent tests (${{ matrix.engine }} shard ${{ matrix.shard }}/3)
+      - name: Run examples smoke and intent tests (${{ matrix.engine }} shard ${{ matrix.shard }}/4)
         env:
           EXAMPLES_ENGINE: ${{ matrix.engine }}
-          EXAMPLES_SHARD: ${{ matrix.shard }}/3
+          EXAMPLES_SHARD: ${{ matrix.shard }}/4
         run: |
           make test-examples
 
