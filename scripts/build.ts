@@ -95,14 +95,35 @@ const injectSocketPlugin = {
       namespace: "inject-socket",
     }));
     build.onLoad({ filter: /.*/, namespace: "inject-socket" }, async (args) => {
-      const result = await esbuild.build({
-        bundle: true,
-        entryPoints: [args.path],
-        format: "esm",
-        target: "es2020",
-        write: false,
-        metafile: true,
-      });
+      let result;
+      try {
+        result = await esbuild.build({
+          bundle: true,
+          entryPoints: [args.path],
+          format: "esm",
+          target: "es2020",
+          // Don't minify, because the space savings are minimal, and the it will
+          // lead to spurious diffs when building for dev vs. prod.
+          minify: false,
+          write: false,
+          metafile: true,
+          // The outer build reports the errors returned below.
+          logLevel: "silent",
+        });
+      } catch (e) {
+        // Keep watching the shim and the files with errors. Otherwise watch mode
+        // never rebuilds after the error is fixed.
+        const errors = (e as esbuild.BuildFailure).errors;
+        return {
+          errors,
+          watchFiles: [
+            args.path,
+            ...errors.flatMap((m) =>
+              m.location ? [path.resolve(m.location.file)] : [],
+            ),
+          ],
+        };
+      }
       return {
         contents: result.outputFiles[0].text,
         loader: "text",
