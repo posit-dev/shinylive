@@ -242,14 +242,17 @@ def wait_for_app_rendered(page: Page) -> None:
 # retry only waits out the same failure.
 SOCKET_SHIM_MISSING = "shinylive socket shim missing"
 
-# Resolves once Shiny connects, or as soon as it is using a real WebSocket.
-# shinylive-inject-socket.js replaces `Shiny.createSocket` with one that returns
-# a MessagePort-backed socket, so a real `WebSocket` means the shim is missing
-# and the app will never connect.
+# Resolves once Shiny connects, or as soon as it is clear it never will.
+# shinylive-inject-socket.js sets `Shiny.createSocket` to return a
+# MessagePort-backed socket, and Shiny uses it when it is set. Without it Shiny
+# opens a real WebSocket, which 404s. Checking the shim is more reliable than
+# checking `$socket`, which Shiny clears as soon as that WebSocket fails.
+# The shim check goes first: `isConnected()` is only `!!$socket`, so it is
+# briefly true for that doomed WebSocket too.
 _WAIT_FOR_CONNECT_JS = """() => {
   const app = window.Shiny?.shinyapp;
+  if (app && typeof window.Shiny.createSocket !== "function") return "no-shim";
   if (app?.isConnected?.()) return "connected";
-  if (app?.$socket instanceof WebSocket) return "real-websocket";
   return false;
 }"""
 
@@ -291,7 +294,7 @@ def wait_for_shiny_idle(
     up. Returns whether it went idle within `timeout` ms. An app that re-renders on a timer, like the
     cpuinfo example, may never stay idle that long on a slow runner; callers that
     only want the app to settle carry on either way. Raises if Shiny never
-    connects, and at once if it is using a real WebSocket, which never can.
+    connects, and at once if shinylive's socket shim is missing.
     """
     handle = page.locator(APP_FRAME).element_handle()
     frame = handle.content_frame() if handle else None
@@ -299,14 +302,14 @@ def wait_for_shiny_idle(
     state = frame.wait_for_function(
         _WAIT_FOR_CONNECT_JS, timeout=60_000
     ).json_value()
-    if state == "real-websocket":
+    if state == "no-shim":
         # TODO: If this keeps happening, file an issue in posit-dev/shinylive.
         # It has broken a whole CI job at a time (every test in the job), in
         # both engines: shinylive-inject-socket.js was served, yet Shiny opened
         # a real WebSocket and got a 404. The cause is unknown.
         raise AssertionError(
-            f"{SOCKET_SHIM_MISSING}: Shiny opened a real WebSocket, which can "
-            "never connect, instead of shinylive's MessagePort socket"
+            f"{SOCKET_SHIM_MISSING}: `Shiny.createSocket` is not set, so Shiny "
+            "opens a real WebSocket, which can never connect"
         )
     return frame.evaluate(_WAIT_FOR_IDLE_JS, [duration, timeout])
 
