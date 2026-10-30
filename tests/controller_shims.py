@@ -24,6 +24,8 @@ class OutputPlot(controller.OutputPlot):
 
     py-shiny keys on `.shiny-image-output.shiny-plot-output`, which holds for
     `ui.output_plot()`. R's `plotOutput()` writes only the second of those.
+    The `loc`/`loc_img` override can go once the py-shiny submodule includes
+    posit-dev/py-shiny#2598; keep `expect_rendered()`.
     """
 
     def __init__(self, page: Page, id: str) -> None:
@@ -65,6 +67,9 @@ class NavPanel(controller.NavPanel):
         than that at shinylive's default split, so the tabs of a `page_navbar()`
         or `navset_bar()` start hidden behind a hamburger. py-shiny's `click()`
         has the equivalent for tabs nested in a dropdown.
+
+        Remove this override once the py-shiny submodule includes
+        posit-dev/py-shiny#2599, which does the same in `click()`.
         """
         if not self.loc.is_visible():
             self._expand_navbar(timeout=timeout)
