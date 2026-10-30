@@ -8,8 +8,10 @@ quietly never run.
 
 **`examples`** — the apps in `examples/`:
 
-- **`test_examples_smoke.py`** loads every indexed example, for both engines, and
-  fails on tracebacks, deprecation warnings, output errors or JS console errors.
+- **`test_examples_smoke.py`** loads each indexed example that has no intent
+  test, for both engines, and fails on tracebacks, deprecation warnings, output
+  errors or JS console errors. An intent test already makes those checks on its
+  example, so examples with one are not booted a second time here.
 - **`test_examples_intent_py.py`** and **`test_examples_intent_r.py`** go further
   for each app: drive its inputs, and check the outputs that depend on them.
 
@@ -30,7 +32,7 @@ and asserts on the failure itself.
 ```console
 make test-deps              # once
 make all                    # the tests drive the built output
-make test-examples-smoke    # the smoke and intent suites
+make test-examples          # the smoke and intent suites
 make test-examples-intent   # only the intent tests
 make test-site              # the site and export suites
 ```
@@ -178,7 +180,7 @@ both engines' parametrizations. `--loader-delay` only holds back the
 route handler installs the delay); it is a no-op on the failure-mode tests.
 The status text only appears 3s after the loader
 mounts (`STATUS_DELAY_MS` in `src/Components/LoadingStatus.tsx`), so turn the
-delay up to give yourself time to read the stages. `--tracing on` overrides
-`pytest.ini`'s `--tracing retain-on-failure` and writes a trace even for a
-test that passes. Failures already keep one either way, and build.yml uploads
-`test-results/`.
+delay up to give yourself time to read the stages. `--tracing on` writes a
+trace even for a test that passes. The Make targets record traces only on CI
+(`--tracing retain-on-failure`, which keeps them for failures), and build.yml
+uploads `test-results/`.

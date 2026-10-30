@@ -104,7 +104,7 @@ type-check             Type-check everything, including the unit tests (swc does
 test-unit              Run the TypeScript unit tests (jest); needs no build and no Python
 test-unit-coverage     Run the TypeScript unit tests and report coverage
 test-deps              Install the Python dependencies for the tests in tests/
-test-examples-smoke    Run the smoke and intent tests for every example app (needs `make all`)
+test-examples          Run the smoke and intent tests for every example app (needs `make all`)
 test-examples-intent   Run only the example app intent tests (needs `make all`)
 test-site              Run the site and static export tests (needs `make all`)
 ```
@@ -162,7 +162,7 @@ Real browsers against the built `_shinylive/` output. Two halves, split by marke
 ```bash
 make test-deps             # once
 make all                   # the tests drive the built output
-make test-examples-smoke   # every example app
+make test-examples         # every example app
 make test-examples-intent  # only the intent tests
 make test-site             # editor, URL loading, static export
 ```
