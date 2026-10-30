@@ -67,14 +67,14 @@ jobs:
           make all
 
       # The site tests are not part of this matrix -- they test the build rather
-      # than the examples, and run in build.yml. `make test-examples-smoke`
+      # than the examples, and run in build.yml. `make test-examples`
       # selects on the `examples` marker, so they are not swept in here.
       - name: Run examples smoke and intent tests (${{ matrix.engine }} shard ${{ matrix.shard }}/3)
         env:
           EXAMPLES_ENGINE: ${{ matrix.engine }}
           EXAMPLES_SHARD: ${{ matrix.shard }}/3
         run: |
-          make test-examples-smoke
+          make test-examples
 
       - uses: actions/upload-artifact@v7
         if: always()

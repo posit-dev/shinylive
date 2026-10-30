@@ -12,7 +12,7 @@
 	clean-packages clean distclean \
 	examples-check-index type-check \
 	test-deps test-unit test-unit-coverage \
-	test-examples-smoke test-examples-intent test-site test-loader webr \
+	test-examples test-examples-intent test-site test-loader webr \
 	_shinylive
 
 .DEFAULT_GOAL := help
@@ -397,7 +397,7 @@ EXAMPLES_PYTEST_ARGS = \
   $(if $(CI),--reruns 1 --tracing retain-on-failure)
 
 ## Run the smoke and intent tests for every example app (needs `make all`)
-test-examples-smoke: test-deps
+test-examples: test-deps
 	$(PYBIN)/pytest tests $(EXAMPLES_PYTEST_ARGS)
 
 ## Run only the example app intent tests (needs `make all`)

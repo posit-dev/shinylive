@@ -32,7 +32,7 @@ and asserts on the failure itself.
 ```console
 make test-deps              # once
 make all                    # the tests drive the built output
-make test-examples-smoke    # the smoke and intent suites
+make test-examples          # the smoke and intent suites
 make test-examples-intent   # only the intent tests
 make test-site              # the site and export suites
 ```
