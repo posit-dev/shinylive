@@ -303,10 +303,9 @@ def wait_for_shiny_idle(
         _WAIT_FOR_CONNECT_JS, timeout=60_000
     ).json_value()
     if state == "no-shim":
-        # TODO: If this keeps happening, file an issue in posit-dev/shinylive.
-        # It has broken a whole CI job at a time (every test in the job), in
-        # both engines: shinylive-inject-socket.js was served, yet Shiny opened
-        # a real WebSocket and got a 404. The cause is unknown.
+        # posit-dev/shinylive#257: this breaks a whole CI job at a time (every
+        # test in the job), in both engines. shinylive-inject-socket.js is
+        # served, yet the shim never runs. The cause is unknown.
         raise AssertionError(
             f"{SOCKET_SHIM_MISSING}: `Shiny.createSocket` is not set, so Shiny "
             "opens a real WebSocket, which can never connect"
