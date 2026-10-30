@@ -11,8 +11,8 @@ declare module "*.svg" {
   export default src;
 }
 
-// This is so the TS compiler doesn't complain about importing text files.
-declare module "*.txt" {
+// src/shinylive-inject-socket.ts, bundled to a string by scripts/build.ts.
+declare module "virtual:shinylive-inject-socket" {
   const content: string;
   export default content;
 }

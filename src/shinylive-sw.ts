@@ -1,7 +1,8 @@
 // Service Worker for Shinylive
 /// <reference lib="WebWorker" />
-// Load the content of shinylive-inject-socket.js as a string.
-import shinylive_inject_socket_js from "./assets/shinylive-inject-socket.txt";
+// Load the bundled shinylive-inject-socket.ts as a string. See
+// injectSocketPlugin in scripts/build.ts.
+import shinylive_inject_socket_js from "virtual:shinylive-inject-socket";
 import { fetchASGI } from "./messageporthttp";
 import { dirname, sleep, uint8ArrayToString } from "./utils";
 

@@ -84,6 +84,57 @@ const metafilePlugin = {
   },
 };
 
+// Resolves `import ... from "virtual:shinylive-inject-socket"` to
+// src/shinylive-inject-socket.ts, bundled and passed in as a string. The service
+// worker serves that string to apps as shinylive-inject-socket.js.
+const injectSocketPlugin = {
+  name: "inject-socket",
+  setup(build: esbuild.PluginBuild) {
+    build.onResolve({ filter: /^virtual:shinylive-inject-socket$/ }, () => ({
+      path: path.resolve("src/shinylive-inject-socket.ts"),
+      namespace: "inject-socket",
+    }));
+    build.onLoad({ filter: /.*/, namespace: "inject-socket" }, async (args) => {
+      let result;
+      try {
+        result = await esbuild.build({
+          bundle: true,
+          entryPoints: [args.path],
+          format: "esm",
+          target: "es2020",
+          // Don't minify, because the space savings are minimal, and the it will
+          // lead to spurious diffs when building for dev vs. prod.
+          minify: false,
+          write: false,
+          metafile: true,
+          // The outer build reports the errors returned below.
+          logLevel: "silent",
+        });
+      } catch (e) {
+        // Keep watching the shim and the files with errors. Otherwise watch mode
+        // never rebuilds after the error is fixed.
+        const errors = (e as esbuild.BuildFailure).errors;
+        return {
+          errors,
+          watchFiles: [
+            args.path,
+            ...errors.flatMap((m) =>
+              m.location ? [path.resolve(m.location.file)] : [],
+            ),
+          ],
+        };
+      }
+      return {
+        contents: result.outputFiles[0].text,
+        loader: "text",
+        watchFiles: Object.keys(result.metafile.inputs).map((f) =>
+          path.resolve(f),
+        ),
+      };
+    });
+  },
+};
+
 function readdirSyncRecursive(dir: string, root: string = dir): string[] {
   return fs.readdirSync(dir).reduce((files: string[], file: string) => {
     const name = path.join(dir, file);
@@ -228,20 +279,6 @@ const buildmap = {
     banner: banner,
     plugins: [createRebuildLoggerPlugin("codeblock-to-json")],
   }),
-  // Compile src/shinylive-inject-socket.ts to
-  // src/assets/shinylive-inject-socket.txt. That file is in turn ingested into
-  // shinylive-sw.js.
-  "shinylive-inject-socket": esbuild.context({
-    bundle: true,
-    entryPoints: ["src/shinylive-inject-socket.ts"],
-    outfile: "src/assets/shinylive-inject-socket.txt",
-    format: "esm",
-    target: "es2020",
-    // Don't minify, because the space savings are minimal, and the it will lead
-    // to spurious diffs when building for dev vs. prod.
-    minify: false,
-    plugins: [createRebuildLoggerPlugin("shinylive-inject-socket")],
-  }),
   "shinylive-sw": esbuild.context({
     bundle: true,
     entryPoints: ["src/shinylive-sw.ts"],
@@ -250,7 +287,7 @@ const buildmap = {
     target: "es2020",
     minify: minify,
     banner: banner,
-    plugins: [createRebuildLoggerPlugin("shinylive-sw")],
+    plugins: [createRebuildLoggerPlugin("shinylive-sw"), injectSocketPlugin],
   }),
 };
 
