@@ -62,7 +62,7 @@ async function connect(
 
   // A function to be called by the ASGI app to send a message to the client.
   async function toClient(event: Record<string, any>): Promise<void> {
-    event = Object.fromEntries(event.toJs());
+    event = event.toJs({ dict_converter: Object.fromEntries });
     if (event.type === "websocket.accept") {
       // TODO: Also pass along event.subprotocol, event.headers
       conn.accept();

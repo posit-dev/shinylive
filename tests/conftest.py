@@ -8,8 +8,6 @@ import sys
 import threading
 import time
 from collections.abc import Callable, Iterator, Mapping
-from functools import partial
-from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from typing import Any
 
@@ -25,6 +23,7 @@ from shinylive_app import (
     suspect_terminal_lines,
     terminal_text,
 )
+from static_server import static_server as make_static_server
 
 # Assertions get their own timeout, well short of the per-test one: an app that
 # is going to answer at all answers long before this.
@@ -210,12 +209,8 @@ def static_server() -> Iterator[None]:
     process = subprocess.Popen(
         [
             sys.executable,
-            "-m",
-            "http.server",
+            str(Path(__file__).parent / "static_server.py"),
             str(STATIC_PORT),
-            "--bind",
-            "127.0.0.1",
-            "--directory",
             str(SHINYLIVE_DIR),
         ],
         stdout=subprocess.DEVNULL,
@@ -247,14 +242,7 @@ def export_server(export_root: Path) -> Iterator[str]:
     reusing a server for, but an export root is made fresh per session, so a
     server left over from another run would quietly serve the wrong files.
     """
-
-    class _QuietHandler(SimpleHTTPRequestHandler):
-        def log_message(self, format: str, *args: Any) -> None:
-            pass
-
-    server = ThreadingHTTPServer(
-        ("127.0.0.1", 0), partial(_QuietHandler, directory=str(export_root))
-    )
+    server = make_static_server(0, str(export_root))
     threading.Thread(target=server.serve_forever, daemon=True).start()
     try:
         yield f"http://127.0.0.1:{server.server_address[1]}"
