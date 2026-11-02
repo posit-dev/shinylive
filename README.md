@@ -49,16 +49,6 @@ make dist
 ```
 
 
-There is also a Quarto web site which demonstrates the shinylive components in different configurations. To build and serve the test Quarto web site with Quarto components:
-
-```bash
-make quarto
-make quartoserve
-```
-
-This will auto-rebuild and reload the Quarto site when a .qmd file in `quarto/` changes, but it will not auto-rebuild when the source TS files change.
-
-
 You may occasionally need to clean out the built artifacts and rebuild:
 
 ```sh
@@ -94,8 +84,6 @@ retrieve_packages      Download packages in shinylive_lock.json from PyPI
 update_pyodide_lock_json Update pyodide/pyodide-lock.json to include packages in shinylive_lock.json
 create_typeshed_json   Create the typeshed.json file which will be used by the shinylive type checker
 copy_pyright           Copy src/pyright files to build directory
-quarto                 Build Quarto example site in quarto/
-quartoserve            Build Quarto example site and serve
 clean-packages         Remove built wheels from the packages/ directory
 clean                  Remove all build files
 distclean              Remove all build files, venv/, and downloads/
@@ -202,8 +190,6 @@ This an overview of some of the important files and directories in this project.
 │   ├── py-htmltools       #   Used for building wheel files for shinylive.
 │   ├── py-shiny
 │   └── ipyshiny
-├── quarto                 # Sources for an example Quarto site
-│   └── docs               # Generated files for Quarto site
 ├── export_template        # Files used for deployment via `shinylive deploy`
 ├── scripts
 │   └── pyodide_packages.py # Script for downloading PyPI packages and inserting

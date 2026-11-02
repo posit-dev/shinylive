@@ -45,7 +45,7 @@ Versions live at the top of the `Makefile`: `PYODIDE_VERSION`, `R_SHINY_VERSION`
   a wheel when the file for the current version is missing, so new submodule code with an
   unchanged version keeps the old wheel. Run `make packages` after updating a submodule.
 - `make update_packages_lock` — the full lockfile regeneration from PyPI.
-- `make dist`, `make test-deps`, tests, and `make quarto`.
+- `make dist`, `make test-deps`, and tests.
 
 `make all` does change tracked files: `shinylive_lock.json` (via `update_packages_lock_local`) and
 `src/pyodide/*`.

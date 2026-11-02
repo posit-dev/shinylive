@@ -629,10 +629,12 @@ def update_pyodide_pyodide_lock_json():
 
     print("Adding packages to Pyodide packages:")
     for name, pkg_info in lockfile_packages.items():
-        if name in pyodide_packages:
-            raise Exception(f"  {name} already in {pyodide_lock_json_file}")
-
-        print(f"  {name}")
+        if name in pyodide_packages["packages"]:
+            # Pyodide ships this package too. The lockfile's version replaces it.
+            pyodide_version = pyodide_packages["packages"][name]["version"]
+            print(f"  {name} (replaces Pyodide's {pyodide_version})")
+        else:
+            print(f"  {name}")
         p_pkg_info = _lockfile_to_pyodide_package_info(pkg_info)
         # If the sha256 is "", then that's a signal that this is a local file and we
         # need to compute the sha256 here.

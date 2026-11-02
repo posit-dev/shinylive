@@ -54,8 +54,8 @@ default: `allowCodeUrl`, `allowGistUrl`, `allowExampleUrl`. Turning them on lets
 so a page that does should live on its own domain (see the comment above `runApp`).
 
 `startFiles` may be `FileContentJson[]` or `FileContent[]`; `runApp` maps them through
-`FCorFCJSONtoFC`. The "unused arguments" warning at the end of `runApp` never fires, because
-`propertyOfAppOptions` returns its input, which is always truthy.
+`FCorFCJSONtoFC`. Extra keys in `opts` (such as Quarto's `components` and `standalone`) are
+passed through to `App` without a warning.
 
 `runExportedApp()` fetches `./app.json` and reads `?_shinylive-mode=` (default `viewer`); see
 `quartoAndExport.md`.

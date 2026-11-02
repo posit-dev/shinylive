@@ -8,7 +8,6 @@
 	submodules submodules-pull submodules-pull-shiny submodules-pull-htmltools \
 	buildjs watch serve \
 	packages \
-	quarto quartoserve \
 	clean-packages clean distclean \
 	examples-check-index type-check \
 	test-deps test-unit test-unit-coverage \
@@ -333,15 +332,6 @@ copy_pyright:
 	cp -r src/pyright/* $(BUILD_DIR)/shinylive/pyright
 
 
-## Build Quarto example site in quarto/
-quarto:
-	cd quarto && quarto render
-
-## Build Quarto example site and serve
-quartoserve:
-	cd quarto && quarto preview --port 8080
-
-
 ## Remove built wheels from the packages/ directory
 clean-packages:
 	rm -f $(PACKAGE_DIR)/*.whl
@@ -349,7 +339,7 @@ clean-packages:
 ## Remove all build files
 clean:
 	rm -rf $(PACKAGE_DIR)/*.whl $(BUILD_DIR) $(DIST_DIR) \
-	  $(SHINYLIVE_DIR)/py $(SHINYLIVE_DIR)/r quarto/docs/ typings/
+	  $(SHINYLIVE_DIR)/py $(SHINYLIVE_DIR)/r typings/
 
 ## Remove all build files, venv/, and downloads/
 distclean: clean

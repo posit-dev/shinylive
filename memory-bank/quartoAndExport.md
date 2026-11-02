@@ -78,7 +78,7 @@ Anything else throws. `examples` is a valid `Component` type but has no mode her
 
 ## Exported apps (`runExportedApp` and `export_template/`)
 
-`runExportedApp({id, appEngine, relPath})` in `src/Components/App.tsx`:
+`runExportedApp({id, appEngine})` in `src/Components/App.tsx`:
 
 1. fetches `./app.json`, a JSON array of `{name, content, type}`;
 2. finds the element with id `id`;
@@ -86,8 +86,6 @@ Anything else throws. `examples` is a valid `Component` type but has no mode her
    `viewer`. An unknown mode logs a warning and falls back to `viewer`;
 4. calls `runApp` with only `startFiles`. So `allowCodeUrl`, `allowGistUrl` and `allowExampleUrl`
    stay false, and an export ignores `#code=` in the URL.
-
-`relPath` is accepted but not used inside the function today.
 
 `export_template/index.html` is a Mustache template. The external packages fill in:
 
@@ -122,8 +120,3 @@ ignored, the missing header bar, and `editor-cell` mode. If you change the templ
 - The `_shinylive-mode` query parameter and the mode strings in `AppModes`.
 - The code block syntax, the CSS classes `shinylive-python` / `shinylive-r`, and
   `codeblock-to-json`'s stdin/stdout and engine argument.
-
-## The `quarto/` folder
-
-`README.md` and the `quarto` / `quartoserve` Makefile targets refer to a `quarto/` example site,
-but that folder is not in the repo today, so those targets fail.

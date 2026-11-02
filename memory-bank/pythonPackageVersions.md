@@ -63,10 +63,9 @@ Dependency filtering (`_filter_requires`): any requirement with a `;` marker is 
 listed as dependencies. The `imports` value for PyPI packages is guessed from the name
 (`python-` and `-py` stripped, `-` to `_`).
 
-The "already in Pyodide" check in `update_pyodide_pyodide_lock_json` tests
-`name in pyodide_packages`, which looks at the top-level keys (`info`, `packages`), not at the
-package names. So it does not catch a lockfile package that Pyodide already ships; the lockfile
-entry overwrites it.
+A lockfile package that Pyodide also ships replaces Pyodide's entry, even when the lockfile
+version is older. `update_pyodide_pyodide_lock_json` prints `<name> (replaces Pyodide's <version>)`
+for each one, so check the `make all` output after a Pyodide bump.
 
 ## How submodule wheels get their version
 
