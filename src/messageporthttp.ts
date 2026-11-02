@@ -132,7 +132,7 @@ async function connect(
   }
 
   async function toClient(event: Record<string, any>): Promise<void> {
-    event = Object.fromEntries(event.toJs());
+    event = event.toJs({ dict_converter: Object.fromEntries });
     if (event.type === "http.response.start") {
       clientPort.postMessage({
         type: event.type,

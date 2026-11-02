@@ -533,7 +533,7 @@
   "libsass": {
     "name": "libsass",
     "version": "0.23.0",
-    "filename": "libsass-0.23.0-cp312-abi3-pyodide_2024_0_wasm32.whl",
+    "filename": "libsass-0.23.0-cp313-abi3-pyemscripten_2025_0_wasm32.whl",
     "sha256": null,
     "url": null,
     "depends": [],

@@ -691,12 +691,14 @@ def orig_pyodide_lock() -> PyodidePackagesFile:
         )
         shutil.copy(pyodide_lock_json_file, orig_pyodide_lock_json_file)
     else:
+        # Pyodide 0.28 dropped info.version, so we can't tell versions apart that
+        # way. Instead, a pyodide-lock.json without shiny in it must be a fresh one
+        # from a newly unpacked Pyodide, so it replaces the saved original.
         try:
-            with open(pyodide_lock_json_file, "r") as f_new, open(orig_pyodide_lock_json_file, "r") as f_orig:
-                new_info = json.load(f_new).get("info", {})
-                orig_info = json.load(f_orig).get("info", {})
-                if new_info.get("version") != orig_info.get("version"):
-                    shutil.copy(pyodide_lock_json_file, orig_pyodide_lock_json_file)
+            with open(pyodide_lock_json_file, "r") as f_new:
+                new_packages = json.load(f_new).get("packages", {})
+            if "shiny" not in new_packages:
+                shutil.copy(pyodide_lock_json_file, orig_pyodide_lock_json_file)
         except Exception:
             shutil.copy(pyodide_lock_json_file, orig_pyodide_lock_json_file)
 

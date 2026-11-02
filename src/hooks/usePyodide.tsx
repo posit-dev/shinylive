@@ -204,6 +204,10 @@ def _pyodide_env_init():
     # the default Canvas one.
     os.environ["MPLBACKEND"] = "AGG"
 
+    # joblib can't use multiprocessing in the browser. Without this, it tries,
+    # and warns on import that it will run in serial mode.
+    os.environ["JOBLIB_MULTIPROCESSING"] = "0"
+
     # Add current directory to Python path.
     sys.path.insert(0, "")
 
