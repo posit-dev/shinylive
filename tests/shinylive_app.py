@@ -135,6 +135,18 @@ def example_app_titles(engine: str) -> list[str]:
     ]
 
 
+def titles_with_intent_tests(engine: str) -> set[str]:
+    """Titles that `tests/test_examples_intent_<engine>.py` opens by name.
+
+    Read from the source, so an intent test that passes its title in a variable
+    is not found; its example then keeps a smoke test, which is the safe side.
+    """
+    source = (Path(__file__).parent / f"test_examples_intent_{engine}.py").read_text()
+    return set(
+        re.findall(rf'open_example\(\s*page,\s*"{engine}",\s*"([^"]+)"', source)
+    )
+
+
 # ---------------------------------------------------------------------------
 # Loading an example
 # ---------------------------------------------------------------------------
@@ -220,8 +232,101 @@ def wait_for_app_rendered(page: Page) -> None:
         raise AssertionError("app iframe never rendered anything")
 
     # Outputs render after the initial UI, and warnings reach the terminal later
-    # still, so give both a moment to land.
-    page.wait_for_timeout(2500)
+    # still, so wait for both to land.
+    wait_for_shiny_idle(page)
+    wait_for_terminal_quiet(page)
+
+
+# Error text for a page whose app is not using shinylive's socket. The Makefile
+# passes it to `--rerun-except`: the whole CI job is broken when it happens, so a
+# retry only waits out the same failure.
+SOCKET_SHIM_MISSING = "shinylive socket shim missing"
+
+# Resolves once Shiny connects, or as soon as it is clear it never will.
+# shinylive-inject-socket.js sets `Shiny.createSocket` to return a
+# MessagePort-backed socket, and Shiny uses it when it is set. Without it Shiny
+# opens a real WebSocket, which 404s. Checking the shim is more reliable than
+# checking `$socket`, which Shiny clears as soon as that WebSocket fails.
+# The shim check goes first: `isConnected()` is only `!!$socket`, so it is
+# briefly true for that doomed WebSocket too.
+_WAIT_FOR_CONNECT_JS = """() => {
+  const app = window.Shiny?.shinyapp;
+  if (app && typeof window.Shiny.createSocket !== "function") return "no-shim";
+  if (app?.isConnected?.()) return "connected";
+  return false;
+}"""
+
+
+# Resolves `true` once Shiny has stayed idle for `duration` ms: an idle event
+# starts the timer and a busy event cancels it, the same approach as shinytest2's
+# `wait_for_idle()`. Resolves `false` if that does not happen within `timeout`
+# ms, which is normal for an app that re-renders on a timer. Shiny fires these
+# events with jQuery's `trigger()`, which only reaches jQuery handlers, so
+# `addEventListener` would never see them. The duration also covers the gap
+# between connecting and the server's first busy message, during which the app
+# looks idle but has not started.
+_WAIT_FOR_IDLE_JS = """([duration, timeout]) => new Promise((resolve) => {
+  const $ = window.jQuery;
+  let idleId = null;
+  const cleanup = () => {
+    $(document).off("shiny:busy", onBusy).off("shiny:idle", onIdle);
+    clearTimeout(idleId);
+    clearTimeout(timeoutId);
+  };
+  const timeoutId = setTimeout(() => { cleanup(); resolve(false); }, timeout);
+  const onBusy = () => clearTimeout(idleId);
+  const onIdle = () => {
+    clearTimeout(idleId);
+    idleId = setTimeout(() => { cleanup(); resolve(true); }, duration);
+  };
+  $(document).on("shiny:busy", onBusy).on("shiny:idle", onIdle);
+  if (!document.documentElement.classList.contains("shiny-busy")) onIdle();
+})"""
+
+
+def wait_for_shiny_idle(
+    page: Page, *, duration: int = 500, timeout: int = 5_000
+) -> bool:
+    """Wait until the app's Shiny session has been idle for `duration` ms.
+
+    Waits for Shiny to report it is done rather than for a fixed time, so an
+    output that takes a few seconds is waited for and a quick app is not held
+    up. Returns whether it went idle within `timeout` ms. An app that re-renders on a timer, like the
+    cpuinfo example, may never stay idle that long on a slow runner; callers that
+    only want the app to settle carry on either way. Raises if Shiny never
+    connects, and at once if shinylive's socket shim is missing.
+    """
+    handle = page.locator(APP_FRAME).element_handle()
+    frame = handle.content_frame() if handle else None
+    assert frame is not None, "app iframe has no document"
+    state = frame.wait_for_function(
+        _WAIT_FOR_CONNECT_JS, timeout=60_000
+    ).json_value()
+    if state == "no-shim":
+        # posit-dev/shinylive#257: this breaks a whole CI job at a time (every
+        # test in the job), in both engines. shinylive-inject-socket.js is
+        # served, yet the shim never runs. The cause is unknown.
+        raise AssertionError(
+            f"{SOCKET_SHIM_MISSING}: `Shiny.createSocket` is not set, so Shiny "
+            "opens a real WebSocket, which can never connect"
+        )
+    return frame.evaluate(_WAIT_FOR_IDLE_JS, [duration, timeout])
+
+
+def wait_for_terminal_quiet(page: Page, *, quiet: int = 300) -> None:
+    """Wait until the shinylive terminal has not changed for `quiet` ms.
+
+    Output, warnings included, reaches the terminal from the engine's worker
+    asynchronously, so it can land a moment after Shiny reports idle.
+    """
+    interval = 100
+    last = terminal_text(page)
+    unchanged = 0
+    while unchanged < quiet:
+        page.wait_for_timeout(interval)
+        now = terminal_text(page)
+        unchanged = unchanged + interval if now == last else 0
+        last = now
 
 
 # ---------------------------------------------------------------------------

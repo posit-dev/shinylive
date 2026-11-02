@@ -12,7 +12,7 @@
 	clean-packages clean distclean \
 	examples-check-index type-check \
 	test-deps test-unit test-unit-coverage \
-	test-examples-smoke test-examples-intent test-site test-loader webr \
+	test-examples test-examples-intent test-site test-loader webr \
 	_shinylive
 
 .DEFAULT_GOAL := help
@@ -394,10 +394,10 @@ test-deps: $(PYBIN) $(PACKAGE_DIR)/py-shiny
 EXAMPLES_PYTEST_ARGS = \
   -m "examples$(if $(EXAMPLES_ENGINE), and $(EXAMPLES_ENGINE))" \
   $(if $(EXAMPLES_SHARD),--shard=$(EXAMPLES_SHARD)) \
-  $(if $(CI),--reruns 1)
+  $(if $(CI),--reruns 1 --rerun-except "shinylive socket shim missing" --tracing retain-on-failure)
 
 ## Run the smoke and intent tests for every example app (needs `make all`)
-test-examples-smoke: test-deps
+test-examples: test-deps
 	$(PYBIN)/pytest tests $(EXAMPLES_PYTEST_ARGS)
 
 ## Run only the example app intent tests (needs `make all`)
@@ -417,11 +417,11 @@ test-examples-intent: test-deps
 # both covers the whole `site` marker.
 ## Run the site and static export tests (needs `make all`)
 test-site: test-deps
-	$(PYBIN)/pytest tests -m "site and not loader" $(if $(CI),--reruns 1)
+	$(PYBIN)/pytest tests -m "site and not loader" $(if $(CI),--reruns 1 --tracing retain-on-failure)
 
 # The other half of the pair above. Slow by nature: most of these load a real
 # engine, and one deliberately delays the load so the loader has stages to
 # report. See "Watching a loader test by hand" in tests/README.md.
 ## Run the loader status and failure-mode tests (needs `make all`)
 test-loader: test-deps
-	$(PYBIN)/pytest tests -m loader $(if $(CI),--reruns 1)
+	$(PYBIN)/pytest tests -m loader $(if $(CI),--reruns 1 --tracing retain-on-failure)
