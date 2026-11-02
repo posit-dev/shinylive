@@ -583,14 +583,15 @@
   },
   "shinychat": {
     "name": "shinychat",
-    "version": "0.6.1",
-    "filename": "shinychat-0.6.1-py3-none-any.whl",
-    "sha256": "dc4c742bfec391e933ceaa470c12c7c5f204ba6bb53f97cc5ba3567720b0e525",
-    "url": "https://files.pythonhosted.org/packages/1b/a6/03d47e4257a9dce48f07a4c5934de02e300749c9a58f873294fc92652f8a/shinychat-0.6.1-py3-none-any.whl",
+    "version": "0.7.2",
+    "filename": "shinychat-0.7.2-py3-none-any.whl",
+    "sha256": "a063b4cb789019f7dd1e897cf67f351915c00e2fc34b957a3824fcaab1c702b0",
+    "url": "https://files.pythonhosted.org/packages/7d/92/8976398c152b6984723abed71e315ca1b572b791cc8f05cdf1b17157e8f0/shinychat-0.7.2-py3-none-any.whl",
     "depends": [
       {"name": "htmltools", "specs": [[">=", "0.7.0"]]},
-      {"name": "pydantic", "specs": []},
-      {"name": "shiny", "specs": [[">=", "1.4.0"]]}
+      {"name": "libsass", "specs": [[">=", "0.23.0"]]},
+      {"name": "pydantic", "specs": [[">=", "2.11"]]},
+      {"name": "shiny", "specs": [[">=", "1.7.0"]]}
     ],
     "imports": [
       "shinychat"
