@@ -14,6 +14,7 @@ from typing import Any, Callable, Iterator, Literal, Optional, TypedDict, Union,
 
 import pkginfo
 import requirements
+from packaging.utils import canonicalize_name
 from packaging.version import Version
 from typing_extensions import NotRequired
 
@@ -320,13 +321,13 @@ def _recurse_dependencies_lockfile(
 
         print(f"  {pkg_info['name']}:", end="")
         for dep in pkg_info["depends"]:
-            dep_name = dep["name"]
+            # Pyodide looks packages up by their PEP 503 name, so that's the key we
+            # use. Parents may spell a dependency as `foo_bar` or `Foo-Bar`.
+            dep_name = canonicalize_name(dep["name"])
             print(" " + dep_name, end="")
-            if dep_name in pkgs or dep_name.lower() in pyodide_packages_info:
+            if dep_name in pkgs or dep_name in pyodide_packages_info:
                 # We already have it, either in our extra packages, or in the original
                 # set of pyodide packages. Do nothing.
-                # Note that the keys in pyodide_packages_info are all lower-cased, even
-                # if the package name has capitals.
                 pass
             else:
                 pkgs[dep_name] = _find_package_info_lockfile_one(
@@ -351,7 +352,7 @@ def _find_package_info_lockfile(
     res: dict[str, LockfilePackageInfo] = {}
 
     for pkg in pkgs:
-        res[pkg["name"]] = _find_package_info_lockfile_one(pkg)
+        res[canonicalize_name(pkg["name"])] = _find_package_info_lockfile_one(pkg)
     return res
 
 
@@ -558,7 +559,7 @@ def _to_basic_package_info(
             else:
                 depends_str_list.append(dep["name"])
 
-        basic_info[pkg_name.lower()] = {
+        basic_info[canonicalize_name(pkg_name)] = {
             "name": pkg_name,
             "depends": depends_str_list,
         }
