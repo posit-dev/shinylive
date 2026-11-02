@@ -99,6 +99,8 @@ EXTRA_DEPENDENCIES = {
     "anyio": ["exceptiongroup"],
     # palmerpenguins imports pkg_resources, which is part of setuptools.
     "palmerpenguins": ["setuptools"],
+    # Pyodide 314's own starlette entry lists no dependencies, but it imports anyio.
+    "starlette": ["anyio"],
 }
 
 # Some packages may have a circular dependency. For example, shiny (v1.5.0) depends on
@@ -703,7 +705,8 @@ def orig_pyodide_lock() -> PyodidePackagesFile:
             with open(pyodide_lock_json_file, "r") as f_new, open(orig_pyodide_lock_json_file, "r") as f_orig:
                 new_info = json.load(f_new).get("info", {})
                 orig_info = json.load(f_orig).get("info", {})
-                if new_info.get("version") != orig_info.get("version"):
+                # Pyodide 0.28 dropped `info.version`, so compare the whole block.
+                if new_info != orig_info:
                     shutil.copy(pyodide_lock_json_file, orig_pyodide_lock_json_file)
         except Exception:
             shutil.copy(pyodide_lock_json_file, orig_pyodide_lock_json_file)

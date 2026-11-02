@@ -18,7 +18,7 @@
 
 SHINYLIVE_VERSION = $(shell node -p "require('./package.json').version")
 
-PYODIDE_VERSION = 0.27.7
+PYODIDE_VERSION = 314.0.7
 PYODIDE_DIST_FILENAME = pyodide-$(PYODIDE_VERSION).tar.bz2
 DOWNLOAD_DIR = ./downloads
 R_SHINY_VERSION = 1.13.0.8000
@@ -45,7 +45,7 @@ FAICONS_WHEEL = faicons-$(FAICONS_VERSION)-py3-none-any.whl
 # libsass is built in gadenbuie/libsass-python
 # NOTE: Update https://github.com/gadenbuie/libsass-python/blob/dev/.github/workflows/pyodide.yml
 # Pyodide, Emscripten, or Python versions change here.
-LIBSASS_WHEEL=libsass-0.23.0-cp312-abi3-pyodide_2024_0_wasm32.whl
+LIBSASS_WHEEL=libsass-0.23.0-cp314-abi3-pyemscripten_2026_0_wasm32.whl
 
 VENV = venv
 PYBIN = $(VENV)/bin
@@ -142,7 +142,7 @@ $(DOWNLOAD_DIR)/$(PYODIDE_DIST_FILENAME):
 
 $(BUILD_DIR)/shinylive/pyodide: $(DOWNLOAD_DIR)/$(PYODIDE_DIST_FILENAME)
 	mkdir -p $(BUILD_DIR)/shinylive/pyodide
-	tar --exclude "*test*.tar" --exclude "node_modules" \
+	tar --exclude "*test*.tar" --exclude "*-tests.zip" --exclude "node_modules" \
 		-xvjf $(DOWNLOAD_DIR)/$(PYODIDE_DIST_FILENAME) \
 		-C $(BUILD_DIR)/shinylive
 
