@@ -204,6 +204,10 @@ def _pyodide_env_init():
     # the default Canvas one.
     os.environ["MPLBACKEND"] = "AGG"
 
+    # There are no processes to fork in Pyodide. Without this, joblib (used by
+    # scikit-learn) warns at import that it will "operate in serial mode".
+    os.environ["JOBLIB_MULTIPROCESSING"] = "0"
+
     # Add current directory to Python path.
     sys.path.insert(0, "")
 

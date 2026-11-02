@@ -186,6 +186,24 @@ class _ShardPlugin:
         items[:] = keep
 
 
+# Pyodide requests every wheel an app needs at once. `http.server` queues only 5
+# connections waiting to be accepted, and macOS resets the rest, so packages
+# fail to load at random. Both servers below queue more.
+_REQUEST_QUEUE_SIZE = 128
+
+# `python -m http.server` with a longer queue. Run as a separate process so that
+# xdist workers can share it.
+_SERVE_STATIC = f"""
+import sys
+from functools import partial
+from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
+
+ThreadingHTTPServer.request_queue_size = {_REQUEST_QUEUE_SIZE}
+handler = partial(SimpleHTTPRequestHandler, directory=sys.argv[2])
+ThreadingHTTPServer(("127.0.0.1", int(sys.argv[1])), handler).serve_forever()
+"""
+
+
 @pytest.fixture(scope="session", autouse=True)
 def static_server() -> Iterator[None]:
     """Serve the built `_shinylive/` for the session.
@@ -210,12 +228,9 @@ def static_server() -> Iterator[None]:
     process = subprocess.Popen(
         [
             sys.executable,
-            "-m",
-            "http.server",
+            "-c",
+            _SERVE_STATIC,
             str(STATIC_PORT),
-            "--bind",
-            "127.0.0.1",
-            "--directory",
             str(SHINYLIVE_DIR),
         ],
         stdout=subprocess.DEVNULL,
@@ -252,7 +267,10 @@ def export_server(export_root: Path) -> Iterator[str]:
         def log_message(self, format: str, *args: Any) -> None:
             pass
 
-    server = ThreadingHTTPServer(
+    class _Server(ThreadingHTTPServer):
+        request_queue_size = _REQUEST_QUEUE_SIZE
+
+    server = _Server(
         ("127.0.0.1", 0), partial(_QuietHandler, directory=str(export_root))
     )
     threading.Thread(target=server.serve_forever, daemon=True).start()

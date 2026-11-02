@@ -99,6 +99,8 @@ EXTRA_DEPENDENCIES = {
     "anyio": ["exceptiongroup"],
     # palmerpenguins imports pkg_resources, which is part of setuptools.
     "palmerpenguins": ["setuptools"],
+    # Pyodide 314's own starlette entry lists no dependencies, but it imports anyio.
+    "starlette": ["anyio"],
 }
 
 # Some packages may have a circular dependency. For example, shiny (v1.5.0) depends on
@@ -630,10 +632,13 @@ def update_pyodide_pyodide_lock_json():
 
     print("Adding packages to Pyodide packages:")
     for name, pkg_info in lockfile_packages.items():
-        if name in pyodide_packages:
-            raise Exception(f"  {name} already in {pyodide_lock_json_file}")
-
-        print(f"  {name}")
+        if name in pyodide_packages["packages"]:
+            # Listed in shinylive_requirements.json on purpose, to replace the
+            # version Pyodide ships.
+            old_version = pyodide_packages["packages"][name]["version"]
+            print(f"  {name} (replacing Pyodide's {old_version})")
+        else:
+            print(f"  {name}")
         p_pkg_info = _lockfile_to_pyodide_package_info(pkg_info)
         # If the sha256 is "", then that's a signal that this is a local file and we
         # need to compute the sha256 here.
@@ -696,7 +701,8 @@ def orig_pyodide_lock() -> PyodidePackagesFile:
             with open(pyodide_lock_json_file, "r") as f_new, open(orig_pyodide_lock_json_file, "r") as f_orig:
                 new_info = json.load(f_new).get("info", {})
                 orig_info = json.load(f_orig).get("info", {})
-                if new_info.get("version") != orig_info.get("version"):
+                # Pyodide 0.28 dropped `info.version`, so compare the whole block.
+                if new_info != orig_info:
                     shutil.copy(pyodide_lock_json_file, orig_pyodide_lock_json_file)
         except Exception:
             shutil.copy(pyodide_lock_json_file, orig_pyodide_lock_json_file)
