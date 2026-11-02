@@ -456,20 +456,6 @@
       "pypng"
     ]
   },
-  "anyio": {
-    "name": "anyio",
-    "version": "4.4.0",
-    "filename": "anyio-4.4.0-py3-none-any.whl",
-    "sha256": "c1b2d8f46a8a812513012e1107cb0e68c17159a7a594208005a57dc776e1bdc7",
-    "url": "https://files.pythonhosted.org/packages/7b/a2/10639a79341f6c019dedc95bd48a4928eed9f1d1197f4c04f546fc7ae0ff/anyio-4.4.0-py3-none-any.whl",
-    "depends": [
-      {"name": "idna", "specs": [[">=", "2.8"]]},
-      {"name": "sniffio", "specs": [[">=", "1.1"]]}
-    ],
-    "imports": [
-      "anyio"
-    ]
-  },
   "mdurl": {
     "name": "mdurl",
     "version": "0.1.2",
@@ -490,17 +476,6 @@
     "depends": [],
     "imports": [
       "uc_micro"
-    ]
-  },
-  "sniffio": {
-    "name": "sniffio",
-    "version": "1.3.1",
-    "filename": "sniffio-1.3.1-py3-none-any.whl",
-    "sha256": "2f6da418d1f1e0fddd844478f41680e794e6051915791a034ff65e5f100525a2",
-    "url": "https://files.pythonhosted.org/packages/e9/44/75a9c9421471a6c4805dbf2356f7c181a29c1879239abab1ea2cc8f38b40/sniffio-1.3.1-py3-none-any.whl",
-    "depends": [],
-    "imports": [
-      "sniffio"
     ]
   },
   "altair": {
