@@ -33,3 +33,9 @@ Formatting is Prettier with `prettier-plugin-organize-imports`; ESLint config is
 **Python packages.** Examples run against the wheels pinned in `shinylive_lock.json` (htmltools, shiny, shinywidgets, faicons come from the `packages/` submodules), not against py-shiny `main`. Check the pinned version before using a newer Shiny API in an example.
 
 **Browser tests.** `tests/` is pytest + Playwright against the built `_shinylive/` over a static server. It does not depend on the Python `shinylive` package, which would be a circular dependency; `tests/export_app.py` assembles static exports from `build/` instead. Every test needs the `examples` or `site` marker. See `tests/README.md` before adding tests.
+
+## Memory bank
+
+`memory-bank/` holds architecture notes with YAML frontmatter (`title`, `description`). **Before exploring the codebase**, use the `memory-bank` skill (`.agents/skills/memory-bank/`) to list the documents and read the relevant ones. Update them when you learn something that would have saved time, or when you change the architecture they describe. Keep each document's frontmatter in sync with its content.
+
+Project skills live in `.agents/skills/`; `.claude/skills` is a symlink to it.
