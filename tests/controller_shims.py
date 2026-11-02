@@ -24,10 +24,12 @@ class OutputPlot(controller.OutputPlot):
 
     py-shiny keys on `.shiny-image-output.shiny-plot-output`, which holds for
     `ui.output_plot()`. R's `plotOutput()` writes only the second of those.
-    The `loc`/`loc_img` override can go once the py-shiny submodule includes
-    posit-dev/py-shiny#2598; keep `expect_rendered()`.
     """
 
+    # TODO: Delete this `__init__` once the py-shiny submodule is on a release
+    # with posit-dev/py-shiny#2598 (after shiny 1.9.0). From then on,
+    # `controller.OutputPlot` keys on `.shiny-plot-output` alone. Keep
+    # `expect_rendered()` and this class; the tests call it for that method.
     def __init__(self, page: Page, id: str) -> None:
         super().__init__(page, id)
         self.loc = page.locator(f"#{id}.shiny-plot-output")
@@ -60,6 +62,10 @@ class NavPanel(controller.NavPanel):
             f"a[role='tab'][data-value='{panel_value}']"
         )
 
+    # TODO: Delete `click()` and `_expand_navbar()` once the py-shiny submodule
+    # is on a release with posit-dev/py-shiny#2599 (after shiny 1.9.0). From
+    # then on, `controller.NavPanel.click()` expands a collapsed navbar itself.
+    # Keep `__init__`; the example navsets still have no id.
     def click(self, *, timeout: Timeout = None) -> None:
         """Expand a collapsed navbar, then click as py-shiny does.
 
@@ -67,9 +73,6 @@ class NavPanel(controller.NavPanel):
         than that at shinylive's default split, so the tabs of a `page_navbar()`
         or `navset_bar()` start hidden behind a hamburger. py-shiny's `click()`
         has the equivalent for tabs nested in a dropdown.
-
-        Remove this override once the py-shiny submodule includes
-        posit-dev/py-shiny#2599, which does the same in `click()`.
         """
         if not self.loc.is_visible():
             self._expand_navbar(timeout=timeout)
