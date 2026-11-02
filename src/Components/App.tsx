@@ -665,11 +665,9 @@ export function App({
 export async function runExportedApp({
   id,
   appEngine,
-  relPath = "",
 }: {
   id: string;
   appEngine: AppEngine;
-  relPath: string;
 }) {
   const response = await fetch("./app.json");
   if (!response.ok) {
@@ -796,15 +794,6 @@ export function runApp(
     const { ...appOpts } = opts;
     delete appOpts.allowCodeUrl;
     delete appOpts.allowExampleUrl;
-    const unusedArgs = Object.keys(appOpts).filter(
-      (key) => !propertyOfAppOptions(key),
-    );
-    if (unusedArgs.length > 0) {
-      console.warn(
-        "The following arguments were detected but not used in running app",
-        unusedArgs,
-      );
-    }
 
     const root = createRoot(domTarget);
     root.render(
@@ -819,12 +808,6 @@ export function runApp(
     );
   })();
 }
-
-// Return true if a string is a valid key for AppOptions objects, false
-// otherwise.
-const propertyOfAppOptions = function <AppOptions>(name: keyof AppOptions) {
-  return name;
-};
 
 // Return true if the FileContent[] contains an app.py, app.R, or server.R that
 // is non-empty.
