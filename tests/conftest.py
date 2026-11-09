@@ -8,8 +8,6 @@ import sys
 import threading
 import time
 from collections.abc import Callable, Iterator, Mapping
-from functools import partial
-from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from typing import Any
 
@@ -25,6 +23,7 @@ from shinylive_app import (
     suspect_terminal_lines,
     terminal_text,
 )
+from static_server import static_server as make_static_server
 
 # Assertions get their own timeout, well short of the per-test one: an app that
 # is going to answer at all answers long before this.
@@ -186,24 +185,6 @@ class _ShardPlugin:
         items[:] = keep
 
 
-# Pyodide requests every wheel an app needs at once. `http.server` queues only 5
-# connections waiting to be accepted, and macOS resets the rest, so packages
-# fail to load at random. Both servers below queue more.
-_REQUEST_QUEUE_SIZE = 128
-
-# `python -m http.server` with a longer queue. Run as a separate process so that
-# xdist workers can share it.
-_SERVE_STATIC = f"""
-import sys
-from functools import partial
-from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
-
-ThreadingHTTPServer.request_queue_size = {_REQUEST_QUEUE_SIZE}
-handler = partial(SimpleHTTPRequestHandler, directory=sys.argv[2])
-ThreadingHTTPServer(("127.0.0.1", int(sys.argv[1])), handler).serve_forever()
-"""
-
-
 @pytest.fixture(scope="session", autouse=True)
 def static_server() -> Iterator[None]:
     """Serve the built `_shinylive/` for the session.
@@ -228,8 +209,7 @@ def static_server() -> Iterator[None]:
     process = subprocess.Popen(
         [
             sys.executable,
-            "-c",
-            _SERVE_STATIC,
+            str(Path(__file__).parent / "static_server.py"),
             str(STATIC_PORT),
             str(SHINYLIVE_DIR),
         ],
@@ -262,17 +242,7 @@ def export_server(export_root: Path) -> Iterator[str]:
     reusing a server for, but an export root is made fresh per session, so a
     server left over from another run would quietly serve the wrong files.
     """
-
-    class _QuietHandler(SimpleHTTPRequestHandler):
-        def log_message(self, format: str, *args: Any) -> None:
-            pass
-
-    class _Server(ThreadingHTTPServer):
-        request_queue_size = _REQUEST_QUEUE_SIZE
-
-    server = _Server(
-        ("127.0.0.1", 0), partial(_QuietHandler, directory=str(export_root))
-    )
+    server = make_static_server(0, str(export_root))
     threading.Thread(target=server.serve_forever, daemon=True).start()
     try:
         yield f"http://127.0.0.1:{server.server_address[1]}"
