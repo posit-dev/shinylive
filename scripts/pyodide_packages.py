@@ -663,6 +663,29 @@ def update_pyodide_pyodide_lock_json():
     with open(pyodide_lock_json_file, "w") as f:
         json.dump(pyodide_packages, f)
 
+    _remove_unlisted_wheels(pyodide_packages)
+
+
+def _remove_unlisted_wheels(pyodide_packages: PyodidePackagesFile) -> None:
+    """
+    Delete the wheels in the Pyodide directory that pyodide-lock.json does not list,
+    so they are not shipped. These are older versions of packages from earlier lock
+    files, Pyodide's own copies of packages that shinylive_lock.json replaces, and
+    the wheels Pyodide ships for its own test suite.
+    """
+    # ponytail: Pyodide's copy of a replaced package is gone for good. If the
+    # replacement is later dropped from shinylive_requirements.json, unpack Pyodide
+    # again (`rm -rf build/shinylive/pyodide && make all`).
+    listed = {pkg["file_name"] for pkg in pyodide_packages["packages"].values()}
+    unlisted = sorted(f for f in pyodide_dir.glob("*.whl") if f.name not in listed)
+    if unlisted:
+        print("Removing wheels that pyodide-lock.json does not list:")
+    for wheel in unlisted:
+        print(f"  {wheel.name}")
+        wheel.unlink()
+        # Pyodide ships each wheel's metadata next to it, as `<wheel>.metadata`.
+        wheel.with_name(wheel.name + ".metadata").unlink(missing_ok=True)
+
 
 def _lockfile_to_pyodide_package_info(pkg: LockfilePackageInfo) -> PyodidePackageInfo:
     """
