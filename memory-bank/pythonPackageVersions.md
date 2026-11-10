@@ -36,8 +36,10 @@ One subcommand per Makefile target. All run inside `venv/` with `requirements-de
   exist), read with `pkginfo`. PyPI packages come from `https://pypi.org/pypi/<name>[/<version>]/json`;
   `_find_pypi_meta_with_wheel` takes the first `py3-none-any.whl`, and if the chosen release has
   none, walks back to the newest release that does. `_recurse_dependencies_lockfile` then adds
-  each dependency that is not already in the lockfile or in the original Pyodide lock (compared
-  lower-cased), always at the latest pure-Python version. Version constraints in dependencies
+  each dependency that is not already in the lockfile or in the original Pyodide lock, always at
+  the latest pure-Python version. Lockfile keys and both checks use the PEP 503 name
+  (`packaging.utils.canonicalize_name`), because Pyodide looks packages up by it and parents
+  spell dependencies either way (`jupyterlab_widgets`). Version constraints in dependencies
   are ignored. The whole file is replaced.
 - `update_lockfile_local` (`make update_packages_lock_local`, part of `make all`) — refreshes only
   the `local` entries from the wheels in `packages/`, merges them into the existing lockfile, and
@@ -60,8 +62,9 @@ script can be run again without stacking additions.
 Dependency filtering (`_filter_requires`): any requirement with a `;` marker is dropped, except
 `platform_system == "Emscripten"` (kept for mizani's tzdata). Names in `AVOID_DEPEND_PACKAGES`
 (`contextvars`, `websockets`, `ipykernel`, `widgetsnbextension`, `typing`, `python`) are never
-listed as dependencies. The `imports` value for PyPI packages is guessed from the name
-(`python-` and `-py` stripped, `-` to `_`).
+listed as dependencies; the check uses the PEP 503 name. The `imports` value for PyPI packages
+is guessed from the name PyPI reports, not the PEP 503 key, so dots survive (`python-` and `-py`
+stripped, `-` to `_`).
 
 A lockfile package that Pyodide also ships replaces Pyodide's entry, even when the lockfile
 version is older. `update_pyodide_pyodide_lock_json` prints `<name> (replaces Pyodide's <version>)`
