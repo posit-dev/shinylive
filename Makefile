@@ -294,17 +294,23 @@ $(PACKAGE_DIR)/$(FAICONS_WHEEL): $(PYBIN) $(PACKAGE_DIR)/py-faicons
 	rm -f $(PACKAGE_DIR)/faicons*.whl
 	. $(PYBIN)/activate && cd $(PACKAGE_DIR)/py-faicons && pip wheel --no-deps -w ../ .
 
-$(PACKAGE_DIR)/$(LIBSASS_WHEEL): $(PYBIN) $(PACKAGE_DIR)/$(LIBSASS_WHEEL)
+$(PACKAGE_DIR)/$(LIBSASS_WHEEL): $(PYBIN)
 	rm -f $(PACKAGE_DIR)/libsass*.whl
 	curl --fail -L https://pkg.garrickadenbuie.com/libsass-python/$(LIBSASS_WHEEL) -o $(PACKAGE_DIR)/$(LIBSASS_WHEEL)
 
+# The lock file reads the local wheels from $(PACKAGE_DIR), and expects exactly one
+# wheel per package there. Building them first clears out older copies.
+LOCAL_WHEELS = $(PACKAGE_DIR)/$(HTMLTOOLS_WHEEL) $(PACKAGE_DIR)/$(SHINY_WHEEL) \
+	$(PACKAGE_DIR)/$(SHINYWIDGETS_WHEEL) $(PACKAGE_DIR)/$(FAICONS_WHEEL) \
+	$(PACKAGE_DIR)/$(LIBSASS_WHEEL)
+
 ## Update the shinylive_lock.json file, based on shinylive_requirements.json
-update_packages_lock: $(PYBIN) $(BUILD_DIR)/shinylive/pyodide
+update_packages_lock: $(PYBIN) $(BUILD_DIR)/shinylive/pyodide $(LOCAL_WHEELS)
 	$(PYBIN)/pip install -r requirements-dev.txt
 	. $(PYBIN)/activate && scripts/pyodide_packages.py generate_lockfile
 
 ## Update the shinylive_lock.json file, but with local packages only
-update_packages_lock_local: $(PYBIN) $(BUILD_DIR)/shinylive/pyodide
+update_packages_lock_local: $(PYBIN) $(BUILD_DIR)/shinylive/pyodide $(LOCAL_WHEELS)
 	$(PYBIN)/pip install -r requirements-dev.txt
 	. $(PYBIN)/activate && scripts/pyodide_packages.py update_lockfile_local
 
