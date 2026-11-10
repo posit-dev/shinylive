@@ -1,6 +1,6 @@
 ---
 title: Browser Test Gotchas
-description: Traps when running or writing the pytest + Playwright tests in tests/ — the shared static-server port, stale service workers, per-engine differences in what errors are visible, and URL-hash fallback. Read before trusting a failure or adding a test. Conventions themselves are in tests/README.md.
+description: Traps when running or writing the pytest + Playwright tests in tests/ — the static-server port another checkout may hold, stale service workers, per-engine differences in what errors are visible, and URL-hash fallback. Read before trusting a failure or adding a test. Conventions themselves are in tests/README.md.
 ---
 
 # Browser Test Gotchas
@@ -8,21 +8,23 @@ description: Traps when running or writing the pytest + Playwright tests in test
 `tests/README.md` covers the suites, markers, and controller shims. This document covers the
 things that make a run fail (or pass) for reasons unrelated to the change under test.
 
-## Port 8100 may be someone else's build
+## Port 8100 may be held by another checkout
 
-The `static_server` fixture in `tests/conftest.py` reuses any server already listening on
-`STATIC_PORT` (8100, in `tests/shinylive_app.py`) instead of starting its own. Another checkout or
-worktree of this repo running the same tests may hold that port while serving a different
-`_shinylive/` build — for example a different Pyodide version. The errors then look like random
-package-load flakiness.
+`STATIC_PORT` (in `tests/shinylive_app.py`) is 8100 plus the xdist worker number (`gw0` → 8100,
+`gw1` → 8101), so no two workers share a server. The `static_server` fixture in
+`tests/conftest.py` reuses a server already on that port only if its `X-Served-From` header
+(sent by `tests/static_server.py`) names this checkout's `_shinylive/`. Otherwise every test
+fails with "port 8100 is serving ..., not ...". This usually means another checkout or worktree
+of this repo is running the same tests.
 
-Before trusting a failure, check who owns the port:
+To see who owns the port:
 
 ```bash
 lsof -nP -iTCP:8100 -sTCP:LISTEN
 ```
 
-Do not kill another checkout's server. Change `STATIC_PORT` locally for the run and revert it.
+Do not kill another checkout's server. Wait for it, or change `STATIC_PORT` locally for the run
+and revert it.
 
 ## Stale service workers
 
