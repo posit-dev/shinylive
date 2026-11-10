@@ -14,6 +14,7 @@ from typing import Any, Callable, Iterator, Literal, Optional, TypedDict, Union,
 
 import pkginfo
 import requirements
+from packaging.utils import canonicalize_name
 from packaging.version import Version
 from typing_extensions import NotRequired
 
@@ -320,13 +321,13 @@ def _recurse_dependencies_lockfile(
 
         print(f"  {pkg_info['name']}:", end="")
         for dep in pkg_info["depends"]:
-            dep_name = dep["name"]
+            # Pyodide looks packages up by their PEP 503 name, so that's the key we
+            # use. Parents may spell a dependency as `foo_bar` or `Foo-Bar`.
+            dep_name = canonicalize_name(dep["name"])
             print(" " + dep_name, end="")
-            if dep_name in pkgs or dep_name.lower() in pyodide_packages_info:
+            if dep_name in pkgs or dep_name in pyodide_packages_info:
                 # We already have it, either in our extra packages, or in the original
                 # set of pyodide packages. Do nothing.
-                # Note that the keys in pyodide_packages_info are all lower-cased, even
-                # if the package name has capitals.
                 pass
             else:
                 pkgs[dep_name] = _find_package_info_lockfile_one(
@@ -351,7 +352,7 @@ def _find_package_info_lockfile(
     res: dict[str, LockfilePackageInfo] = {}
 
     for pkg in pkgs:
-        res[pkg["name"]] = _find_package_info_lockfile_one(pkg)
+        res[canonicalize_name(pkg["name"])] = _find_package_info_lockfile_one(pkg)
     return res
 
 
@@ -401,7 +402,10 @@ def _get_pypi_package_info(
     # There's no way to be certain of the import name from the package name, so it's
     # possible that in the future we'll need to special-case some packages.
     # https://stackoverflow.com/questions/11453866/given-the-name-of-a-python-package-what-is-the-name-of-the-module-to-import
-    import_name = name.removeprefix("python-").removesuffix("-py").replace("-", "_")
+    # Use PyPI's spelling of the name, not `name`: `name` may be the PEP 503 form, which
+    # turns the dots in "ruamel.yaml" into dashes.
+    pypi_name = pkg_meta["info"]["name"]
+    import_name = pypi_name.removeprefix("python-").removesuffix("-py").replace("-", "_")
 
     return {
         "name": name,
@@ -532,7 +536,9 @@ def _filter_requires(requires: Union[list[str], None]) -> list[LockfileDependenc
     # Strip off version numbers: "python-dateutil (>=2.8.2)" => "python-dateutil"
     res = map(_get_dep_info, res)
     # Filter out packages that cause problems.
-    res = filter(lambda x: x["name"] not in AVOID_DEPEND_PACKAGES, res)
+    res = filter(
+        lambda x: canonicalize_name(x["name"]) not in AVOID_DEPEND_PACKAGES, res
+    )
     return list(res)
 
 
@@ -558,7 +564,7 @@ def _to_basic_package_info(
             else:
                 depends_str_list.append(dep["name"])
 
-        basic_info[pkg_name.lower()] = {
+        basic_info[canonicalize_name(pkg_name)] = {
             "name": pkg_name,
             "depends": depends_str_list,
         }
