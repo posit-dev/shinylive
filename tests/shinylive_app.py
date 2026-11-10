@@ -9,6 +9,7 @@ helpers here -- the terminal, the app iframe, waiting for an engine. See
 from __future__ import annotations
 
 import json
+import os
 import re
 import sys
 from collections.abc import Callable
@@ -45,7 +46,10 @@ def is_benign_console_error(message: ConsoleMessage) -> bool:
 # Where `make _shinylive` puts the built sites.
 SHINYLIVE_DIR = Path(__file__).resolve().parent.parent / "_shinylive"
 
-STATIC_PORT = 8100
+# One port per xdist worker ("gw0", "gw1", ...). A shared server would be stopped by
+# whichever worker started it as soon as that worker finished, while the others
+# were still using it.
+STATIC_PORT = 8100 + int(os.environ.get("PYTEST_XDIST_WORKER", "gw0").removeprefix("gw"))
 BASE_URL = f"http://127.0.0.1:{STATIC_PORT}"
 
 # The iframe shinylive renders the app into.
