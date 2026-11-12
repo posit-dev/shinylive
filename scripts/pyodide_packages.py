@@ -95,10 +95,10 @@ EXTRA_DEPENDENCIES = {
         # doing table styling.
         "jinja2",
     ],
-    # Can be removed when we moved to pyodide w/ python 3.11
-    "anyio": ["exceptiongroup"],
     # palmerpenguins imports pkg_resources, which is part of setuptools.
     "palmerpenguins": ["setuptools"],
+    # Pyodide 314's own starlette entry lists no dependencies, but it imports anyio.
+    "starlette": ["anyio"],
 }
 
 # Some packages may have a circular dependency. For example, shiny (v1.5.0) depends on
@@ -699,13 +699,14 @@ def orig_pyodide_lock() -> PyodidePackagesFile:
         )
         shutil.copy(pyodide_lock_json_file, orig_pyodide_lock_json_file)
     else:
-        try:
-            with open(pyodide_lock_json_file, "r") as f_new, open(orig_pyodide_lock_json_file, "r") as f_orig:
-                new_info = json.load(f_new).get("info", {})
-                orig_info = json.load(f_orig).get("info", {})
-                if new_info.get("version") != orig_info.get("version"):
-                    shutil.copy(pyodide_lock_json_file, orig_pyodide_lock_json_file)
-        except Exception:
+        # Pyodide 0.28 dropped `info.version`, and what is left is the same across
+        # patch releases. A pyodide-lock.json without shiny in it is a fresh one from
+        # a newly unpacked Pyodide, so it replaces the saved copy. This assumes
+        # Pyodide never ships shiny itself. An unreadable file raises rather than
+        # replacing the saved copy, which may be the only clean one left.
+        with open(pyodide_lock_json_file, "r") as f_new:
+            new_packages = json.load(f_new).get("packages", {})
+        if "shiny" not in new_packages:
             shutil.copy(pyodide_lock_json_file, orig_pyodide_lock_json_file)
 
     with open(orig_pyodide_lock_json_file, "r") as f:

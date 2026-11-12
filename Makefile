@@ -10,7 +10,7 @@
 	packages \
 	clean-packages clean distclean \
 	examples-check-index type-check \
-	test-deps test-unit test-unit-coverage \
+	test-deps test-unit test-unit-coverage test-scripts \
 	test-examples test-examples-intent test-site test-loader webr \
 	_shinylive
 
@@ -18,7 +18,7 @@
 
 SHINYLIVE_VERSION = $(shell node -p "require('./package.json').version")
 
-PYODIDE_VERSION = 0.27.7
+PYODIDE_VERSION = 314.0.7
 PYODIDE_DIST_FILENAME = pyodide-$(PYODIDE_VERSION).tar.bz2
 DOWNLOAD_DIR = ./downloads
 R_SHINY_VERSION = 1.13.0.8000
@@ -45,7 +45,7 @@ FAICONS_WHEEL = faicons-$(FAICONS_VERSION)-py3-none-any.whl
 # libsass is built in gadenbuie/libsass-python
 # NOTE: Update https://github.com/gadenbuie/libsass-python/blob/dev/.github/workflows/pyodide.yml
 # Pyodide, Emscripten, or Python versions change here.
-LIBSASS_WHEEL=libsass-0.23.0-cp312-abi3-pyodide_2024_0_wasm32.whl
+LIBSASS_WHEEL=libsass-0.23.0-cp314-abi3-pyemscripten_2026_0_wasm32.whl
 
 VENV = venv
 PYBIN = $(VENV)/bin
@@ -142,7 +142,7 @@ $(DOWNLOAD_DIR)/$(PYODIDE_DIST_FILENAME):
 
 $(BUILD_DIR)/shinylive/pyodide: $(DOWNLOAD_DIR)/$(PYODIDE_DIST_FILENAME)
 	mkdir -p $(BUILD_DIR)/shinylive/pyodide
-	tar --exclude "*test*.tar" --exclude "node_modules" \
+	tar --exclude "*test*.tar" --exclude "*-tests.zip" --exclude "node_modules" \
 		-xvjf $(DOWNLOAD_DIR)/$(PYODIDE_DIST_FILENAME) \
 		-C $(BUILD_DIR)/shinylive
 
@@ -294,17 +294,23 @@ $(PACKAGE_DIR)/$(FAICONS_WHEEL): $(PYBIN) $(PACKAGE_DIR)/py-faicons
 	rm -f $(PACKAGE_DIR)/faicons*.whl
 	. $(PYBIN)/activate && cd $(PACKAGE_DIR)/py-faicons && pip wheel --no-deps -w ../ .
 
-$(PACKAGE_DIR)/$(LIBSASS_WHEEL): $(PYBIN) $(PACKAGE_DIR)/$(LIBSASS_WHEEL)
+$(PACKAGE_DIR)/$(LIBSASS_WHEEL): $(PYBIN)
 	rm -f $(PACKAGE_DIR)/libsass*.whl
 	curl --fail -L https://pkg.garrickadenbuie.com/libsass-python/$(LIBSASS_WHEEL) -o $(PACKAGE_DIR)/$(LIBSASS_WHEEL)
 
+# The lock file reads the local wheels from $(PACKAGE_DIR), and expects exactly one
+# wheel per package there. Building them first clears out older copies.
+LOCAL_WHEELS = $(PACKAGE_DIR)/$(HTMLTOOLS_WHEEL) $(PACKAGE_DIR)/$(SHINY_WHEEL) \
+	$(PACKAGE_DIR)/$(SHINYWIDGETS_WHEEL) $(PACKAGE_DIR)/$(FAICONS_WHEEL) \
+	$(PACKAGE_DIR)/$(LIBSASS_WHEEL)
+
 ## Update the shinylive_lock.json file, based on shinylive_requirements.json
-update_packages_lock: $(PYBIN) $(BUILD_DIR)/shinylive/pyodide
+update_packages_lock: $(PYBIN) $(BUILD_DIR)/shinylive/pyodide $(LOCAL_WHEELS)
 	$(PYBIN)/pip install -r requirements-dev.txt
 	. $(PYBIN)/activate && scripts/pyodide_packages.py generate_lockfile
 
 ## Update the shinylive_lock.json file, but with local packages only
-update_packages_lock_local: $(PYBIN) $(BUILD_DIR)/shinylive/pyodide
+update_packages_lock_local: $(PYBIN) $(BUILD_DIR)/shinylive/pyodide $(LOCAL_WHEELS)
 	$(PYBIN)/pip install -r requirements-dev.txt
 	. $(PYBIN)/activate && scripts/pyodide_packages.py update_lockfile_local
 
@@ -356,6 +362,11 @@ type-check: node_modules
 ## Run the TypeScript unit tests (jest); needs no build and no Python
 test-unit: node_modules
 	npm run test:unit
+
+## Run the tests for the Python build scripts in scripts/; needs no build
+test-scripts: $(PYBIN)
+	$(PYBIN)/pip install -r requirements-dev.txt -r requirements-test.txt
+	$(PYBIN)/pytest scripts/test_pyodide_packages.py
 
 ## Run the TypeScript unit tests and report coverage
 test-unit-coverage: node_modules

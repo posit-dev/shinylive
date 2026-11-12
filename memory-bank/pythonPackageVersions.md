@@ -33,7 +33,8 @@ One subcommand per Makefile target. All run inside `venv/` with `requirements-de
 
 - `generate_lockfile` (`make update_packages_lock`) — reads every requirement. Local packages get
   their info from the one wheel in `packages/` whose name starts with `<name>-` (exactly one must
-  exist), read with `pkginfo`. PyPI packages come from `https://pypi.org/pypi/<name>[/<version>]/json`;
+  exist), read with `pkginfo`. Both lock targets depend on those wheels in the Makefile
+  (`LOCAL_WHEELS`), and each wheel's rule removes older copies before building. PyPI packages come from `https://pypi.org/pypi/<name>[/<version>]/json`;
   `_find_pypi_meta_with_wheel` takes the first `py3-none-any.whl`, and if the chosen release has
   none, walks back to the newest release that does. `_recurse_dependencies_lockfile` then adds
   each dependency that is not already in the lockfile or in the original Pyodide lock, always at
@@ -52,12 +53,15 @@ One subcommand per Makefile target. All run inside `venv/` with `requirements-de
   `update_pyodide_pyodide_lock_json`) — loads the original Pyodide lock via
   `orig_pyodide_lock()`, adds each lockfile package with `install_dir: "site"`, and computes the
   SHA256 of local wheels from `packages/`. It then appends `EXTRA_DEPENDENCIES` (jinja2 for pandas,
-  exceptiongroup for anyio, setuptools for palmerpenguins) and drops `OMIT_DEPENDENCIES` (shiny
+  setuptools for palmerpenguins, anyio for Pyodide's starlette) and drops `OMIT_DEPENDENCIES` (shiny
   from shinychat, to break a cycle). The result is written without indentation.
 
-`orig_pyodide_lock()` keeps `pyodide-lock.orig.json` next to `pyodide-lock.json`. It copies the
-current file over it when the copy is missing or when the `info.version` fields differ, so the
-script can be run again without stacking additions.
+`orig_pyodide_lock()` keeps `pyodide-lock.orig.json` next to `pyodide-lock.json`, so the script
+can be run again without stacking additions. It copies the current file over it when the copy
+is missing or when the current file has no `shiny` entry, which means Pyodide was just unpacked
+(Pyodide 0.28 dropped `info.version`, so versions cannot be compared). This assumes Pyodide
+never ships shiny. A current file that cannot be read raises an error rather than replacing
+the saved copy.
 
 Dependency filtering (`_filter_requires`): any requirement with a `;` marker is dropped, except
 `platform_system == "Emscripten"` (kept for mizani's tzdata). Names in `AVOID_DEPEND_PACKAGES`

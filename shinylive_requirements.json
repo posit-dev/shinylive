@@ -12,6 +12,12 @@
   },
   { "name": "plotnine", "source": "pypi", "version": "latest" },
   { "name": "plotly", "source": "pypi", "version": "latest" },
+  {
+    "name": "altair",
+    "source": "pypi",
+    "version": "latest",
+    "comment": "Pyodide 314 ships altair 6.0.0, which sends NaN from pandas 3 string columns as invalid JSON. Fixed in 6.3.0."
+  },
   { "name": "seaborn", "source": "pypi", "version": "latest" },
   { "name": "ipywidgets", "source": "pypi", "version": "latest" },
   { "name": "ipyleaflet", "source": "pypi", "version": "latest" },
