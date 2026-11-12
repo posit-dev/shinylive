@@ -2,12 +2,9 @@
 
 from __future__ import annotations
 
-import socket
 import subprocess
 import sys
 import threading
-import time
-import urllib.request
 from collections.abc import Callable, Iterator, Mapping
 from pathlib import Path
 from typing import Any
@@ -18,14 +15,12 @@ from playwright.sync_api import ConsoleMessage, Page, expect
 from shinylive_app import (
     ANALYTICS_URL,
     APP_FRAME,
-    BASE_URL,
     SHINYLIVE_DIR,
     STATIC_PORT,
     is_benign_console_error,
     suspect_terminal_lines,
     terminal_text,
 )
-from static_server import SERVED_FROM_HEADER
 from static_server import static_server as make_static_server
 
 # Assertions get their own timeout, well short of the per-test one: an app that
@@ -203,19 +198,6 @@ def static_server() -> Iterator[None]:
     if not (SHINYLIVE_DIR / "py" / "shinylive" / "examples.json").exists():
         pytest.fail(f"{SHINYLIVE_DIR} is not built. Run `make all` first.")
 
-    # Already serving: a developer left one running. Reuse it only if it serves
-    # this checkout's build; the port is fixed, so another checkout's tests may
-    # hold it, and their build would quietly stand in for this one.
-    if _port_is_open():
-        served_from = _served_from()
-        if served_from != str(SHINYLIVE_DIR.resolve()):
-            pytest.fail(
-                f"port {STATIC_PORT} is serving {served_from or 'something'}, "
-                f"not {SHINYLIVE_DIR}. Stop that server and run the tests again."
-            )
-        yield
-        return
-
     process = subprocess.Popen(
         [
             sys.executable,
@@ -223,11 +205,15 @@ def static_server() -> Iterator[None]:
             str(STATIC_PORT),
             str(SHINYLIVE_DIR),
         ],
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL,
+        stdout=subprocess.PIPE,
     )
     try:
-        _wait_for_port()
+        # The server prints a line once it holds the port. It exits without one
+        # if it could not bind: another program took the port after
+        # `STATIC_PORT` was picked. Its traceback is on stderr.
+        assert process.stdout is not None
+        if not process.stdout.readline():
+            raise RuntimeError(f"static server could not serve on port {STATIC_PORT}")
         yield
     finally:
         process.terminate()
@@ -285,25 +271,3 @@ def exported_app(export_root: Path, export_server: str) -> Callable[..., str]:
     return _exported_app
 
 
-def _port_is_open() -> bool:
-    with socket.socket() as sock:
-        sock.settimeout(0.25)
-        return sock.connect_ex(("127.0.0.1", STATIC_PORT)) == 0
-
-
-def _served_from() -> str | None:
-    """The directory the server on `STATIC_PORT` serves, if it is a `static_server`."""
-    try:
-        with urllib.request.urlopen(f"{BASE_URL}/", timeout=5) as response:
-            return response.headers.get(SERVED_FROM_HEADER)
-    except OSError:
-        return None
-
-
-def _wait_for_port(timeout: float = 60.0) -> None:
-    deadline = time.monotonic() + timeout
-    while time.monotonic() < deadline:
-        if _port_is_open():
-            return
-        time.sleep(0.1)
-    raise RuntimeError(f"static server never came up on port {STATIC_PORT}")

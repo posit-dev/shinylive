@@ -1,6 +1,6 @@
 ---
 title: Browser Test Gotchas
-description: Traps when running or writing the pytest + Playwright tests in tests/ — the static-server port another checkout may hold, stale service workers, per-engine differences in what errors are visible, and URL-hash fallback. Read before trusting a failure or adding a test. Conventions themselves are in tests/README.md.
+description: Traps when running or writing the pytest + Playwright tests in tests/ — each worker's own static-server port, stale service workers, per-engine differences in what errors are visible, and URL-hash fallback. Read before trusting a failure or adding a test. Conventions themselves are in tests/README.md.
 ---
 
 # Browser Test Gotchas
@@ -8,23 +8,16 @@ description: Traps when running or writing the pytest + Playwright tests in test
 `tests/README.md` covers the suites, markers, and controller shims. This document covers the
 things that make a run fail (or pass) for reasons unrelated to the change under test.
 
-## Port 8100 may be held by another checkout
+## Each worker serves on its own free port
 
-`STATIC_PORT` (in `tests/shinylive_app.py`) is 8100 plus the xdist worker number (`gw0` → 8100,
-`gw1` → 8101), so no two workers share a server. The `static_server` fixture in
-`tests/conftest.py` reuses a server already on that port only if its `X-Served-From` header
-(sent by `tests/static_server.py`) names this checkout's `_shinylive/`. Otherwise every test
-fails with "port 8100 is serving ..., not ...". This usually means another checkout or worktree
-of this repo is running the same tests.
+`STATIC_PORT` (in `tests/shinylive_app.py`) is a port the OS reports as free when the module is
+imported. Each xdist worker imports it separately, so each worker starts its own
+`tests/static_server.py` on its own port, and other checkouts running tests at the same time do
+not collide. The server prints `ready` once it holds the port; the `static_server` fixture in
+`tests/conftest.py` waits for that line. If another program takes the port first, the server
+exits with "Address already in use" on stderr and the fixture fails. Rerun the tests.
 
-To see who owns the port:
-
-```bash
-lsof -nP -iTCP:8100 -sTCP:LISTEN
-```
-
-Do not kill another checkout's server. Wait for it, or change `STATIC_PORT` locally for the run
-and revert it.
+There is no fixed port, so a server left running by hand is never reused.
 
 ## Stale service workers
 
