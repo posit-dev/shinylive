@@ -54,7 +54,16 @@ One subcommand per Makefile target. All run inside `venv/` with `requirements-de
   `orig_pyodide_lock()`, adds each lockfile package with `install_dir: "site"`, and computes the
   SHA256 of local wheels from `packages/`. It then appends `EXTRA_DEPENDENCIES` (jinja2 for pandas,
   setuptools for palmerpenguins, anyio for Pyodide's starlette) and drops `OMIT_DEPENDENCIES` (shiny
-  from shinychat, to break a cycle). The result is written without indentation.
+  from shinychat, to break a cycle). The result is written without indentation. Finally it
+  deletes every `.whl` in `build/shinylive/pyodide/` (and its `.whl.metadata`) that the new lock
+  does not list: older versions from earlier lock files, Pyodide's copies of packages the
+  lockfile replaces. Wheels Pyodide lists, such as `numpy_tests`, stay. Before writing, it fails
+  if the new lock lists a file that is not on disk (except the `*-tests.zip` archives the
+  Makefile never unpacks). The Make target depends on `retrieve_packages`, so lockfile wheels
+  are there first; the other cause is a dropped replacement whose Pyodide wheel was already
+  deleted, which `make clean && make all` fixes. `make _shinylive` empties `_shinylive/py` and
+  `_shinylive/r` before copying, so pruned wheels leave there too. `make test-scripts` tests
+  this pruning and `orig_pyodide_lock()`.
 
 `orig_pyodide_lock()` keeps `pyodide-lock.orig.json` next to `pyodide-lock.json`, so the script
 can be run again without stacking additions. It copies the current file over it when the copy

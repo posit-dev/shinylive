@@ -249,6 +249,9 @@ serve-r:
 
 # Build the _shinylive directory for deployment of both R and Python sites
 _shinylive:
+	# Start empty: `cp` adds files but never removes them, so wheels that
+	# update_pyodide_lock_json pruned from build/ would stay here.
+	rm -rf $(SHINYLIVE_DIR)/py $(SHINYLIVE_DIR)/r
 	$(MAKE) buildjs-prod
 	cp -Lr $(SITE_DIR)/. $(SHINYLIVE_DIR)/py
 	$(MAKE) buildjs-prod-r
@@ -325,7 +328,8 @@ retrieve_packages: $(PYBIN) $(BUILD_DIR)/shinylive/pyodide \
 	. $(PYBIN)/activate && scripts/pyodide_packages.py retrieve_packages
 
 ## Update pyodide/pyodide-lock.json to include packages in shinylive_lock.json
-update_pyodide_lock_json: $(PYBIN)
+# Needs the wheels on disk: it checks that every file it lists is there.
+update_pyodide_lock_json: $(PYBIN) retrieve_packages
 	. $(PYBIN)/activate && scripts/pyodide_packages.py update_pyodide_lock_json
 
 ## Create the typeshed.json file which will be used by the shinylive type checker

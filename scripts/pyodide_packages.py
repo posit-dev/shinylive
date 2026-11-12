@@ -659,9 +659,62 @@ def update_pyodide_pyodide_lock_json():
         depends = set(pyodide_packages["packages"][key]["depends"])
         pyodide_packages["packages"][key]["depends"] = list(depends.difference(val))
 
+    _check_listed_files_exist(pyodide_packages)
+
     print("Writing pyodide/pyodide-lock.json")
     with open(pyodide_lock_json_file, "w") as f:
         json.dump(pyodide_packages, f)
+
+    _remove_unlisted_wheels(pyodide_packages)
+
+
+def _remove_unlisted_wheels(pyodide_packages: PyodidePackagesFile) -> None:
+    """
+    Delete the wheels in the Pyodide directory that pyodide-lock.json does not list,
+    so they are not shipped. These are older versions of packages from earlier lock
+    files, and Pyodide's own copies of packages that shinylive_lock.json replaces.
+    Wheels that Pyodide lists, including its test wheels such as numpy_tests, stay.
+    """
+    # Pyodide's copy of a replaced package is gone for good. If the replacement is
+    # later dropped from shinylive_requirements.json, _check_listed_files_exist()
+    # stops the build and says how to get it back.
+    listed = {pkg["file_name"] for pkg in pyodide_packages["packages"].values()}
+    unlisted = sorted(f for f in pyodide_dir.glob("*.whl") if f.name not in listed)
+    if unlisted:
+        print("Removing wheels that pyodide-lock.json does not list:")
+    for wheel in unlisted:
+        print(f"  {wheel.name}")
+        wheel.unlink()
+        # Pyodide ships each wheel's metadata next to it, as `<wheel>.metadata`.
+        wheel.with_name(wheel.name + ".metadata").unlink(missing_ok=True)
+
+
+def _check_listed_files_exist(pyodide_packages: PyodidePackagesFile) -> None:
+    """
+    Fail if pyodide-lock.json would list a file that is not in the Pyodide directory.
+    Pyodide would only find out at runtime, when an app fails to load the package.
+
+    There are two causes. Wheels for shinylive_lock.json have not been downloaded
+    yet. Or a package that shinylive_lock.json used to replace: its Pyodide wheel
+    was removed by _remove_unlisted_wheels(), and now that the replacement is gone,
+    Pyodide's own entry points at it again.
+    """
+    missing = sorted(
+        pkg["file_name"]
+        for pkg in pyodide_packages["packages"].values()
+        # The Makefile does not unpack Pyodide's test archives.
+        if not pkg["file_name"].endswith("-tests.zip")
+        and not (pyodide_dir / pkg["file_name"]).exists()
+    )
+    if missing:
+        raise Exception(
+            "pyodide-lock.json lists files that are not in "
+            + f"{os.path.relpath(pyodide_dir)}:\n  "
+            + "\n  ".join(missing)
+            + "\nIf they are in shinylive_lock.json, run `make retrieve_packages`."
+            + "\nOtherwise they are Pyodide's own wheels, removed in an earlier build;"
+            + " run `make clean && make all` to unpack Pyodide again."
+        )
 
 
 def _lockfile_to_pyodide_package_info(pkg: LockfilePackageInfo) -> PyodidePackageInfo:
