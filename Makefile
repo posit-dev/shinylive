@@ -10,7 +10,7 @@
 	packages \
 	clean-packages clean distclean \
 	examples-check-index type-check \
-	test-deps test-unit test-unit-coverage \
+	test-deps test-unit test-unit-coverage test-scripts \
 	test-examples test-examples-intent test-site test-loader webr \
 	_shinylive
 
@@ -362,6 +362,11 @@ type-check: node_modules
 ## Run the TypeScript unit tests (jest); needs no build and no Python
 test-unit: node_modules
 	npm run test:unit
+
+## Run the tests for the Python build scripts in scripts/; needs no build
+test-scripts: $(PYBIN)
+	$(PYBIN)/pip install -r requirements-dev.txt -r requirements-test.txt
+	$(PYBIN)/pytest scripts/test_pyodide_packages.py
 
 ## Run the TypeScript unit tests and report coverage
 test-unit-coverage: node_modules

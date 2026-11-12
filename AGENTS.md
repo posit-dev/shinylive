@@ -13,6 +13,7 @@ Setup (once): `make submodules`, then `make all` (downloads Pyodide and webR, bu
 - `make type-check` — `tsc --noEmit` over everything, including tests (swc does not check types)
 - `make test-unit` — jest unit tests (`src/**/*.test.ts`); no build or Python needed
 - `npx jest src/utils.test.ts` / `npx jest -t "name"` — one test file / test name
+- `make test-scripts` — pytest tests for `scripts/pyodide_packages.py`; no build needed
 - `make test-deps` — once, installs pytest deps, Shiny from the `packages/py-shiny` submodule, and chromium
 - `make test-examples`, `make test-examples-intent`, `make test-site`, `make test-loader` — browser tests; need `make all` first
 - `venv/bin/pytest tests/test_site_editor.py -k "name"` — one browser test
