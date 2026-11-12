@@ -672,8 +672,8 @@ def _remove_unlisted_wheels(pyodide_packages: PyodidePackagesFile) -> None:
     """
     Delete the wheels in the Pyodide directory that pyodide-lock.json does not list,
     so they are not shipped. These are older versions of packages from earlier lock
-    files, Pyodide's own copies of packages that shinylive_lock.json replaces, and
-    the wheels Pyodide ships for its own test suite.
+    files, and Pyodide's own copies of packages that shinylive_lock.json replaces.
+    Wheels that Pyodide lists, including its test wheels such as numpy_tests, stay.
     """
     # Pyodide's copy of a replaced package is gone for good. If the replacement is
     # later dropped from shinylive_requirements.json, _check_listed_files_exist()
@@ -694,9 +694,10 @@ def _check_listed_files_exist(pyodide_packages: PyodidePackagesFile) -> None:
     Fail if pyodide-lock.json would list a file that is not in the Pyodide directory.
     Pyodide would only find out at runtime, when an app fails to load the package.
 
-    The usual cause is a package that shinylive_lock.json used to replace: its
-    Pyodide wheel was removed by _remove_unlisted_wheels(), and now that the
-    replacement is gone, Pyodide's own entry points at it again.
+    There are two causes. Wheels for shinylive_lock.json have not been downloaded
+    yet. Or a package that shinylive_lock.json used to replace: its Pyodide wheel
+    was removed by _remove_unlisted_wheels(), and now that the replacement is gone,
+    Pyodide's own entry points at it again.
     """
     missing = sorted(
         pkg["file_name"]
@@ -710,7 +711,9 @@ def _check_listed_files_exist(pyodide_packages: PyodidePackagesFile) -> None:
             "pyodide-lock.json lists files that are not in "
             + f"{os.path.relpath(pyodide_dir)}:\n  "
             + "\n  ".join(missing)
-            + "\nRun `make clean && make all` to unpack Pyodide again."
+            + "\nIf they are in shinylive_lock.json, run `make retrieve_packages`."
+            + "\nOtherwise they are Pyodide's own wheels, removed in an earlier build;"
+            + " run `make clean && make all` to unpack Pyodide again."
         )
 
 

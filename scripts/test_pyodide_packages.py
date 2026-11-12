@@ -1,9 +1,12 @@
 """Tests for scripts/pyodide_packages.py. Run them with `make test-scripts`."""
 
+# pyright: reportPrivateUsage=false
+
 from __future__ import annotations
 
 import json
 from pathlib import Path
+from typing import cast
 
 import pyodide_packages
 import pytest
@@ -61,3 +64,37 @@ def test_unreadable_lock_keeps_the_saved_copy(lock_files: tuple[Path, Path]) -> 
     with pytest.raises(json.JSONDecodeError):
         pyodide_packages.orig_pyodide_lock()
     assert set(json.loads(orig.read_text())["packages"]) == {"numpy"}
+
+
+def _lock_listing(*file_names: str) -> pyodide_packages.PyodidePackagesFile:
+    packages = {name: {"file_name": name} for name in file_names}
+    return cast(pyodide_packages.PyodidePackagesFile, {"packages": packages})
+
+
+def test_unlisted_wheels_are_removed(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(pyodide_packages, "pyodide_dir", tmp_path)
+    for name in ["kept-1.0.whl", "old-1.0.whl", "old-1.0.whl.metadata", "lib.zip"]:
+        (tmp_path / name).touch()
+
+    pyodide_packages._remove_unlisted_wheels(_lock_listing("kept-1.0.whl"))
+
+    # Only wheels are pruned; lib.zip is left alone even though it is unlisted.
+    assert sorted(f.name for f in tmp_path.iterdir()) == ["kept-1.0.whl", "lib.zip"]
+
+
+def test_missing_listed_file_fails(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(pyodide_packages, "pyodide_dir", tmp_path)
+    (tmp_path / "here-1.0.whl").touch()
+
+    # Test archives are never unpacked, so their absence is fine.
+    pyodide_packages._check_listed_files_exist(
+        _lock_listing("here-1.0.whl", "numpy-tests.zip")
+    )
+    with pytest.raises(Exception, match="gone-1.0.whl"):
+        pyodide_packages._check_listed_files_exist(
+            _lock_listing("here-1.0.whl", "gone-1.0.whl")
+        )
