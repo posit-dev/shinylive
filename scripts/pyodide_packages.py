@@ -659,6 +659,8 @@ def update_pyodide_pyodide_lock_json():
         depends = set(pyodide_packages["packages"][key]["depends"])
         pyodide_packages["packages"][key]["depends"] = list(depends.difference(val))
 
+    _check_listed_files_exist(pyodide_packages)
+
     print("Writing pyodide/pyodide-lock.json")
     with open(pyodide_lock_json_file, "w") as f:
         json.dump(pyodide_packages, f)
@@ -673,9 +675,9 @@ def _remove_unlisted_wheels(pyodide_packages: PyodidePackagesFile) -> None:
     files, Pyodide's own copies of packages that shinylive_lock.json replaces, and
     the wheels Pyodide ships for its own test suite.
     """
-    # ponytail: Pyodide's copy of a replaced package is gone for good. If the
-    # replacement is later dropped from shinylive_requirements.json, unpack Pyodide
-    # again (`rm -rf build/shinylive/pyodide && make all`).
+    # Pyodide's copy of a replaced package is gone for good. If the replacement is
+    # later dropped from shinylive_requirements.json, _check_listed_files_exist()
+    # stops the build and says how to get it back.
     listed = {pkg["file_name"] for pkg in pyodide_packages["packages"].values()}
     unlisted = sorted(f for f in pyodide_dir.glob("*.whl") if f.name not in listed)
     if unlisted:
@@ -685,6 +687,31 @@ def _remove_unlisted_wheels(pyodide_packages: PyodidePackagesFile) -> None:
         wheel.unlink()
         # Pyodide ships each wheel's metadata next to it, as `<wheel>.metadata`.
         wheel.with_name(wheel.name + ".metadata").unlink(missing_ok=True)
+
+
+def _check_listed_files_exist(pyodide_packages: PyodidePackagesFile) -> None:
+    """
+    Fail if pyodide-lock.json would list a file that is not in the Pyodide directory.
+    Pyodide would only find out at runtime, when an app fails to load the package.
+
+    The usual cause is a package that shinylive_lock.json used to replace: its
+    Pyodide wheel was removed by _remove_unlisted_wheels(), and now that the
+    replacement is gone, Pyodide's own entry points at it again.
+    """
+    missing = sorted(
+        pkg["file_name"]
+        for pkg in pyodide_packages["packages"].values()
+        # The Makefile does not unpack Pyodide's test archives.
+        if not pkg["file_name"].endswith("-tests.zip")
+        and not (pyodide_dir / pkg["file_name"]).exists()
+    )
+    if missing:
+        raise Exception(
+            "pyodide-lock.json lists files that are not in "
+            + f"{os.path.relpath(pyodide_dir)}:\n  "
+            + "\n  ".join(missing)
+            + "\nRun `make clean && make all` to unpack Pyodide again."
+        )
 
 
 def _lockfile_to_pyodide_package_info(pkg: LockfilePackageInfo) -> PyodidePackageInfo:
