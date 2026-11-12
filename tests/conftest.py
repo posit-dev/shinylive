@@ -2,11 +2,9 @@
 
 from __future__ import annotations
 
-import socket
 import subprocess
 import sys
 import threading
-import time
 from collections.abc import Callable, Iterator, Mapping
 from pathlib import Path
 from typing import Any
@@ -200,12 +198,6 @@ def static_server() -> Iterator[None]:
     if not (SHINYLIVE_DIR / "py" / "shinylive" / "examples.json").exists():
         pytest.fail(f"{SHINYLIVE_DIR} is not built. Run `make all` first.")
 
-    # Already serving: a developer left one running, or -- under xdist -- another
-    # worker got there first.
-    if _port_is_open():
-        yield
-        return
-
     process = subprocess.Popen(
         [
             sys.executable,
@@ -213,11 +205,15 @@ def static_server() -> Iterator[None]:
             str(STATIC_PORT),
             str(SHINYLIVE_DIR),
         ],
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL,
+        stdout=subprocess.PIPE,
     )
     try:
-        _wait_for_port()
+        # The server prints a line once it holds the port. It exits without one
+        # if it could not bind: another program took the port after
+        # `STATIC_PORT` was picked. Its traceback is on stderr.
+        assert process.stdout is not None
+        if not process.stdout.readline():
+            raise RuntimeError(f"static server could not serve on port {STATIC_PORT}")
         yield
     finally:
         process.terminate()
@@ -275,16 +271,3 @@ def exported_app(export_root: Path, export_server: str) -> Callable[..., str]:
     return _exported_app
 
 
-def _port_is_open() -> bool:
-    with socket.socket() as sock:
-        sock.settimeout(0.25)
-        return sock.connect_ex(("127.0.0.1", STATIC_PORT)) == 0
-
-
-def _wait_for_port(timeout: float = 60.0) -> None:
-    deadline = time.monotonic() + timeout
-    while time.monotonic() < deadline:
-        if _port_is_open():
-            return
-        time.sleep(0.1)
-    raise RuntimeError(f"static server never came up on port {STATIC_PORT}")

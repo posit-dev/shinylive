@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import json
 import re
+import socket
 import sys
 from collections.abc import Callable
 from pathlib import Path
@@ -45,7 +46,18 @@ def is_benign_console_error(message: ConsoleMessage) -> bool:
 # Where `make _shinylive` puts the built sites.
 SHINYLIVE_DIR = Path(__file__).resolve().parent.parent / "_shinylive"
 
-STATIC_PORT = 8100
+
+def _free_port() -> int:
+    with socket.socket() as sock:
+        sock.bind(("127.0.0.1", 0))
+        return sock.getsockname()[1]
+
+
+# A port the OS says is free. Each xdist worker imports this module on its own, so
+# each gets its own port and its own server. If another program takes the port
+# before the `static_server` fixture binds it, the fixture fails rather than
+# testing against that program.
+STATIC_PORT = _free_port()
 BASE_URL = f"http://127.0.0.1:{STATIC_PORT}"
 
 # The iframe shinylive renders the app into.

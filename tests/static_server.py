@@ -9,7 +9,7 @@ installed".
 Run as a script to serve a directory on a port, as `static_server` in
 conftest.py does:
 
-    python tests/static_server.py 8008 _shinylive
+    python tests/static_server.py 8100 _shinylive
 """
 
 from __future__ import annotations
@@ -34,4 +34,7 @@ def static_server(port: int, directory: str) -> StaticServer:
 
 
 if __name__ == "__main__":
-    static_server(int(sys.argv[1]), sys.argv[2]).serve_forever()
+    server = static_server(int(sys.argv[1]), sys.argv[2])
+    # Tells conftest.py the port is bound and taking connections.
+    print("ready", flush=True)
+    server.serve_forever()
