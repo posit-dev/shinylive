@@ -300,13 +300,19 @@ $(PACKAGE_DIR)/$(LIBSASS_WHEEL): $(PYBIN) $(PACKAGE_DIR)/$(LIBSASS_WHEEL)
 	rm -f $(PACKAGE_DIR)/libsass*.whl
 	curl --fail -L https://pkg.garrickadenbuie.com/libsass-python/$(LIBSASS_WHEEL) -o $(PACKAGE_DIR)/$(LIBSASS_WHEEL)
 
+# The "local" packages in shinylive_requirements.json. Lock generation reads
+# their metadata from these wheels, so they must exist before it runs.
+LOCAL_WHEELS = $(PACKAGE_DIR)/$(SHINYWIDGETS_WHEEL) \
+	$(PACKAGE_DIR)/$(FAICONS_WHEEL) \
+	$(PACKAGE_DIR)/$(LIBSASS_WHEEL)
+
 ## Update the shinylive_lock.json file, based on shinylive_requirements.json
-update_packages_lock: $(PYBIN) $(BUILD_DIR)/shinylive/pyodide
+update_packages_lock: $(PYBIN) $(BUILD_DIR)/shinylive/pyodide $(LOCAL_WHEELS)
 	$(PYBIN)/pip install -r requirements-dev.txt
 	. $(PYBIN)/activate && scripts/pyodide_packages.py generate_lockfile
 
 ## Update the shinylive_lock.json file, but with local packages only
-update_packages_lock_local: $(PYBIN) $(BUILD_DIR)/shinylive/pyodide
+update_packages_lock_local: $(PYBIN) $(BUILD_DIR)/shinylive/pyodide $(LOCAL_WHEELS)
 	$(PYBIN)/pip install -r requirements-dev.txt
 	. $(PYBIN)/activate && scripts/pyodide_packages.py update_lockfile_local
 
