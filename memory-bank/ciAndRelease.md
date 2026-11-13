@@ -1,6 +1,6 @@
 ---
 title: CI and Release
-description: What each GitHub Actions workflow in .github/workflows/ runs and when, which tests gate the deploys to shinylive.io (from `deploy`) and GitHub Pages (from `main`), and how a release is cut and its bundle uploaded. Read before changing a workflow, debugging a red check, or making a release.
+description: What each GitHub Actions workflow in .github/workflows/ runs and when, which tests gate the deploys to shinylive.io (from `deploy`) and GitHub Pages (from `main`), how the weekly update_shiny.yml moves the bundled shiny versions through a pull request, and how a release is cut and its bundle uploaded. Read before changing a workflow, debugging a red check, or making a release.
 ---
 
 # CI and Release
@@ -10,10 +10,10 @@ own copy of shinylive and have no link to `build.yml`, so they can fail without 
 
 | Workflow (file) | Triggers | Gates a deploy? |
 | --- | --- | --- |
-| Build and deploy shinylive (`build.yml`) | push to `main` or `deploy`, PR to `main`, release published, after "Update py-shiny submodule" completes | yes, it is the deploy |
+| Build and deploy shinylive (`build.yml`) | push to `main` or `deploy`, PR to `main`, release published | yes, it is the deploy |
 | Test example apps (`test-apps.yml`) | push to `main`, any PR | no |
 | Test the loader (`test-loader.yml`) | push to `main`, any PR | no |
-| Update py-shiny submodule (`update_shiny.yml`) | manual (`workflow_dispatch`) only | no |
+| Update shiny versions (`update_shiny.yml`) | weekly (Monday 06:00 UTC) and manual (`workflow_dispatch`) | no; it opens a PR |
 
 `test-apps.yml` and `test-loader.yml` have a `concurrency` group that cancels the run for an older
 commit on the same PR. `build.yml` has none.
@@ -22,8 +22,9 @@ commit on the same PR. `build.yml` has none.
 
 Three jobs, in order: `test-unit` → `build` → `deploy-gh-pages`.
 
-**`test-unit`** needs no build. It runs `npm ci`, `npm run type-check` (`tsc --noEmit`), and
-`npm run test:unit` (jest). A failure here stops everything after it.
+**`test-unit`** needs no build. It runs `npm ci`, `npm run type-check` (`tsc --noEmit`),
+`npm run test:unit` (jest), and, on Python 3.11, `make test-scripts` (the `unittest` suites for the
+build scripts in `scripts/`). A failure here stops everything after it.
 
 Coverage is reported, never enforced. The env var `REPORT_COVERAGE` is true only for a
 `pull_request` event from a branch in this repo (a fork PR gets a read-only token, so the steps are
@@ -37,7 +38,9 @@ skipped instead of failing). When true:
 
 **`build`** (Python 3.11) runs `make submodules`, `make all` (with `GOOGLE_TAG_MANAGER_ID` set), then
 `make test-site`. The site tests run here, before the deploy steps, so a broken editor, URL loading,
-or static export stops the deploy. Test results upload as the `test-site-report` artifact even on
+static export, or shiny version selection (`tests/test_site_shiny_version.py`) stops the deploy.
+`make all` here leaves `R_SHINY_IMAGE_BASE_URL` empty, so the deployed R site has one shiny
+version. Test results upload as the `test-site-report` artifact even on
 failure. Then, depending on the ref and event:
 
 - **`refs/heads/deploy` → shinylive.io.** Assumes the AWS role `ShinyliveDeploy`, gzips
@@ -52,10 +55,6 @@ failure. Then, depending on the ref and event:
 `actions/deploy-pages` (environment `github-pages`, so posit-dev.github.io/shinylive).
 
 PRs run `test-unit` and `build` (including `make test-site`) but none of the deploy steps.
-
-The `workflow_run` trigger fires after the "Update py-shiny submodule" workflow completes. GitHub
-runs `workflow_run` workflows on the default branch, so that run takes the `main` path and redeploys
-GitHub Pages.
 
 ## test-apps.yml
 
@@ -81,9 +80,22 @@ them off the deploy path.
 
 ## update_shiny.yml
 
-Manual only. Runs `make submodules-pull-shiny` (moves `packages/py-shiny` to its latest remote
-commit), `make all` (which regenerates `shinylive_lock.json`), then commits `packages/py-shiny` and
-`shinylive_lock.json` as "Pull latest posit-dev/py-shiny@<sha>" and pushes straight to `main`.
+Runs every Monday at 06:00 UTC and on demand. It never pushes to `main`. Steps:
+
+1. Records the tip of the `update-shiny-versions` branch (empty if it does not exist).
+2. `make submodules`, then `scripts/update_shiny_versions.py` rewrites `shiny_versions.json`.
+3. Checks out `packages/py-shiny` at `v<newest bundled Python version>`.
+4. `make update_packages_lock` (a full re-resolution, since `make all` only refreshes the local
+   entries), then `make all`, which includes `check_shiny_bundle`.
+5. If `shiny_versions.json`, `shinylive_lock.json`, or `packages/py-shiny` changed, commits them
+   to `update-shiny-versions` and force-pushes with a lease on the tip from step 1, so the push
+   fails if someone pushed to the branch during the run. It then edits the open PR from that
+   branch, or creates one against `main` with `gh pr create --fill`.
+
+The checkout sets `persist-credentials: false`; only the push and the `gh` calls use a token. A PR
+opened with the default `github.token` triggers no `pull_request` workflows, so the workflow uses
+the repository secret `UPDATE_SHINY_TOKEN` (a fine-grained PAT with contents and pull-requests
+write) when it exists, and falls back to `github.token`, in which case the PR has no checks.
 
 ## Release
 
@@ -92,10 +104,11 @@ attached to a GitHub release (what is in it: `quartoAndExport.md`).
 
 A release PR is titled `release: vX.Y.Z` (for example
 [posit-dev/shinylive#253](https://github.com/posit-dev/shinylive/issues/253) for v0.10.16). It
-always bumps `"version"` in `package.json` and the matching lines in `package-lock.json`. Recent
-ones also moved the `packages/` submodules (py-shiny, py-shinywidgets), regenerated
-`shinylive_lock.json`, and updated examples and tests for the new Shiny version (for example
-[posit-dev/shinylive#249](https://github.com/posit-dev/shinylive/issues/249)). There is no
+always bumps `"version"` in `package.json` and the matching lines in `package-lock.json`. Some
+also move the shinywidgets or faicons submodules, regenerate `shinylive_lock.json`, or update
+examples and tests for a new Shiny version (for example
+[posit-dev/shinylive#249](https://github.com/posit-dev/shinylive/issues/249)). The bundled shiny
+versions change through `shiny_versions.json`, usually in an `update_shiny.yml` PR. There is no
 changelog file.
 
 After the PR merges, publishing a GitHub release runs `build.yml` with `event_name == 'release'`. In
@@ -106,7 +119,9 @@ the `build` job, after `make all` and `make test-site`:
    fails the job.
 2. `make dist`: symlinks `build/` as `shinylive-<version>/` and writes
    `dist/shinylive-<version>.tar.gz` with `tar -h` (follows symlinks). `dist` only depends on
-   `buildjs`, so it relies on the `make all` that ran earlier for Pyodide, webR, and the wheels.
+   `buildjs`, so it relies on the `make all` that ran earlier for Pyodide, webR, the wheels, and the
+   per-version locks. The tarball also contains `shinylive/shiny_versions.json` and
+   `shinylive/shiny_version_cases.json`.
 3. `svenstaro/upload-release-action` uploads `dist/*.tar.gz` to the release, overwriting any file
    with the same name.
 

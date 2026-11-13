@@ -1,6 +1,6 @@
 ---
 title: Browser Test Gotchas
-description: Traps when running or writing the pytest + Playwright tests in tests/ — the shared static-server port, stale service workers, per-engine differences in what errors are visible, and URL-hash fallback. Read before trusting a failure or adding a test. Conventions themselves are in tests/README.md.
+description: Traps when running or writing the pytest + Playwright tests in tests/ — the shared static-server port, stale service workers, per-engine differences in what errors are visible, URL-hash fallback, and what the shiny version tests need from the build (probe 404s on the console, R tests that skip without per-version images). Read before trusting a failure or adding a test. Conventions themselves are in tests/README.md.
 ---
 
 # Browser Test Gotchas
@@ -43,10 +43,27 @@ caches when reusing a profile by hand.
 
 Switching examples inside one warm session can log errors from the outgoing app: Pyodide raises
 `KeyError: 'app_<key>'` from the `_shiny_app_registry` lookup in `src/messageporthttp.ts`, and webR
-logs `Unexpected response type`. These do not happen when an app is loaded directly by URL hash, so
-prefer a fresh page per example.
+logs `Unexpected response type`. The Viewer answers any request it receives after `stopApp` began
+with an empty 503 and does not pass it to the engine (`requestFlow.md`); a request the Viewer passed
+on before that is not covered. These errors do not happen when an app is loaded directly by URL
+hash, so prefer a fresh page per example.
 
 ## Unknown URL hashes fall back silently
 
 When the hash names no known example, `App.tsx` loads the first example instead of failing. A test
 that navigates by hash should assert that the intended example is the one selected.
+
+## Shiny version tests depend on the build
+
+`tests/test_site_shiny_version.py` reads `shiny_versions.json` from the repo root, so the build
+under test must come from the same file, or the version assertions fail.
+
+- A per-version lock or image that is missing is found by a HEAD request, which Chromium logs as a
+  "Failed to load resource" console error. Tests that provoke one are marked `allow_page_errors`
+  and assert that the probe is the only error.
+- The R version tests skip unless the served build has `webr/shiny-<minor>/` images (a build with
+  `R_SHINY_IMAGE_BASE_URL` set). The `webr` make target deletes old `shiny-*` directories first, so
+  a default build after a version-aware one has none. A default build skips them and runs only the test that checks R
+  ignores the pin. A green run on a default build therefore says nothing about the R version path.
+- `app_url_for_files()` in `tests/shinylive_app.py` builds a `#code=` URL from a dict of files, for
+  tests that supply their own files.

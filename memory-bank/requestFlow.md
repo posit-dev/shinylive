@@ -1,6 +1,6 @@
 ---
 title: Request Flow (Service Worker, HTTP, and WebSocket)
-description: How a Shinylive app's HTTP requests and WebSocket traffic reach Pyodide or webR with no real server — service worker registration, /app_<id>/ routing, the injected socket shim, MessagePort hand-offs, COOP/COEP/CORP headers, and caching. Read before touching src/shinylive-sw.ts, src/messageport*.ts, src/Components/Viewer.tsx, or when an app 404s or never connects.
+description: How a Shinylive app's HTTP requests and WebSocket traffic reach Pyodide or webR with no real server — service worker registration, /app_<id>/ routing, the injected socket shim, MessagePort hand-offs, the Viewer's 503 for an app that is not serving, COOP/COEP/CORP headers, and caching. Read before touching src/shinylive-sw.ts, src/messageport*.ts, src/Components/Viewer.tsx, or when an app 404s or never connects.
 ---
 
 # Request Flow
@@ -47,7 +47,18 @@ Page side, `setupAppProxyPath` in `src/Components/Viewer.tsx` makes the name
 (`app_${makeRandomKey(20)}`), then `createHttpRequestChannel` posts `configureProxyPath` with
 `port2` of a new `MessageChannel` to `navigator.serviceWorker.controller`. `port1` listens for
 `makeRequest` and calls `proxy.makeRequest(msg.scope, appName, event.ports[0])`. The Viewer then
-sets the iframe `src` to `urlPath`.
+calls `setServing(true)` and sets the iframe `src` to `urlPath`.
+
+While the app is not serving (before `runApp` finishes starting it, and from the start of
+`stopApp`), `port1` answers each `makeRequest` itself with an empty 503
+(`respondUnavailable`), in the message format `fetchASGI` reads. Without this, a request that
+reaches the engine after it removed the app fails there (Pyodide raises an uncaught
+`KeyError`).
+
+The Viewer's effect returns a cleanup that calls `dispose()` (stops serving and removes the
+`serviceworkerStart` listener) and marks the viewer methods not ready. It runs when the proxy handle
+changes, as in an engine restart (`shinyVersions.md`); the new effect registers a new `app_<id>`
+path. The service worker's `apps` map keeps the old entry, which nothing requests again.
 
 For an app request the worker:
 
@@ -116,7 +127,9 @@ Unexpected messages fire `error` and close with code 1002.
 
 The parent page answers in `ensureOpenChannelListener` (one in `src/hooks/usePyodide.tsx`, one in
 `src/hooks/useWebR.tsx`; not in `App.tsx`). It is a `window` `message` listener, registered once
-per module, that checks the app exists in the registry and then calls `proxy.openChannel`. The
+per module, that checks the app exists in the registry and then calls `openChannel` on the proxy
+in the module variable `channelProxy`. Each call to `ensureOpenChannelListener` (once per engine
+start) replaces `channelProxy`, so after a restart channels go to the new engine. The
 service worker is not involved in WebSocket traffic.
 
 In `src/messageportwebsocket-channel.ts`:
@@ -145,8 +158,8 @@ In `src/messageportwebsocket-channel.ts`:
 ## Pitfalls
 
 - A service worker update or restart can leave an app path unregistered; the fix is a reload.
-- Each `ensureOpenChannelListener` keeps the first proxy it is given, because of the module-level
-  `channelListenerRegistered` flag. A `TODO` in `usePyodide.tsx` says so.
+- There is one `channelProxy` per engine module, so all apps on a page open their WebSockets on
+  the engine that most recently started Shiny.
 - `appName`, `scope.path`, `scope.method`, and `scope.query_string` are pasted into Python/R source
   strings, not passed as values.
 - Python `websocket.accept` drops `subprotocol` and `headers` (`TODO` in `connect`).

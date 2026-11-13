@@ -1,6 +1,6 @@
 ---
 title: App Modes, URL Hash, Sharing, and Examples
-description: How src/Components/App.tsx picks a layout (AppMode), how runApp() gets its starting files from options or the URL hash (#code=, #gist=, example names, h=0), how share links and the examples index are built, how files move between JSON, editor, and disk, and how the site_template/ pages boot each mode. Read before changing App.tsx, runApp() options, share links, or examples/index.json.
+description: How src/Components/App.tsx picks a layout (AppMode), how runApp() gets its starting files from options or the URL hash (#code=, #gist=, example names, h=0) and resolves the shiny version before rendering, how share links and the examples index are built, how files move between JSON, editor, and disk, and how the site_template/ pages boot each mode. Read before changing App.tsx, runApp() options, share links, or examples/index.json.
 ---
 
 # App Modes, URL Hash, Sharing, and Examples
@@ -32,7 +32,7 @@ Things that differ by mode:
 - Every mode except `editor-terminal` installs Shiny into the engine (`loadShiny`).
 - `Editor` is loaded with `React.lazy`, so the editor chunk (and Pyright) never loads in
   `viewer` mode.
-- In `viewer` mode, an effect calls `viewerMethods.runApp(currentFiles)` once the Viewer is ready,
+- In `viewer` mode, an effect calls `runAppWithVersion(currentFiles)` once the Viewer is ready,
   and the HeaderBar gets one callback, `openEditorWindowFromViewer`, which opens the shinylive.io
   editor with `#code=` for the start files.
 - `OutputCell` and the `_save_files` to `/home/pyodide` effect only do anything on Pyodide.
@@ -40,22 +40,34 @@ Things that differ by mode:
   include a viewer, `script.py` otherwise. This is Python even when the engine is R.
 
 The HeaderBar has no buttons of its own. The Editor fills them in through
-`setHeaderBarCallbacks` (load, save, download, share, open in editor).
+`setHeaderBarCallbacks` (load, save, download, share, open in editor). The one control `App` adds
+itself is the shiny version picker, shown only with the `showVersionPicker` option.
 
 `ensurePyodideProxyHandlePromise` / `ensureWebRProxyHandlePromise` keep the engine in a module
-variable, so all `App`s on a page share one engine. `?webworker=0` runs Pyodide on the main thread.
+variable, so all `App`s on a page share one engine. The engine promise an `App` uses is React state,
+because a re-run that needs another shiny minor replaces it (`restartEngine`). Every run, from the
+Editor or the viewer-only effect, goes through `runAppWithVersion`; the Editor receives
+`editorViewerMethods`, which delegate to the current Viewer. `?webworker=0` runs Pyodide on the
+main thread. All of this is in `shinyVersions.md`.
 
 ## runApp() and its options
 
 `runApp(domTarget, mode, opts, appEngine)` renders `App` into `domTarget`. `AppOptions` fields:
 `startFiles`, `layout`, `viewerHeight`, `editorHeight`, `selectedExample`, `showHeaderBar`,
-`updateUrlHashOnRerun`, `setWindowTitle`. `runApp` adds three security switches, all `false` by
-default: `allowCodeUrl`, `allowGistUrl`, `allowExampleUrl`. Turning them on lets the URL run code,
-so a page that does should live on its own domain (see the comment above `runApp`).
+`updateUrlHashOnRerun`, `showVersionPicker`, `shiny-version`, `setWindowTitle`. `runApp` adds
+three security switches, all `false` by default: `allowCodeUrl`, `allowGistUrl`,
+`allowExampleUrl`. Turning them on lets the URL run code, so a page that does should live on its
+own domain (see the comment above `runApp`).
 
 `startFiles` may be `FileContentJson[]` or `FileContent[]`; `runApp` maps them through
 `FCorFCJSONtoFC`. Extra keys in `opts` (such as Quarto's `components` and `standalone`) are
 passed through to `App` without a warning.
+
+After the files are known, `runApp` applies the `shiny-version` option and resolves the app's
+shiny version (for Python, and for R only in a build with per-version R images), and passes the
+result to `App` as the `shinyVersion` and `startupNotes` props, so the engine starts on that
+version. An error in the async body of `runApp` (such as a non-string `shiny-version`) is logged
+with `console.error` and rethrown.
 
 `runExportedApp()` fetches `./app.json` and reads `?_shinylive-mode=` (default `viewer`); see
 `quartoAndExport.md`.
@@ -146,9 +158,10 @@ the editor's files) from `window.parent` only.
 `../shinylive/load-shinylive-sw.js` (see `requestFlow.md`) and then calls `runApp` on `#root`
 with all three `allow*Url` switches on:
 
-- `examples/` uses `examples-editor-terminal-viewer` with `updateUrlHashOnRerun: true`.
-- `editor/` uses `editor-terminal-viewer` with `updateUrlHashOnRerun: true` and the window title
-  prefix `"Shiny - "`.
+- `examples/` uses `examples-editor-terminal-viewer` with `updateUrlHashOnRerun: true` and
+  `showVersionPicker: true`.
+- `editor/` uses `editor-terminal-viewer` with `updateUrlHashOnRerun: true`,
+  `showVersionPicker: true`, and the window title prefix `"Shiny - "`.
 - `app/` uses `viewer` and copies the app's title into the window title.
 
 The other modes (`editor-viewer`, `editor-cell`, `editor-terminal`) come only from Quarto
