@@ -239,13 +239,12 @@ UV_PYTHON_PLATFORM = "wasm32-pyodide2024"
 # breaks an older shiny at runtime. Lines in requirements syntax. An entry is
 # removed when its minor leaves shiny_versions.json.
 #
-# shiny 1.4.0 and 1.5.1 require htmltools>=0.6.0 with no upper bound, so uv
-# resolves htmltools 0.7.0 for them. Shiny Express apps on that pairing fail at
-# startup with a TypeError from htmltools' tagify(), which rejects the
-# un-tagified Tag that shiny returns. shiny 1.6.4 and later require
-# htmltools>=0.7.0 and run on it.
+# shiny 1.5.1 requires htmltools>=0.6.0 with no upper bound, so uv resolves
+# htmltools 0.7.0 for it. Shiny Express apps on that pairing fail at startup
+# with a TypeError from htmltools' tagify(), which rejects the un-tagified Tag
+# that shiny returns. shiny 1.6.4 and later require htmltools>=0.7.0 and run
+# on it.
 VERSION_CONSTRAINTS: dict[str, list[str]] = {
-    "1.4": ["htmltools<0.7"],
     "1.5": ["htmltools<0.7"],
 }
 
@@ -257,11 +256,13 @@ SHARED_CONSTRAINTS: list[str] = ["starlette<1.3"]
 
 # Stock Pyodide packages passed to uv as overrides instead of constraints.
 # htmltools 0.7.0 requires typing-extensions>=4.12.0 while Pyodide 0.27.7
-# includes 4.11.0, and shiny requires orjson>=3.10.7 while Pyodide includes
-# 3.10.1. The
-# bundle runs with the stock versions, so the override keeps uv from rejecting
-# them, and any other conflict with a stock version still fails the resolution.
-STOCK_OVERRIDES = {"typing-extensions", "orjson"}
+# includes 4.11.0, shiny requires orjson>=3.10.7 while Pyodide includes
+# 3.10.1, and shiny 1.9.0 requires narwhals>=2.26.0 while Pyodide includes
+# 1.41.0. shiny 1.9.0 uses only narwhals.stable.v1 APIs that 1.41.0 has, and
+# checks for nw.Map with hasattr. The bundle runs with the stock versions, so
+# the override keeps uv from rejecting them, and any other conflict with a
+# stock version still fails the resolution.
+STOCK_OVERRIDES = {"typing-extensions", "orjson", "narwhals"}
 
 # Local wheels whose platform tag uv may not accept for the pyodide target.
 # They are added to each lock directly; none of them has dependencies that

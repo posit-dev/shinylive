@@ -1,7 +1,7 @@
 {
   "format": 2,
   "locks": {
-    "1.8": {
+    "1.9": {
       "anywidget": {
         "name": "anywidget",
         "version": "0.11.0",
@@ -19,10 +19,10 @@
       },
       "asgiref": {
         "name": "asgiref",
-        "version": "3.12.1",
-        "filename": "asgiref-3.12.1-py3-none-any.whl",
-        "sha256": "fe386d1c2bff7259ea95929266d12a8cf9a8b5a1c2598402967d8792e7a7c094",
-        "url": "https://files.pythonhosted.org/packages/c0/1b/54f4ad77cd8a584fa70746c47df988e002cf1ee1eba43364d46f87803647/asgiref-3.12.1-py3-none-any.whl",
+        "version": "3.13.0",
+        "filename": "asgiref-3.13.0-py3-none-any.whl",
+        "sha256": "f9596a2434512686473d50f96ff6207fbba49ae1a785dfac614df4aeb085674d",
+        "url": "https://files.pythonhosted.org/packages/2e/b0/ec211e1f7966247cb6469158d856bac9aa4c2fe13621bd6a352e4f850453/asgiref-3.13.0-py3-none-any.whl",
         "depends": [],
         "imports": [
           "asgiref"
@@ -179,10 +179,10 @@
       },
       "markdown-it-py": {
         "name": "markdown-it-py",
-        "version": "4.2.0",
-        "filename": "markdown_it_py-4.2.0-py3-none-any.whl",
-        "sha256": "9f7ebbcd14fe59494226453aed97c1070d83f8d24b6fc3a3bcf9a38092641c4a",
-        "url": "https://files.pythonhosted.org/packages/b3/81/4da04ced5a082363ecfa159c010d200ecbd959ae410c10c0264a38cac0f5/markdown_it_py-4.2.0-py3-none-any.whl",
+        "version": "4.3.0",
+        "filename": "markdown_it_py-4.3.0-py3-none-any.whl",
+        "sha256": "7aa1511a46c39138de78d9eba92ce47e63124d8003fc98b3a351909e04239efa",
+        "url": "https://files.pythonhosted.org/packages/c9/31/5f0ac2f1a1c67423c995c731a11cd4ad05d081a2be969d74f868bdb9cc70/markdown_it_py-4.3.0-py3-none-any.whl",
         "depends": [
           {"name": "mdurl", "specs": [["~=", "0.1"]]}
         ],
@@ -192,12 +192,12 @@
       },
       "mdit-py-plugins": {
         "name": "mdit-py-plugins",
-        "version": "0.6.1",
-        "filename": "mdit_py_plugins-0.6.1-py3-none-any.whl",
-        "sha256": "214c82fb2ac524472ab6a5bcab1de80f73b50443e187f401bfd77efbc7c6481d",
-        "url": "https://files.pythonhosted.org/packages/a5/69/6da5581c6a7fede7dc261bf4e67d6adca4196f176b43288b55b3db395b6e/mdit_py_plugins-0.6.1-py3-none-any.whl",
+        "version": "0.7.0",
+        "filename": "mdit_py_plugins-0.7.0-py3-none-any.whl",
+        "sha256": "7f8e30403f3dd8bfe3afcdcbc6e61066d3f2e714167507b9c26eb385ec399353",
+        "url": "https://files.pythonhosted.org/packages/4d/d3/d07e61326f150944ead0da9d0b39fb20d7fa367bbc951b10fca6bb1c7382/mdit_py_plugins-0.7.0-py3-none-any.whl",
         "depends": [
-          {"name": "markdown-it-py", "specs": [["<", "5.0.0"], [">=", "2.0.0"]]}
+          {"name": "markdown-it-py", "specs": [["<", "5.0.0"], [">=", "3.0.0"]]}
         ],
         "imports": [
           "mdit_py_plugins"
@@ -232,10 +232,10 @@
       },
       "mypy-extensions": {
         "name": "mypy-extensions",
-        "version": "1.1.0",
-        "filename": "mypy_extensions-1.1.0-py3-none-any.whl",
-        "sha256": "1be4cccdb0f2482337c4743e60421de3a356cd97508abadd57d47403e94f5505",
-        "url": "https://files.pythonhosted.org/packages/79/7b/2c79738432f5c924bef5071f933bcc9efd0473bac3b4aa584a6f7c1c8df8/mypy_extensions-1.1.0-py3-none-any.whl",
+        "version": "1.2.0",
+        "filename": "mypy_extensions-1.2.0-py3-none-any.whl",
+        "sha256": "993e7a20aa5671eb41a7132cf555af30062da99729601601b9a8382b11cae768",
+        "url": "https://files.pythonhosted.org/packages/b5/99/7b1adac7e97ce7bbda34792dc6e9b2f5cc5cffd1875883f78a818b2a2687/mypy_extensions-1.2.0-py3-none-any.whl",
         "depends": [],
         "imports": [
           "mypy_extensions"
@@ -243,10 +243,10 @@
       },
       "opentelemetry-api": {
         "name": "opentelemetry-api",
-        "version": "1.45.1",
-        "filename": "opentelemetry_api-1.45.1-py3-none-any.whl",
-        "sha256": "b31553efa588ae44bc306f863c785c5333a9ecc091248c6ee68b4b6c87fdedfb",
-        "url": "https://files.pythonhosted.org/packages/1e/41/f7dcf80b81ee8e71c1a2b59f14208bc723edbd89ed027a73b175abf6348e/opentelemetry_api-1.45.1-py3-none-any.whl",
+        "version": "1.45.2",
+        "filename": "opentelemetry_api-1.45.2-py3-none-any.whl",
+        "sha256": "2cbd737377e710ee740d261c94e93fa0f08e6d037c18f17513cc0a2d94479a34",
+        "url": "https://files.pythonhosted.org/packages/a9/2d/610db864d7513158cebb8f36cc88e67e73bd6c7aa1905ef18d89e1281c81/opentelemetry_api-1.45.2-py3-none-any.whl",
         "depends": [
           {"name": "typing-extensions", "specs": [[">=", "4.5.0"]]}
         ],
@@ -281,10 +281,10 @@
       },
       "platformdirs": {
         "name": "platformdirs",
-        "version": "4.13.0",
-        "filename": "platformdirs-4.13.0-py3-none-any.whl",
-        "sha256": "3dbcf4cd708f21cf876c4eaa90e58412bc4f033d87143f41b1493ff77c25b7e1",
-        "url": "https://files.pythonhosted.org/packages/8d/15/1633010b26e88e872c93b67c0b6c5e174fb74cb6fb5c1472b4d51d4a8f22/platformdirs-4.13.0-py3-none-any.whl",
+        "version": "4.14.5",
+        "filename": "platformdirs-4.14.5-py3-none-any.whl",
+        "sha256": "8e778c6fa421516f4d3369449f8df3b0e1b72c0e0005fe88e3ec772d0a14e750",
+        "url": "https://files.pythonhosted.org/packages/7c/ae/ecbbbfd0e4343a6a521d49b3c8656fb4643dee2a4f6eaf941cf3280391a8/platformdirs-4.14.5-py3-none-any.whl",
         "depends": [],
         "imports": [
           "platformdirs"
@@ -306,10 +306,527 @@
       },
       "plotnine": {
         "name": "plotnine",
-        "version": "0.15.8",
-        "filename": "plotnine-0.15.8-py3-none-any.whl",
-        "sha256": "b8a17fbccdf331f0474ff59ea03186c07d96586eb0ebe70121b03fbf131881a9",
-        "url": "https://files.pythonhosted.org/packages/40/37/7a0275ea8143f0f0a2b27db73656d7ea3459e9cf8f869e292e450b357d1e/plotnine-0.15.8-py3-none-any.whl",
+        "version": "0.15.9",
+        "filename": "plotnine-0.15.9-py3-none-any.whl",
+        "sha256": "36f4526235b3ddd9ea379dd677093ea2ee1b58ab98adec1bde891930283448cd",
+        "url": "https://files.pythonhosted.org/packages/c5/7a/0ffb626172083659f2d425a2bdd14815281c80890a116b4547fe7f5d76ec/plotnine-0.15.9-py3-none-any.whl",
+        "depends": [
+          {"name": "matplotlib", "specs": [[">=", "3.8.0"]]},
+          {"name": "pandas", "specs": [[">=", "2.2.0"]]},
+          {"name": "mizani", "specs": [["~=", "0.14.0"]]},
+          {"name": "numpy", "specs": [[">=", "1.23.5"]]},
+          {"name": "scipy", "specs": [[">=", "1.8.0"]]}
+        ],
+        "imports": [
+          "plotnine"
+        ]
+      },
+      "psygnal": {
+        "name": "psygnal",
+        "version": "0.16.1",
+        "filename": "psygnal-0.16.1-py3-none-any.whl",
+        "sha256": "93b96894d8c46f0a3c0bfaaf8abe73f0d6db2c20cc6d303624cf08f85abc3c92",
+        "url": "https://files.pythonhosted.org/packages/be/f2/973c1280f035cd825af70582bbee776c69545e24534b324cf135eabef57e/psygnal-0.16.1-py3-none-any.whl",
+        "depends": [],
+        "imports": [
+          "psygnal"
+        ]
+      },
+      "pytokens": {
+        "name": "pytokens",
+        "version": "0.4.1",
+        "filename": "pytokens-0.4.1-py3-none-any.whl",
+        "sha256": "26cef14744a8385f35d0e095dc8b3a7583f6c953c2e3d269c7f82484bf5ad2de",
+        "url": "https://files.pythonhosted.org/packages/c6/78/397db326746f0a342855b81216ae1f0a32965deccfd7c830a2dbc66d2483/pytokens-0.4.1-py3-none-any.whl",
+        "depends": [],
+        "imports": [
+          "pytokens"
+        ]
+      },
+      "qrcode": {
+        "name": "qrcode",
+        "version": "8.2",
+        "filename": "qrcode-8.2-py3-none-any.whl",
+        "sha256": "16e64e0716c14960108e85d853062c9e8bba5ca8252c0b4d0231b9df4060ff4f",
+        "url": "https://files.pythonhosted.org/packages/dd/b8/d2d6d731733f51684bbf76bf34dab3b70a9148e8f2cef2bb544fccec681a/qrcode-8.2-py3-none-any.whl",
+        "depends": [],
+        "imports": [
+          "qrcode"
+        ]
+      },
+      "seaborn": {
+        "name": "seaborn",
+        "version": "0.13.2",
+        "filename": "seaborn-0.13.2-py3-none-any.whl",
+        "sha256": "636f8336facf092165e27924f223d3c62ca560b1f2bb5dff7ab7fad265361987",
+        "url": "https://files.pythonhosted.org/packages/83/11/00d3c3dfc25ad54e731d91449895a79e4bf2384dc3ac01809010ba88f6d5/seaborn-0.13.2-py3-none-any.whl",
+        "depends": [
+          {"name": "numpy", "specs": [["!=", "1.24.0"], [">=", "1.20"]]},
+          {"name": "pandas", "specs": [[">=", "1.2"]]},
+          {"name": "matplotlib", "specs": [["!=", "3.6.1"], [">=", "3.4"]]}
+        ],
+        "imports": [
+          "seaborn"
+        ]
+      },
+      "shiny": {
+        "name": "shiny",
+        "version": "1.9.0",
+        "filename": "shiny-1.9.0-py3-none-any.whl",
+        "sha256": "89c34a5346de3beeb997590ab019ad8e3a821dac4acdbd0d12130d3cb85a3aa4",
+        "url": "https://files.pythonhosted.org/packages/1a/6a/ce1d21bbc5198e0ed5e8257fc76c271bcb6405a772181b5762b4a7362c66/shiny-1.9.0-py3-none-any.whl",
+        "depends": [
+          {"name": "typing-extensions", "specs": [[">=", "4.10.0"]]},
+          {"name": "starlette", "specs": [[">=", "0.17.1"]]},
+          {"name": "htmltools", "specs": [[">=", "0.7.0"]]},
+          {"name": "markdown-it-py", "specs": [[">=", "1.1.0"]]},
+          {"name": "mdit-py-plugins", "specs": [[">=", "0.3.0"]]},
+          {"name": "linkify-it-py", "specs": [[">=", "1.0"]]},
+          {"name": "platformdirs", "specs": [[">=", "2.1.0"]]},
+          {"name": "asgiref", "specs": [[">=", "3.5.2"]]},
+          {"name": "packaging", "specs": [[">=", "20.9"]]},
+          {"name": "narwhals", "specs": [[">=", "2.26.0"]]},
+          {"name": "orjson", "specs": [[">=", "3.10.7"]]},
+          {"name": "shinychat", "specs": [[">=", "0.1.0"]]},
+          {"name": "opentelemetry-api", "specs": [[">=", "1.24.0"]]}
+        ],
+        "imports": [
+          "shiny"
+        ]
+      },
+      "shinychat": {
+        "name": "shinychat",
+        "version": "0.6.1",
+        "filename": "shinychat-0.6.1-py3-none-any.whl",
+        "sha256": "dc4c742bfec391e933ceaa470c12c7c5f204ba6bb53f97cc5ba3567720b0e525",
+        "url": "https://files.pythonhosted.org/packages/1b/a6/03d47e4257a9dce48f07a4c5934de02e300749c9a58f873294fc92652f8a/shinychat-0.6.1-py3-none-any.whl",
+        "depends": [
+          {"name": "htmltools", "specs": [[">=", "0.7.0"]]},
+          {"name": "pydantic", "specs": []},
+          {"name": "shiny", "specs": [[">=", "1.4.0"]]}
+        ],
+        "imports": [
+          "shinychat"
+        ]
+      },
+      "shinyswatch": {
+        "name": "shinyswatch",
+        "version": "0.14.0",
+        "filename": "shinyswatch-0.14.0-py3-none-any.whl",
+        "sha256": "43eb1c6ade7385daaff6aff26cf94bd658efb68238d4304f1107fc2960ffd935",
+        "url": "https://files.pythonhosted.org/packages/05/a1/ab3f544b80ed984965bc152f5016058f44f2ec110c22e0fbaf059196232a/shinyswatch-0.14.0-py3-none-any.whl",
+        "depends": [
+          {"name": "typing-extensions", "specs": [[">=", "3.10.0.0"]]},
+          {"name": "packaging", "specs": [[">=", "20.9"]]},
+          {"name": "htmltools", "specs": [[">=", "0.2.0"]]},
+          {"name": "shiny", "specs": [[">=", "1.9.0"]]}
+        ],
+        "imports": [
+          "shinyswatch"
+        ]
+      },
+      "shinywidgets": {
+        "name": "shinywidgets",
+        "version": "0.8.2",
+        "filename": "shinywidgets-0.8.2-py3-none-any.whl",
+        "sha256": null,
+        "url": null,
+        "depends": [
+          {"name": "anywidget", "specs": []},
+          {"name": "ipywidgets", "specs": [[">=", "7.6.5"]]},
+          {"name": "jupyter-core", "specs": []},
+          {"name": "python-dateutil", "specs": [[">=", "2.8.2"]]},
+          {"name": "shiny", "specs": [[">=", "0.6.1.9005"]]}
+        ],
+        "imports": [
+          "shinywidgets"
+        ]
+      },
+      "siuba": {
+        "name": "siuba",
+        "version": "0.4.2",
+        "filename": "siuba-0.4.2-py3-none-any.whl",
+        "sha256": "6070a1c99d9ae6994f0f591a82509dd8e2edc6eee1ff4f3d6678cbf03a81a7ad",
+        "url": "https://files.pythonhosted.org/packages/56/02/911b4451ceb1a863339b182c0c9ba75a0d4f83a9c0d13e7448160d453f17/siuba-0.4.2-py3-none-any.whl",
+        "depends": [
+          {"name": "pandas", "specs": [[">=", "0.24.0"]]},
+          {"name": "numpy", "specs": [[">=", "1.12.0"]]},
+          {"name": "SQLAlchemy", "specs": [[">=", "1.2.19"]]},
+          {"name": "PyYAML", "specs": [[">=", "3.0.0"]]}
+        ],
+        "imports": [
+          "siuba"
+        ]
+      },
+      "starlette": {
+        "name": "starlette",
+        "version": "1.2.1",
+        "filename": "starlette-1.2.1-py3-none-any.whl",
+        "sha256": "4de0082d08c8f6764a85a54cf1120d6939507a19905c7768acad2a9f875d2b89",
+        "url": "https://files.pythonhosted.org/packages/1c/54/196d0c1db10af76baa4f64894448505d60d3cdf70ef92cbb35f46a4e4c71/starlette-1.2.1-py3-none-any.whl",
+        "depends": [
+          {"name": "anyio", "specs": [["<", "5"], [">=", "3.6.2"]]}
+        ],
+        "imports": [
+          "starlette"
+        ]
+      },
+      "traittypes": {
+        "name": "traittypes",
+        "version": "0.2.3",
+        "filename": "traittypes-0.2.3-py2.py3-none-any.whl",
+        "sha256": "49016082ce740d6556d9bb4672ee2d899cd14f9365f17cbb79d5d96b47096d4e",
+        "url": "https://files.pythonhosted.org/packages/8d/c0/fdf9d3ee103ce66a55f0532835ad5e154226c5222423c6636ba049dc42fc/traittypes-0.2.3-py2.py3-none-any.whl",
+        "depends": [
+          {"name": "traitlets", "specs": [[">=", "4.2.2"]]}
+        ],
+        "imports": [
+          "traittypes"
+        ]
+      },
+      "websockets": {
+        "name": "websockets",
+        "version": "17.4",
+        "filename": "websockets-17.4-py3-none-any.whl",
+        "sha256": "c6bd2c9781915592b209160d0f017d4c7c82ad53075e6b0c24d2a89299e7f9e9",
+        "url": "https://files.pythonhosted.org/packages/eb/27/9db924cb0dbf22eade78d98fbae77790f9bf6bc729e6ab29aef9d68e4156/websockets-17.4-py3-none-any.whl",
+        "depends": [],
+        "imports": [
+          "websockets"
+        ]
+      },
+      "widgetsnbextension": {
+        "name": "widgetsnbextension",
+        "version": "4.0.16",
+        "filename": "widgetsnbextension-4.0.16-py3-none-any.whl",
+        "sha256": "a31a8774885b96fe825462f5d6496166f0c7cae111195b6465c801d230eb5a4e",
+        "url": "https://files.pythonhosted.org/packages/34/95/40e17e20046b7bc820d29d09ae84ec157ec8dd6e6f6cd722626292c31b2e/widgetsnbextension-4.0.16-py3-none-any.whl",
+        "depends": [],
+        "imports": [
+          "widgetsnbextension"
+        ]
+      },
+      "libsass": {
+        "name": "libsass",
+        "version": "0.23.0",
+        "filename": "libsass-0.23.0-cp312-abi3-pyodide_2024_0_wasm32.whl",
+        "sha256": null,
+        "url": null,
+        "depends": [],
+        "imports": [
+          "libsass"
+        ]
+      }
+    },
+    "1.8": {
+      "anywidget": {
+        "name": "anywidget",
+        "version": "0.11.0",
+        "filename": "anywidget-0.11.0-py3-none-any.whl",
+        "sha256": "c574d9acc6503ad27b37a9acea48f957a8ba7c9c9876cfcb37898931c098ce9d",
+        "url": "https://files.pythonhosted.org/packages/8e/c2/8fec8e8e2eb920cc2280f569144080cd58622a2eda83bfa4c0c354a63264/anywidget-0.11.0-py3-none-any.whl",
+        "depends": [
+          {"name": "ipywidgets", "specs": [[">=", "7.6.0"]]},
+          {"name": "psygnal", "specs": [[">=", "0.8.1"]]},
+          {"name": "typing-extensions", "specs": [[">=", "4.2.0"]]}
+        ],
+        "imports": [
+          "anywidget"
+        ]
+      },
+      "asgiref": {
+        "name": "asgiref",
+        "version": "3.13.0",
+        "filename": "asgiref-3.13.0-py3-none-any.whl",
+        "sha256": "f9596a2434512686473d50f96ff6207fbba49ae1a785dfac614df4aeb085674d",
+        "url": "https://files.pythonhosted.org/packages/2e/b0/ec211e1f7966247cb6469158d856bac9aa4c2fe13621bd6a352e4f850453/asgiref-3.13.0-py3-none-any.whl",
+        "depends": [],
+        "imports": [
+          "asgiref"
+        ]
+      },
+      "black": {
+        "name": "black",
+        "version": "26.10.1",
+        "filename": "black-26.10.1-py3-none-any.whl",
+        "sha256": "28842f9a8207cc1df6eb983a35a14c5a0dfcd603d214fe82d84bef552afd2e3a",
+        "url": "https://files.pythonhosted.org/packages/b1/28/9dd29175c1db777e6189e2a0bb5f37101adf19c3e509b236c8920f778d0b/black-26.10.1-py3-none-any.whl",
+        "depends": [
+          {"name": "click", "specs": [[">=", "8.0.0"]]},
+          {"name": "mypy-extensions", "specs": [[">=", "0.4.3"]]},
+          {"name": "packaging", "specs": [[">=", "22.0"]]},
+          {"name": "pathspec", "specs": [[">=", "1.0.0"]]},
+          {"name": "platformdirs", "specs": [[">=", "2"]]},
+          {"name": "pytokens", "specs": [["~=", "0.4.0"]]}
+        ],
+        "imports": [
+          "black"
+        ]
+      },
+      "branca": {
+        "name": "branca",
+        "version": "0.8.2",
+        "filename": "branca-0.8.2-py3-none-any.whl",
+        "sha256": "2ebaef3983e3312733c1ae2b793b0a8ba3e1c4edeb7598e10328505280cf2f7c",
+        "url": "https://files.pythonhosted.org/packages/7e/50/fc9680058e63161f2f63165b84c957a0df1415431104c408e8104a3a18ef/branca-0.8.2-py3-none-any.whl",
+        "depends": [
+          {"name": "jinja2", "specs": [[">=", "3"]]}
+        ],
+        "imports": [
+          "branca"
+        ]
+      },
+      "comm": {
+        "name": "comm",
+        "version": "0.2.3",
+        "filename": "comm-0.2.3-py3-none-any.whl",
+        "sha256": "c615d91d75f7f04f095b30d1c1711babd43bdc6419c1be9886a85f2f4e489417",
+        "url": "https://files.pythonhosted.org/packages/60/97/891a0971e1e4a8c5d2b20bbe0e524dc04548d2307fee33cdeba148fd4fc7/comm-0.2.3-py3-none-any.whl",
+        "depends": [],
+        "imports": [
+          "comm"
+        ]
+      },
+      "faicons": {
+        "name": "faicons",
+        "version": "0.2.2",
+        "filename": "faicons-0.2.2-py3-none-any.whl",
+        "sha256": null,
+        "url": null,
+        "depends": [
+          {"name": "htmltools", "specs": [[">=", "0.1.4.9002"]]}
+        ],
+        "imports": [
+          "faicons"
+        ]
+      },
+      "htmltools": {
+        "name": "htmltools",
+        "version": "0.7.0",
+        "filename": "htmltools-0.7.0-py3-none-any.whl",
+        "sha256": "92e5d06aeadb56e0ff63b236971bc58bb9cf6058c7235e3af57868e7bf113e1b",
+        "url": "https://files.pythonhosted.org/packages/2f/b2/bd9bfa6d77641bd3be57c7cd6ce10294d26db20cb9aedf19ac5d78845886/htmltools-0.7.0-py3-none-any.whl",
+        "depends": [
+          {"name": "typing-extensions", "specs": [[">=", "4.12.0"]]},
+          {"name": "packaging", "specs": [[">=", "20.9"]]}
+        ],
+        "imports": [
+          "htmltools"
+        ]
+      },
+      "ipyleaflet": {
+        "name": "ipyleaflet",
+        "version": "0.20.0",
+        "filename": "ipyleaflet-0.20.0-py3-none-any.whl",
+        "sha256": "b4c20ddc0b17d68e226cd3367ca2215a4db7e2b14374468c0eeaa54b53e4d173",
+        "url": "https://files.pythonhosted.org/packages/49/69/e9858f2c0b99bf9f036348d1c84b8026f438bb6875effe6a9bcd9883dada/ipyleaflet-0.20.0-py3-none-any.whl",
+        "depends": [
+          {"name": "branca", "specs": [[">=", "0.5.0"]]},
+          {"name": "ipywidgets", "specs": [["<", "9"], [">=", "7.6.0"]]},
+          {"name": "jupyter-leaflet", "specs": [["<", "0.21"], [">=", "0.20"]]},
+          {"name": "traittypes", "specs": [["<", "3"], [">=", "0.2.1"]]},
+          {"name": "xyzservices", "specs": [[">=", "2021.8.1"]]}
+        ],
+        "imports": [
+          "ipyleaflet"
+        ]
+      },
+      "ipywidgets": {
+        "name": "ipywidgets",
+        "version": "8.1.9",
+        "filename": "ipywidgets-8.1.9-py3-none-any.whl",
+        "sha256": "f2b8cbcaae10252b809fbe4d7470db75c09b769a32cbf816d20e5ca6d3c5a79d",
+        "url": "https://files.pythonhosted.org/packages/c3/55/298e9b3b864a198234997e87a1471c1b17d7f3546ace6d18fb5cf1ce24b2/ipywidgets-8.1.9-py3-none-any.whl",
+        "depends": [
+          {"name": "comm", "specs": [[">=", "0.1.3"]]},
+          {"name": "ipython", "specs": [[">=", "6.1.0"]]},
+          {"name": "traitlets", "specs": [[">=", "4.3.1"]]},
+          {"name": "jupyterlab_widgets", "specs": [["~=", "3.0.17"]]}
+        ],
+        "imports": [
+          "ipywidgets"
+        ]
+      },
+      "jupyter-core": {
+        "name": "jupyter-core",
+        "version": "5.9.1",
+        "filename": "jupyter_core-5.9.1-py3-none-any.whl",
+        "sha256": "ebf87fdc6073d142e114c72c9e29a9d7ca03fad818c5d300ce2adc1fb0743407",
+        "url": "https://files.pythonhosted.org/packages/e7/e7/80988e32bf6f73919a113473a604f5a8f09094de312b9d52b79c2df7612b/jupyter_core-5.9.1-py3-none-any.whl",
+        "depends": [
+          {"name": "platformdirs", "specs": [[">=", "2.5"]]},
+          {"name": "traitlets", "specs": [[">=", "5.3"]]}
+        ],
+        "imports": [
+          "jupyter_core"
+        ]
+      },
+      "jupyter-leaflet": {
+        "name": "jupyter-leaflet",
+        "version": "0.20.0",
+        "filename": "jupyter_leaflet-0.20.0-py3-none-any.whl",
+        "sha256": "2e27ce83647316424f04845e3a6af35e1ee44c177c318a145646b11f4afe0764",
+        "url": "https://files.pythonhosted.org/packages/16/95/ffe543060eb3b1570d78c3f2c1948c640a6758ff5c6479c27e474819115b/jupyter_leaflet-0.20.0-py3-none-any.whl",
+        "depends": [],
+        "imports": [
+          "jupyter_leaflet"
+        ]
+      },
+      "jupyterlab-widgets": {
+        "name": "jupyterlab-widgets",
+        "version": "3.0.17",
+        "filename": "jupyterlab_widgets-3.0.17-py3-none-any.whl",
+        "sha256": "40ac1e9955acf116c4d995d9bfa082d86ad9ec6d91c4f134827cf5e0a5eb75e0",
+        "url": "https://files.pythonhosted.org/packages/33/ef/6d27fc118f58cb24886da413545a7efb0853d405fddbfd8b2d9ac09fbed4/jupyterlab_widgets-3.0.17-py3-none-any.whl",
+        "depends": [],
+        "imports": [
+          "jupyterlab_widgets"
+        ]
+      },
+      "linkify-it-py": {
+        "name": "linkify-it-py",
+        "version": "2.2.0",
+        "filename": "linkify_it_py-2.2.0-py3-none-any.whl",
+        "sha256": "3adc40eb5af300b2605fcfdb968c24e1d780a90f1f2221af7c15e5111e94d443",
+        "url": "https://files.pythonhosted.org/packages/13/d4/1152d1c7ab42d8b908be64fd200ddc870dc9d4925e951198702084aa1a7d/linkify_it_py-2.2.0-py3-none-any.whl",
+        "depends": [],
+        "imports": [
+          "linkify_it"
+        ]
+      },
+      "markdown-it-py": {
+        "name": "markdown-it-py",
+        "version": "4.3.0",
+        "filename": "markdown_it_py-4.3.0-py3-none-any.whl",
+        "sha256": "7aa1511a46c39138de78d9eba92ce47e63124d8003fc98b3a351909e04239efa",
+        "url": "https://files.pythonhosted.org/packages/c9/31/5f0ac2f1a1c67423c995c731a11cd4ad05d081a2be969d74f868bdb9cc70/markdown_it_py-4.3.0-py3-none-any.whl",
+        "depends": [
+          {"name": "mdurl", "specs": [["~=", "0.1"]]}
+        ],
+        "imports": [
+          "markdown_it"
+        ]
+      },
+      "mdit-py-plugins": {
+        "name": "mdit-py-plugins",
+        "version": "0.7.0",
+        "filename": "mdit_py_plugins-0.7.0-py3-none-any.whl",
+        "sha256": "7f8e30403f3dd8bfe3afcdcbc6e61066d3f2e714167507b9c26eb385ec399353",
+        "url": "https://files.pythonhosted.org/packages/4d/d3/d07e61326f150944ead0da9d0b39fb20d7fa367bbc951b10fca6bb1c7382/mdit_py_plugins-0.7.0-py3-none-any.whl",
+        "depends": [
+          {"name": "markdown-it-py", "specs": [["<", "5.0.0"], [">=", "3.0.0"]]}
+        ],
+        "imports": [
+          "mdit_py_plugins"
+        ]
+      },
+      "mdurl": {
+        "name": "mdurl",
+        "version": "0.1.2",
+        "filename": "mdurl-0.1.2-py3-none-any.whl",
+        "sha256": "84008a41e51615a49fc9966191ff91509e3c40b939176e643fd50a5c2196b8f8",
+        "url": "https://files.pythonhosted.org/packages/b3/38/89ba8ad64ae25be8de66a6d463314cf1eb366222074cfda9ee839c56a4b4/mdurl-0.1.2-py3-none-any.whl",
+        "depends": [],
+        "imports": [
+          "mdurl"
+        ]
+      },
+      "mizani": {
+        "name": "mizani",
+        "version": "0.14.6",
+        "filename": "mizani-0.14.6-py3-none-any.whl",
+        "sha256": "a3d3ec364018efaa0e259d530303576156bac7741faa66167c9b50aaf19c3d73",
+        "url": "https://files.pythonhosted.org/packages/d9/a8/4463130becffe3e091feed0f459008aeebc806998dff53166cc12063f6b0/mizani-0.14.6-py3-none-any.whl",
+        "depends": [
+          {"name": "numpy", "specs": [[">=", "1.23.5"]]},
+          {"name": "scipy", "specs": [[">=", "1.8.0"]]},
+          {"name": "pandas", "specs": [[">=", "2.2.0"]]},
+          {"name": "tzdata", "specs": []}
+        ],
+        "imports": [
+          "mizani"
+        ]
+      },
+      "mypy-extensions": {
+        "name": "mypy-extensions",
+        "version": "1.2.0",
+        "filename": "mypy_extensions-1.2.0-py3-none-any.whl",
+        "sha256": "993e7a20aa5671eb41a7132cf555af30062da99729601601b9a8382b11cae768",
+        "url": "https://files.pythonhosted.org/packages/b5/99/7b1adac7e97ce7bbda34792dc6e9b2f5cc5cffd1875883f78a818b2a2687/mypy_extensions-1.2.0-py3-none-any.whl",
+        "depends": [],
+        "imports": [
+          "mypy_extensions"
+        ]
+      },
+      "opentelemetry-api": {
+        "name": "opentelemetry-api",
+        "version": "1.45.2",
+        "filename": "opentelemetry_api-1.45.2-py3-none-any.whl",
+        "sha256": "2cbd737377e710ee740d261c94e93fa0f08e6d037c18f17513cc0a2d94479a34",
+        "url": "https://files.pythonhosted.org/packages/a9/2d/610db864d7513158cebb8f36cc88e67e73bd6c7aa1905ef18d89e1281c81/opentelemetry_api-1.45.2-py3-none-any.whl",
+        "depends": [
+          {"name": "typing-extensions", "specs": [[">=", "4.5.0"]]}
+        ],
+        "imports": [
+          "opentelemetry_api"
+        ]
+      },
+      "palmerpenguins": {
+        "name": "palmerpenguins",
+        "version": "0.1.6",
+        "filename": "palmerpenguins-0.1.6-py3-none-any.whl",
+        "sha256": "5c3be9af84dd703a25f1aaeadeac6ac770cfd38c1620d00089f581c023129ee0",
+        "url": "https://files.pythonhosted.org/packages/af/9e/7579e7f1ace559be76984107d9e056377993a787eb1fd557a098c32967bc/palmerpenguins-0.1.6-py3-none-any.whl",
+        "depends": [
+          {"name": "pandas", "specs": []},
+          {"name": "numpy", "specs": []}
+        ],
+        "imports": [
+          "palmerpenguins"
+        ]
+      },
+      "pathspec": {
+        "name": "pathspec",
+        "version": "1.1.1",
+        "filename": "pathspec-1.1.1-py3-none-any.whl",
+        "sha256": "a00ce642f577bf7f473932318056212bc4f8bfdf53128c78bbd5af0b9b20b189",
+        "url": "https://files.pythonhosted.org/packages/f1/d9/7fb5aa316bc299258e68c73ba3bddbc499654a07f151cba08f6153988714/pathspec-1.1.1-py3-none-any.whl",
+        "depends": [],
+        "imports": [
+          "pathspec"
+        ]
+      },
+      "platformdirs": {
+        "name": "platformdirs",
+        "version": "4.14.5",
+        "filename": "platformdirs-4.14.5-py3-none-any.whl",
+        "sha256": "8e778c6fa421516f4d3369449f8df3b0e1b72c0e0005fe88e3ec772d0a14e750",
+        "url": "https://files.pythonhosted.org/packages/7c/ae/ecbbbfd0e4343a6a521d49b3c8656fb4643dee2a4f6eaf941cf3280391a8/platformdirs-4.14.5-py3-none-any.whl",
+        "depends": [],
+        "imports": [
+          "platformdirs"
+        ]
+      },
+      "plotly": {
+        "name": "plotly",
+        "version": "7.1.0",
+        "filename": "plotly-7.1.0-py3-none-any.whl",
+        "sha256": "dbb7fa18afce40d0a8e80d1bf162eceb3faa0ce5a77fe741ad09a74cf78f53f3",
+        "url": "https://files.pythonhosted.org/packages/e5/7d/905a3a3d51087515719058c94cfbda2ff0fc14417c20d557ae3e82d8b250/plotly-7.1.0-py3-none-any.whl",
+        "depends": [
+          {"name": "narwhals", "specs": [[">=", "1.15.1"]]},
+          {"name": "packaging", "specs": []}
+        ],
+        "imports": [
+          "plotly"
+        ]
+      },
+      "plotnine": {
+        "name": "plotnine",
+        "version": "0.15.9",
+        "filename": "plotnine-0.15.9-py3-none-any.whl",
+        "sha256": "36f4526235b3ddd9ea379dd677093ea2ee1b58ab98adec1bde891930283448cd",
+        "url": "https://files.pythonhosted.org/packages/c5/7a/0ffb626172083659f2d425a2bdd14815281c80890a116b4547fe7f5d76ec/plotnine-0.15.9-py3-none-any.whl",
         "depends": [
           {"name": "matplotlib", "specs": [[">=", "3.8.0"]]},
           {"name": "pandas", "specs": [[">=", "2.2.0"]]},
@@ -427,8 +944,8 @@
       },
       "shinywidgets": {
         "name": "shinywidgets",
-        "version": "0.8.1",
-        "filename": "shinywidgets-0.8.1-py3-none-any.whl",
+        "version": "0.8.2",
+        "filename": "shinywidgets-0.8.2-py3-none-any.whl",
         "sha256": null,
         "url": null,
         "depends": [
@@ -486,10 +1003,10 @@
       },
       "websockets": {
         "name": "websockets",
-        "version": "17.2",
-        "filename": "websockets-17.2-py3-none-any.whl",
-        "sha256": "6aa59f0ef92e796b2db6f5f26550c4713c0e4036899fadf02f55e2ed4db0b7ae",
-        "url": "https://files.pythonhosted.org/packages/8a/58/835cd51934d6780fa586f275b5d9901eead6d81569b4343b3767cdbaae4c/websockets-17.2-py3-none-any.whl",
+        "version": "17.4",
+        "filename": "websockets-17.4-py3-none-any.whl",
+        "sha256": "c6bd2c9781915592b209160d0f017d4c7c82ad53075e6b0c24d2a89299e7f9e9",
+        "url": "https://files.pythonhosted.org/packages/eb/27/9db924cb0dbf22eade78d98fbae77790f9bf6bc729e6ab29aef9d68e4156/websockets-17.4-py3-none-any.whl",
         "depends": [],
         "imports": [
           "websockets"
@@ -536,10 +1053,10 @@
       },
       "asgiref": {
         "name": "asgiref",
-        "version": "3.12.1",
-        "filename": "asgiref-3.12.1-py3-none-any.whl",
-        "sha256": "fe386d1c2bff7259ea95929266d12a8cf9a8b5a1c2598402967d8792e7a7c094",
-        "url": "https://files.pythonhosted.org/packages/c0/1b/54f4ad77cd8a584fa70746c47df988e002cf1ee1eba43364d46f87803647/asgiref-3.12.1-py3-none-any.whl",
+        "version": "3.13.0",
+        "filename": "asgiref-3.13.0-py3-none-any.whl",
+        "sha256": "f9596a2434512686473d50f96ff6207fbba49ae1a785dfac614df4aeb085674d",
+        "url": "https://files.pythonhosted.org/packages/2e/b0/ec211e1f7966247cb6469158d856bac9aa4c2fe13621bd6a352e4f850453/asgiref-3.13.0-py3-none-any.whl",
         "depends": [],
         "imports": [
           "asgiref"
@@ -696,10 +1213,10 @@
       },
       "markdown-it-py": {
         "name": "markdown-it-py",
-        "version": "4.2.0",
-        "filename": "markdown_it_py-4.2.0-py3-none-any.whl",
-        "sha256": "9f7ebbcd14fe59494226453aed97c1070d83f8d24b6fc3a3bcf9a38092641c4a",
-        "url": "https://files.pythonhosted.org/packages/b3/81/4da04ced5a082363ecfa159c010d200ecbd959ae410c10c0264a38cac0f5/markdown_it_py-4.2.0-py3-none-any.whl",
+        "version": "4.3.0",
+        "filename": "markdown_it_py-4.3.0-py3-none-any.whl",
+        "sha256": "7aa1511a46c39138de78d9eba92ce47e63124d8003fc98b3a351909e04239efa",
+        "url": "https://files.pythonhosted.org/packages/c9/31/5f0ac2f1a1c67423c995c731a11cd4ad05d081a2be969d74f868bdb9cc70/markdown_it_py-4.3.0-py3-none-any.whl",
         "depends": [
           {"name": "mdurl", "specs": [["~=", "0.1"]]}
         ],
@@ -709,12 +1226,12 @@
       },
       "mdit-py-plugins": {
         "name": "mdit-py-plugins",
-        "version": "0.6.1",
-        "filename": "mdit_py_plugins-0.6.1-py3-none-any.whl",
-        "sha256": "214c82fb2ac524472ab6a5bcab1de80f73b50443e187f401bfd77efbc7c6481d",
-        "url": "https://files.pythonhosted.org/packages/a5/69/6da5581c6a7fede7dc261bf4e67d6adca4196f176b43288b55b3db395b6e/mdit_py_plugins-0.6.1-py3-none-any.whl",
+        "version": "0.7.0",
+        "filename": "mdit_py_plugins-0.7.0-py3-none-any.whl",
+        "sha256": "7f8e30403f3dd8bfe3afcdcbc6e61066d3f2e714167507b9c26eb385ec399353",
+        "url": "https://files.pythonhosted.org/packages/4d/d3/d07e61326f150944ead0da9d0b39fb20d7fa367bbc951b10fca6bb1c7382/mdit_py_plugins-0.7.0-py3-none-any.whl",
         "depends": [
-          {"name": "markdown-it-py", "specs": [["<", "5.0.0"], [">=", "2.0.0"]]}
+          {"name": "markdown-it-py", "specs": [["<", "5.0.0"], [">=", "3.0.0"]]}
         ],
         "imports": [
           "mdit_py_plugins"
@@ -749,10 +1266,10 @@
       },
       "mypy-extensions": {
         "name": "mypy-extensions",
-        "version": "1.1.0",
-        "filename": "mypy_extensions-1.1.0-py3-none-any.whl",
-        "sha256": "1be4cccdb0f2482337c4743e60421de3a356cd97508abadd57d47403e94f5505",
-        "url": "https://files.pythonhosted.org/packages/79/7b/2c79738432f5c924bef5071f933bcc9efd0473bac3b4aa584a6f7c1c8df8/mypy_extensions-1.1.0-py3-none-any.whl",
+        "version": "1.2.0",
+        "filename": "mypy_extensions-1.2.0-py3-none-any.whl",
+        "sha256": "993e7a20aa5671eb41a7132cf555af30062da99729601601b9a8382b11cae768",
+        "url": "https://files.pythonhosted.org/packages/b5/99/7b1adac7e97ce7bbda34792dc6e9b2f5cc5cffd1875883f78a818b2a2687/mypy_extensions-1.2.0-py3-none-any.whl",
         "depends": [],
         "imports": [
           "mypy_extensions"
@@ -760,10 +1277,10 @@
       },
       "opentelemetry-api": {
         "name": "opentelemetry-api",
-        "version": "1.45.1",
-        "filename": "opentelemetry_api-1.45.1-py3-none-any.whl",
-        "sha256": "b31553efa588ae44bc306f863c785c5333a9ecc091248c6ee68b4b6c87fdedfb",
-        "url": "https://files.pythonhosted.org/packages/1e/41/f7dcf80b81ee8e71c1a2b59f14208bc723edbd89ed027a73b175abf6348e/opentelemetry_api-1.45.1-py3-none-any.whl",
+        "version": "1.45.2",
+        "filename": "opentelemetry_api-1.45.2-py3-none-any.whl",
+        "sha256": "2cbd737377e710ee740d261c94e93fa0f08e6d037c18f17513cc0a2d94479a34",
+        "url": "https://files.pythonhosted.org/packages/a9/2d/610db864d7513158cebb8f36cc88e67e73bd6c7aa1905ef18d89e1281c81/opentelemetry_api-1.45.2-py3-none-any.whl",
         "depends": [
           {"name": "typing-extensions", "specs": [[">=", "4.5.0"]]}
         ],
@@ -798,10 +1315,10 @@
       },
       "platformdirs": {
         "name": "platformdirs",
-        "version": "4.13.0",
-        "filename": "platformdirs-4.13.0-py3-none-any.whl",
-        "sha256": "3dbcf4cd708f21cf876c4eaa90e58412bc4f033d87143f41b1493ff77c25b7e1",
-        "url": "https://files.pythonhosted.org/packages/8d/15/1633010b26e88e872c93b67c0b6c5e174fb74cb6fb5c1472b4d51d4a8f22/platformdirs-4.13.0-py3-none-any.whl",
+        "version": "4.14.5",
+        "filename": "platformdirs-4.14.5-py3-none-any.whl",
+        "sha256": "8e778c6fa421516f4d3369449f8df3b0e1b72c0e0005fe88e3ec772d0a14e750",
+        "url": "https://files.pythonhosted.org/packages/7c/ae/ecbbbfd0e4343a6a521d49b3c8656fb4643dee2a4f6eaf941cf3280391a8/platformdirs-4.14.5-py3-none-any.whl",
         "depends": [],
         "imports": [
           "platformdirs"
@@ -823,10 +1340,10 @@
       },
       "plotnine": {
         "name": "plotnine",
-        "version": "0.15.8",
-        "filename": "plotnine-0.15.8-py3-none-any.whl",
-        "sha256": "b8a17fbccdf331f0474ff59ea03186c07d96586eb0ebe70121b03fbf131881a9",
-        "url": "https://files.pythonhosted.org/packages/40/37/7a0275ea8143f0f0a2b27db73656d7ea3459e9cf8f869e292e450b357d1e/plotnine-0.15.8-py3-none-any.whl",
+        "version": "0.15.9",
+        "filename": "plotnine-0.15.9-py3-none-any.whl",
+        "sha256": "36f4526235b3ddd9ea379dd677093ea2ee1b58ab98adec1bde891930283448cd",
+        "url": "https://files.pythonhosted.org/packages/c5/7a/0ffb626172083659f2d425a2bdd14815281c80890a116b4547fe7f5d76ec/plotnine-0.15.9-py3-none-any.whl",
         "depends": [
           {"name": "matplotlib", "specs": [[">=", "3.8.0"]]},
           {"name": "pandas", "specs": [[">=", "2.2.0"]]},
@@ -944,8 +1461,8 @@
       },
       "shinywidgets": {
         "name": "shinywidgets",
-        "version": "0.8.1",
-        "filename": "shinywidgets-0.8.1-py3-none-any.whl",
+        "version": "0.8.2",
+        "filename": "shinywidgets-0.8.2-py3-none-any.whl",
         "sha256": null,
         "url": null,
         "depends": [
@@ -1003,10 +1520,10 @@
       },
       "websockets": {
         "name": "websockets",
-        "version": "17.2",
-        "filename": "websockets-17.2-py3-none-any.whl",
-        "sha256": "6aa59f0ef92e796b2db6f5f26550c4713c0e4036899fadf02f55e2ed4db0b7ae",
-        "url": "https://files.pythonhosted.org/packages/8a/58/835cd51934d6780fa586f275b5d9901eead6d81569b4343b3767cdbaae4c/websockets-17.2-py3-none-any.whl",
+        "version": "17.4",
+        "filename": "websockets-17.4-py3-none-any.whl",
+        "sha256": "c6bd2c9781915592b209160d0f017d4c7c82ad53075e6b0c24d2a89299e7f9e9",
+        "url": "https://files.pythonhosted.org/packages/eb/27/9db924cb0dbf22eade78d98fbae77790f9bf6bc729e6ab29aef9d68e4156/websockets-17.4-py3-none-any.whl",
         "depends": [],
         "imports": [
           "websockets"
@@ -1053,10 +1570,10 @@
       },
       "asgiref": {
         "name": "asgiref",
-        "version": "3.12.1",
-        "filename": "asgiref-3.12.1-py3-none-any.whl",
-        "sha256": "fe386d1c2bff7259ea95929266d12a8cf9a8b5a1c2598402967d8792e7a7c094",
-        "url": "https://files.pythonhosted.org/packages/c0/1b/54f4ad77cd8a584fa70746c47df988e002cf1ee1eba43364d46f87803647/asgiref-3.12.1-py3-none-any.whl",
+        "version": "3.13.0",
+        "filename": "asgiref-3.13.0-py3-none-any.whl",
+        "sha256": "f9596a2434512686473d50f96ff6207fbba49ae1a785dfac614df4aeb085674d",
+        "url": "https://files.pythonhosted.org/packages/2e/b0/ec211e1f7966247cb6469158d856bac9aa4c2fe13621bd6a352e4f850453/asgiref-3.13.0-py3-none-any.whl",
         "depends": [],
         "imports": [
           "asgiref"
@@ -1213,10 +1730,10 @@
       },
       "markdown-it-py": {
         "name": "markdown-it-py",
-        "version": "4.2.0",
-        "filename": "markdown_it_py-4.2.0-py3-none-any.whl",
-        "sha256": "9f7ebbcd14fe59494226453aed97c1070d83f8d24b6fc3a3bcf9a38092641c4a",
-        "url": "https://files.pythonhosted.org/packages/b3/81/4da04ced5a082363ecfa159c010d200ecbd959ae410c10c0264a38cac0f5/markdown_it_py-4.2.0-py3-none-any.whl",
+        "version": "4.3.0",
+        "filename": "markdown_it_py-4.3.0-py3-none-any.whl",
+        "sha256": "7aa1511a46c39138de78d9eba92ce47e63124d8003fc98b3a351909e04239efa",
+        "url": "https://files.pythonhosted.org/packages/c9/31/5f0ac2f1a1c67423c995c731a11cd4ad05d081a2be969d74f868bdb9cc70/markdown_it_py-4.3.0-py3-none-any.whl",
         "depends": [
           {"name": "mdurl", "specs": [["~=", "0.1"]]}
         ],
@@ -1226,12 +1743,12 @@
       },
       "mdit-py-plugins": {
         "name": "mdit-py-plugins",
-        "version": "0.6.1",
-        "filename": "mdit_py_plugins-0.6.1-py3-none-any.whl",
-        "sha256": "214c82fb2ac524472ab6a5bcab1de80f73b50443e187f401bfd77efbc7c6481d",
-        "url": "https://files.pythonhosted.org/packages/a5/69/6da5581c6a7fede7dc261bf4e67d6adca4196f176b43288b55b3db395b6e/mdit_py_plugins-0.6.1-py3-none-any.whl",
+        "version": "0.7.0",
+        "filename": "mdit_py_plugins-0.7.0-py3-none-any.whl",
+        "sha256": "7f8e30403f3dd8bfe3afcdcbc6e61066d3f2e714167507b9c26eb385ec399353",
+        "url": "https://files.pythonhosted.org/packages/4d/d3/d07e61326f150944ead0da9d0b39fb20d7fa367bbc951b10fca6bb1c7382/mdit_py_plugins-0.7.0-py3-none-any.whl",
         "depends": [
-          {"name": "markdown-it-py", "specs": [["<", "5.0.0"], [">=", "2.0.0"]]}
+          {"name": "markdown-it-py", "specs": [["<", "5.0.0"], [">=", "3.0.0"]]}
         ],
         "imports": [
           "mdit_py_plugins"
@@ -1266,10 +1783,10 @@
       },
       "mypy-extensions": {
         "name": "mypy-extensions",
-        "version": "1.1.0",
-        "filename": "mypy_extensions-1.1.0-py3-none-any.whl",
-        "sha256": "1be4cccdb0f2482337c4743e60421de3a356cd97508abadd57d47403e94f5505",
-        "url": "https://files.pythonhosted.org/packages/79/7b/2c79738432f5c924bef5071f933bcc9efd0473bac3b4aa584a6f7c1c8df8/mypy_extensions-1.1.0-py3-none-any.whl",
+        "version": "1.2.0",
+        "filename": "mypy_extensions-1.2.0-py3-none-any.whl",
+        "sha256": "993e7a20aa5671eb41a7132cf555af30062da99729601601b9a8382b11cae768",
+        "url": "https://files.pythonhosted.org/packages/b5/99/7b1adac7e97ce7bbda34792dc6e9b2f5cc5cffd1875883f78a818b2a2687/mypy_extensions-1.2.0-py3-none-any.whl",
         "depends": [],
         "imports": [
           "mypy_extensions"
@@ -1277,10 +1794,10 @@
       },
       "opentelemetry-api": {
         "name": "opentelemetry-api",
-        "version": "1.45.1",
-        "filename": "opentelemetry_api-1.45.1-py3-none-any.whl",
-        "sha256": "b31553efa588ae44bc306f863c785c5333a9ecc091248c6ee68b4b6c87fdedfb",
-        "url": "https://files.pythonhosted.org/packages/1e/41/f7dcf80b81ee8e71c1a2b59f14208bc723edbd89ed027a73b175abf6348e/opentelemetry_api-1.45.1-py3-none-any.whl",
+        "version": "1.45.2",
+        "filename": "opentelemetry_api-1.45.2-py3-none-any.whl",
+        "sha256": "2cbd737377e710ee740d261c94e93fa0f08e6d037c18f17513cc0a2d94479a34",
+        "url": "https://files.pythonhosted.org/packages/a9/2d/610db864d7513158cebb8f36cc88e67e73bd6c7aa1905ef18d89e1281c81/opentelemetry_api-1.45.2-py3-none-any.whl",
         "depends": [
           {"name": "typing-extensions", "specs": [[">=", "4.5.0"]]}
         ],
@@ -1315,10 +1832,10 @@
       },
       "platformdirs": {
         "name": "platformdirs",
-        "version": "4.13.0",
-        "filename": "platformdirs-4.13.0-py3-none-any.whl",
-        "sha256": "3dbcf4cd708f21cf876c4eaa90e58412bc4f033d87143f41b1493ff77c25b7e1",
-        "url": "https://files.pythonhosted.org/packages/8d/15/1633010b26e88e872c93b67c0b6c5e174fb74cb6fb5c1472b4d51d4a8f22/platformdirs-4.13.0-py3-none-any.whl",
+        "version": "4.14.5",
+        "filename": "platformdirs-4.14.5-py3-none-any.whl",
+        "sha256": "8e778c6fa421516f4d3369449f8df3b0e1b72c0e0005fe88e3ec772d0a14e750",
+        "url": "https://files.pythonhosted.org/packages/7c/ae/ecbbbfd0e4343a6a521d49b3c8656fb4643dee2a4f6eaf941cf3280391a8/platformdirs-4.14.5-py3-none-any.whl",
         "depends": [],
         "imports": [
           "platformdirs"
@@ -1340,10 +1857,10 @@
       },
       "plotnine": {
         "name": "plotnine",
-        "version": "0.15.8",
-        "filename": "plotnine-0.15.8-py3-none-any.whl",
-        "sha256": "b8a17fbccdf331f0474ff59ea03186c07d96586eb0ebe70121b03fbf131881a9",
-        "url": "https://files.pythonhosted.org/packages/40/37/7a0275ea8143f0f0a2b27db73656d7ea3459e9cf8f869e292e450b357d1e/plotnine-0.15.8-py3-none-any.whl",
+        "version": "0.15.9",
+        "filename": "plotnine-0.15.9-py3-none-any.whl",
+        "sha256": "36f4526235b3ddd9ea379dd677093ea2ee1b58ab98adec1bde891930283448cd",
+        "url": "https://files.pythonhosted.org/packages/c5/7a/0ffb626172083659f2d425a2bdd14815281c80890a116b4547fe7f5d76ec/plotnine-0.15.9-py3-none-any.whl",
         "depends": [
           {"name": "matplotlib", "specs": [[">=", "3.8.0"]]},
           {"name": "pandas", "specs": [[">=", "2.2.0"]]},
@@ -1461,8 +1978,8 @@
       },
       "shinywidgets": {
         "name": "shinywidgets",
-        "version": "0.8.1",
-        "filename": "shinywidgets-0.8.1-py3-none-any.whl",
+        "version": "0.8.2",
+        "filename": "shinywidgets-0.8.2-py3-none-any.whl",
         "sha256": null,
         "url": null,
         "depends": [
@@ -1520,10 +2037,10 @@
       },
       "websockets": {
         "name": "websockets",
-        "version": "17.2",
-        "filename": "websockets-17.2-py3-none-any.whl",
-        "sha256": "6aa59f0ef92e796b2db6f5f26550c4713c0e4036899fadf02f55e2ed4db0b7ae",
-        "url": "https://files.pythonhosted.org/packages/8a/58/835cd51934d6780fa586f275b5d9901eead6d81569b4343b3767cdbaae4c/websockets-17.2-py3-none-any.whl",
+        "version": "17.4",
+        "filename": "websockets-17.4-py3-none-any.whl",
+        "sha256": "c6bd2c9781915592b209160d0f017d4c7c82ad53075e6b0c24d2a89299e7f9e9",
+        "url": "https://files.pythonhosted.org/packages/eb/27/9db924cb0dbf22eade78d98fbae77790f9bf6bc729e6ab29aef9d68e4156/websockets-17.4-py3-none-any.whl",
         "depends": [],
         "imports": [
           "websockets"
@@ -1570,10 +2087,10 @@
       },
       "asgiref": {
         "name": "asgiref",
-        "version": "3.12.1",
-        "filename": "asgiref-3.12.1-py3-none-any.whl",
-        "sha256": "fe386d1c2bff7259ea95929266d12a8cf9a8b5a1c2598402967d8792e7a7c094",
-        "url": "https://files.pythonhosted.org/packages/c0/1b/54f4ad77cd8a584fa70746c47df988e002cf1ee1eba43364d46f87803647/asgiref-3.12.1-py3-none-any.whl",
+        "version": "3.13.0",
+        "filename": "asgiref-3.13.0-py3-none-any.whl",
+        "sha256": "f9596a2434512686473d50f96ff6207fbba49ae1a785dfac614df4aeb085674d",
+        "url": "https://files.pythonhosted.org/packages/2e/b0/ec211e1f7966247cb6469158d856bac9aa4c2fe13621bd6a352e4f850453/asgiref-3.13.0-py3-none-any.whl",
         "depends": [],
         "imports": [
           "asgiref"
@@ -1730,10 +2247,10 @@
       },
       "markdown-it-py": {
         "name": "markdown-it-py",
-        "version": "4.2.0",
-        "filename": "markdown_it_py-4.2.0-py3-none-any.whl",
-        "sha256": "9f7ebbcd14fe59494226453aed97c1070d83f8d24b6fc3a3bcf9a38092641c4a",
-        "url": "https://files.pythonhosted.org/packages/b3/81/4da04ced5a082363ecfa159c010d200ecbd959ae410c10c0264a38cac0f5/markdown_it_py-4.2.0-py3-none-any.whl",
+        "version": "4.3.0",
+        "filename": "markdown_it_py-4.3.0-py3-none-any.whl",
+        "sha256": "7aa1511a46c39138de78d9eba92ce47e63124d8003fc98b3a351909e04239efa",
+        "url": "https://files.pythonhosted.org/packages/c9/31/5f0ac2f1a1c67423c995c731a11cd4ad05d081a2be969d74f868bdb9cc70/markdown_it_py-4.3.0-py3-none-any.whl",
         "depends": [
           {"name": "mdurl", "specs": [["~=", "0.1"]]}
         ],
@@ -1743,12 +2260,12 @@
       },
       "mdit-py-plugins": {
         "name": "mdit-py-plugins",
-        "version": "0.6.1",
-        "filename": "mdit_py_plugins-0.6.1-py3-none-any.whl",
-        "sha256": "214c82fb2ac524472ab6a5bcab1de80f73b50443e187f401bfd77efbc7c6481d",
-        "url": "https://files.pythonhosted.org/packages/a5/69/6da5581c6a7fede7dc261bf4e67d6adca4196f176b43288b55b3db395b6e/mdit_py_plugins-0.6.1-py3-none-any.whl",
+        "version": "0.7.0",
+        "filename": "mdit_py_plugins-0.7.0-py3-none-any.whl",
+        "sha256": "7f8e30403f3dd8bfe3afcdcbc6e61066d3f2e714167507b9c26eb385ec399353",
+        "url": "https://files.pythonhosted.org/packages/4d/d3/d07e61326f150944ead0da9d0b39fb20d7fa367bbc951b10fca6bb1c7382/mdit_py_plugins-0.7.0-py3-none-any.whl",
         "depends": [
-          {"name": "markdown-it-py", "specs": [["<", "5.0.0"], [">=", "2.0.0"]]}
+          {"name": "markdown-it-py", "specs": [["<", "5.0.0"], [">=", "3.0.0"]]}
         ],
         "imports": [
           "mdit_py_plugins"
@@ -1783,10 +2300,10 @@
       },
       "mypy-extensions": {
         "name": "mypy-extensions",
-        "version": "1.1.0",
-        "filename": "mypy_extensions-1.1.0-py3-none-any.whl",
-        "sha256": "1be4cccdb0f2482337c4743e60421de3a356cd97508abadd57d47403e94f5505",
-        "url": "https://files.pythonhosted.org/packages/79/7b/2c79738432f5c924bef5071f933bcc9efd0473bac3b4aa584a6f7c1c8df8/mypy_extensions-1.1.0-py3-none-any.whl",
+        "version": "1.2.0",
+        "filename": "mypy_extensions-1.2.0-py3-none-any.whl",
+        "sha256": "993e7a20aa5671eb41a7132cf555af30062da99729601601b9a8382b11cae768",
+        "url": "https://files.pythonhosted.org/packages/b5/99/7b1adac7e97ce7bbda34792dc6e9b2f5cc5cffd1875883f78a818b2a2687/mypy_extensions-1.2.0-py3-none-any.whl",
         "depends": [],
         "imports": [
           "mypy_extensions"
@@ -1819,10 +2336,10 @@
       },
       "platformdirs": {
         "name": "platformdirs",
-        "version": "4.13.0",
-        "filename": "platformdirs-4.13.0-py3-none-any.whl",
-        "sha256": "3dbcf4cd708f21cf876c4eaa90e58412bc4f033d87143f41b1493ff77c25b7e1",
-        "url": "https://files.pythonhosted.org/packages/8d/15/1633010b26e88e872c93b67c0b6c5e174fb74cb6fb5c1472b4d51d4a8f22/platformdirs-4.13.0-py3-none-any.whl",
+        "version": "4.14.5",
+        "filename": "platformdirs-4.14.5-py3-none-any.whl",
+        "sha256": "8e778c6fa421516f4d3369449f8df3b0e1b72c0e0005fe88e3ec772d0a14e750",
+        "url": "https://files.pythonhosted.org/packages/7c/ae/ecbbbfd0e4343a6a521d49b3c8656fb4643dee2a4f6eaf941cf3280391a8/platformdirs-4.14.5-py3-none-any.whl",
         "depends": [],
         "imports": [
           "platformdirs"
@@ -1844,10 +2361,10 @@
       },
       "plotnine": {
         "name": "plotnine",
-        "version": "0.15.8",
-        "filename": "plotnine-0.15.8-py3-none-any.whl",
-        "sha256": "b8a17fbccdf331f0474ff59ea03186c07d96586eb0ebe70121b03fbf131881a9",
-        "url": "https://files.pythonhosted.org/packages/40/37/7a0275ea8143f0f0a2b27db73656d7ea3459e9cf8f869e292e450b357d1e/plotnine-0.15.8-py3-none-any.whl",
+        "version": "0.15.9",
+        "filename": "plotnine-0.15.9-py3-none-any.whl",
+        "sha256": "36f4526235b3ddd9ea379dd677093ea2ee1b58ab98adec1bde891930283448cd",
+        "url": "https://files.pythonhosted.org/packages/c5/7a/0ffb626172083659f2d425a2bdd14815281c80890a116b4547fe7f5d76ec/plotnine-0.15.9-py3-none-any.whl",
         "depends": [
           {"name": "matplotlib", "specs": [[">=", "3.8.0"]]},
           {"name": "pandas", "specs": [[">=", "2.2.0"]]},
@@ -1963,506 +2480,8 @@
       },
       "shinywidgets": {
         "name": "shinywidgets",
-        "version": "0.8.1",
-        "filename": "shinywidgets-0.8.1-py3-none-any.whl",
-        "sha256": null,
-        "url": null,
-        "depends": [
-          {"name": "anywidget", "specs": []},
-          {"name": "ipywidgets", "specs": [[">=", "7.6.5"]]},
-          {"name": "jupyter-core", "specs": []},
-          {"name": "python-dateutil", "specs": [[">=", "2.8.2"]]},
-          {"name": "shiny", "specs": [[">=", "0.6.1.9005"]]}
-        ],
-        "imports": [
-          "shinywidgets"
-        ]
-      },
-      "siuba": {
-        "name": "siuba",
-        "version": "0.4.2",
-        "filename": "siuba-0.4.2-py3-none-any.whl",
-        "sha256": "6070a1c99d9ae6994f0f591a82509dd8e2edc6eee1ff4f3d6678cbf03a81a7ad",
-        "url": "https://files.pythonhosted.org/packages/56/02/911b4451ceb1a863339b182c0c9ba75a0d4f83a9c0d13e7448160d453f17/siuba-0.4.2-py3-none-any.whl",
-        "depends": [
-          {"name": "pandas", "specs": [[">=", "0.24.0"]]},
-          {"name": "numpy", "specs": [[">=", "1.12.0"]]},
-          {"name": "SQLAlchemy", "specs": [[">=", "1.2.19"]]},
-          {"name": "PyYAML", "specs": [[">=", "3.0.0"]]}
-        ],
-        "imports": [
-          "siuba"
-        ]
-      },
-      "starlette": {
-        "name": "starlette",
-        "version": "1.2.1",
-        "filename": "starlette-1.2.1-py3-none-any.whl",
-        "sha256": "4de0082d08c8f6764a85a54cf1120d6939507a19905c7768acad2a9f875d2b89",
-        "url": "https://files.pythonhosted.org/packages/1c/54/196d0c1db10af76baa4f64894448505d60d3cdf70ef92cbb35f46a4e4c71/starlette-1.2.1-py3-none-any.whl",
-        "depends": [
-          {"name": "anyio", "specs": [["<", "5"], [">=", "3.6.2"]]}
-        ],
-        "imports": [
-          "starlette"
-        ]
-      },
-      "traittypes": {
-        "name": "traittypes",
-        "version": "0.2.3",
-        "filename": "traittypes-0.2.3-py2.py3-none-any.whl",
-        "sha256": "49016082ce740d6556d9bb4672ee2d899cd14f9365f17cbb79d5d96b47096d4e",
-        "url": "https://files.pythonhosted.org/packages/8d/c0/fdf9d3ee103ce66a55f0532835ad5e154226c5222423c6636ba049dc42fc/traittypes-0.2.3-py2.py3-none-any.whl",
-        "depends": [
-          {"name": "traitlets", "specs": [[">=", "4.2.2"]]}
-        ],
-        "imports": [
-          "traittypes"
-        ]
-      },
-      "websockets": {
-        "name": "websockets",
-        "version": "17.2",
-        "filename": "websockets-17.2-py3-none-any.whl",
-        "sha256": "6aa59f0ef92e796b2db6f5f26550c4713c0e4036899fadf02f55e2ed4db0b7ae",
-        "url": "https://files.pythonhosted.org/packages/8a/58/835cd51934d6780fa586f275b5d9901eead6d81569b4343b3767cdbaae4c/websockets-17.2-py3-none-any.whl",
-        "depends": [],
-        "imports": [
-          "websockets"
-        ]
-      },
-      "widgetsnbextension": {
-        "name": "widgetsnbextension",
-        "version": "4.0.16",
-        "filename": "widgetsnbextension-4.0.16-py3-none-any.whl",
-        "sha256": "a31a8774885b96fe825462f5d6496166f0c7cae111195b6465c801d230eb5a4e",
-        "url": "https://files.pythonhosted.org/packages/34/95/40e17e20046b7bc820d29d09ae84ec157ec8dd6e6f6cd722626292c31b2e/widgetsnbextension-4.0.16-py3-none-any.whl",
-        "depends": [],
-        "imports": [
-          "widgetsnbextension"
-        ]
-      },
-      "libsass": {
-        "name": "libsass",
-        "version": "0.23.0",
-        "filename": "libsass-0.23.0-cp312-abi3-pyodide_2024_0_wasm32.whl",
-        "sha256": null,
-        "url": null,
-        "depends": [],
-        "imports": [
-          "libsass"
-        ]
-      }
-    },
-    "1.4": {
-      "anywidget": {
-        "name": "anywidget",
-        "version": "0.11.0",
-        "filename": "anywidget-0.11.0-py3-none-any.whl",
-        "sha256": "c574d9acc6503ad27b37a9acea48f957a8ba7c9c9876cfcb37898931c098ce9d",
-        "url": "https://files.pythonhosted.org/packages/8e/c2/8fec8e8e2eb920cc2280f569144080cd58622a2eda83bfa4c0c354a63264/anywidget-0.11.0-py3-none-any.whl",
-        "depends": [
-          {"name": "ipywidgets", "specs": [[">=", "7.6.0"]]},
-          {"name": "psygnal", "specs": [[">=", "0.8.1"]]},
-          {"name": "typing-extensions", "specs": [[">=", "4.2.0"]]}
-        ],
-        "imports": [
-          "anywidget"
-        ]
-      },
-      "appdirs": {
-        "name": "appdirs",
-        "version": "1.4.4",
-        "filename": "appdirs-1.4.4-py2.py3-none-any.whl",
-        "sha256": "a841dacd6b99318a741b166adb07e19ee71a274450e68237b4650ca1055ab128",
-        "url": "https://files.pythonhosted.org/packages/3b/00/2344469e2084fb287c2e0b57b72910309874c3245463acd6cf5e3db69324/appdirs-1.4.4-py2.py3-none-any.whl",
-        "depends": [],
-        "imports": [
-          "appdirs"
-        ]
-      },
-      "asgiref": {
-        "name": "asgiref",
-        "version": "3.12.1",
-        "filename": "asgiref-3.12.1-py3-none-any.whl",
-        "sha256": "fe386d1c2bff7259ea95929266d12a8cf9a8b5a1c2598402967d8792e7a7c094",
-        "url": "https://files.pythonhosted.org/packages/c0/1b/54f4ad77cd8a584fa70746c47df988e002cf1ee1eba43364d46f87803647/asgiref-3.12.1-py3-none-any.whl",
-        "depends": [],
-        "imports": [
-          "asgiref"
-        ]
-      },
-      "black": {
-        "name": "black",
-        "version": "26.10.1",
-        "filename": "black-26.10.1-py3-none-any.whl",
-        "sha256": "28842f9a8207cc1df6eb983a35a14c5a0dfcd603d214fe82d84bef552afd2e3a",
-        "url": "https://files.pythonhosted.org/packages/b1/28/9dd29175c1db777e6189e2a0bb5f37101adf19c3e509b236c8920f778d0b/black-26.10.1-py3-none-any.whl",
-        "depends": [
-          {"name": "click", "specs": [[">=", "8.0.0"]]},
-          {"name": "mypy-extensions", "specs": [[">=", "0.4.3"]]},
-          {"name": "packaging", "specs": [[">=", "22.0"]]},
-          {"name": "pathspec", "specs": [[">=", "1.0.0"]]},
-          {"name": "platformdirs", "specs": [[">=", "2"]]},
-          {"name": "pytokens", "specs": [["~=", "0.4.0"]]}
-        ],
-        "imports": [
-          "black"
-        ]
-      },
-      "branca": {
-        "name": "branca",
         "version": "0.8.2",
-        "filename": "branca-0.8.2-py3-none-any.whl",
-        "sha256": "2ebaef3983e3312733c1ae2b793b0a8ba3e1c4edeb7598e10328505280cf2f7c",
-        "url": "https://files.pythonhosted.org/packages/7e/50/fc9680058e63161f2f63165b84c957a0df1415431104c408e8104a3a18ef/branca-0.8.2-py3-none-any.whl",
-        "depends": [
-          {"name": "jinja2", "specs": [[">=", "3"]]}
-        ],
-        "imports": [
-          "branca"
-        ]
-      },
-      "comm": {
-        "name": "comm",
-        "version": "0.2.3",
-        "filename": "comm-0.2.3-py3-none-any.whl",
-        "sha256": "c615d91d75f7f04f095b30d1c1711babd43bdc6419c1be9886a85f2f4e489417",
-        "url": "https://files.pythonhosted.org/packages/60/97/891a0971e1e4a8c5d2b20bbe0e524dc04548d2307fee33cdeba148fd4fc7/comm-0.2.3-py3-none-any.whl",
-        "depends": [],
-        "imports": [
-          "comm"
-        ]
-      },
-      "faicons": {
-        "name": "faicons",
-        "version": "0.2.2",
-        "filename": "faicons-0.2.2-py3-none-any.whl",
-        "sha256": null,
-        "url": null,
-        "depends": [
-          {"name": "htmltools", "specs": [[">=", "0.1.4.9002"]]}
-        ],
-        "imports": [
-          "faicons"
-        ]
-      },
-      "htmltools": {
-        "name": "htmltools",
-        "version": "0.6.1",
-        "filename": "htmltools-0.6.1-py3-none-any.whl",
-        "sha256": "e8ac407d1ac2f88d5c034fdccb390f7fbdda31cd33e24026652d989bb1509c5b",
-        "url": "https://files.pythonhosted.org/packages/9d/90/2fdfdc774196f67496281a8372a673c834db71c4c058f45bc11fb439e50c/htmltools-0.6.1-py3-none-any.whl",
-        "depends": [
-          {"name": "typing-extensions", "specs": [[">=", "3.10.0.0"]]},
-          {"name": "packaging", "specs": [[">=", "20.9"]]}
-        ],
-        "imports": [
-          "htmltools"
-        ]
-      },
-      "ipyleaflet": {
-        "name": "ipyleaflet",
-        "version": "0.20.0",
-        "filename": "ipyleaflet-0.20.0-py3-none-any.whl",
-        "sha256": "b4c20ddc0b17d68e226cd3367ca2215a4db7e2b14374468c0eeaa54b53e4d173",
-        "url": "https://files.pythonhosted.org/packages/49/69/e9858f2c0b99bf9f036348d1c84b8026f438bb6875effe6a9bcd9883dada/ipyleaflet-0.20.0-py3-none-any.whl",
-        "depends": [
-          {"name": "branca", "specs": [[">=", "0.5.0"]]},
-          {"name": "ipywidgets", "specs": [["<", "9"], [">=", "7.6.0"]]},
-          {"name": "jupyter-leaflet", "specs": [["<", "0.21"], [">=", "0.20"]]},
-          {"name": "traittypes", "specs": [["<", "3"], [">=", "0.2.1"]]},
-          {"name": "xyzservices", "specs": [[">=", "2021.8.1"]]}
-        ],
-        "imports": [
-          "ipyleaflet"
-        ]
-      },
-      "ipywidgets": {
-        "name": "ipywidgets",
-        "version": "8.1.9",
-        "filename": "ipywidgets-8.1.9-py3-none-any.whl",
-        "sha256": "f2b8cbcaae10252b809fbe4d7470db75c09b769a32cbf816d20e5ca6d3c5a79d",
-        "url": "https://files.pythonhosted.org/packages/c3/55/298e9b3b864a198234997e87a1471c1b17d7f3546ace6d18fb5cf1ce24b2/ipywidgets-8.1.9-py3-none-any.whl",
-        "depends": [
-          {"name": "comm", "specs": [[">=", "0.1.3"]]},
-          {"name": "ipython", "specs": [[">=", "6.1.0"]]},
-          {"name": "traitlets", "specs": [[">=", "4.3.1"]]},
-          {"name": "jupyterlab_widgets", "specs": [["~=", "3.0.17"]]}
-        ],
-        "imports": [
-          "ipywidgets"
-        ]
-      },
-      "jupyter-core": {
-        "name": "jupyter-core",
-        "version": "5.9.1",
-        "filename": "jupyter_core-5.9.1-py3-none-any.whl",
-        "sha256": "ebf87fdc6073d142e114c72c9e29a9d7ca03fad818c5d300ce2adc1fb0743407",
-        "url": "https://files.pythonhosted.org/packages/e7/e7/80988e32bf6f73919a113473a604f5a8f09094de312b9d52b79c2df7612b/jupyter_core-5.9.1-py3-none-any.whl",
-        "depends": [
-          {"name": "platformdirs", "specs": [[">=", "2.5"]]},
-          {"name": "traitlets", "specs": [[">=", "5.3"]]}
-        ],
-        "imports": [
-          "jupyter_core"
-        ]
-      },
-      "jupyter-leaflet": {
-        "name": "jupyter-leaflet",
-        "version": "0.20.0",
-        "filename": "jupyter_leaflet-0.20.0-py3-none-any.whl",
-        "sha256": "2e27ce83647316424f04845e3a6af35e1ee44c177c318a145646b11f4afe0764",
-        "url": "https://files.pythonhosted.org/packages/16/95/ffe543060eb3b1570d78c3f2c1948c640a6758ff5c6479c27e474819115b/jupyter_leaflet-0.20.0-py3-none-any.whl",
-        "depends": [],
-        "imports": [
-          "jupyter_leaflet"
-        ]
-      },
-      "jupyterlab-widgets": {
-        "name": "jupyterlab-widgets",
-        "version": "3.0.17",
-        "filename": "jupyterlab_widgets-3.0.17-py3-none-any.whl",
-        "sha256": "40ac1e9955acf116c4d995d9bfa082d86ad9ec6d91c4f134827cf5e0a5eb75e0",
-        "url": "https://files.pythonhosted.org/packages/33/ef/6d27fc118f58cb24886da413545a7efb0853d405fddbfd8b2d9ac09fbed4/jupyterlab_widgets-3.0.17-py3-none-any.whl",
-        "depends": [],
-        "imports": [
-          "jupyterlab_widgets"
-        ]
-      },
-      "linkify-it-py": {
-        "name": "linkify-it-py",
-        "version": "2.2.0",
-        "filename": "linkify_it_py-2.2.0-py3-none-any.whl",
-        "sha256": "3adc40eb5af300b2605fcfdb968c24e1d780a90f1f2221af7c15e5111e94d443",
-        "url": "https://files.pythonhosted.org/packages/13/d4/1152d1c7ab42d8b908be64fd200ddc870dc9d4925e951198702084aa1a7d/linkify_it_py-2.2.0-py3-none-any.whl",
-        "depends": [],
-        "imports": [
-          "linkify_it"
-        ]
-      },
-      "markdown-it-py": {
-        "name": "markdown-it-py",
-        "version": "4.2.0",
-        "filename": "markdown_it_py-4.2.0-py3-none-any.whl",
-        "sha256": "9f7ebbcd14fe59494226453aed97c1070d83f8d24b6fc3a3bcf9a38092641c4a",
-        "url": "https://files.pythonhosted.org/packages/b3/81/4da04ced5a082363ecfa159c010d200ecbd959ae410c10c0264a38cac0f5/markdown_it_py-4.2.0-py3-none-any.whl",
-        "depends": [
-          {"name": "mdurl", "specs": [["~=", "0.1"]]}
-        ],
-        "imports": [
-          "markdown_it"
-        ]
-      },
-      "mdit-py-plugins": {
-        "name": "mdit-py-plugins",
-        "version": "0.6.1",
-        "filename": "mdit_py_plugins-0.6.1-py3-none-any.whl",
-        "sha256": "214c82fb2ac524472ab6a5bcab1de80f73b50443e187f401bfd77efbc7c6481d",
-        "url": "https://files.pythonhosted.org/packages/a5/69/6da5581c6a7fede7dc261bf4e67d6adca4196f176b43288b55b3db395b6e/mdit_py_plugins-0.6.1-py3-none-any.whl",
-        "depends": [
-          {"name": "markdown-it-py", "specs": [["<", "5.0.0"], [">=", "2.0.0"]]}
-        ],
-        "imports": [
-          "mdit_py_plugins"
-        ]
-      },
-      "mdurl": {
-        "name": "mdurl",
-        "version": "0.1.2",
-        "filename": "mdurl-0.1.2-py3-none-any.whl",
-        "sha256": "84008a41e51615a49fc9966191ff91509e3c40b939176e643fd50a5c2196b8f8",
-        "url": "https://files.pythonhosted.org/packages/b3/38/89ba8ad64ae25be8de66a6d463314cf1eb366222074cfda9ee839c56a4b4/mdurl-0.1.2-py3-none-any.whl",
-        "depends": [],
-        "imports": [
-          "mdurl"
-        ]
-      },
-      "mizani": {
-        "name": "mizani",
-        "version": "0.14.6",
-        "filename": "mizani-0.14.6-py3-none-any.whl",
-        "sha256": "a3d3ec364018efaa0e259d530303576156bac7741faa66167c9b50aaf19c3d73",
-        "url": "https://files.pythonhosted.org/packages/d9/a8/4463130becffe3e091feed0f459008aeebc806998dff53166cc12063f6b0/mizani-0.14.6-py3-none-any.whl",
-        "depends": [
-          {"name": "numpy", "specs": [[">=", "1.23.5"]]},
-          {"name": "scipy", "specs": [[">=", "1.8.0"]]},
-          {"name": "pandas", "specs": [[">=", "2.2.0"]]},
-          {"name": "tzdata", "specs": []}
-        ],
-        "imports": [
-          "mizani"
-        ]
-      },
-      "mypy-extensions": {
-        "name": "mypy-extensions",
-        "version": "1.1.0",
-        "filename": "mypy_extensions-1.1.0-py3-none-any.whl",
-        "sha256": "1be4cccdb0f2482337c4743e60421de3a356cd97508abadd57d47403e94f5505",
-        "url": "https://files.pythonhosted.org/packages/79/7b/2c79738432f5c924bef5071f933bcc9efd0473bac3b4aa584a6f7c1c8df8/mypy_extensions-1.1.0-py3-none-any.whl",
-        "depends": [],
-        "imports": [
-          "mypy_extensions"
-        ]
-      },
-      "palmerpenguins": {
-        "name": "palmerpenguins",
-        "version": "0.1.6",
-        "filename": "palmerpenguins-0.1.6-py3-none-any.whl",
-        "sha256": "5c3be9af84dd703a25f1aaeadeac6ac770cfd38c1620d00089f581c023129ee0",
-        "url": "https://files.pythonhosted.org/packages/af/9e/7579e7f1ace559be76984107d9e056377993a787eb1fd557a098c32967bc/palmerpenguins-0.1.6-py3-none-any.whl",
-        "depends": [
-          {"name": "pandas", "specs": []},
-          {"name": "numpy", "specs": []}
-        ],
-        "imports": [
-          "palmerpenguins"
-        ]
-      },
-      "pathspec": {
-        "name": "pathspec",
-        "version": "1.1.1",
-        "filename": "pathspec-1.1.1-py3-none-any.whl",
-        "sha256": "a00ce642f577bf7f473932318056212bc4f8bfdf53128c78bbd5af0b9b20b189",
-        "url": "https://files.pythonhosted.org/packages/f1/d9/7fb5aa316bc299258e68c73ba3bddbc499654a07f151cba08f6153988714/pathspec-1.1.1-py3-none-any.whl",
-        "depends": [],
-        "imports": [
-          "pathspec"
-        ]
-      },
-      "platformdirs": {
-        "name": "platformdirs",
-        "version": "4.13.0",
-        "filename": "platformdirs-4.13.0-py3-none-any.whl",
-        "sha256": "3dbcf4cd708f21cf876c4eaa90e58412bc4f033d87143f41b1493ff77c25b7e1",
-        "url": "https://files.pythonhosted.org/packages/8d/15/1633010b26e88e872c93b67c0b6c5e174fb74cb6fb5c1472b4d51d4a8f22/platformdirs-4.13.0-py3-none-any.whl",
-        "depends": [],
-        "imports": [
-          "platformdirs"
-        ]
-      },
-      "plotly": {
-        "name": "plotly",
-        "version": "7.1.0",
-        "filename": "plotly-7.1.0-py3-none-any.whl",
-        "sha256": "dbb7fa18afce40d0a8e80d1bf162eceb3faa0ce5a77fe741ad09a74cf78f53f3",
-        "url": "https://files.pythonhosted.org/packages/e5/7d/905a3a3d51087515719058c94cfbda2ff0fc14417c20d557ae3e82d8b250/plotly-7.1.0-py3-none-any.whl",
-        "depends": [
-          {"name": "narwhals", "specs": [[">=", "1.15.1"]]},
-          {"name": "packaging", "specs": []}
-        ],
-        "imports": [
-          "plotly"
-        ]
-      },
-      "plotnine": {
-        "name": "plotnine",
-        "version": "0.15.8",
-        "filename": "plotnine-0.15.8-py3-none-any.whl",
-        "sha256": "b8a17fbccdf331f0474ff59ea03186c07d96586eb0ebe70121b03fbf131881a9",
-        "url": "https://files.pythonhosted.org/packages/40/37/7a0275ea8143f0f0a2b27db73656d7ea3459e9cf8f869e292e450b357d1e/plotnine-0.15.8-py3-none-any.whl",
-        "depends": [
-          {"name": "matplotlib", "specs": [[">=", "3.8.0"]]},
-          {"name": "pandas", "specs": [[">=", "2.2.0"]]},
-          {"name": "mizani", "specs": [["~=", "0.14.0"]]},
-          {"name": "numpy", "specs": [[">=", "1.23.5"]]},
-          {"name": "scipy", "specs": [[">=", "1.8.0"]]}
-        ],
-        "imports": [
-          "plotnine"
-        ]
-      },
-      "psygnal": {
-        "name": "psygnal",
-        "version": "0.16.1",
-        "filename": "psygnal-0.16.1-py3-none-any.whl",
-        "sha256": "93b96894d8c46f0a3c0bfaaf8abe73f0d6db2c20cc6d303624cf08f85abc3c92",
-        "url": "https://files.pythonhosted.org/packages/be/f2/973c1280f035cd825af70582bbee776c69545e24534b324cf135eabef57e/psygnal-0.16.1-py3-none-any.whl",
-        "depends": [],
-        "imports": [
-          "psygnal"
-        ]
-      },
-      "pytokens": {
-        "name": "pytokens",
-        "version": "0.4.1",
-        "filename": "pytokens-0.4.1-py3-none-any.whl",
-        "sha256": "26cef14744a8385f35d0e095dc8b3a7583f6c953c2e3d269c7f82484bf5ad2de",
-        "url": "https://files.pythonhosted.org/packages/c6/78/397db326746f0a342855b81216ae1f0a32965deccfd7c830a2dbc66d2483/pytokens-0.4.1-py3-none-any.whl",
-        "depends": [],
-        "imports": [
-          "pytokens"
-        ]
-      },
-      "qrcode": {
-        "name": "qrcode",
-        "version": "8.2",
-        "filename": "qrcode-8.2-py3-none-any.whl",
-        "sha256": "16e64e0716c14960108e85d853062c9e8bba5ca8252c0b4d0231b9df4060ff4f",
-        "url": "https://files.pythonhosted.org/packages/dd/b8/d2d6d731733f51684bbf76bf34dab3b70a9148e8f2cef2bb544fccec681a/qrcode-8.2-py3-none-any.whl",
-        "depends": [],
-        "imports": [
-          "qrcode"
-        ]
-      },
-      "seaborn": {
-        "name": "seaborn",
-        "version": "0.13.2",
-        "filename": "seaborn-0.13.2-py3-none-any.whl",
-        "sha256": "636f8336facf092165e27924f223d3c62ca560b1f2bb5dff7ab7fad265361987",
-        "url": "https://files.pythonhosted.org/packages/83/11/00d3c3dfc25ad54e731d91449895a79e4bf2384dc3ac01809010ba88f6d5/seaborn-0.13.2-py3-none-any.whl",
-        "depends": [
-          {"name": "numpy", "specs": [["!=", "1.24.0"], [">=", "1.20"]]},
-          {"name": "pandas", "specs": [[">=", "1.2"]]},
-          {"name": "matplotlib", "specs": [["!=", "3.6.1"], [">=", "3.4"]]}
-        ],
-        "imports": [
-          "seaborn"
-        ]
-      },
-      "shiny": {
-        "name": "shiny",
-        "version": "1.4.0",
-        "filename": "shiny-1.4.0-py3-none-any.whl",
-        "sha256": "c7748d0cd32696477613b9c00664320ea1604b9d9770a2ec2e8ea7ea5e0b44b4",
-        "url": "https://files.pythonhosted.org/packages/f5/e8/ae54ce930d965211c77b28a8c3792f78a80ad1bd012bbb05000176dd246c/shiny-1.4.0-py3-none-any.whl",
-        "depends": [
-          {"name": "typing-extensions", "specs": [[">=", "4.10.0"]]},
-          {"name": "starlette", "specs": []},
-          {"name": "htmltools", "specs": [[">=", "0.6.0"]]},
-          {"name": "markdown-it-py", "specs": [[">=", "1.1.0"]]},
-          {"name": "mdit-py-plugins", "specs": [[">=", "0.3.0"]]},
-          {"name": "linkify-it-py", "specs": [[">=", "1.0"]]},
-          {"name": "appdirs", "specs": [[">=", "1.4.4"]]},
-          {"name": "asgiref", "specs": [[">=", "3.5.2"]]},
-          {"name": "packaging", "specs": [[">=", "20.9"]]},
-          {"name": "narwhals", "specs": [[">=", "1.10.0"]]},
-          {"name": "orjson", "specs": [[">=", "3.10.7"]]}
-        ],
-        "imports": [
-          "shiny"
-        ]
-      },
-      "shinyswatch": {
-        "name": "shinyswatch",
-        "version": "0.10.0",
-        "filename": "shinyswatch-0.10.0-py3-none-any.whl",
-        "sha256": "5164f3677a2e15794349fc90e6e3bf5d33b753d4cf21a44cff6510d8e8b06d83",
-        "url": "https://files.pythonhosted.org/packages/2d/aa/ee71cc77cc9a3c3cf33096d65ab9cd3824536e3749eeffc9d08939da1032/shinyswatch-0.10.0-py3-none-any.whl",
-        "depends": [
-          {"name": "typing-extensions", "specs": [[">=", "3.10.0.0"]]},
-          {"name": "packaging", "specs": [[">=", "20.9"]]},
-          {"name": "htmltools", "specs": [[">=", "0.2.0"]]},
-          {"name": "shiny", "specs": [[">=", "1.2.0"]]}
-        ],
-        "imports": [
-          "shinyswatch"
-        ]
-      },
-      "shinywidgets": {
-        "name": "shinywidgets",
-        "version": "0.8.1",
-        "filename": "shinywidgets-0.8.1-py3-none-any.whl",
+        "filename": "shinywidgets-0.8.2-py3-none-any.whl",
         "sha256": null,
         "url": null,
         "depends": [
@@ -2520,10 +2539,10 @@
       },
       "websockets": {
         "name": "websockets",
-        "version": "17.2",
-        "filename": "websockets-17.2-py3-none-any.whl",
-        "sha256": "6aa59f0ef92e796b2db6f5f26550c4713c0e4036899fadf02f55e2ed4db0b7ae",
-        "url": "https://files.pythonhosted.org/packages/8a/58/835cd51934d6780fa586f275b5d9901eead6d81569b4343b3767cdbaae4c/websockets-17.2-py3-none-any.whl",
+        "version": "17.4",
+        "filename": "websockets-17.4-py3-none-any.whl",
+        "sha256": "c6bd2c9781915592b209160d0f017d4c7c82ad53075e6b0c24d2a89299e7f9e9",
+        "url": "https://files.pythonhosted.org/packages/eb/27/9db924cb0dbf22eade78d98fbae77790f9bf6bc729e6ab29aef9d68e4156/websockets-17.4-py3-none-any.whl",
         "depends": [],
         "imports": [
           "websockets"
