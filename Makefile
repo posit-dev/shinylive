@@ -170,6 +170,10 @@ $(BUILD_DIR)/shinylive/webr: webr
 webr:
 	mkdir -p $(BUILD_DIR)/shinylive/webr
 	cp -r node_modules/webr/dist/. $(BUILD_DIR)/shinylive/webr
+	# Per-minor images from an earlier build would otherwise stay in the bundle:
+	# after a build without R_SHINY_IMAGE_BASE_URL, or for a minor that has left
+	# shiny_versions.json.
+	rm -rf $(BUILD_DIR)/shinylive/webr/shiny-*
 ifeq ($(R_SHINY_IMAGE_BASE_URL),)
 	curl --fail -L https://github.com/r-wasm/shiny/releases/download/v$(R_SHINY_VERSION)/library.data.gz -o $(BUILD_DIR)/shinylive/webr/library.data.gz
 	curl --fail -L https://github.com/r-wasm/shiny/releases/download/v$(R_SHINY_VERSION)/library.js.metadata -o $(BUILD_DIR)/shinylive/webr/library.js.metadata
