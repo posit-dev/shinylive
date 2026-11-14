@@ -271,6 +271,9 @@ serve-r:
 
 # Build the _shinylive directory for deployment of both R and Python sites
 _shinylive:
+	# Start from empty directories, so no file from an earlier build (such as
+	# a per-minor R image that has since been removed from the build) stays.
+	rm -rf $(SHINYLIVE_DIR)/py $(SHINYLIVE_DIR)/r
 	$(MAKE) buildjs-prod
 	cp -Lr $(SITE_DIR)/. $(SHINYLIVE_DIR)/py
 	$(MAKE) buildjs-prod-r
