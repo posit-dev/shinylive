@@ -682,18 +682,23 @@ export function App({
               while (restartInFlightRef.current) {
                 await restartInFlightRef.current;
               }
-              // The Editor stops the app before each run, and a run may
-              // restart the engine. A failed stop (an engine whose
-              // initialization failed has no app to stop) must not block that
-              // restart, so it is logged instead.
+              // The Editor stops the app before each run. An engine whose load
+              // failed may have no app to stop, and the run that follows
+              // restarts it, so its failed stop is logged. On a working engine
+              // a failed stop means the old app is still loaded, so it throws.
               const current = viewerMethodsRef.current;
-              if (current.ready) {
-                await current.stopApp().catch((e: unknown) => console.error(e));
+              if (!current.ready) return;
+              try {
+                await current.stopApp();
+              } catch (e) {
+                if (loadStatusStore(appEngine).get().stage !== "failed")
+                  throw e;
+                console.error(e);
               }
             },
           }
         : { ready: false },
-    [viewerStarted, runAppWithVersion],
+    [viewerStarted, runAppWithVersion, appEngine],
   );
 
   // TODO: Customize these methods so that print output is sent to the specific
