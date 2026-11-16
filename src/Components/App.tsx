@@ -509,7 +509,11 @@ export function App({
   const restartEngine = React.useCallback(
     async (minor: string): Promise<ReadyViewerMethods> => {
       const current = viewerMethodsRef.current;
-      if (current.ready) await current.stopApp();
+      // The old engine is terminated next, so a stop that fails (an engine
+      // whose initialization failed has no app to stop) does not block it.
+      if (current.ready) {
+        await current.stopApp().catch((e: unknown) => console.error(e));
+      }
 
       const old = await engineStartRef.current.promise.catch(() => null);
       if (old && old.ready) {
@@ -702,6 +706,8 @@ export function App({
   const [headerBarCallbacks, setHeaderBarCallbacks] =
     React.useState<HeaderBarCallbacks>({});
 
+  // Counts hash updates from the picker, so a slow one cannot overwrite a newer one.
+  const hashUpdateRef = React.useRef(0);
   const onSelectVersion = React.useCallback(
     async (exact: string) => {
       const files = editorMethods.getActiveFileContents
@@ -714,13 +720,19 @@ export function App({
       // change, through runAppWithVersion.
       setCurrentFiles(pinned);
       if (appOptions.updateUrlHashOnRerun) {
-        // The hash is a convenience; the pin is already in the files.
+        // The hash is a convenience; the pin is already in the files. A later
+        // pick or file change while this compresses makes it stale, and the
+        // newer state then owns the hash.
+        const hashToken = ++hashUpdateRef.current;
+        const hashBefore = window.location.hash;
         try {
-          history.replaceState(
-            null,
-            "",
-            "#code=" + (await fileContentsToUrlStringInWebWorker(pinned)),
-          );
+          const code = await fileContentsToUrlStringInWebWorker(pinned);
+          if (
+            hashToken === hashUpdateRef.current &&
+            window.location.hash === hashBefore
+          ) {
+            history.replaceState(null, "", "#code=" + code);
+          }
         } catch (e) {
           console.error(e);
         }
