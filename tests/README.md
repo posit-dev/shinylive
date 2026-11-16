@@ -27,8 +27,9 @@ quietly never run.
   the version the engine really loaded, the fallback when a per-version lock is
   missing, the warning for a pin outside the window, an export that includes one
   version, the version picker, engine restarts on re-run, the Quarto
-  `shiny-version` option, and two apps on one page. Its R tests skip in a build
-  without per-version R images.
+  `shiny-version` option, and two apps on one page. In a build without
+  per-version R images, the R tests that need them skip, and one test checks that
+  such a build ignores an R pin.
 
 Every test also fails on terminal tracebacks or warnings, Shiny output errors,
 and browser console errors, including errors emitted after an interaction. A

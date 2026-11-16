@@ -5,10 +5,12 @@ description: How an app picks one of the bundled shiny versions at runtime. It c
 
 # Shiny Version Selection
 
-A build bundles several shiny versions per language: the newest patch release of each of the last
-five minor versions. An app chooses one by pinning shiny in its own dependency file. One engine
-runs per page, so the version is chosen before the engine starts, and a re-run that needs another
-version restarts the engine.
+A build bundles several Python shiny versions: the newest patch release of each of the last five
+minor versions. It bundles the same window of R shiny versions only when it is built with
+`R_SHINY_IMAGE_BASE_URL` set; otherwise R has one library image and ignores pins. An app
+chooses one by pinning shiny in its own dependency file. One engine runs per page, so the
+version is chosen before the engine starts, and a re-run that needs another version restarts the
+engine.
 
 How the Python package sets are built is in `pythonPackageVersions.md`; the Makefile side is in
 `buildPipeline.md`; the engines themselves are in `pythonEngine.md` and `rEngine.md`.
