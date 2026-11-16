@@ -164,6 +164,14 @@ class PyodideLockTest(unittest.TestCase):
         with self.assertRaises(SystemExit) as raised:
             pp.update_pyodide_pyodide_lock_json()
         self.assertIn("make update_packages_lock", str(raised.exception))
+        self.assertTrue((self.dir / "pyodide-lock-shiny-1.4.json").exists())
+
+    def test_local_refresh_refuses_a_lock_whose_minors_differ(self):
+        del self.locks["1.7"]
+        with mock.patch.object(pp, "write_lock") as write_lock, mock.patch("builtins.print"):
+            with self.assertRaises(SystemExit):
+                pp.update_lockfile_local()
+        write_lock.assert_not_called()
 
 if __name__ == "__main__":
     unittest.main()

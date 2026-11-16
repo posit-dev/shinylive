@@ -70,8 +70,9 @@ One subcommand per Makefile target. All run inside `venv/` with `requirements-de
   setuptools for palmerpenguins), and `OMIT_DEPENDENCIES` dropped (shiny from shinychat, to break
   a cycle). It then drops every `depends` name that is not in that lock (uv leaves out dependencies
   whose environment marker excludes Pyodide), normalizes the rest, and copies the newest minor's
-  file to `pyodide-lock.json`. Files are written without indentation. A lock for a minor that is
-  not in `shiny_versions.json` fails here with a `KeyError`.
+  file to `pyodide-lock.json`. Files are written without indentation. When the lock's minors
+  differ from those in `shiny_versions.json`, this step and `update_lockfile_local` stop before
+  writing anything and name `make update_packages_lock` as the fix.
 
 `orig_pyodide_lock()` keeps `pyodide-lock.orig.json` next to `pyodide-lock.json`. It copies the
 current file over it when the copy is missing or when the `info.version` fields differ, so the
