@@ -23,7 +23,10 @@ OUT = ROOT / "shiny_versions.json"
 
 # Release versions only: dev builds (1.2.0.9000) and pre-releases (1.3.0rc1)
 # are never bundled.
-RELEASE = re.compile(r"^\d+\.\d+\.\d+$")
+PYPI_RELEASE = re.compile(r"^\d+\.\d+\.\d+$")
+# CRAN also publishes four-part patch releases (1.8.1.1). CRAN never accepts a
+# .9000 dev version, so every version in its timeline is a release.
+CRAN_RELEASE = re.compile(r"^\d+\.\d+\.\d+(\.\d+)?$")
 
 
 def _fetch_json(url: str) -> dict:
@@ -50,22 +53,29 @@ def cran_versions() -> list[str]:
     return list(data["timeline"])
 
 
-def window(versions: list[str], n: int = WINDOW) -> dict[str, str]:
-    """Map the last `n` minor versions to their newest patch, newest first."""
-    newest: dict[tuple[int, int], tuple[int, int, int]] = {}
+def window(
+    versions: list[str], n: int = WINDOW, release: re.Pattern[str] = PYPI_RELEASE
+) -> dict[str, str]:
+    """Map the last `n` minor versions to their newest patch, newest first.
+    Only versions that match `release` count."""
+    newest: dict[tuple[int, ...], tuple[int, ...]] = {}
     for version in versions:
-        if not RELEASE.match(version):
+        if not release.match(version):
             continue
-        major, minor, patch = (int(x) for x in version.split("."))
-        key = (major, minor)
-        if key not in newest or (major, minor, patch) > newest[key]:
-            newest[key] = (major, minor, patch)
+        parts = tuple(int(x) for x in version.split("."))
+        key = parts[:2]
+        # Tuples compare element by element, so 1.8.1.1 sorts above 1.8.1.
+        if key not in newest or parts > newest[key]:
+            newest[key] = parts
     keys = sorted(newest, reverse=True)[:n]
     return {f"{k[0]}.{k[1]}": ".".join(str(x) for x in newest[k]) for k in keys}
 
 
 def compute() -> dict[str, dict[str, str]]:
-    return {"python": window(pypi_versions()), "r": window(cran_versions())}
+    return {
+        "python": window(pypi_versions()),
+        "r": window(cran_versions(), release=CRAN_RELEASE),
+    }
 
 
 def main(argv: list[str]) -> int:
