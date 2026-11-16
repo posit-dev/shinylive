@@ -131,7 +131,7 @@ export function writeShinyPin(
  *
  * A pin with a version clause, or an unreadable shiny line, wins over the
  * option. An unversioned shiny line counts as no pin and takes the option.
- * A full x.y.z value is written as given, and the runtime resolver reports it
+ * A full x.y.z (or x.y.z.w) value is written as given, and the runtime resolver reports it
  * when it differs from the version that runs. A minor value is written as the
  * resolved exact version, and the note for a minor outside the bundled window
  * is returned here.

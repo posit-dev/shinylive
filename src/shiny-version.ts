@@ -210,8 +210,9 @@ function satisfies(exact: string, clause: Clause): boolean {
   }
 }
 
+// x.y.z, or x.y.z.w for a CRAN patch release such as 1.8.1.1.
 function isFullVersion(version: string): boolean {
-  return /^\d+\.\d+\.\d+$/.test(version);
+  return /^\d+\.\d+\.\d+(\.\d+)?$/.test(version);
 }
 
 export function resolveShinyVersion(

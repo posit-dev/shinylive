@@ -261,6 +261,17 @@
       }
     },
     {
+      "name": "R exact pin to a four-part CRAN release",
+      "engine": "r",
+      "files": { "DESCRIPTION": "Imports: shiny (== 1.11.0.1)\n" },
+      "expect": {
+        "minor": "1.11",
+        "exact": "1.11.1",
+        "requested": "1.11.0.1",
+        "note": null
+      }
+    },
+    {
       "name": "R exact constraint to an older patch",
       "engine": "r",
       "files": { "DESCRIPTION": "Imports: shiny (== 1.11.0)\n" },

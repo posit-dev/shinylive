@@ -237,6 +237,18 @@ describe("applyShinyVersionOption()", () => {
     expect(note).toBeNull();
   });
 
+  test("a four-part R version is written as given, for the runtime to report", () => {
+    const availableR = { "1.11": "1.11.1", "1.10": "1.10.0" };
+    const { files, note } = applyShinyVersionOption(
+      [text("app.R", "")],
+      "r",
+      "1.11.0.1",
+      availableR,
+    );
+    expect(contentOf(files, "DESCRIPTION")).toContain("shiny (== 1.11.0.1)");
+    expect(note).toBeNull();
+  });
+
   test("a full version is written as given, for the runtime to report", () => {
     const { files, note } = applyShinyVersionOption(
       app,

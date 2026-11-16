@@ -20,8 +20,8 @@ How the Python package sets are built is in `pythonPackageVersions.md`; the Make
 - `shiny_versions.json` (repo root, tracked) — `{"python": {minor: exact}, "r": {minor: exact}}`,
   newest first. `scripts/update_shiny_versions.py` (`make update_shiny_versions`) recomputes it
   from the PyPI release list and the CRAN timeline (crandb.r-pkg.org): release versions only
-  (`x.y.z`, no dev builds or pre-releases, no fully yanked PyPI releases), `WINDOW = 5` minors.
-  `--check` exits 1 when the file is stale. The script is stdlib-only.
+  (`x.y.z`, plus CRAN's four-part patch releases; no dev builds or pre-releases, no fully yanked
+  PyPI releases), `WINDOW = 5` minors. `--check` exits 1 when the file is stale. The script is stdlib-only.
 - The runtime imports the file in `src/shiny-version.ts`, so esbuild bundles it into
   `shinylive.js` and nothing is fetched at startup. The Makefile also copies it to
   `build/shinylive/shiny_versions.json`.
@@ -54,7 +54,7 @@ Pure functions, no I/O. The result is `{minor, exact, requested, note}`.
 - Any other set of clauses: the newest bundled version that satisfies all of them. `!=1.8.*`
   excludes the whole minor. If nothing satisfies, an upper bound below the window gives the
   oldest, anything else the newest, with a note.
-- `requested` is set only for an `==` pin with a full `x.y.z` version.
+- `requested` is set only for an `==` pin with a full `x.y.z` (or `x.y.z.w`) version.
 
 `shinyVersionMessage(resolved, actual)` returns `requested shiny <X>, running <Y>` when the
 version the engine loaded differs from `requested` (if set) or from `exact`, else null.
@@ -149,7 +149,7 @@ and keeps indentation, extras, and a trailing comment, or appends `shiny==<exact
   an error that shows the quoted form; `runApp` logs it with `console.error` and rethrows.
 - An existing pin with a version clause, or an unreadable shiny line, wins, and a startup note
   says the option was ignored. An unversioned shiny line counts as no pin.
-- Otherwise the pin is written: a full `x.y.z` value as given, a minor value as its bundled exact
+- Otherwise the pin is written: a full `x.y.z` (or `x.y.z.w`) value as given, a minor value as its bundled exact
   version.
 
 The first `App` on a page to start an engine sets its version. A later `App` whose resolution
