@@ -682,8 +682,14 @@ export function App({
               while (restartInFlightRef.current) {
                 await restartInFlightRef.current;
               }
+              // The Editor stops the app before each run, and a run may
+              // restart the engine. A failed stop (an engine whose
+              // initialization failed has no app to stop) must not block that
+              // restart, so it is logged instead.
               const current = viewerMethodsRef.current;
-              if (current.ready) await current.stopApp();
+              if (current.ready) {
+                await current.stopApp().catch((e: unknown) => console.error(e));
+              }
             },
           }
         : { ready: false },
@@ -706,8 +712,10 @@ export function App({
   const [headerBarCallbacks, setHeaderBarCallbacks] =
     React.useState<HeaderBarCallbacks>({});
 
-  // Counts hash updates from the picker, so a slow one cannot overwrite a newer one.
-  const hashUpdateRef = React.useRef(0);
+  // The files as of the last render, so a picker hash update can tell whether
+  // anything replaced its files while it compressed them.
+  const currentFilesRef = React.useRef(currentFiles);
+  currentFilesRef.current = currentFiles;
   const onSelectVersion = React.useCallback(
     async (exact: string) => {
       const files = editorMethods.getActiveFileContents
@@ -720,17 +728,12 @@ export function App({
       // change, through runAppWithVersion.
       setCurrentFiles(pinned);
       if (appOptions.updateUrlHashOnRerun) {
-        // The hash is a convenience; the pin is already in the files. A later
-        // pick or file change while this compresses makes it stale, and the
-        // newer state then owns the hash.
-        const hashToken = ++hashUpdateRef.current;
-        const hashBefore = window.location.hash;
+        // The hash is a convenience; the pin is already in the files. When a
+        // later pick, an example switch or a parent message replaces the files
+        // while this compresses, the update is stale and is dropped.
         try {
           const code = await fileContentsToUrlStringInWebWorker(pinned);
-          if (
-            hashToken === hashUpdateRef.current &&
-            window.location.hash === hashBefore
-          ) {
+          if (currentFilesRef.current === pinned) {
             history.replaceState(null, "", "#code=" + code);
           }
         } catch (e) {
