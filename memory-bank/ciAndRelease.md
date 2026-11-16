@@ -92,9 +92,9 @@ Runs weekly and on demand. It never pushes to `main`. Steps:
    fails if someone pushed to the branch during the run. It then edits the title and body of the
    open PR from that branch, or creates one against `main`. The title says whether the shiny
    window moved or only the Python packages changed.
-6. The run stops before step 5 rewrites the branch when the branch has a commit the workflow did
-   not make, such as a maintainer's fix on the open PR. It logs a warning, and the updates resume
-   once that PR is merged or closed.
+6. While the PR from that branch is open, the run stops before step 5 rewrites the branch when the
+   branch has a commit the workflow did not make, such as a maintainer's fix or amend on the PR.
+   It logs a warning. Once the PR is merged or closed, the next run rebuilds the branch.
 
 The checkout sets `persist-credentials: false`; only the push and the `gh` calls use a token. A PR
 opened with the default `github.token` triggers no `pull_request` workflows, so the workflow uses

@@ -72,8 +72,9 @@ jobs:
 
       # The branch is rebuilt from main and force-pushed with a lease on the tip
       # recorded above, so the push fails rather than overwrite commits pushed
-      # during this run. A run also stops when the branch has a commit this
-      # workflow did not make, such as a maintainer's fix on the open PR.
+      # during this run. While the branch's pull request is open, a run also
+      # stops when the branch has a commit that github-actions[bot] did not both
+      # author and commit, such as a maintainer's fix or amend on that PR.
       - name: Open a pull request when anything changed
         env:
           TOKEN: ${{ secrets.UPDATE_SHINY_TOKEN || github.token }}
@@ -84,22 +85,21 @@ jobs:
             exit 0
           fi
           BRANCH=update-shiny-versions
-          WINDOW_TITLE="build: move the bundled shiny window forward"
-          PACKAGES_TITLE="build: update the bundled Python packages"
-          if [ -n "$UPDATE_BRANCH_TIP" ]; then
+          BOT="github-actions[bot]"
+          OPEN_PR=$(gh pr list --head "$BRANCH" --state open --json number --jq '.[0].number // empty')
+          if [ -n "$UPDATE_BRANCH_TIP" ] && [ -n "$OPEN_PR" ]; then
             OTHERS=$(gh api "repos/${{ github.repository }}/compare/main...$BRANCH" \
-              --jq '.commits[].commit.message | split("\n")[0]' \
-              | grep -v -x -F -e "$WINDOW_TITLE" -e "$PACKAGES_TITLE" || true)
+              --jq ".commits[] | select((.author.login // \"\") != \"$BOT\" or (.committer.login // \"\") != \"$BOT\") | .sha")
             if [ -n "$OTHERS" ]; then
-              echo "::warning::$BRANCH has commits this workflow did not make, so this run leaves it alone. Merge or close its pull request to resume the updates."
+              echo "::warning::$BRANCH has commits this workflow did not make, so this run leaves pull request #$OPEN_PR alone. Merge or close it to resume the updates."
               exit 0
             fi
           fi
           if git diff --quiet -- shiny_versions.json; then
-            TITLE="$PACKAGES_TITLE"
+            TITLE="build: update the bundled Python packages"
             BODY="The bundled shiny versions are unchanged. This re-resolves the Python packages in shinylive_lock.json against their newest releases."
           else
-            TITLE="$WINDOW_TITLE"
+            TITLE="build: move the bundled shiny window forward"
             BODY="shiny_versions.json lists the newest patch of the last five shiny minors on PyPI and CRAN. This updates it, pins packages/py-shiny to the newest Python release, and re-resolves shinylive_lock.json for every bundled minor."
           fi
           git checkout -B "$BRANCH"
@@ -108,7 +108,7 @@ jobs:
           git push --force-with-lease="refs/heads/$BRANCH:$UPDATE_BRANCH_TIP" \
             "https://x-access-token:${TOKEN}@github.com/${{ github.repository }}" \
             "$BRANCH:refs/heads/$BRANCH"
-          if gh pr view "$BRANCH" --json state --jq .state 2>/dev/null | grep -q OPEN; then
+          if [ -n "$OPEN_PR" ]; then
             gh pr edit "$BRANCH" --title "$TITLE" --body "$BODY"
           else
             gh pr create --head "$BRANCH" --base main --title "$TITLE" --body "$BODY"
