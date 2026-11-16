@@ -1,11 +1,14 @@
 """Run with: python3 -m unittest scripts.test_pyodide_packages
 
-Only the pure parts: the uv input, the uv output parser, and the migration of
-an old flat lock. Resolution itself needs the network and runs under
-`make update_packages_lock`.
+The parts that need no network: the uv input, the uv output parser, the lock
+format, and the per-minor Pyodide locks written from a lock. Resolution itself
+needs the network and runs under `make update_packages_lock`.
 """
 
+import json
+import tempfile
 import unittest
+from pathlib import Path
 from unittest import mock
 
 from scripts import pyodide_packages as pp
@@ -94,6 +97,73 @@ class LockEntriesTest(unittest.TestCase):
             entries = pp._lock_entries_for({"siuba": "0.4.4"}, [], {})
         self.assertEqual(entries["siuba"]["version"], "0.4.4")
 
+
+def _stock_entry(name, depends):
+    return {"name": name, "version": "1.0", "file_name": f"{name}.whl",
+            "install_dir": "site", "sha256": "x", "depends": depends, "imports": [name]}
+
+
+def _lock_entry(name, version, depends):
+    return {"name": name, "version": version, "filename": f"{name}-{version}.whl",
+            "sha256": "x", "depends": [{"name": d} for d in depends], "imports": [name]}
+
+
+class PyodideLockTest(unittest.TestCase):
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.dir = Path(self.tmp.name)
+        (self.dir / "pyodide-lock-shiny-1.4.json").write_text("{}")
+        stock = {"info": {}, "packages": {
+            "numpy": _stock_entry("numpy", []),
+            "jinja2": _stock_entry("jinja2", []),
+            "pandas": _stock_entry("pandas", ["numpy"]),
+        }}
+        self.locks = {
+            "1.8": {
+                # colorama stands for a dependency uv excluded for this platform.
+                "shiny": _lock_entry("shiny", "1.8.0", ["htmltools", "colorama"]),
+                "htmltools": _lock_entry("htmltools", "0.7.0", []),
+            },
+            "1.7": {
+                "shiny": _lock_entry("shiny", "1.7.0", ["htmltools"]),
+                "htmltools": _lock_entry("htmltools", "0.6.0", []),
+            },
+        }
+        minors = {"1.8": "1.8.0", "1.7": "1.7.0"}
+        for patch in (
+            mock.patch.object(pp, "pyodide_dir", self.dir),
+            mock.patch.object(pp, "pyodide_lock_json_file", self.dir / "pyodide-lock.json"),
+            mock.patch.object(pp, "orig_pyodide_lock", return_value=stock),
+            mock.patch.object(pp, "load_lock", side_effect=lambda: self.locks),
+            mock.patch.object(pp, "bundled_python_minors", return_value=minors),
+        ):
+            patch.start()
+            self.addCleanup(patch.stop)
+        self.addCleanup(self.tmp.cleanup)
+
+    def read(self, name):
+        return json.loads((self.dir / name).read_text())["packages"]
+
+    def test_writes_one_lock_per_minor_from_the_same_stock(self):
+        with mock.patch("builtins.print"):
+            pp.update_pyodide_pyodide_lock_json()
+        old = self.read("pyodide-lock-shiny-1.7.json")
+        new = self.read("pyodide-lock-shiny-1.8.json")
+        self.assertEqual((old["shiny"]["version"], old["htmltools"]["version"]), ("1.7.0", "0.6.0"))
+        self.assertEqual((new["shiny"]["version"], new["htmltools"]["version"]), ("1.8.0", "0.7.0"))
+        # The extra dependency is added once per lock, so the stock entry was
+        # copied rather than shared between minors.
+        self.assertEqual(old["pandas"]["depends"], ["numpy", "jinja2"])
+        self.assertEqual(new["pandas"]["depends"], ["numpy", "jinja2"])
+        self.assertEqual(new["shiny"]["depends"], ["htmltools"])
+        self.assertEqual(self.read("pyodide-lock.json"), new)
+        self.assertFalse((self.dir / "pyodide-lock-shiny-1.4.json").exists())
+
+    def test_refuses_a_lock_whose_minors_differ_from_shiny_versions(self):
+        del self.locks["1.7"]
+        with self.assertRaises(SystemExit) as raised:
+            pp.update_pyodide_pyodide_lock_json()
+        self.assertIn("make update_packages_lock", str(raised.exception))
 
 if __name__ == "__main__":
     unittest.main()

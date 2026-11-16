@@ -59,7 +59,7 @@ Usage:
     Gets packages listed in lockfile, from local sources and from PyPI. Saves packages
     to {os.path.relpath(pyodide_dir)}.
 
-  pyodide_packages.py update_pyodide_pyodide_lock_json
+  pyodide_packages.py update_pyodide_lock_json
     Modifies pyodide's package-lock.json to include Shiny-related packages. Modifies
     {os.path.relpath(pyodide_lock_json_file)}
 """
@@ -220,12 +220,6 @@ class PyodidePackagesFile(TypedDict):
 # =================================================
 # Internal data structures
 # =================================================
-# This BasicPackageInfo type is used internally for package resolution.
-class BasicPackageInfo(TypedDict):
-    name: str
-    depends: list[str]
-
-
 # =============================================================================
 # Resolving one package set per shiny minor version with uv.
 # =============================================================================
@@ -491,6 +485,18 @@ def generate_lockfile() -> None:
     write_lock(locks)
 
 
+def check_lock_matches_versions(
+    locks: dict[str, dict[str, LockfilePackageInfo]], minors: dict[str, str]
+) -> None:
+    """Raise when the lockfile's shiny minors differ from shiny_versions.json."""
+    if set(locks) != set(minors):
+        raise SystemExit(
+            f"{package_lock_file.name} has shiny minors {sorted(locks)}, but "
+            f"{shiny_versions_file.name} lists {sorted(minors)}. "
+            "Run `make update_packages_lock`."
+        )
+
+
 def update_lockfile_local() -> None:
     """Refresh the entries for local wheels in every minor version's lock.
     Dependencies are not re-resolved; run generate_lockfile for that."""
@@ -500,64 +506,12 @@ def update_lockfile_local() -> None:
     print("Updating local packages: " + " ".join(x["name"] for x in local_packages))
 
     locks = load_lock()
+    check_lock_matches_versions(locks, bundled_python_minors())
     for entries in locks.values():
         for pkg in local_packages:
             info = _find_package_info_lockfile_one(pkg)
             entries[info["name"]] = info
     write_lock(locks)
-
-
-def _recurse_dependencies_lockfile(
-    pkgs: dict[str, LockfilePackageInfo],
-    pyodide_packages_info: dict[str, BasicPackageInfo] | None = None,
-) -> None:
-    """
-    Recursively find all dependencies of the given packages. This will mutate the object
-    passed in.
-    """
-    if pyodide_packages_info is None:
-        pyodide_packages_info = _to_basic_package_info(orig_pyodide_lock()["packages"])
-
-    i = 0
-    while i < len(pkgs):
-        pkg_info = pkgs[list(pkgs.keys())[i]]
-        i += 1
-
-        print(f"  {pkg_info['name']}:", end="")
-        for dep in pkg_info["depends"]:
-            dep_name = dep["name"]
-            print(" " + dep_name, end="")
-            if dep_name in pkgs or dep_name.lower() in pyodide_packages_info:
-                # We already have it, either in our extra packages, or in the original
-                # set of pyodide packages. Do nothing.
-                # Note that the keys in pyodide_packages_info are all lower-cased, even
-                # if the package name has capitals.
-                pass
-            else:
-                pkgs[dep_name] = _find_package_info_lockfile_one(
-                    {
-                        "name": dep_name,
-                        "source": "pypi",
-                        # TODO: Use version from dependencies
-                        "version": "latest",
-                    }
-                )
-        print("")
-
-
-def _find_package_info_lockfile(
-    pkgs: list[RequirementsPackage],
-) -> dict[str, LockfilePackageInfo]:
-    """
-    Given a dict of RequirementsPackage objects, find package information that will be
-    inserted into the package lock file. For PyPI packages, this involves fetching
-    package metadata from PyPI.
-    """
-    res: dict[str, LockfilePackageInfo] = {}
-
-    for pkg in pkgs:
-        res[pkg["name"]] = _find_package_info_lockfile_one(pkg)
-    return res
 
 
 def _find_package_info_lockfile_one(
@@ -741,35 +695,6 @@ def _filter_requires(requires: Union[list[str], None]) -> list[LockfileDependenc
     return list(res)
 
 
-def _to_basic_package_info(
-    packages: dict[str, PyodidePackageInfo] | dict[str, LockfilePackageInfo]
-) -> dict[str, BasicPackageInfo]:
-    """
-    Convert Pyodide package information to a simplified format.
-
-    Args:
-        packages (dict[str, PyodidePackageInfo]): Original package information from Pyodide lock file
-
-    Returns:
-        dict[str, BasicPackageInfo]: Simplified package information with name and depends
-    """
-    basic_info: dict[str, BasicPackageInfo] = {}
-    for pkg_name, pkg_data in packages.items():
-        depends = pkg_data["depends"]
-        depends_str_list: list[str] = []
-        for dep in depends:
-            if isinstance(dep, str):
-                depends_str_list.append(dep)
-            else:
-                depends_str_list.append(dep["name"])
-
-        basic_info[pkg_name.lower()] = {
-            "name": pkg_name,
-            "depends": depends_str_list,
-        }
-    return basic_info
-
-
 # =============================================================================
 # Functions for copying and downloading the wheel files.
 # =============================================================================
@@ -831,6 +756,7 @@ def update_pyodide_pyodide_lock_json():
     locks = load_lock()
     minors = bundled_python_minors()
     newest = next(iter(minors))
+    check_lock_matches_versions(locks, minors)
 
     # A minor that left the window must not leave a lock behind, because
     # check_shiny_bundle reports it.
