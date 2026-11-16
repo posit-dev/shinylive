@@ -38,8 +38,7 @@ One subcommand per Makefile target. All run inside `venv/` with `requirements-de
 
 - `generate_lockfile` (`make update_packages_lock`) — for each minor in `shiny_versions.json`,
   `resolve_with_uv` runs `python -m uv pip compile` for the Pyodide target
-  (`--python-platform wasm32-pyodide2024 --python-version 3.12 --only-binary :all:`) with
-  `--find-links` on `packages/` and `build/shinylive/pyodide/`. Its inputs:
+  (`UV_PYTHON_PLATFORM`, `PYODIDE_PYTHON_VERSION`, binary wheels only) with `--find-links` on `packages/` and `build/shinylive/pyodide/`. Its inputs:
   - requirements from `uv_requirements`: every requirement except `LOCAL_NOT_RESOLVED`, with shiny
     pinned to that minor's exact version;
   - constraints from `uv_constraints`: every stock Pyodide Python package at its stock version,
@@ -112,7 +111,7 @@ The `Makefile` helper `_get_version` greps `^__version__ = ` in `__version.py`, 
 
 The `packages/py-shiny` submodule is not built into the bundle. `make test-deps` installs it so the
 Playwright controllers match the bundled markup, and `update_shiny.yml` checks it out at the tag of
-the newest bundled release. `packages/py-htmltools` is still a submodule, but no build step uses it.
+the newest bundled release. `packages/py-htmltools` is a submodule that no build step uses.
 `make submodules` fetches full history and tags for py-shiny and py-shinywidgets.
 
 ## libsass

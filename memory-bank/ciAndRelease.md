@@ -13,7 +13,7 @@ own copy of shinylive and have no link to `build.yml`, so they can fail without 
 | Build and deploy shinylive (`build.yml`) | push to `main` or `deploy`, PR to `main`, release published | yes, it is the deploy |
 | Test example apps (`test-apps.yml`) | push to `main`, any PR | no |
 | Test the loader (`test-loader.yml`) | push to `main`, any PR | no |
-| Update shiny versions (`update_shiny.yml`) | weekly (Monday 06:00 UTC) and manual (`workflow_dispatch`) | no; it opens a PR |
+| Update shiny versions (`update_shiny.yml`) | weekly and manual (`workflow_dispatch`) | no; it opens a PR |
 
 `test-apps.yml` and `test-loader.yml` have a `concurrency` group that cancels the run for an older
 commit on the same PR. `build.yml` has none.
@@ -80,7 +80,7 @@ them off the deploy path.
 
 ## update_shiny.yml
 
-Runs every Monday at 06:00 UTC and on demand. It never pushes to `main`. Steps:
+Runs weekly and on demand. It never pushes to `main`. Steps:
 
 1. Records the tip of the `update-shiny-versions` branch (empty if it does not exist).
 2. `make submodules`, then `scripts/update_shiny_versions.py` rewrites `shiny_versions.json`.

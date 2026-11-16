@@ -83,8 +83,9 @@ There is one class, `WebRWorkerProxy`. webR already runs R in its own worker, so
 - `.shiny_app_registry <- new.env()`.
 - `.shiny_to_httpuv(appDir)` — `as.shiny.appobj`, `onStart()` (sources `global.R`),
   `workerId("")`, resets the current app state, and builds an httpuv-style app with
-  `createAppHandlers` and `HandlerManager`. These are internal `shiny:::` functions, so a new
-  `R_SHINY_VERSION` can break them.
+  `createAppHandlers` and `HandlerManager`. These are internal `shiny:::` functions, so any
+  bundled R shiny version can break them: `R_SHINY_VERSION`, or any R minor in `shiny_versions.json`
+  in a build with `R_SHINY_IMAGE_BASE_URL` set.
 - `.shiny_tick()` — runs Shiny's timers, `flushReact()`, and `flushPendingSessions()`.
 - `.send_ws(message)` — sends a message to the main thread with `webr::eval_js` writing a
   `_webR_httpuv_WSResponse` to `Module.webr.channel`.

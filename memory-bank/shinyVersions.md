@@ -1,6 +1,6 @@
 ---
 title: Shiny Version Selection
-description: How an app picks one of the bundled shiny versions at runtime: shiny_versions.json, the pin in requirements.txt or DESCRIPTION, the resolver (src/shiny-version.ts), per-version Pyodide locks and webR images with the HEAD-probe fallback, the "requested X, running Y" report, engine restart on re-run, the header-bar picker, the Quarto shiny-version option, and why R is version-unaware unless R_SHINY_IMAGE_BASE_URL is set. Read before changing any of these, App.tsx's engine startup, or shiny_versions.json.
+description: How an app picks one of the bundled shiny versions at runtime. It covers shiny_versions.json, the pin in requirements.txt or DESCRIPTION, the resolver (src/shiny-version.ts), per-version Pyodide locks and webR images with the HEAD-probe fallback, the "requested X, running Y" report, engine restart on re-run, the header-bar picker, the Quarto shiny-version option, and why R is version-unaware unless R_SHINY_IMAGE_BASE_URL is set. Read before changing any of these, App.tsx's engine startup, or shiny_versions.json.
 ---
 
 # Shiny Version Selection
@@ -37,8 +37,8 @@ How the Python package sets are built is in `pythonPackageVersions.md`; the Make
   `shiny (== 1.11.1)`.
 
 Because the pin is an ordinary app file, it survives share links, gists, `app.json`, downloads,
-and the `#code=` hash with no format change. The pin line never reaches micropip:
-`_install_requirements_from_dir` skips any name already installed, and shiny always is.
+and the `#code=` hash with no format change. `_install_requirements_from_dir` never passes
+the pin line to micropip: it skips any name already installed, and shiny always is.
 
 ## Resolving (`resolveShinyVersion` in `src/shiny-version.ts`)
 
@@ -77,7 +77,7 @@ The engine then loads the files for that minor, with a fallback:
 
 A failed probe is a 404, which Chromium logs on the console as "Failed to load resource". An export
 with one version's lock under the default name (the shape `tests/export_app.py` builds) takes the
-fallback on every start.
+fallback on every start of a pinned app whose minor is not the newest.
 
 After startup the engine reports the version it really loaded: `importlib.metadata.version("shiny")`
 in Python (this avoids importing shiny at startup) and `utils::packageVersion("shiny")` in R. It is
@@ -140,7 +140,7 @@ and keeps indentation, extras, and a trailing comment, or appends `shiny==<exact
 
 ## Quarto `shiny-version` and several apps per page
 
-`#| shiny-version: "1.6"` reaches `runApp` like any other `#|` option (`quartoAndExport.md`).
+`#| shiny-version: "1.6"` is passed to `runApp` like any other `#|` option (`quartoAndExport.md`).
 `applyShinyVersionOption` runs before the resolver:
 
 - The value must be a YAML string. Unquoted, `1.10` parses as the number 1.1. A non-string throws

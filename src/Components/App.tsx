@@ -131,8 +131,8 @@ type AppOptions = {
   // the encoded version of the app?
   updateUrlHashOnRerun?: boolean;
 
-  // Show the shiny version picker in the header bar. Only the full-page editor
-  // sets this; embedded layouts never get one.
+  // Show the shiny version picker in the header bar. The editor/ and examples/
+  // pages set this; a Quarto block gets it only with `#| showVersionPicker: true`.
   showVersionPicker?: boolean;
 
   // Pin the app to a bundled shiny minor version, as a string ("1.6"). Writes
