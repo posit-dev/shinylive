@@ -89,8 +89,12 @@ Runs weekly and on demand. It never pushes to `main`. Steps:
    entries), then `make all`, which includes `check_shiny_bundle`.
 5. If `shiny_versions.json`, `shinylive_lock.json`, or `packages/py-shiny` changed, commits them
    to `update-shiny-versions` and force-pushes with a lease on the tip from step 1, so the push
-   fails if someone pushed to the branch during the run. It then edits the open PR from that
-   branch, or creates one against `main` with `gh pr create --fill`.
+   fails if someone pushed to the branch during the run. It then edits the title and body of the
+   open PR from that branch, or creates one against `main`. The title says whether the shiny
+   window moved or only the Python packages changed.
+6. The run stops before step 5 rewrites the branch when the branch has a commit the workflow did
+   not make, such as a maintainer's fix on the open PR. It logs a warning, and the updates resume
+   once that PR is merged or closed.
 
 The checkout sets `persist-credentials: false`; only the push and the `gh` calls use a token. A PR
 opened with the default `github.token` triggers no `pull_request` workflows, so the workflow uses

@@ -70,8 +70,10 @@ jobs:
       - name: Set up git within GHA
         uses: actions4git/setup-git@v1
 
-      # The branch is force-pushed with a lease on the tip recorded above, so
-      # the push fails rather than overwrite commits pushed during this run.
+      # The branch is rebuilt from main and force-pushed with a lease on the tip
+      # recorded above, so the push fails rather than overwrite commits pushed
+      # during this run. A run also stops when the branch has a commit this
+      # workflow did not make, such as a maintainer's fix on the open PR.
       - name: Open a pull request when anything changed
         env:
           TOKEN: ${{ secrets.UPDATE_SHINY_TOKEN || github.token }}
@@ -82,14 +84,32 @@ jobs:
             exit 0
           fi
           BRANCH=update-shiny-versions
+          WINDOW_TITLE="build: move the bundled shiny window forward"
+          PACKAGES_TITLE="build: update the bundled Python packages"
+          if [ -n "$UPDATE_BRANCH_TIP" ]; then
+            OTHERS=$(gh api "repos/${{ github.repository }}/compare/main...$BRANCH" \
+              --jq '.commits[].commit.message | split("\n")[0]' \
+              | grep -v -x -F -e "$WINDOW_TITLE" -e "$PACKAGES_TITLE" || true)
+            if [ -n "$OTHERS" ]; then
+              echo "::warning::$BRANCH has commits this workflow did not make, so this run leaves it alone. Merge or close its pull request to resume the updates."
+              exit 0
+            fi
+          fi
+          if git diff --quiet -- shiny_versions.json; then
+            TITLE="$PACKAGES_TITLE"
+            BODY="The bundled shiny versions are unchanged. This re-resolves the Python packages in shinylive_lock.json against their newest releases."
+          else
+            TITLE="$WINDOW_TITLE"
+            BODY="shiny_versions.json lists the newest patch of the last five shiny minors on PyPI and CRAN. This updates it, pins packages/py-shiny to the newest Python release, and re-resolves shinylive_lock.json for every bundled minor."
+          fi
           git checkout -B "$BRANCH"
           git add shiny_versions.json shinylive_lock.json packages/py-shiny
-          git commit --message "build: move the bundled shiny window forward"
+          git commit --message "$TITLE"
           git push --force-with-lease="refs/heads/$BRANCH:$UPDATE_BRANCH_TIP" \
             "https://x-access-token:${TOKEN}@github.com/${{ github.repository }}" \
             "$BRANCH:refs/heads/$BRANCH"
           if gh pr view "$BRANCH" --json state --jq .state 2>/dev/null | grep -q OPEN; then
-            gh pr edit "$BRANCH" --title "build: move the bundled shiny window forward"
+            gh pr edit "$BRANCH" --title "$TITLE" --body "$BODY"
           else
-            gh pr create --fill --head "$BRANCH" --base main
+            gh pr create --head "$BRANCH" --base main --title "$TITLE" --body "$BODY"
           fi
