@@ -4,4 +4,5 @@ requirements-parser>=0.5.0
 typing-extensions
 pyright
 shinyswatch
-uv>=0.5
+# 0.7.11 is the first uv with the wasm32-pyodide2024 platform.
+uv>=0.7.11
