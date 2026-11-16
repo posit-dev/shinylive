@@ -1,6 +1,7 @@
 .PHONY: all dist \
 	packages \
 	update_packages_lock retrieve_packages update_pyodide_lock_json \
+	check_shiny_bundle \
 	pyodide_js \
 	pyodide_packages_local \
 	create_typeshed_json \
@@ -10,6 +11,7 @@
 	packages \
 	clean-packages clean distclean \
 	examples-check-index type-check \
+	update_shiny_versions test-scripts \
 	test-deps test-unit test-unit-coverage \
 	test-examples test-examples-intent test-site test-loader webr \
 	_shinylive
@@ -22,6 +24,17 @@ PYODIDE_VERSION = 0.27.7
 PYODIDE_DIST_FILENAME = pyodide-$(PYODIDE_VERSION).tar.bz2
 DOWNLOAD_DIR = ./downloads
 R_SHINY_VERSION = 1.13.0.8000
+# Where the per-minor R library images are published, as
+# $(R_SHINY_IMAGE_BASE_URL)/v<exact>/library.data.gz and library.js.metadata.
+# Empty by default: the build then downloads only the single R_SHINY_VERSION
+# image, and the R engine is version-unaware (every R app runs on that image,
+# with no version probe, report, or picker). Set it to build one image per
+# bundled R shiny minor and enable the R version path. scripts/build.ts reads
+# it from the environment, so it is exported.
+R_SHINY_IMAGE_BASE_URL ?=
+export R_SHINY_IMAGE_BASE_URL
+R_SHINY_MINORS = $(shell python3 -c "import json; print(' '.join(json.load(open('shiny_versions.json'))['r']))")
+R_SHINY_NEWEST_MINOR = $(firstword $(R_SHINY_MINORS))
 BUILD_DIR = ./build
 PACKAGE_DIR = ./packages
 DIST_DIR = ./dist
@@ -32,13 +45,9 @@ SHINYLIVE_DIR = ./_shinylive
 # __version__ in __init__.py, _version.py, or __version.py (hatch-vcs).
 # We use a consistent helper that checks all three locations.
 _get_version = $(shell grep '^__version__ = ' $(1)/__version.py $(1)/__init__.py $(1)/_version.py 2>/dev/null | head -1 | sed -E "s/.*['\"]([^'\"]+)['\"]/\1/")
-HTMLTOOLS_VERSION = $(call _get_version,$(PACKAGE_DIR)/py-htmltools/htmltools)
-SHINY_VERSION = $(call _get_version,$(PACKAGE_DIR)/py-shiny/shiny)
 SHINYWIDGETS_VERSION = $(call _get_version,$(PACKAGE_DIR)/py-shinywidgets/shinywidgets)
 FAICONS_VERSION = $(call _get_version,$(PACKAGE_DIR)/py-faicons/faicons)
 
-HTMLTOOLS_WHEEL = htmltools-$(HTMLTOOLS_VERSION)-py3-none-any.whl
-SHINY_WHEEL = shiny-$(SHINY_VERSION)-py3-none-any.whl
 SHINYWIDGETS_WHEEL = shinywidgets-$(SHINYWIDGETS_VERSION)-py3-none-any.whl
 FAICONS_WHEEL = faicons-$(FAICONS_VERSION)-py3-none-any.whl
 
@@ -107,6 +116,8 @@ submodules-pull-htmltools:
 ## Build everything _except_ the shinylive.tar.gz distribution file
 all: node_modules \
 	$(BUILD_DIR)/shinylive/style-resets.css \
+	$(BUILD_DIR)/shinylive/shiny_versions.json \
+	$(BUILD_DIR)/shinylive/shiny_version_cases.json \
 	$(BUILD_DIR)/shinylive/pyodide \
 	$(BUILD_DIR)/shinylive/webr \
 	pyodide_js \
@@ -114,6 +125,7 @@ all: node_modules \
 	update_packages_lock_local \
 	retrieve_packages \
 	update_pyodide_lock_json \
+	check_shiny_bundle \
 	create_typeshed_json \
 	copy_pyright \
 	$(BUILD_DIR)/export_template/index.html \
@@ -135,6 +147,14 @@ $(BUILD_DIR)/shinylive/style-resets.css: src/style-resets.css
 	mkdir -p $(BUILD_DIR)/shinylive
 	cp src/style-resets.css $(BUILD_DIR)/shinylive
 
+$(BUILD_DIR)/shinylive/shiny_versions.json: shiny_versions.json
+	mkdir -p $(BUILD_DIR)/shinylive
+	cp shiny_versions.json $(BUILD_DIR)/shinylive/
+
+$(BUILD_DIR)/shinylive/shiny_version_cases.json: shiny_version_cases.json
+	mkdir -p $(BUILD_DIR)/shinylive
+	cp shiny_version_cases.json $(BUILD_DIR)/shinylive/
+
 $(DOWNLOAD_DIR)/$(PYODIDE_DIST_FILENAME):
 	mkdir -p $(DOWNLOAD_DIR)
 	cd $(DOWNLOAD_DIR) && \
@@ -150,8 +170,24 @@ $(BUILD_DIR)/shinylive/webr: webr
 webr:
 	mkdir -p $(BUILD_DIR)/shinylive/webr
 	cp -r node_modules/webr/dist/. $(BUILD_DIR)/shinylive/webr
+	# Per-minor images from an earlier build would otherwise stay in the bundle:
+	# after a build without R_SHINY_IMAGE_BASE_URL, or for a minor that has left
+	# shiny_versions.json.
+	rm -rf $(BUILD_DIR)/shinylive/webr/shiny-*
+ifeq ($(R_SHINY_IMAGE_BASE_URL),)
 	curl --fail -L https://github.com/r-wasm/shiny/releases/download/v$(R_SHINY_VERSION)/library.data.gz -o $(BUILD_DIR)/shinylive/webr/library.data.gz
 	curl --fail -L https://github.com/r-wasm/shiny/releases/download/v$(R_SHINY_VERSION)/library.js.metadata -o $(BUILD_DIR)/shinylive/webr/library.js.metadata
+else
+	for minor in $(R_SHINY_MINORS); do \
+	  exact=$$(python3 -c "import json; print(json.load(open('shiny_versions.json'))['r']['$$minor'])"); \
+	  dir=$(BUILD_DIR)/shinylive/webr/shiny-$$minor; \
+	  mkdir -p $$dir; \
+	  curl --fail -L $(R_SHINY_IMAGE_BASE_URL)/v$$exact/library.data.gz -o $$dir/library.data.gz || exit 1; \
+	  curl --fail -L $(R_SHINY_IMAGE_BASE_URL)/v$$exact/library.js.metadata -o $$dir/library.js.metadata || exit 1; \
+	done
+	cp $(BUILD_DIR)/shinylive/webr/shiny-$(R_SHINY_NEWEST_MINOR)/library.data.gz $(BUILD_DIR)/shinylive/webr/library.data.gz
+	cp $(BUILD_DIR)/shinylive/webr/shiny-$(R_SHINY_NEWEST_MINOR)/library.js.metadata $(BUILD_DIR)/shinylive/webr/library.js.metadata
+endif
 # FIXME: GitHub Pages does not cache Partial Content downloads. Here, we reduce
 # the damage by forcing entire file downloads with Emscripten's lazy filesystem.
 # Potentially, we can add a switch to Emscripten to disable the mechanism.
@@ -167,23 +203,9 @@ pyodide_js:
 	cp $(BUILD_DIR)/shinylive/pyodide/ffi.d.ts src/pyodide/
 
 ## Copy local package wheels to the pyodide directory
-pyodide_packages_local: $(BUILD_DIR)/shinylive/pyodide/$(HTMLTOOLS_WHEEL) \
-	$(BUILD_DIR)/shinylive/pyodide/$(SHINY_WHEEL) \
-	$(BUILD_DIR)/shinylive/pyodide/$(SHINYWIDGETS_WHEEL) \
+pyodide_packages_local: $(BUILD_DIR)/shinylive/pyodide/$(SHINYWIDGETS_WHEEL) \
 	$(BUILD_DIR)/shinylive/pyodide/$(FAICONS_WHEEL) \
 	$(BUILD_DIR)/shinylive/pyodide/$(LIBSASS_WHEEL)
-
-$(BUILD_DIR)/shinylive/pyodide/$(HTMLTOOLS_WHEEL): $(PACKAGE_DIR)/$(HTMLTOOLS_WHEEL)
-	mkdir -p $(BUILD_DIR)/shinylive/pyodide
-	# Remove any old copies of htmltools
-	rm -f $(BUILD_DIR)/shinylive/pyodide/htmltools*.whl
-	cp $(PACKAGE_DIR)/$(HTMLTOOLS_WHEEL) $(BUILD_DIR)/shinylive/pyodide/$(HTMLTOOLS_WHEEL)
-
-$(BUILD_DIR)/shinylive/pyodide/$(SHINY_WHEEL): $(PACKAGE_DIR)/$(SHINY_WHEEL)
-	mkdir -p $(BUILD_DIR)/shinylive/pyodide
-	# Remove any old copies of shiny
-	rm -f $(BUILD_DIR)/shinylive/pyodide/shiny*.whl
-	cp $(PACKAGE_DIR)/$(SHINY_WHEEL) $(BUILD_DIR)/shinylive/pyodide/$(SHINY_WHEEL)
 
 $(BUILD_DIR)/shinylive/pyodide/$(SHINYWIDGETS_WHEEL): $(PACKAGE_DIR)/$(SHINYWIDGETS_WHEEL)
 	mkdir -p $(BUILD_DIR)/shinylive/pyodide
@@ -249,40 +271,27 @@ serve-r:
 
 # Build the _shinylive directory for deployment of both R and Python sites
 _shinylive:
+	# Start from empty directories, so no file from an earlier build (such as
+	# a per-minor R image that has since been removed from the build) stays.
+	rm -rf $(SHINYLIVE_DIR)/py $(SHINYLIVE_DIR)/r
 	$(MAKE) buildjs-prod
 	cp -Lr $(SITE_DIR)/. $(SHINYLIVE_DIR)/py
 	$(MAKE) buildjs-prod-r
 	cp -Lr $(SITE_DIR)/. $(SHINYLIVE_DIR)/r
 
-# Build htmltools, shiny, and shinywidgets. This target must be run manually after
+# Build shinywidgets and faicons. This target must be run manually after
 # updating the package submodules; it will not run automatically with `make all`
 # because I'm not sure how to set up the dependencies reliably.
-## Build htmltools, shiny, and shinywidgets wheels
+## Build shinywidgets and faicons wheels
 packages: clean-packages \
-	package-htmltools \
-	package-shiny \
 	package-shinywidgets \
 	package-faicons
 
-
-package-htmltools: $(PACKAGE_DIR)/$(HTMLTOOLS_WHEEL)
-
-package-shiny: $(PACKAGE_DIR)/$(SHINY_WHEEL)
 
 package-shinywidgets: $(PACKAGE_DIR)/$(SHINYWIDGETS_WHEEL)
 
 package-faicons: $(PACKAGE_DIR)/$(FAICONS_WHEEL)
 
-
-$(PACKAGE_DIR)/$(HTMLTOOLS_WHEEL): $(PYBIN) $(PACKAGE_DIR)/py-htmltools
-	# Remove any old copies of the package
-	rm -f $(PACKAGE_DIR)/htmltools*.whl
-	. $(PYBIN)/activate && cd $(PACKAGE_DIR)/py-htmltools && pip wheel --no-deps -w ../  .
-
-$(PACKAGE_DIR)/$(SHINY_WHEEL): $(PYBIN) $(PACKAGE_DIR)/py-shiny
-	# Remove any old copies of the package
-	rm -f $(PACKAGE_DIR)/shiny*.whl
-	. $(PYBIN)/activate && cd $(PACKAGE_DIR)/py-shiny && pip wheel --no-deps -w ../ .
 
 $(PACKAGE_DIR)/$(SHINYWIDGETS_WHEEL): $(PYBIN) $(PACKAGE_DIR)/py-shinywidgets
 	# Remove any old copies of the package
@@ -298,20 +307,24 @@ $(PACKAGE_DIR)/$(LIBSASS_WHEEL): $(PYBIN) $(PACKAGE_DIR)/$(LIBSASS_WHEEL)
 	rm -f $(PACKAGE_DIR)/libsass*.whl
 	curl --fail -L https://pkg.garrickadenbuie.com/libsass-python/$(LIBSASS_WHEEL) -o $(PACKAGE_DIR)/$(LIBSASS_WHEEL)
 
+# The "local" packages in shinylive_requirements.json. Lock generation reads
+# their metadata from these wheels, so they must exist before it runs.
+LOCAL_WHEELS = $(PACKAGE_DIR)/$(SHINYWIDGETS_WHEEL) \
+	$(PACKAGE_DIR)/$(FAICONS_WHEEL) \
+	$(PACKAGE_DIR)/$(LIBSASS_WHEEL)
+
 ## Update the shinylive_lock.json file, based on shinylive_requirements.json
-update_packages_lock: $(PYBIN) $(BUILD_DIR)/shinylive/pyodide
+update_packages_lock: $(PYBIN) $(BUILD_DIR)/shinylive/pyodide $(LOCAL_WHEELS)
 	$(PYBIN)/pip install -r requirements-dev.txt
 	. $(PYBIN)/activate && scripts/pyodide_packages.py generate_lockfile
 
 ## Update the shinylive_lock.json file, but with local packages only
-update_packages_lock_local: $(PYBIN) $(BUILD_DIR)/shinylive/pyodide
+update_packages_lock_local: $(PYBIN) $(BUILD_DIR)/shinylive/pyodide $(LOCAL_WHEELS)
 	$(PYBIN)/pip install -r requirements-dev.txt
 	. $(PYBIN)/activate && scripts/pyodide_packages.py update_lockfile_local
 
 ## Download packages in shinylive_lock.json from PyPI
 retrieve_packages: $(PYBIN) $(BUILD_DIR)/shinylive/pyodide \
-		$(BUILD_DIR)/shinylive/pyodide/$(HTMLTOOLS_WHEEL) \
-		$(BUILD_DIR)/shinylive/pyodide/$(SHINY_WHEEL) \
 		$(BUILD_DIR)/shinylive/pyodide/$(SHINYWIDGETS_WHEEL) \
 		$(BUILD_DIR)/shinylive/pyodide/$(FAICONS_WHEEL)
 	$(PYBIN)/pip install -r requirements-dev.txt
@@ -345,9 +358,22 @@ clean:
 distclean: clean
 	rm -rf $(VENV) $(DOWNLOAD_DIR)
 
+## Check the built locks, wheels and images against shiny_versions.json
+check_shiny_bundle:
+	python3 scripts/check_shiny_bundle.py $(if $(R_SHINY_IMAGE_BASE_URL),--r)
+
 ## Check that every example on disk is listed in examples/index.json
 examples-check-index:
 	node scripts/check_examples_index.mjs
+
+## Recompute shiny_versions.json from the PyPI and CRAN release lists
+update_shiny_versions:
+	python3 scripts/update_shiny_versions.py
+
+## Run the stdlib unit tests for the build scripts
+test-scripts: $(PYBIN)
+	$(PYBIN)/pip install -r requirements-dev.txt
+	$(PYBIN)/python -m unittest discover -s scripts -p 'test_*.py' -t .
 
 ## Type-check everything, including the unit tests (swc does not check types)
 type-check: node_modules
@@ -363,7 +389,7 @@ test-unit-coverage: node_modules
 
 # The example tests drive apps with `shiny.playwright.controller`, whose locators
 # track the markup a given Shiny renders, so the installed Shiny has to be the
-# one shinylive bundles -- the submodule $(SHINY_WHEEL) is built from.
+# newest bundled version, which the submodule is pinned to.
 #
 # The `##` line has to sit directly above the target for `make help` to find it.
 ## Install the Python dependencies for the tests in tests/

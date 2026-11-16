@@ -75,7 +75,7 @@ def server(input, output, session):
         return (
             ggplot(df_keep, aes("wt", "mpg"))
             + geom_point()
-            + geom_point(data=df_exclude, color="#666", fill="white")
+            + geom_point(data=df_exclude, color="#666666", fill="white")
             + geom_smooth(method="lm", fullrange=True)
         )
 

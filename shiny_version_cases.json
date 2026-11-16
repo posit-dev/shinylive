@@ -1,0 +1,341 @@
+{
+  "available": {
+    "python": {
+      "1.8": "1.8.0",
+      "1.7": "1.7.0",
+      "1.6": "1.6.5",
+      "1.5": "1.5.1",
+      "1.4": "1.4.0"
+    },
+    "r": {
+      "1.14": "1.14.0",
+      "1.13": "1.13.0",
+      "1.12": "1.12.1",
+      "1.11": "1.11.1",
+      "1.10": "1.10.0"
+    }
+  },
+  "cases": [
+    {
+      "name": "exact pin resolves to the newest patch of its minor",
+      "engine": "python",
+      "files": { "requirements.txt": "shiny==1.6.3\n" },
+      "expect": {
+        "minor": "1.6",
+        "exact": "1.6.5",
+        "requested": "1.6.3",
+        "note": null
+      }
+    },
+    {
+      "name": "minor pin",
+      "engine": "python",
+      "files": { "requirements.txt": "shiny==1.6\n" },
+      "expect": {
+        "minor": "1.6",
+        "exact": "1.6.5",
+        "requested": null,
+        "note": null
+      }
+    },
+    {
+      "name": "wildcard pin",
+      "engine": "python",
+      "files": { "requirements.txt": "shiny==1.6.*\n" },
+      "expect": {
+        "minor": "1.6",
+        "exact": "1.6.5",
+        "requested": null,
+        "note": null
+      }
+    },
+    {
+      "name": "wildcard exclusion skips the whole minor",
+      "engine": "python",
+      "files": { "requirements.txt": "shiny!=1.8.*\n" },
+      "expect": {
+        "minor": "1.7",
+        "exact": "1.7.0",
+        "requested": null,
+        "note": null
+      }
+    },
+    {
+      "name": "wildcard exclusion with an upper bound",
+      "engine": "python",
+      "files": { "requirements.txt": "shiny!=1.6.*,<1.7\n" },
+      "expect": {
+        "minor": "1.5",
+        "exact": "1.5.1",
+        "requested": null,
+        "note": null
+      }
+    },
+    {
+      "name": "compatible release",
+      "engine": "python",
+      "files": { "requirements.txt": "shiny~=1.6.0\n" },
+      "expect": {
+        "minor": "1.6",
+        "exact": "1.6.5",
+        "requested": null,
+        "note": null
+      }
+    },
+    {
+      "name": "extras are ignored for matching",
+      "engine": "python",
+      "files": { "requirements.txt": "shiny[theme]==1.6.3\n" },
+      "expect": {
+        "minor": "1.6",
+        "exact": "1.6.5",
+        "requested": "1.6.3",
+        "note": null
+      }
+    },
+    {
+      "name": "lower bound takes the newest",
+      "engine": "python",
+      "files": { "requirements.txt": "shiny>=1.5\n" },
+      "expect": {
+        "minor": "1.8",
+        "exact": "1.8.0",
+        "requested": null,
+        "note": null
+      }
+    },
+    {
+      "name": "upper bound takes the newest below it",
+      "engine": "python",
+      "files": { "requirements.txt": "shiny<1.7\n" },
+      "expect": {
+        "minor": "1.6",
+        "exact": "1.6.5",
+        "requested": null,
+        "note": null
+      }
+    },
+    {
+      "name": "two-sided range",
+      "engine": "python",
+      "files": { "requirements.txt": "shiny>=1.5,<1.7\n" },
+      "expect": {
+        "minor": "1.6",
+        "exact": "1.6.5",
+        "requested": null,
+        "note": null
+      }
+    },
+    {
+      "name": "exclusion skips a version",
+      "engine": "python",
+      "files": { "requirements.txt": "shiny!=1.8.0\n" },
+      "expect": {
+        "minor": "1.7",
+        "exact": "1.7.0",
+        "requested": null,
+        "note": null
+      }
+    },
+    {
+      "name": "bare shiny takes the newest",
+      "engine": "python",
+      "files": { "requirements.txt": "shiny\n" },
+      "expect": {
+        "minor": "1.8",
+        "exact": "1.8.0",
+        "requested": null,
+        "note": null
+      }
+    },
+    {
+      "name": "no pin file takes the newest",
+      "engine": "python",
+      "files": { "app.py": "" },
+      "expect": {
+        "minor": "1.8",
+        "exact": "1.8.0",
+        "requested": null,
+        "note": null
+      }
+    },
+    {
+      "name": "other packages only",
+      "engine": "python",
+      "files": { "requirements.txt": "numpy\npandas>=2\n" },
+      "expect": {
+        "minor": "1.8",
+        "exact": "1.8.0",
+        "requested": null,
+        "note": null
+      }
+    },
+    {
+      "name": "comment after the pin",
+      "engine": "python",
+      "files": { "requirements.txt": "shiny==1.6.3  # pinned\n" },
+      "expect": {
+        "minor": "1.6",
+        "exact": "1.6.5",
+        "requested": "1.6.3",
+        "note": null
+      }
+    },
+    {
+      "name": "case and spacing",
+      "engine": "python",
+      "files": { "requirements.txt": "Shiny == 1.6.3\n" },
+      "expect": {
+        "minor": "1.6",
+        "exact": "1.6.5",
+        "requested": "1.6.3",
+        "note": null
+      }
+    },
+    {
+      "name": "old pin runs on the oldest with a note",
+      "engine": "python",
+      "files": { "requirements.txt": "shiny==1.2\n" },
+      "expect": {
+        "minor": "1.4",
+        "exact": "1.4.0",
+        "requested": null,
+        "note": "shiny 1.2 is outside the bundled versions (1.4.0 to 1.8.0); running 1.4.0"
+      }
+    },
+    {
+      "name": "future pin runs on the newest with a note",
+      "engine": "python",
+      "files": { "requirements.txt": "shiny==2.0.0\n" },
+      "expect": {
+        "minor": "1.8",
+        "exact": "1.8.0",
+        "requested": "2.0.0",
+        "note": "shiny 2.0.0 is outside the bundled versions (1.4.0 to 1.8.0); running 1.8.0"
+      }
+    },
+    {
+      "name": "unsatisfiable lower bound runs on the newest with a note",
+      "engine": "python",
+      "files": { "requirements.txt": "shiny>=2.0\n" },
+      "expect": {
+        "minor": "1.8",
+        "exact": "1.8.0",
+        "requested": null,
+        "note": "no bundled shiny version satisfies \"shiny>=2.0\" (bundled: 1.4.0 to 1.8.0); running 1.8.0"
+      }
+    },
+    {
+      "name": "unsatisfiable upper bound runs on the oldest with a note",
+      "engine": "python",
+      "files": { "requirements.txt": "shiny<1.0\n" },
+      "expect": {
+        "minor": "1.4",
+        "exact": "1.4.0",
+        "requested": null,
+        "note": "no bundled shiny version satisfies \"shiny<1.0\" (bundled: 1.4.0 to 1.8.0); running 1.4.0"
+      }
+    },
+    {
+      "name": "git URL is unreadable",
+      "engine": "python",
+      "files": {
+        "requirements.txt": "shiny @ git+https://github.com/posit-dev/py-shiny\n"
+      },
+      "expect": {
+        "minor": "1.8",
+        "exact": "1.8.0",
+        "requested": null,
+        "note": "could not read the shiny line \"shiny @ git+https://github.com/posit-dev/py-shiny\"; running 1.8.0"
+      }
+    },
+    {
+      "name": "R exact constraint in Imports",
+      "engine": "r",
+      "files": { "DESCRIPTION": "Package: app\nImports: shiny (== 1.11.1)\n" },
+      "expect": {
+        "minor": "1.11",
+        "exact": "1.11.1",
+        "requested": "1.11.1",
+        "note": null
+      }
+    },
+    {
+      "name": "R exact pin to a four-part CRAN release",
+      "engine": "r",
+      "files": { "DESCRIPTION": "Imports: shiny (== 1.11.0.1)\n" },
+      "expect": {
+        "minor": "1.11",
+        "exact": "1.11.1",
+        "requested": "1.11.0.1",
+        "note": null
+      }
+    },
+    {
+      "name": "R exact constraint to an older patch",
+      "engine": "r",
+      "files": { "DESCRIPTION": "Imports: shiny (== 1.11.0)\n" },
+      "expect": {
+        "minor": "1.11",
+        "exact": "1.11.1",
+        "requested": "1.11.0",
+        "note": null
+      }
+    },
+    {
+      "name": "R lower bound takes the newest",
+      "engine": "r",
+      "files": { "DESCRIPTION": "Imports:\n    bslib,\n    shiny (>= 1.10)\n" },
+      "expect": {
+        "minor": "1.14",
+        "exact": "1.14.0",
+        "requested": null,
+        "note": null
+      }
+    },
+    {
+      "name": "R Depends is read too",
+      "engine": "r",
+      "files": { "DESCRIPTION": "Depends: R (>= 4.1), shiny (== 1.12.0)\n" },
+      "expect": {
+        "minor": "1.12",
+        "exact": "1.12.1",
+        "requested": "1.12.0",
+        "note": null
+      }
+    },
+    {
+      "name": "R no constraint takes the newest",
+      "engine": "r",
+      "files": { "DESCRIPTION": "Imports: shiny\n" },
+      "expect": {
+        "minor": "1.14",
+        "exact": "1.14.0",
+        "requested": null,
+        "note": null
+      }
+    },
+    {
+      "name": "R no DESCRIPTION takes the newest",
+      "engine": "r",
+      "files": { "app.R": "" },
+      "expect": {
+        "minor": "1.14",
+        "exact": "1.14.0",
+        "requested": null,
+        "note": null
+      }
+    },
+    {
+      "name": "R old pin runs on the oldest with a note",
+      "engine": "r",
+      "files": { "DESCRIPTION": "Imports: shiny (== 1.8.1)\n" },
+      "expect": {
+        "minor": "1.10",
+        "exact": "1.10.0",
+        "requested": "1.8.1",
+        "note": "shiny 1.8.1 is outside the bundled versions (1.10.0 to 1.14.0); running 1.10.0"
+      }
+    }
+  ]
+}

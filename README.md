@@ -77,7 +77,7 @@ buildjs-r              Build JS resources with webR as the default engine
 buildjs-prod-r         Build JS resources for production with webR as the default engine
 serve-prod-r           Build JS resources for production and serve site with webR as the default engine
 serve-r                Build JS resources and serve site with webR as the default engine
-packages               Build htmltools, shiny, and shinywidgets wheels
+packages               Build shinywidgets and faicons wheels
 update_packages_lock   Update the shinylive_lock.json file, based on shinylive_requirements.json
 update_packages_lock_local Update the shinylive_lock.json file, but with local packages only
 retrieve_packages      Download packages in shinylive_lock.json from PyPI
@@ -87,7 +87,10 @@ copy_pyright           Copy src/pyright files to build directory
 clean-packages         Remove built wheels from the packages/ directory
 clean                  Remove all build files
 distclean              Remove all build files, venv/, and downloads/
+check_shiny_bundle     Check the built locks, wheels and images against shiny_versions.json
 examples-check-index   Check that every example on disk is listed in examples/index.json
+update_shiny_versions  Recompute shiny_versions.json from the PyPI and CRAN release lists
+test-scripts           Run the stdlib unit tests for the build scripts
 type-check             Type-check everything, including the unit tests (swc does not check types)
 test-unit              Run the TypeScript unit tests (jest); needs no build and no Python
 test-unit-coverage     Run the TypeScript unit tests and report coverage
@@ -95,6 +98,7 @@ test-deps              Install the Python dependencies for the tests in tests/
 test-examples          Run the smoke and intent tests for every example app (needs `make all`)
 test-examples-intent   Run only the example app intent tests (needs `make all`)
 test-site              Run the site and static export tests (needs `make all`)
+test-loader            Run the loader status and failure-mode tests (needs `make all`)
 ```
 
 ## Testing
@@ -116,7 +120,7 @@ npm run test:unit
 npm run test:unit:watch
 ```
 
-Tests live next to the code they cover, as `src/**/*.test.ts`. The runner is configured in `jest.config.js`: jsdom for a DOM, `@swc/jest` to strip TypeScript, and the stubs in `testing-helpers/` for CSS and asset imports and for the browser globals jsdom lacks. swc does not type-check, so `make type-check` is what checks the tests' types, alongside the rest of `src/`. CI runs it in the same job as the tests, and a failure blocks the build.
+Tests live next to the code they cover, as `src/**/*.test.ts` and `src/**/*.test.tsx`. The runner is configured in `jest.config.js`: jsdom for a DOM, `@swc/jest` to strip TypeScript, and the stubs in `testing-helpers/` for CSS and asset imports and for the browser globals jsdom lacks. swc does not type-check, so `make type-check` is what checks the tests' types, alongside the rest of `src/`. CI runs it in the same job as the tests, and a failure blocks the build.
 
 Anything that needs a real browser, a running app, or Pyodide/webR belongs in the app tests below rather than here.
 
@@ -168,13 +172,17 @@ make submodules
 
 ## Adding new packages or updating package versions
 
-The `shinylive_lock.json` file lists specific versions of packages which will be included in the Shinylive distribution (in addition to the base Pyodide packages). This file is generated from `shinylive_requirements.json`.
+`shinylive_lock.json` lists, for each bundled shiny minor version, the packages added on top of the base Pyodide packages. It is generated from `shinylive_requirements.json` and `shiny_versions.json` by resolving each shiny version with `uv pip compile` against the Pyodide platform. The build writes one `pyodide-lock-shiny-<minor>.json` per version into `build/shinylive/pyodide/`; `pyodide-lock.json` is a copy of the newest one.
 
 If you add a package to `shinylive_requirements.json`, or want to update package versions, the lockfile must also be regenerated:
 
 ```
 make update_packages_lock
 ```
+
+`shiny_versions.json` lists the bundled shiny versions for each language: the newest patch release of each of the last five minor versions. `make update_shiny_versions` recomputes it from PyPI and CRAN, and the "Update shiny versions" workflow does the same weekly and opens a pull request. The build, the runtime and the version picker all read this file.
+
+The R versions are available only in a bundle built with `R_SHINY_IMAGE_BASE_URL` set (see the `Makefile`): the build then downloads one webR library image per bundled R shiny minor version. With it empty (the default), the bundle has a single R library image, and every R app runs on it with no version picker.
 
 
 ## File overview
@@ -183,13 +191,19 @@ This an overview of some of the important files and directories in this project.
 
 ```
 ├── shinylive_requirements.json # List of packages to add on top of standard Pyodide installation.
-├── shinylive_lock.json    # Lockfile generated from shinylive_requirements.json.
+├── shinylive_lock.json    # Lockfile generated from shinylive_requirements.json and shiny_versions.json.
+├── shiny_versions.json    # The bundled shiny versions for each language.
+├── shiny_version_cases.json # Pin resolution cases for the resolver's jest tests.
 ├── build                  # Generated JS/CSS/wasm components for shinylive (not committed to repo)
+│   └── shinylive
+│       └── pyodide
+│           └── pyodide-lock-shiny-*.json # One lock per bundled shiny minor version.
 ├── examples               # Shiny app examples used in Examples browser
-├── packages               # Git submodules for htmltools, shiny, and ipyshiny.
-│   ├── py-htmltools       #   Used for building wheel files for shinylive.
+├── packages               # Git submodules for htmltools, shiny, shinywidgets, and faicons.
+│   ├── py-faicons         #   Used for building wheel files for shinylive.
+│   ├── py-htmltools
 │   ├── py-shiny
-│   └── ipyshiny
+│   └── py-shinywidgets    #   Used for building wheel files for shinylive.
 ├── export_template        # Files used for deployment via `shinylive deploy`
 ├── scripts
 │   └── pyodide_packages.py # Script for downloading PyPI packages and inserting

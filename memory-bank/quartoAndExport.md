@@ -1,6 +1,6 @@
 ---
 title: Quarto and Export Contract
-description: How the separate Python/R `shinylive` packages and the Quarto extension use this repo's bundle — code block parsing (`#|` options, `## file:` separators), codeblock-to-json, run-python-blocks, runExportedApp, export_template/, and `?_shinylive-mode=`. Read before changing any of these files, since external packages depend on them.
+description: How the separate Python/R `shinylive` packages and the Quarto extension use this repo's bundle — code block parsing (`#|` options including `shiny-version`, `## file:` separators), codeblock-to-json, run-python-blocks, runExportedApp, export_template/, `?_shinylive-mode=`, and the per-version files an export of a pinned app relies on. Read before changing any of these files, since external packages depend on them.
 ---
 
 # Quarto and Export Contract
@@ -24,6 +24,11 @@ App modes and the URL hash are covered in `appModes.md`; how `build/` is produce
 | `scripts/codeblock-to-json.js` | `src/scripts/codeblock-to-json.ts` | Quarto extension, at render time |
 | `export_template/index.html`, `export_template/edit/index.html` | `export_template/` | `shinylive export` |
 
+`build/shinylive/` also contains the per-version files: `pyodide/pyodide-lock-shiny-<minor>.json`
+for each Python minor and, in a build with `R_SHINY_IMAGE_BASE_URL` set, `webr/shiny-<minor>/`
+(`buildPipeline.md`). It contains `shiny_versions.json` and `shiny_version_cases.json` as well. The
+runtime never fetches those two; `src/shiny-version.ts` bundles `shiny_versions.json` at build time.
+
 The `worker` esbuild context in `scripts/build.ts` builds `run-python-blocks.ts` with
 `./shinylive.js` marked external, so the Quarto page loads `shinylive.js` once and
 `run-python-blocks.js` imports `runApp` from it at run time.
@@ -46,9 +51,20 @@ The `worker` esbuild context in `scripts/build.ts` builds `run-python-blocks.ts`
    goes into the default file name.
 
 `Component` is `"editor" | "terminal" | "viewer" | "examples" | "cell"`. `QuartoArgs` is
-`components`, `standalone`, and any other key (`[name: string]: any`). Those extra keys are passed
-through to `runApp` as options, so `layout`, `viewerHeight`, `editorHeight` and the other fields
-of `AppOptions` in `App.tsx` work as `#|` options without any mapping code.
+`components`, `standalone`, `shiny-version`, and any other key (`[name: string]: any`). Those
+extra keys are passed through to `runApp` as options, so `layout`, `viewerHeight`, `editorHeight`
+and the other fields of `AppOptions` in `App.tsx` work as `#|` options without any mapping code.
+
+`#| shiny-version: "1.6"` pins the block's app to a bundled shiny minor by writing a pin into
+`requirements.txt` or `DESCRIPTION` when the app has none. The value must be quoted: unquoted YAML
+turns `1.10` into the number 1.1, and `runApp` rejects any non-string. An existing pin wins. For R,
+the option and the pin take effect only in a bundle built with `R_SHINY_IMAGE_BASE_URL`; a default
+build ignores both and runs the single R image. The rules are in `shinyVersions.md`. Quarto blocks
+get no version picker by default, even in the `editor-terminal-viewer` layout, because
+`run-python-blocks.ts` does not set `showVersionPicker`. Extra keys are passed through to `runApp`,
+so a block with `#| showVersionPicker: true` gets one when it also uses the `editor-terminal-viewer`
+layout (`components: [editor, terminal, viewer]`) and its engine is version-aware (Python, or R in
+a build with per-version images). Other layouts have no header bar picker.
 
 ## Quarto render step (`src/scripts/codeblock-to-json.ts`)
 
@@ -85,7 +101,12 @@ Anything else throws. `examples` is a valid `Component` type but has no mode her
 3. reads the mode from `?_shinylive-mode=` in the query string (not the hash), defaulting to
    `viewer`. An unknown mode logs a warning and falls back to `viewer`;
 4. calls `runApp` with only `startFiles`. So `allowCodeUrl`, `allowGistUrl` and `allowExampleUrl`
-   stay false, and an export ignores `#code=` in the URL.
+   stay false, an export ignores `#code=` in the URL, and it has no version picker.
+
+The runtime falls back to `pyodide-lock.json` (or `webr/library.data.gz`) when the per-version
+file for the app's pinned minor is missing. So an export that contains one version's lock (or
+image) under the default name runs that version, and an export that copies the whole bundle runs
+any bundled version. The version messages an export prints are described in `shinyVersions.md`.
 
 `export_template/index.html` is a Mustache template. The external packages fill in:
 
@@ -108,8 +129,13 @@ The tests cannot use `shinylive export` (circular dependency, see `browserTests.
 `export_app()` in `tests/export_app.py` does the same job by hand: writes `app.json`, renders
 `index.html` with plain string replacement (title section and include slots handled by regex),
 copies `edit/index.html`, and symlinks `build/shinylive` and `build/shinylive-sw.js` into the export
-root. `tests/test_site_export.py` checks the root page, the `edit/` redirect, that a URL hash is
-ignored, the missing header bar, and `editor-cell` mode. If you change the template or
+root. With `shiny_minor`, it links every bundle file except the Pyodide locks, and copies
+`pyodide-lock-shiny-<minor>.json` to `pyodide-lock.json`: one version under the default name.
+`export_quarto_page()` (fixture `quarto_page`) writes a page shaped like a Quarto render, one
+`<pre class="shinylive-python">` (or `-r`) block plus `run-python-blocks.js`.
+`tests/test_site_export.py` checks the root page, the `edit/` redirect, that a URL hash is ignored,
+the missing header bar, and `editor-cell` mode; `tests/test_site_shiny_version.py` covers a pinned
+export and the Quarto `shiny-version` option. If you change the template or
 `runExportedApp`, update `export_app.py` to match, and think about what the external packages do.
 
 ## Things that must stay stable
@@ -117,6 +143,8 @@ ignored, the missing header bar, and `editor-cell` mode. If you change the templ
 - File names and locations in the table above, including `shinylive-sw.js` at the root.
 - The `runExportedApp` and `runApp` exports and their argument shapes.
 - The `app.json` shape, and the template variable names.
+- The `shiny-version` option, the `pyodide-lock-shiny-<minor>.json` and `webr/shiny-<minor>/`
+  names, and the fallback to the default lock and image names.
 - The `_shinylive-mode` query parameter and the mode strings in `AppModes`.
 - The code block syntax, the CSS classes `shinylive-python` / `shinylive-r`, and
   `codeblock-to-json`'s stdin/stdout and engine argument.

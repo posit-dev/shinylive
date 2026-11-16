@@ -1,6 +1,6 @@
 ---
 title: Python Engine (Pyodide)
-description: How Pyodide is started, how the main thread talks to it (PyodideProxy, the web worker, ResultType), the Python helpers that start and stop Shiny apps (_shiny_app_registry, micropip installs), how output reaches the terminal, and the shared engine load-status pieces. Read before changing pyodide-proxy.ts, pyodide-worker.ts, usePyodide.tsx, or the loading screen.
+description: How Pyodide is started (including the per-shiny-version lock and engine restart), how the main thread talks to it (PyodideProxy, the web worker, ResultType), the Python helpers that start and stop Shiny apps (_shiny_app_registry, micropip installs), how output reaches the terminal, and the shared engine load-status pieces. Read before changing pyodide-proxy.ts, pyodide-worker.ts, usePyodide.tsx, or the loading screen.
 ---
 
 # Python Engine (Pyodide)
@@ -10,22 +10,38 @@ How requests reach a running app (service worker, `fetchASGI`, WebSocket shim) i
 
 ## Startup chain
 
-`src/Components/App.tsx` calls `ensurePyodideProxyHandlePromise`, which keeps one module-level
-promise per page, so every component shares one Pyodide. It runs:
+`src/Components/App.tsx` calls `ensurePyodideProxyHandlePromise` (through `startEngine`) with the
+shiny minor the app resolved to. It keeps one module-level promise per page, so every component
+shares one Pyodide, and records the minor in `engineShinyMinors`. It runs:
 
-1. `initPyodide` (`src/hooks/usePyodide.tsx`) — checks the wasm, builds the proxy, runs the setup
-   Python (`load_python_pre`), returns a `PyodideProxyHandle` with `ready: true`.
+1. `initPyodide` (`src/hooks/usePyodide.tsx`) — checks the wasm, picks the lock file for the
+   minor, builds the proxy with `lockFileURL`, runs the setup Python (`load_python_pre`), reads
+   the installed shiny version with `importlib.metadata`, and returns a `PyodideProxyHandle` with
+   `ready: true` and `shinyVersion`. The lock is `pyodide-lock.json` for the newest bundled minor,
+   else `pyodide-lock-shiny-<minor>.json` if a HEAD request finds it (`assetExists`), else
+   `pyodide-lock.json`. See `shinyVersions.md`.
 2. `initShiny` — only when the app mode needs Shiny (not `editor-terminal`). It does not import
    Shiny; it only calls `ensureOpenChannelListener` and sets `shinyReady: true`. Shiny is imported
    later, by `_start_app`.
 
 `usePyodide` is a thin React hook that waits for that promise and stores the handle in state.
+When it is given a new promise (an engine restart), it first resets the handle to not-ready.
 `PyodideProxyHandle.runCode` runs REPL input with `printResult: true`; `tabComplete` goes through
 Pyodide's console completer.
 
 If `load_python_pre` throws, `initPyodide` still returns `ready: true` with `initError: true`
-(the error is already recorded in the load-status store). Errors thrown before that point
-(unreachable wasm, failed `loadPyodide`) propagate, and `App.tsx` marks the store `failed`.
+(the error is already recorded in the load-status store), and `shinyVersion` stays `""`. Errors
+thrown before that point (unreachable wasm, failed `loadPyodide`) propagate, and `App.tsx` marks the
+store `failed`.
+
+## Engine restart
+
+When a re-run or the version picker needs another shiny minor, `restartEngine` in `App.tsx` stops
+the app, calls `PyodideProxy.terminate()`, resets the load-status store, clears the singleton with
+`clearEngineSingleton`, and starts a new engine for the new minor. `WebWorkerPyodideProxy.terminate`
+terminates the worker; `NormalPyodideProxy.terminate` throws, so with `?webworker=0` `App.tsx`
+writes the files to `#code=` and reloads the page instead, on a page that starts from that hash.
+Other pages keep the engine and show the version notice. The full flow is in `shinyVersions.md`.
 
 ## PyodideProxy: worker vs normal
 
@@ -37,7 +53,8 @@ If `load_python_pre` throws, `initPyodide` still returns `ready: true` with `ini
   port. `openChannel` and `makeRequest` instead transfer the client's `MessagePort` straight to
   the worker and do not wait for a reply.
 - `NormalPyodideProxy` — runs Pyodide on the main thread. Used when the page URL has
-  `?webworker=0` (`pyodideProxyType` in `App.tsx`). Handy for debugging in devtools.
+  `?webworker=0` (`pyodideProxyType` in `App.tsx`). Handy for debugging in devtools. It cannot be
+  terminated.
 
 Differences between the two that can bite:
 
@@ -139,13 +156,15 @@ traceback both in the terminal and in the Viewer error.
 
 - `src/load-status.ts` — one observable store per engine (`loadStatusStore("python" | "r")`),
   kept at module level because loading starts before React mounts. Stages: `idle`,
-  `engine-download`, `engine-start`, `ready`, `failed`. `failed` is terminal, so a later error
-  cannot hide the first cause. `get()` returns a stable object (required by
+  `engine-download`, `engine-start`, `ready`, `failed`. `set()` cannot leave `failed`, so a later
+  error cannot hide the first cause; only `reset()`, called by an engine restart, returns the
+  store to `idle`. `get()` returns a stable object (required by
   `useSyncExternalStore`).
 - `src/engine-load-guard.ts` — `checkEngineAssetReachable` fetches `pyodide.asm.wasm` (or
   `R.wasm`) and checks the HTTP status and the `\0asm` magic bytes, then cancels the body. This
   exists because `loadPyodide()` and webR's `init()` hang forever on a missing wasm. A valid but
-  wrong wasm still hangs; there is no timeout.
+  wrong wasm still hangs; there is no timeout. `assetExists` is a plain HEAD check, used for the
+  optional per-version lock and webR image files.
 - `src/hooks/useLoadStatus.ts` — `useSyncExternalStore` wrapper.
 - `src/Components/LoadingStatus.tsx` — spinner; stage text appears only after 3 s
   (`STATUS_DELAY_MS`). At `ready` it says "Loading packages and starting app…", since app

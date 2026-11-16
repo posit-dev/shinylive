@@ -1,5 +1,5 @@
-import type { Shelter, WebROptions } from "webr";
-import { WebR, EvalROptions } from "webr";
+import type { EvalROptions, Shelter, WebROptions } from "webr";
+import { WebR } from "webr";
 import type { ASGIHTTPRequestScope } from "./messageporthttp.js";
 import { makeHttpuvRequest } from "./messageporthttp.js";
 import { openChannelHttpuv } from "./messageportwebsocket-channel.js";
@@ -13,6 +13,8 @@ export interface WebRProxy {
   runRAsync(code: string, options?: EvalROptions): Promise<any>;
 
   runCode(code: string): Promise<string>;
+
+  terminate(): void;
 
   openChannel(
     path: string,
@@ -42,6 +44,10 @@ class WebRWorkerProxy implements WebRProxy {
     private stderrCallback: (text: string) => void,
   ) {
     this.webR = new WebR(config);
+  }
+
+  terminate(): void {
+    this.webR.close();
   }
 
   async runCode(code: string) {

@@ -48,8 +48,10 @@ export function useTabbedCodeMirror({
   //   browser's search box.
   // - When the user adds a new file. In this case, we want the focus to be on
   //   the tab because it will be in the file-renaming state.
+  // - When the App replaces the files, for example after an example switch or
+  //   a version pick, because focus belongs to the control the user used.
   // This var starts false, is set to true when clicking on a tab, and set to
-  // false when adding a file.
+  // false when adding a file or receiving files from the App.
   const [focusOnEditor, setFocusOnEditor] = React.useState(false);
 
   // ===========================================================================
@@ -61,6 +63,7 @@ export function useTabbedCodeMirror({
       fileContentsToEditorFiles(currentFilesFromApp, inferEditorExtensions),
     );
     setActiveFileIdx(0);
+    setFocusOnEditor(false);
 
     setNewFileCounter(1);
 

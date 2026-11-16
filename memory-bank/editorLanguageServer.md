@@ -91,7 +91,8 @@ Do not edit the worker by hand.
 
 1. Runs `pyright --createstub` (the `pyright` Python package in `venv/`) for `htmltools`, `shiny`,
    `shinywidgets`, and `shinyswatch` into `typings/` (gitignored). The stubs come from whatever
-   versions are installed in `venv/`, which may not match `shinylive_lock.json`.
+   versions are installed in `venv/`, which may not match `shinylive_lock.json`. There is one set
+   of stubs, so the editor checks against one shiny version whatever version the app pins.
 2. Reads the `typeshed` git submodule's `stdlib/`, leaving out modules that do not work in the
    browser (`tkinter`, `subprocess`, `socket`, `multiprocessing`, `unittest`, `xml`, and others).
 3. Adds `/src/pyrightconfig.json`: Python `3.12` (hard-coded as `PYODIDE_PYTHON_VERSION`), Linux,

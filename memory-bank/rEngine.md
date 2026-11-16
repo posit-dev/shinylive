@@ -1,6 +1,6 @@
 ---
 title: R Engine (webR)
-description: How webR is started, how the R shiny library image is mounted, the R helpers that start and stop apps (.shiny_app_registry, .start_app, .shiny_tick), how httpuv-style requests and WebSocket replies flow through WebRProxy, and how R differs from the Python engine. Read before changing webr-proxy.ts, useWebR.tsx, r-status.ts, or the R paths in Viewer.tsx.
+description: How webR is started, how the R shiny library image is chosen and mounted (one default image, or one per shiny minor when R_SHINY_IMAGE_BASE_URL is set), the R helpers that start and stop apps (.shiny_app_registry, .start_app, .shiny_tick), how httpuv-style requests and WebSocket replies flow through WebRProxy, and how R differs from the Python engine. Read before changing webr-proxy.ts, useWebR.tsx, r-status.ts, or the R paths in Viewer.tsx.
 ---
 
 # R Engine (webR)
@@ -11,8 +11,8 @@ load-status pieces (`load-status.ts`, `engine-load-guard.ts`, `LoadingStatus.tsx
 
 ## Startup chain
 
-`ensureWebRProxyHandlePromise` in `src/Components/App.tsx` keeps one module-level promise, so
-every component shares one webR. It runs:
+`ensureWebRProxyHandlePromise` in `src/Components/App.tsx` (called through `startEngine` with a
+shiny minor) keeps one module-level promise, so every component shares one webR. It runs:
 
 1. `initWebR` (`src/hooks/useWebR.tsx`):
    - Picks `ChannelType.Automatic` if the page is `crossOriginIsolated`, else
@@ -20,26 +20,40 @@ every component shares one webR. It runs:
    - Sets the `r` store to `engine-download`, runs `checkEngineAssetReachable("r", ...)` on
      `R.wasm`, then `loadWebRProxy`.
    - Sets `engine-start`, binds `.base_url` in the global env, mounts the shiny library image,
-     runs `load_r_pre`, sets `ready`.
+     runs `load_r_pre`, reads `utils::packageVersion("shiny")` into the handle's `shinyVersion`,
+     sets `ready`.
 2. `initRShiny` (when the mode needs Shiny) — `library(shiny)`, `options(expressions=1000)` for
    Shiny's deep call stacks, then `ensureOpenChannelListener`.
 
 Like Python, a failure inside the `try` in `initWebR` sets `failed` but still returns
 `ready: true` with `initError: true`. `App.tsx` then still calls `initRShiny`, whose
-`library(shiny)` fails too; because `failed` is terminal, the store keeps the first cause.
+`library(shiny)` fails too; because `set()` cannot leave `failed`, the store keeps the first cause.
 `library(shiny)` runs after the store says `ready`, so it is covered by the "Loading packages and
 starting app…" text.
 
 ## The shiny library image
 
 The `webr` target in the `Makefile` copies `node_modules/webr/dist` into
-`build/shinylive/webr/`, then downloads `library.data.gz` and `library.js.metadata` from the
-`r-wasm/shiny` GitHub release `v$(R_SHINY_VERSION)`. To move to a new R shiny, change
-`R_SHINY_VERSION` and rebuild. The target also patches `R.js` with `sed` to remove the
-`if(!hasByteServing)` check, so files are downloaded whole (GitHub Pages does not cache partial
-content).
+`build/shinylive/webr/`, then downloads the image files `library.data.gz` and
+`library.js.metadata`. Which images depends on the Makefile variable `R_SHINY_IMAGE_BASE_URL`:
 
-At runtime `initWebR` runs `webr::mount("/shinylive/library", "<baseUrl>library.data.gz")`, and
+- Empty (the default, and in CI): one image, from the `r-wasm/shiny` GitHub release
+  `v$(R_SHINY_VERSION)`, into `webr/`. To move to a new R shiny, change `R_SHINY_VERSION` and
+  rebuild.
+- Set: one image per R minor in `shiny_versions.json`, from
+  `$(R_SHINY_IMAGE_BASE_URL)/v<exact>/`, into `webr/shiny-<minor>/`, with the newest copied to
+  `webr/`.
+
+The target also patches `R.js` with `sed` to remove the `if(!hasByteServing)` check, so files are
+downloaded whole (GitHub Pages does not cache partial content).
+
+At runtime `initWebR` runs `webr::mount("/shinylive/library", "<image url>")`; webR reads the
+`.js.metadata` file next to the `.data.gz`. The URL is `<baseUrl>library.data.gz` unless
+`R_VERSIONS_AVAILABLE` is true (the build had `R_SHINY_IMAGE_BASE_URL` set) and the requested minor
+is not the newest. Then it is `<baseUrl>shiny-<minor>/library.data.gz` if a HEAD request finds it,
+else the default. Without per-version images, R apps never read `DESCRIPTION` for a version, and
+there is no version report, picker, or restart for R. See `shinyVersions.md`.
+
 `load_r_pre` appends `/shinylive/webr/packages` and `/shinylive/library` to `.libPaths()`.
 
 ## WebRProxy (`src/webr-proxy.ts`)
@@ -58,6 +72,9 @@ There is one class, `WebRWorkerProxy`. webR already runs R in its own worker, so
 - `runCode` (the REPL) writes to the console with `writeConsole` and resolves with the next
   prompt string. `Terminal.tsx` prints that prompt.
 - `openChannel` → `openChannelHttpuv`; `makeRequest` → `makeHttpuvRequest`.
+- `terminate()` calls `webR.close()`. An engine restart (`restartEngine` in `App.tsx`, which for
+  R happens only in a build with per-version images) uses it, then starts a new
+  `WebRWorkerProxy`; `useWebR` resets its handle to not-ready when the promise changes.
 
 ## load_r_pre (in `useWebR.tsx`)
 
@@ -66,8 +83,9 @@ There is one class, `WebRWorkerProxy`. webR already runs R in its own worker, so
 - `.shiny_app_registry <- new.env()`.
 - `.shiny_to_httpuv(appDir)` — `as.shiny.appobj`, `onStart()` (sources `global.R`),
   `workerId("")`, resets the current app state, and builds an httpuv-style app with
-  `createAppHandlers` and `HandlerManager`. These are internal `shiny:::` functions, so a new
-  `R_SHINY_VERSION` can break them.
+  `createAppHandlers` and `HandlerManager`. These are internal `shiny:::` functions, so any
+  bundled R shiny version can break them: `R_SHINY_VERSION`, or any R minor in `shiny_versions.json`
+  in a build with `R_SHINY_IMAGE_BASE_URL` set.
 - `.shiny_tick()` — runs Shiny's timers, `flushReact()`, and `flushPendingSessions()`.
 - `.send_ws(message)` — sends a message to the main thread with `webr::eval_js` writing a
   `_webR_httpuv_WSResponse` to `Module.webr.channel`.
@@ -112,7 +130,8 @@ Details are in `requestFlow.md`. In short: `makeHttpuvRequest` (`src/messageport
 the request body, wraps it in `.RawReader`, and evaluates
 `get(appName, env = .shiny_app_registry)$call(list(PATH_INFO, REQUEST_METHOD, QUERY_STRING,
 rook.input))`. A `NULL` app (stopped) gives a non-list reply, which surfaces as
-`Unexpected response type`. For WebSockets, `openChannelHttpuv`
+`Unexpected response type`. The Viewer answers requests that reach it after `stopApp` began with an
+empty 503 and does not call the engine (`requestFlow.md`). For WebSockets, `openChannelHttpuv`
 (`src/messageportwebsocket-channel.ts`) stores a `toClient` function in
 `webRProxy.toClientCache[appName]`; R replies come back as `_webR_httpuv_WSResponse` through the
 `#run` loop. `ensureOpenChannelListener` checks `exists(appName, envir = .shiny_app_registry)`

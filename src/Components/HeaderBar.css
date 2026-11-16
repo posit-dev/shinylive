@@ -1,7 +1,7 @@
 .HeaderBar {
   height: 30px;
   padding: 3px 8px;
-  background-color: #007BC2;
+  background-color: #007bc2;
   font-family: var(--font-face);
   font-size: 1.1rem;
   color: var(--colors-white);
@@ -25,7 +25,9 @@
 }
 
 .HeaderBar > div {
+  display: flex;
   flex-direction: row;
+  align-items: center;
   margin-right: 1rem;
 }
 
@@ -50,4 +52,38 @@
 .HeaderBar .code-run-button:hover {
   color: var(--colors-white);
   fill: var(--colors-white);
+}
+
+.HeaderBar .shiny-version-picker {
+  display: inline-flex;
+  align-items: center;
+  margin-right: 0.8rem;
+  font-size: 0.9rem;
+}
+
+.HeaderBar .shiny-version-picker label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35em;
+}
+
+.HeaderBar .shiny-version-select {
+  font-size: 0.9rem;
+  padding: 0.1rem 0.3rem;
+  border-radius: 3px;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  /* Over the #007bc2 header this is about #00629b, which gives white text a
+     contrast ratio of about 6.5:1. */
+  background-color: rgba(0, 0, 0, 0.2);
+  color: var(--colors-white);
+}
+
+/* The engine is loading: the select keeps focus but ignores changes. */
+.HeaderBar .shiny-version-select[aria-disabled="true"] {
+  cursor: progress;
+  opacity: 0.7;
+}
+
+.HeaderBar .shiny-version-select option {
+  color: #000;
 }

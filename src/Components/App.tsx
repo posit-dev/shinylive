@@ -6,17 +6,33 @@ import {
   getExampleCategories,
   sanitizeTitleForUrl,
 } from "../examples";
+import { useLoadStatus } from "../hooks/useLoadStatus";
 import type { PyodideProxyHandle } from "../hooks/usePyodide";
 import { initPyodide, initShiny, usePyodide } from "../hooks/usePyodide";
 import { useRunOnceOnMount } from "../hooks/useRunOnceOnMount";
 import type { WebRProxyHandle } from "../hooks/useWebR";
-import { initRShiny, initWebR, useWebR } from "../hooks/useWebR";
+import {
+  R_VERSIONS_AVAILABLE,
+  initRShiny,
+  initWebR,
+  useWebR,
+} from "../hooks/useWebR";
 import { loadStatusStore } from "../load-status";
 import type { ProxyType } from "../pyodide-proxy";
+import type { ShinyVersionResolution } from "../shiny-version";
+import {
+  bundledShinyVersions,
+  compareVersions,
+  findShinySpec,
+  newestBundled,
+  resolveShinyVersion,
+  shinyVersionMessage,
+} from "../shiny-version";
+import { applyShinyVersionOption, writeShinyPin } from "../shiny-version-pin";
 import "./App.css";
 import { type EditorMethods } from "./Editor";
 import { ExampleSelector } from "./ExampleSelector";
-import type { HeaderBarCallbacks } from "./HeaderBar";
+import type { HeaderBarCallbacks, ShinyVersionPicker } from "./HeaderBar";
 import HeaderBar from "./HeaderBar";
 import { OutputCell } from "./OutputCell";
 import { ResizableGrid } from "./ResizableGrid/ResizableGrid";
@@ -27,7 +43,11 @@ import { Viewer } from "./Viewer";
 import type { FileContent, FileContentJson } from "./filecontent";
 import { FCorFCJSONtoFC } from "./filecontent";
 import { fetchGist, gistApiResponseToFileContents } from "./gist";
-import { editorUrlPrefix, fileContentsToUrlString } from "./share";
+import {
+  editorUrlPrefix,
+  fileContentsToUrlString,
+  fileContentsToUrlStringInWebWorker,
+} from "./share";
 import { asCssLengthUnit, minCssLengthUnit } from "./utils";
 
 // Load Editor component dynamically and lazily because it's large and not
@@ -112,6 +132,14 @@ type AppOptions = {
   // the encoded version of the app?
   updateUrlHashOnRerun?: boolean;
 
+  // Show the shiny version picker in the header bar. The editor/ and examples/
+  // pages set this; a Quarto block gets it only with `#| showVersionPicker: true`.
+  showVersionPicker?: boolean;
+
+  // Pin the app to a bundled shiny minor version, as a string ("1.6"). Writes
+  // the pin file when the app has none; an existing pin wins.
+  "shiny-version"?: string;
+
   // Set window title based on the application iframe's title? If this is
   // not false, then the title from the Viewer iframe will be applied to the
   // window, with the prefix prepended. If the Viewer iframe's title is empty,
@@ -128,16 +156,50 @@ export type ProxyHandle = PyodideProxyHandle | WebRProxyHandle;
 let pyodideProxyHandlePromise: Promise<PyodideProxyHandle> | null = null;
 let webRProxyHandlePromise: Promise<WebRProxyHandle> | null = null;
 
+// The minor version each singleton was started with. One engine per page, so
+// a second App on the page runs on this version even if it asked for another.
+const engineShinyMinors: Record<AppEngine, string | null> = {
+  python: null,
+  r: null,
+};
+
+export function engineShinyMinor(engine: AppEngine): string | null {
+  return engineShinyMinors[engine];
+}
+
+// Whether apps on this engine choose their shiny version. Python always does.
+// R does only in a bundle built with per-version R images; otherwise every R
+// app runs on the single default image, with no version resolution, report,
+// picker, or engine restart.
+function engineIsVersionAware(engine: AppEngine): boolean {
+  return engine === "python" || R_VERSIONS_AVAILABLE;
+}
+
+// The resolution for an engine that is not version-aware: the newest bundled
+// version, with nothing requested.
+function unawareResolution(engine: AppEngine): ShinyVersionResolution {
+  const newest = newestBundled(bundledShinyVersions(engine));
+  return {
+    minor: newest.minor,
+    exact: newest.exact,
+    requested: null,
+    note: null,
+  };
+}
+
 function ensurePyodideProxyHandlePromise({
   proxyType,
   shiny,
   showStartBanner,
+  shinyMinor,
 }: {
   proxyType: ProxyType;
   shiny: boolean;
   showStartBanner: boolean;
+  shinyMinor: string;
 }): Promise<PyodideProxyHandle> {
   if (!pyodideProxyHandlePromise) {
+    engineShinyMinors.python = shinyMinor;
     pyodideProxyHandlePromise = (async (): Promise<PyodideProxyHandle> => {
       let pyodideProxyHandle: PyodideProxyHandle;
 
@@ -148,6 +210,7 @@ function ensurePyodideProxyHandlePromise({
           proxyType,
           stdout: terminalInterface.echo,
           stderr: terminalInterface.error,
+          shinyMinor,
         });
 
         if (shiny) {
@@ -189,10 +252,13 @@ function ensurePyodideProxyHandlePromise({
 
 function ensureWebRProxyHandlePromise({
   shiny,
+  shinyMinor,
 }: {
   shiny: boolean;
+  shinyMinor: string;
 }): Promise<WebRProxyHandle> {
   if (!webRProxyHandlePromise) {
+    engineShinyMinors.r = shinyMinor;
     webRProxyHandlePromise = (async (): Promise<WebRProxyHandle> => {
       let webRProxyHandle: WebRProxyHandle;
 
@@ -202,6 +268,7 @@ function ensureWebRProxyHandlePromise({
         webRProxyHandle = await initWebR({
           stdout: terminalInterface.echo,
           stderr: terminalInterface.error,
+          shinyMinor,
         });
 
         if (shiny) {
@@ -229,16 +296,79 @@ function ensureWebRProxyHandlePromise({
   return webRProxyHandlePromise as Promise<WebRProxyHandle>;
 }
 
+export function clearEngineSingleton(engine: AppEngine): void {
+  if (engine === "python") pyodideProxyHandlePromise = null;
+  else webRProxyHandlePromise = null;
+  engineShinyMinors[engine] = null;
+}
+
+// How many App components on this page use each engine. A restart is only
+// safe when this App is the sole user: with several apps on one page, one
+// engine per page is the rule and a later app runs on the engine's version.
+const appInstances: Record<AppEngine, number> = { python: 0, r: 0 };
+
+function startEngine(
+  engine: AppEngine,
+  shinyMinor: string,
+  loadShiny: boolean,
+): Promise<ProxyHandle> {
+  if (engine === "python") {
+    return ensurePyodideProxyHandlePromise({
+      proxyType: pyodideProxyType,
+      shiny: loadShiny,
+      showStartBanner: false,
+      shinyMinor,
+    });
+  }
+  if (engine === "r") {
+    return ensureWebRProxyHandlePromise({ shiny: loadShiny, shinyMinor });
+  }
+  throw new Error(`Unrecognised Wasm engine: "${engine}".`);
+}
+
+type EngineStart = { promise: Promise<ProxyHandle>; shinyMinor: string };
+
+// The notice a Viewer shows when its app runs on an engine whose minor version
+// differs from the one the app resolves to, or null when they match.
+function versionNoticeText(
+  files: FileContent[],
+  engine: AppEngine,
+  resolvedMinor: string,
+  engineMinor: string,
+): string | null {
+  if (resolvedMinor === engineMinor) return null;
+  // A shiny line with no version, or one the resolver cannot read, counts as
+  // no pin: the app gets the newest bundled version.
+  const spec = findShinySpec(files, engine);
+  const pinned = spec.kind === "clauses" && spec.clauses.length > 0;
+  return pinned
+    ? `This app requests shiny ${resolvedMinor}; this page runs ${engineMinor}.`
+    : `This app has no shiny pin and defaults to shiny ${resolvedMinor}; this page runs ${engineMinor}.`;
+}
+
+// Hooks cannot be called conditionally, so the engine not in use gets a
+// promise that never settles.
+const NEVER_PYODIDE = new Promise<PyodideProxyHandle>(() => {});
+const NEVER_WEBR = new Promise<WebRProxyHandle>(() => {});
+
 export function App({
   appMode = "examples-editor-terminal-viewer",
   startFiles = [],
   appOptions = {},
   appEngine,
+  shinyVersion,
+  startupNotes,
+  restoresFilesFromHash = false,
 }: {
   appMode: AppMode;
   startFiles: FileContent[];
   appOptions?: AppOptions;
   appEngine: AppEngine;
+  shinyVersion: ShinyVersionResolution;
+  startupNotes: string[];
+  // Whether a reload of this page starts from the files in `#code=`. Only
+  // then can a version change on main-thread Pyodide reload the page.
+  restoresFilesFromHash?: boolean;
 }) {
   if (startFiles.length === 0) {
     if (appMode.includes("viewer")) {
@@ -266,33 +396,90 @@ export function App({
   // For most but not all appMode, set up pyodide for shiny.
   const loadShiny = !["editor-terminal"].includes(appMode);
 
-  let useWasmEngine: () => ProxyHandle;
-  switch (appEngine) {
-    case "python": {
-      // Temporarily disabled
-      // Modes in which _not_ to show Pyodide startup message.
-      // const showStartBanner = !["editor-terminal"].includes(appMode);
-      const promise = ensurePyodideProxyHandlePromise({
-        proxyType: pyodideProxyType,
-        shiny: loadShiny,
-        showStartBanner: false,
-      });
-      pyodideProxyHandlePromise = promise;
-      useWasmEngine = () => usePyodide({ pyodideProxyHandlePromise: promise });
-      break;
-    }
-    case "r": {
-      const promise = (webRProxyHandlePromise = ensureWebRProxyHandlePromise({
-        shiny: loadShiny,
-      }));
-      useWasmEngine = () => useWebR({ webRProxyHandlePromise: promise });
-      break;
-    }
-    default:
-      throw new Error(`Unrecognised Wasm engine: "${appEngine}".`);
-  }
+  // A second App for the same engine finds the singleton already running,
+  // possibly on another version; it gets a notice rather than a restart.
+  const priorMinor = engineShinyMinor(appEngine);
+  const [engineStart, setEngineStart] = React.useState<EngineStart>(() => ({
+    promise: startEngine(appEngine, shinyVersion.minor, loadShiny),
+    shinyMinor: engineShinyMinor(appEngine) ?? shinyVersion.minor,
+  }));
+  const engineStartRef = React.useRef(engineStart);
+  engineStartRef.current = engineStart;
 
-  const proxyHandle = useWasmEngine();
+  // Each run sets the notice again from its own resolution.
+  const [versionNotice, setVersionNotice] = React.useState<string | null>(() =>
+    priorMinor === null
+      ? null
+      : versionNoticeText(
+          startFiles,
+          appEngine,
+          shinyVersion.minor,
+          priorMinor,
+        ),
+  );
+
+  React.useEffect(() => {
+    appInstances[appEngine] += 1;
+    return () => {
+      appInstances[appEngine] -= 1;
+    };
+  }, [appEngine]);
+
+  const pyodideHandle = usePyodide({
+    pyodideProxyHandlePromise:
+      appEngine === "python"
+        ? (engineStart.promise as Promise<PyodideProxyHandle>)
+        : NEVER_PYODIDE,
+  });
+  const webRHandle = useWebR({
+    webRProxyHandlePromise:
+      appEngine === "r"
+        ? (engineStart.promise as Promise<WebRProxyHandle>)
+        : NEVER_WEBR,
+  });
+  const proxyHandle: ProxyHandle =
+    appEngine === "python" ? pyodideHandle : webRHandle;
+
+  // The resolution the version report describes: the startup one, then the
+  // one from the latest run that restarted the engine or changed the pin.
+  const [startupResolution, setStartupResolution] =
+    React.useState<ShinyVersionResolution>(shinyVersion);
+  const startupResolutionRef = React.useRef(startupResolution);
+  startupResolutionRef.current = startupResolution;
+
+  // Report the version once per engine and resolution, when the engine is
+  // up. The resolver's note says why the pin could not be honored as written;
+  // the message compares what the app asked for with what the engine really
+  // loaded. An empty
+  // shinyVersion means startup failed before the engine read it, so only the
+  // note prints. The startup notes (from the shiny-version option) print
+  // before the first report only. Layouts with a terminal echo the lines
+  // there; every layout without a terminal sends them to console.warn.
+  const reportedVersionFor = React.useRef<string | null>(null);
+  const pendingStartupNotes = React.useRef<string[]>(startupNotes);
+  React.useEffect(() => {
+    if (!engineIsVersionAware(appEngine)) return;
+    if (!proxyHandle.ready) return;
+    const actual = proxyHandle.shinyVersion;
+    if (reportedVersionFor.current === actual) return;
+    reportedVersionFor.current = actual;
+
+    const notes = pendingStartupNotes.current;
+    pendingStartupNotes.current = [];
+    const lines = [
+      ...notes,
+      startupResolution.note,
+      actual === "" ? null : shinyVersionMessage(startupResolution, actual),
+    ].filter((l): l is string => l !== null);
+    for (const line of lines) {
+      if (!appMode.includes("terminal")) {
+        console.warn(`[shinylive] ${line}`);
+      } else {
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+        terminalInterface.echo(line);
+      }
+    }
+  }, [proxyHandle, startupResolution, appMode, appEngine]);
 
   const [editorMethods, setEditorMethods] = React.useState<EditorMethods>({
     getActiveFileContents: null,
@@ -301,6 +488,218 @@ export function App({
   const [viewerMethods, setViewerMethods] = React.useState<ViewerMethods>({
     ready: false,
   });
+
+  type ReadyViewerMethods = Extract<ViewerMethods, { ready: true }>;
+
+  const viewerMethodsRef = React.useRef(viewerMethods);
+  viewerMethodsRef.current = viewerMethods;
+
+  // Resolved when the viewer reports ready after a restart.
+  const pendingViewerRef = React.useRef<
+    ((m: ReadyViewerMethods) => void) | null
+  >(null);
+  React.useEffect(() => {
+    if (viewerMethods.ready && pendingViewerRef.current) {
+      const resolve = pendingViewerRef.current;
+      pendingViewerRef.current = null;
+      resolve(viewerMethods);
+    }
+  }, [viewerMethods]);
+
+  const restartEngine = React.useCallback(
+    async (minor: string): Promise<ReadyViewerMethods> => {
+      const current = viewerMethodsRef.current;
+      // The old engine is terminated next, so a stop that fails (an engine
+      // whose initialization failed has no app to stop) does not block it.
+      if (current.ready) {
+        await current.stopApp().catch((e: unknown) => console.error(e));
+      }
+
+      const old = await engineStartRef.current.promise.catch(() => null);
+      if (old && old.ready) {
+        if (old.engine === "pyodide") old.pyodide.terminate();
+        else old.webRProxy.terminate();
+      }
+
+      loadStatusStore(appEngine).reset();
+      clearEngineSingleton(appEngine);
+      const promise = startEngine(appEngine, minor, loadShiny);
+      // Resolves when the new viewer reports ready. Rejects when the new
+      // engine fails to load, so a failed restart does not block later runs.
+      const ready = new Promise<ReadyViewerMethods>((resolve, reject) => {
+        pendingViewerRef.current = resolve;
+        const fail = (e: unknown) => {
+          if (pendingViewerRef.current === resolve) {
+            pendingViewerRef.current = null;
+          }
+          reject(e);
+        };
+        promise.then((handle) => {
+          if (handle.initError) {
+            fail(new Error(`The engine failed to start shiny ${minor}.`));
+          }
+        }, fail);
+      });
+      reportedVersionFor.current = null;
+      setEngineStart({ promise, shinyMinor: minor });
+      return ready;
+    },
+    [appEngine, loadShiny],
+  );
+
+  // The restart in progress, if any. It settles once the new viewer is ready
+  // and has run the files that caused the restart. Every run waits for it
+  // before it reads the engine version or the viewer, so runs happen one at a
+  // time and a restart never starts while another is still waiting for its
+  // viewer.
+  const restartInFlightRef = React.useRef<Promise<unknown> | null>(null);
+
+  // Set by a picker choice made after the engine failed to load. The next run
+  // restarts the engine even when the minor version is the same, so that
+  // picking the failed version again retries it.
+  const forceRestartRef = React.useRef(false);
+
+  // Every run goes through here: the files decide the version, and a change
+  // of minor version restarts the engine first.
+  const runAppWithVersion = React.useCallback(
+    async (appCode: string | FileContent[]): Promise<void> => {
+      // A caller's stopApp that ran before the restart began did not stop the
+      // restart's app, so a run that waited stops it before running.
+      let waited = false;
+      while (restartInFlightRef.current) {
+        waited = true;
+        await restartInFlightRef.current;
+      }
+
+      const files: FileContent[] =
+        typeof appCode === "string"
+          ? [
+              {
+                name: appEngine === "r" ? "app.R" : "app.py",
+                content: appCode,
+                type: "text",
+              },
+            ]
+          : appCode;
+      const current = viewerMethodsRef.current;
+
+      if (!engineIsVersionAware(appEngine)) {
+        if (current.ready) {
+          if (waited) await current.stopApp();
+          await current.runApp(files);
+        }
+        return;
+      }
+
+      const resolved = resolveShinyVersion(
+        files,
+        appEngine,
+        bundledShinyVersions(appEngine),
+      );
+      const forceRestart = forceRestartRef.current;
+      forceRestartRef.current = false;
+      const engineMinor = engineStartRef.current.shinyMinor;
+      // Pyodide on the main thread cannot be torn down. A page that starts
+      // from the files in the hash reloads onto the new version; any other
+      // page keeps the engine, so that the edits are not lost.
+      const mainThreadPyodide =
+        appEngine === "python" && pyodideProxyType === "normal";
+
+      if (
+        (resolved.minor === engineMinor && !forceRestart) ||
+        appInstances[appEngine] > 1 ||
+        (mainThreadPyodide && !restoresFilesFromHash)
+      ) {
+        setVersionNotice(
+          versionNoticeText(files, appEngine, resolved.minor, engineMinor),
+        );
+        // The engine keeps its version, but a changed pin can change what the
+        // report says, so the report prints again for the new resolution.
+        const reported = startupResolutionRef.current;
+        if (
+          resolved.minor !== reported.minor ||
+          resolved.note !== reported.note ||
+          resolved.requested !== reported.requested
+        ) {
+          reportedVersionFor.current = null;
+          setStartupResolution(resolved);
+        }
+        if (current.ready) {
+          if (waited) await current.stopApp();
+          await current.runApp(files);
+        }
+        return;
+      }
+
+      if (mainThreadPyodide) {
+        window.location.hash = "code=" + fileContentsToUrlString(files);
+        window.location.reload();
+        return;
+      }
+
+      setStartupResolution(resolved);
+      setVersionNotice(null);
+      const restartAndRun = (async () => {
+        const ready = await restartEngine(resolved.minor);
+        await ready.runApp(files);
+      })();
+      const inFlight = restartAndRun
+        .catch(() => null)
+        .finally(() => {
+          if (restartInFlightRef.current === inFlight) {
+            restartInFlightRef.current = null;
+          }
+        });
+      restartInFlightRef.current = inFlight;
+      await restartAndRun;
+    },
+    [appEngine, restartEngine, restoresFilesFromHash],
+  );
+
+  // The Editor's run-on-load effect and the viewer-only effect below run the
+  // app whenever these methods change identity, with the files the page
+  // started with. A restart replaces the Viewer's methods, so these methods
+  // change identity only once, when the viewer first becomes ready, and
+  // delegate to whichever viewer is current. Otherwise the startup files would
+  // run again after every restart and restart the engine back to their pin.
+  const [viewerStarted, setViewerStarted] = React.useState(false);
+  React.useEffect(() => {
+    if (viewerMethods.ready) setViewerStarted(true);
+  }, [viewerMethods]);
+
+  const editorViewerMethods: ViewerMethods = React.useMemo(
+    () =>
+      viewerStarted
+        ? {
+            ready: true,
+            runApp: runAppWithVersion,
+            stopApp: async () => {
+              // A stop during a restart waits for it to finish. Otherwise the
+              // stop runs on the new viewer while it is still starting the
+              // restart's app: the engine removes the app as soon as it is
+              // registered, and the iframe then requests an app that the
+              // engine no longer has.
+              while (restartInFlightRef.current) {
+                await restartInFlightRef.current;
+              }
+              // The Editor stops the app before each run. An engine whose load
+              // failed may have no app to stop, and the run that follows
+              // restarts it, so its failed stop is logged. On a working engine
+              // a failed stop means the old app is still loaded, so it throws.
+              const current = viewerMethodsRef.current;
+              if (!current.ready) return;
+              try {
+                await current.stopApp();
+              } catch (e) {
+                if (loadStatusStore(appEngine).get().stage !== "failed")
+                  throw e;
+                console.error(e);
+              }
+            },
+          }
+        : { ready: false },
+    [viewerStarted, runAppWithVersion, appEngine],
+  );
 
   // TODO: Customize these methods so that print output is sent to the specific
   // terminal.
@@ -318,12 +717,89 @@ export function App({
   const [headerBarCallbacks, setHeaderBarCallbacks] =
     React.useState<HeaderBarCallbacks>({});
 
+  // The files as of the last render, so a picker hash update can tell whether
+  // anything replaced its files while it compressed them.
+  const currentFilesRef = React.useRef(currentFiles);
+  currentFilesRef.current = currentFiles;
+  const onSelectVersion = React.useCallback(
+    async (exact: string) => {
+      const files = editorMethods.getActiveFileContents
+        ? editorMethods.getActiveFileContents()
+        : currentFiles;
+      const pinned = writeShinyPin(files, appEngine, exact);
+      const engineFailed = loadStatusStore(appEngine).get().stage === "failed";
+      if (engineFailed) forceRestartRef.current = true;
+      // Once a viewer has started, the Editor runs the app when its files
+      // change, through runAppWithVersion.
+      setCurrentFiles(pinned);
+      if (appOptions.updateUrlHashOnRerun) {
+        // The hash is a convenience; the pin is already in the files. When a
+        // later pick, an example switch or a parent message replaces the files
+        // while this compresses, the update is stale and is dropped.
+        try {
+          const code = await fileContentsToUrlStringInWebWorker(pinned);
+          if (currentFilesRef.current === pinned) {
+            history.replaceState(null, "", "#code=" + code);
+          }
+        } catch (e) {
+          console.error(e);
+        }
+      }
+      if (engineFailed && !viewerStarted) {
+        // The first engine load failed, so no viewer has started and the
+        // Editor does not run anything. The run restarts the engine here.
+        await runAppWithVersion(pinned);
+      }
+    },
+    [
+      editorMethods,
+      currentFiles,
+      appEngine,
+      appOptions.updateUrlHashOnRerun,
+      viewerStarted,
+      runAppWithVersion,
+    ],
+  );
+
+  const loadStatus = useLoadStatus(appEngine);
+  const shinyVersionPicker: ShinyVersionPicker | null = React.useMemo(() => {
+    if (!appOptions.showVersionPicker) return null;
+    if (!engineIsVersionAware(appEngine)) return null;
+    const available = bundledShinyVersions(appEngine);
+    const newest = newestBundled(available).exact;
+    const options = Object.values(available)
+      .sort((a, b) => compareVersions(b, a))
+      .map((exact) => ({ exact, latest: exact === newest }));
+    // Until the engine reports the version it loaded, show the bundled version
+    // of the minor the engine starts on.
+    const starting = available[engineStart.shinyMinor] ?? newest;
+    return {
+      running:
+        proxyHandle.ready && proxyHandle.shinyVersion !== ""
+          ? proxyHandle.shinyVersion
+          : starting,
+      options,
+      // After a failed load the picker stays usable: a pick restarts the
+      // engine, even on the same version.
+      busy: !proxyHandle.ready && loadStatus.stage !== "failed",
+      onSelect: (exact) => {
+        onSelectVersion(exact).catch((e) => console.error(e));
+      },
+    };
+  }, [
+    appOptions.showVersionPicker,
+    appEngine,
+    engineStart.shinyMinor,
+    proxyHandle,
+    loadStatus.stage,
+    onSelectVersion,
+  ]);
+
   React.useEffect(() => {
-    if (appMode === "viewer" && viewerMethods.ready) {
-      // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      viewerMethods.runApp(currentFiles);
+    if (appMode === "viewer" && editorViewerMethods.ready) {
+      runAppWithVersion(currentFiles).catch((e) => console.error(e));
     }
-  }, [appMode, currentFiles, viewerMethods]);
+  }, [appMode, currentFiles, editorViewerMethods, runAppWithVersion]);
 
   // Experimental code: For non-apps, save the code to /home/pyodide. This will
   // probably have to change in the future, because it (1) doesn't work well
@@ -427,6 +903,7 @@ export function App({
         <HeaderBar
           headerBarCallbacks={headerBarCallbacks}
           appEngine={appEngine}
+          shinyVersionPicker={shinyVersionPicker}
         ></HeaderBar>
         <ResizableGrid
           className="shinylive-container"
@@ -451,7 +928,7 @@ export function App({
               setHeaderBarCallbacks={setHeaderBarCallbacks}
               setEditorMethods={setEditorMethods}
               terminalMethods={terminalMethods}
-              viewerMethods={viewerMethods}
+              viewerMethods={editorViewerMethods}
               utilityMethods={utilityMethods}
               runOnLoad={isRunnableApp(currentFiles)}
               updateUrlHashOnRerun={appOptions.updateUrlHashOnRerun}
@@ -469,6 +946,7 @@ export function App({
             devMode={true}
             setWindowTitle={appOptions.setWindowTitle}
             engine={appEngine}
+            notice={versionNotice}
           />
         </ResizableGrid>
       </>
@@ -479,6 +957,7 @@ export function App({
         <HeaderBar
           headerBarCallbacks={headerBarCallbacks}
           appEngine={appEngine}
+          shinyVersionPicker={shinyVersionPicker}
         ></HeaderBar>
         <ResizableGrid
           className="shinylive-container"
@@ -503,7 +982,7 @@ export function App({
               setHeaderBarCallbacks={setHeaderBarCallbacks}
               setEditorMethods={setEditorMethods}
               terminalMethods={terminalMethods}
-              viewerMethods={viewerMethods}
+              viewerMethods={editorViewerMethods}
               utilityMethods={utilityMethods}
               runOnLoad={isRunnableApp(currentFiles)}
               updateUrlHashOnRerun={appOptions.updateUrlHashOnRerun}
@@ -521,6 +1000,7 @@ export function App({
             devMode={true}
             setWindowTitle={appOptions.setWindowTitle}
             engine={appEngine}
+            notice={versionNotice}
           />
         </ResizableGrid>
       </>
@@ -616,7 +1096,7 @@ export function App({
             setEditorMethods={setEditorMethods}
             terminalMethods={terminalMethods}
             utilityMethods={utilityMethods}
-            viewerMethods={viewerMethods}
+            viewerMethods={editorViewerMethods}
             updateUrlHashOnRerun={appOptions.updateUrlHashOnRerun}
             appEngine={appEngine}
           />
@@ -627,6 +1107,7 @@ export function App({
           devMode={true}
           setWindowTitle={appOptions.setWindowTitle}
           engine={appEngine}
+          notice={versionNotice}
         />
       </ResizableGrid>
     );
@@ -651,6 +1132,7 @@ export function App({
             devMode={false}
             setWindowTitle={appOptions.setWindowTitle}
             engine={appEngine}
+            notice={versionNotice}
           />
         </div>
       </>
@@ -718,94 +1200,130 @@ export function runApp(
   opts = { ...optsDefaults, ...opts };
   let startFiles: undefined | FileContentJson[] | FileContent[] =
     opts.startFiles;
+  // A page given its files directly ignores the hash on reload.
+  const restoresFilesFromHash =
+    startFiles === undefined && opts.allowCodeUrl === true;
 
   // eslint-disable-next-line @typescript-eslint/no-floating-promises
   (async () => {
-    if (startFiles === undefined) {
-      // Use the URL hash to determine what files to start with.
-      const hashContent = window.location.hash.replace(/^#/, "");
-      const hashParams = new URLSearchParams(hashContent);
+    // Log here too: a caller that ignores the rejection would hide the error.
+    try {
+      if (startFiles === undefined) {
+        // Use the URL hash to determine what files to start with.
+        const hashContent = window.location.hash.replace(/^#/, "");
+        const hashParams = new URLSearchParams(hashContent);
 
-      // Handle URL hash with "#code="
-      if (opts.allowCodeUrl && hashParams.has("code")) {
-        try {
-          const codeEncoded = hashParams.get("code") ?? "";
-          // Returns null if decoding fails
-          const code = LZString.decompressFromEncodedURIComponent(codeEncoded);
-          if (code) {
-            // Throws if parsing fails
-            startFiles = JSON.parse(code) as FileContentJson[];
-          } else {
+        // Handle URL hash with "#code="
+        if (opts.allowCodeUrl && hashParams.has("code")) {
+          try {
+            const codeEncoded = hashParams.get("code") ?? "";
+            // Returns null if decoding fails
+            const code =
+              LZString.decompressFromEncodedURIComponent(codeEncoded);
+            if (code) {
+              // Throws if parsing fails
+              startFiles = JSON.parse(code) as FileContentJson[];
+            } else {
+              startFiles = [];
+            }
+          } catch (e) {
+            console.log("Could not parse JSON from URL hash.");
             startFiles = [];
           }
-        } catch (e) {
-          console.log("Could not parse JSON from URL hash.");
+        }
+        // Handle URL hash with "#gist="
+        else if (opts.allowGistUrl && hashParams.has("gist")) {
+          const gistId = hashParams.get("gist") ?? "";
+          try {
+            const gistApiResponse = await fetchGist(gistId);
+            startFiles = await gistApiResponseToFileContents(gistApiResponse);
+          } catch (e) {
+            console.log("Could not parse JSON from gist " + gistId);
+            startFiles = [];
+          }
+        }
+        // Look for URL hash with example name, like "#app-with-plot"
+        else if (opts.allowExampleUrl) {
+          let exampleName = "";
+          // For example names, the key-value pair won't have a value.
+          for (const [key, value] of hashParams.entries()) {
+            if (value === "") exampleName = key;
+          }
+
+          const exampleCategories = await getExampleCategories(appEngine);
+          let pos = findExampleByTitle(exampleName, exampleCategories);
+          if (pos) {
+            opts.selectedExample = exampleName;
+          } else {
+            // If we didn't find an example name from the URL hash, we'll just use
+            // the first available example.
+            pos = { categoryIndex: 0, index: 0 };
+            opts.selectedExample = sanitizeTitleForUrl(
+              exampleCategories[pos.categoryIndex].apps[pos.index].title,
+            );
+          }
+          startFiles =
+            exampleCategories[pos.categoryIndex].apps[pos.index].files;
+        }
+        // If we get here, we're either not looking for a URL hash that points to
+        // code, or we didn't find such a hash.
+        else {
           startFiles = [];
         }
-      }
-      // Handle URL hash with "#gist="
-      else if (opts.allowGistUrl && hashParams.has("gist")) {
-        const gistId = hashParams.get("gist") ?? "";
-        try {
-          const gistApiResponse = await fetchGist(gistId);
-          startFiles = await gistApiResponseToFileContents(gistApiResponse);
-        } catch (e) {
-          console.log("Could not parse JSON from gist " + gistId);
-          startFiles = [];
-        }
-      }
-      // Look for URL hash with example name, like "#app-with-plot"
-      else if (opts.allowExampleUrl) {
-        let exampleName = "";
-        // For example names, the key-value pair won't have a value.
-        for (const [key, value] of hashParams.entries()) {
-          if (value === "") exampleName = key;
-        }
 
-        const exampleCategories = await getExampleCategories(appEngine);
-        let pos = findExampleByTitle(exampleName, exampleCategories);
-        if (pos) {
-          opts.selectedExample = exampleName;
-        } else {
-          // If we didn't find an example name from the URL hash, we'll just use
-          // the first available example.
-          pos = { categoryIndex: 0, index: 0 };
-          opts.selectedExample = sanitizeTitleForUrl(
-            exampleCategories[pos.categoryIndex].apps[pos.index].title,
-          );
-        }
-        startFiles = exampleCategories[pos.categoryIndex].apps[pos.index].files;
-      }
-      // If we get here, we're either not looking for a URL hash that points to
-      // code, or we didn't find such a hash.
-      else {
-        startFiles = [];
+        // Look for "h=0". This value is used only in Viewer-only mode to
+        // determine whether or not to hide the header bar.
+        opts.showHeaderBar = hashParams.get("h") !== "0";
       }
 
-      // Look for "h=0". This value is used only in Viewer-only mode to
-      // determine whether or not to hide the header bar.
-      opts.showHeaderBar = hashParams.get("h") !== "0";
+      // At this point we know that startFiles is a FileContentJson[] or
+      // FileContent[]. Ensure that they're all FileContent.
+      startFiles = startFiles.map(FCorFCJSONtoFC);
+
+      // Which bundled shiny this app needs, decided before the engine starts.
+      // An engine that is not version-aware runs its newest bundled version.
+      let shinyVersion = unawareResolution(appEngine);
+      let startupNotes: string[] = [];
+      if (engineIsVersionAware(appEngine)) {
+        // The shiny-version option writes a pin when the app has none, so it
+        // runs before the resolver reads the pin.
+        const applied = applyShinyVersionOption(
+          startFiles,
+          appEngine,
+          opts["shiny-version"],
+          bundledShinyVersions(appEngine),
+        );
+        startFiles = applied.files;
+        startupNotes = applied.note ? [applied.note] : [];
+        shinyVersion = resolveShinyVersion(
+          startFiles,
+          appEngine,
+          bundledShinyVersions(appEngine),
+        );
+      }
+
+      const { ...appOpts } = opts;
+      delete appOpts.allowCodeUrl;
+      delete appOpts.allowExampleUrl;
+
+      const root = createRoot(domTarget);
+      root.render(
+        <React.StrictMode>
+          <App
+            appMode={mode}
+            startFiles={startFiles}
+            appOptions={appOpts}
+            appEngine={appEngine}
+            shinyVersion={shinyVersion}
+            startupNotes={startupNotes}
+            restoresFilesFromHash={restoresFilesFromHash}
+          />
+        </React.StrictMode>,
+      );
+    } catch (e) {
+      console.error(e);
+      throw e;
     }
-
-    // At this point we know that startFiles is a FileContentJson[] or
-    // FileContent[]. Ensure that they're all FileContent.
-    startFiles = startFiles.map(FCorFCJSONtoFC);
-
-    const { ...appOpts } = opts;
-    delete appOpts.allowCodeUrl;
-    delete appOpts.allowExampleUrl;
-
-    const root = createRoot(domTarget);
-    root.render(
-      <React.StrictMode>
-        <App
-          appMode={mode}
-          startFiles={startFiles}
-          appOptions={appOpts}
-          appEngine={appEngine}
-        />
-      </React.StrictMode>,
-    );
   })();
 }
 

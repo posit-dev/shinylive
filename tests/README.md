@@ -23,6 +23,14 @@ quietly never run.
   three views, and checks the `h=0` option only the app view honours.
 - **`test_site_export.py`** covers a static export: the app page, the `edit/`
   page, and the editor-cell mode.
+- **`test_site_shiny_version.py`** pins shiny to each bundled version and checks
+  the version the engine really loaded, the fallback when a per-version lock is
+  missing, the warning for a pin outside the window, an export that includes one
+  version, the version picker, engine restarts on re-run and their failures,
+  main-thread Pyodide (`?webworker=0`), the Quarto `shiny-version` option, and
+  two apps on one page. In a build without
+  per-version R images, the R tests that need them skip, and one test checks that
+  such a build ignores an R pin.
 
 Every test also fails on terminal tracebacks or warnings, Shiny output errors,
 and browser console errors, including errors emitted after an interaction. A
@@ -74,8 +82,8 @@ controller.OutputCode(app, "txt").expect_value("n*2 is 80")
 
 `make test-deps` installs Shiny from the `packages/py-shiny` submodule rather
 than from PyPI, because the controllers' locators track the markup a given Shiny
-renders, and that submodule is the source of the Shiny wheel shinylive bundles
-into the Python apps.
+renders, and `update_shiny.yml` keeps that submodule at the newest bundled
+release, which is the release unpinned apps run.
 
 ### The iframe
 

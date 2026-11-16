@@ -33,6 +33,7 @@ def export_app(
     *,
     engine: str = "python",
     title: str | None = None,
+    shiny_minor: str | None = None,
 ) -> Path:
     """Write a static export of `files` to `dest`, and return `dest`.
 
@@ -67,10 +68,41 @@ def export_app(
         EXPORT_TEMPLATE_DIR / "edit" / "index.html", dest / "edit" / "index.html"
     )
 
-    (dest / "shinylive").symlink_to(BUILD_DIR / "shinylive", target_is_directory=True)
+    _link_bundle(dest, shiny_minor)
     (dest / "shinylive-sw.js").symlink_to(BUILD_DIR / "shinylive-sw.js")
 
     return dest
+
+
+def _link_bundle(dest: Path, shiny_minor: str | None) -> None:
+    """Put the shinylive bundle under `dest/shinylive/`.
+
+    Without `shiny_minor`, one symlink to the whole built bundle. With it, the
+    shape `shinylive export` will produce for a pinned app: every file linked,
+    except that the pyodide directory has no per-version locks and
+    `pyodide-lock.json` is a copy of that version's lock. The runtime then has
+    to take its fallback path, which is what the export tests check.
+    """
+    bundle = BUILD_DIR / "shinylive"
+    if shiny_minor is None:
+        (dest / "shinylive").symlink_to(bundle, target_is_directory=True)
+        return
+
+    root = dest / "shinylive"
+    root.mkdir()
+    for entry in bundle.iterdir():
+        if entry.name != "pyodide":
+            (root / entry.name).symlink_to(entry, target_is_directory=entry.is_dir())
+    pyodide = root / "pyodide"
+    pyodide.mkdir()
+    for entry in (bundle / "pyodide").iterdir():
+        if entry.name.startswith("pyodide-lock"):
+            continue
+        (pyodide / entry.name).symlink_to(entry)
+    shutil.copyfile(
+        bundle / "pyodide" / f"pyodide-lock-shiny-{shiny_minor}.json",
+        pyodide / "pyodide-lock.json",
+    )
 
 
 # Mustache's section tag: the `<title>` is only rendered when a title was given,
@@ -96,3 +128,39 @@ def _render_index(*, engine: str, title: str | None, rel_path: str = "") -> str:
             lambda match: match.group(1).replace("{{.}}", escape(title)), html
         )
     return _INCLUDE_SLOT.sub("", html)
+
+
+_QUARTO_PAGE = """<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <script src="./shinylive/load-shinylive-sw.js" type="module"></script>
+    <script src="./shinylive/run-python-blocks.js" type="module"></script>
+    <link rel="stylesheet" href="./shinylive/shinylive.css" />
+  </head>
+  <body>
+    <pre class="shinylive-{engine_class}" style="height: 600px">
+{block}</pre>
+  </body>
+</html>
+"""
+
+
+def export_quarto_page(block: str, dest: Path, *, engine: str = "python") -> Path:
+    """A page the way the Quarto shinylive extension renders one code block.
+
+    `block` is the block's text: `#|` options, `## file:` sections and code,
+    exactly as it would appear inside the <pre>. run-python-blocks.js finds the
+    block by class, parses it with parseCodeBlock(), and calls runApp() with
+    the options it declares, so this exercises the Quarto path end to end.
+    """
+    if dest.exists():
+        shutil.rmtree(dest)
+    dest.mkdir(parents=True)
+    engine_class = "r" if engine == "r" else "python"
+    (dest / "index.html").write_text(
+        _QUARTO_PAGE.format(engine_class=engine_class, block=escape(block))
+    )
+    _link_bundle(dest, None)
+    (dest / "shinylive-sw.js").symlink_to(BUILD_DIR / "shinylive-sw.js")
+    return dest

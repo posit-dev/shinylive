@@ -206,6 +206,11 @@ const buildmap = {
       "process.env.NODE_ENV": reactProductionMode
         ? '"production"'
         : '"development"',
+      // The Makefile passes R_SHINY_IMAGE_BASE_URL. Empty means the bundle has
+      // only the default R image, and the R engine is version-unaware.
+      "process.env.R_SHINY_IMAGES": JSON.stringify(
+        Boolean(process.env.R_SHINY_IMAGE_BASE_URL),
+      ),
     },
     loader: {
       ".svg": "dataurl",

@@ -1,9 +1,9 @@
 import * as React from "react";
-import { rCharacterField } from "../r-status";
 import { useLoadStatus } from "../hooks/useLoadStatus";
 import type { EngineName } from "../load-status";
 import { ENGINE_LABEL } from "../load-status";
 import type { PyodideProxy } from "../pyodide-proxy";
+import { rCharacterField } from "../r-status";
 import * as utils from "../utils";
 import type { WebRProxy } from "../webr-proxy";
 import type { ProxyHandle } from "./App";
@@ -26,13 +26,24 @@ export type ViewerMethods =
 
 // Register a unique app path with the service worker. When fetches in our
 // origin match against the app path, navigation should be proxied through
-// the current window (eventually making its way to the Wasm engine).
+// the current window and then passed to the Wasm engine.
+//
+// The engine answers requests only while the app is running, as set with
+// `setServing()`. The iframe's requests are asynchronous, so the viewer can
+// receive one after `stopApp()` has removed the app from the engine's
+// registry (for example, a navigation that started just before the stop). The engine fails
+// such a request (Pyodide raises an uncaught KeyError), so the viewer answers
+// it with a 503 instead.
 function setupAppProxyPath(proxy: PyodideProxy | WebRProxy): {
   appName: string;
   urlPath: string;
+  setServing: (serving: boolean) => void;
+  dispose: () => void;
 } {
   const appName = `app_${utils.makeRandomKey(20)}`;
   const urlPath = appName + "/";
+  let serving = false;
+  const isServing = () => serving;
 
   if (!navigator.serviceWorker.controller) {
     throw new Error("ServiceWorker controller was not found!");
@@ -44,16 +55,32 @@ function setupAppProxyPath(proxy: PyodideProxy | WebRProxy): {
   // and will restart as needed. When the service worker shuts down, it will
   // lose the state that tells it how to proxy requests for `urlPath`, so when
   // it restarts, we need to re-register with the service worker.
-  createHttpRequestChannel(proxy, appName, urlPath);
+  createHttpRequestChannel(proxy, appName, urlPath, isServing);
 
-  // Listen for the service worker's restart messages and re-register.
-  navigator.serviceWorker.addEventListener("message", (event) => {
+  // Re-register when the service worker restarts (see the comment above).
+  // Removed on dispose: after an engine restart this proxy is gone, and
+  // re-registering a port to a terminated worker would only leak.
+  const onServiceWorkerMessage = (event: MessageEvent) => {
     if (event.data.type === "serviceworkerStart") {
-      createHttpRequestChannel(proxy, appName, urlPath);
+      createHttpRequestChannel(proxy, appName, urlPath, isServing);
     }
-  });
+  };
+  navigator.serviceWorker.addEventListener("message", onServiceWorkerMessage);
 
-  return { appName, urlPath };
+  return {
+    appName,
+    urlPath,
+    setServing: (value: boolean) => {
+      serving = value;
+    },
+    dispose: () => {
+      serving = false;
+      navigator.serviceWorker.removeEventListener(
+        "message",
+        onServiceWorkerMessage,
+      );
+    },
+  };
 }
 
 // Register the app path with the service worker
@@ -61,6 +88,7 @@ function createHttpRequestChannel(
   proxy: PyodideProxy | WebRProxy,
   appName: string,
   urlPath: string,
+  isServing: () => boolean,
 ): MessageChannel {
   if (!navigator.serviceWorker.controller) {
     throw new Error("ServiceWorker controller was not found!");
@@ -72,6 +100,10 @@ function createHttpRequestChannel(
   httpRequestChannel.port1.addEventListener("message", (event) => {
     const msg = event.data;
     if (msg.type === "makeRequest") {
+      if (!isServing()) {
+        respondUnavailable(event.ports[0]);
+        return;
+      }
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
       proxy.makeRequest(msg.scope, appName, event.ports[0]);
     }
@@ -87,6 +119,21 @@ function createHttpRequestChannel(
   );
 
   return httpRequestChannel;
+}
+
+// Answer a proxied request with an empty 503, in the message format that
+// fetchASGI() in messageporthttp.ts reads.
+function respondUnavailable(clientPort: MessagePort): void {
+  clientPort.postMessage({
+    type: "http.response.start",
+    status: 503,
+    headers: {},
+  });
+  clientPort.postMessage({
+    type: "http.response.body",
+    body: new Uint8Array(0),
+    more_body: false,
+  });
 }
 
 // Recovery hint shown above the error log when the engine itself fails to load.
@@ -173,7 +220,6 @@ async function resetRAppFrame(
   await utils.sleep(200);
 }
 
-
 // =============================================================================
 // Viewer component
 // =============================================================================
@@ -183,6 +229,7 @@ export function Viewer({
   devMode = false,
   setWindowTitle = false,
   engine,
+  notice = null,
 }: {
   proxyHandle: ProxyHandle;
   setViewerMethods: React.Dispatch<React.SetStateAction<ViewerMethods>>;
@@ -194,6 +241,7 @@ export function Viewer({
       }
     | false;
   engine: EngineName;
+  notice?: string | null;
 }) {
   const viewerFrameRef = React.useRef<HTMLIFrameElement>(null);
   const [appRunningState, setAppRunningState] = React.useState<
@@ -285,7 +333,7 @@ export function Viewer({
           });
           // .start_app reports failure by returning a status list rather than
           // raising, because captureConditions is false here: a raised error would
-          // go to the terminal and never reach this catch, and the viewer would
+          // print in the terminal without triggering this catch, and the viewer would
           // show an app that never started. We evaluate on the shelter rather
           // than through runRAsync because runRAsync purges its own shelter
           // before returning, and we need the list to outlive the call to show
@@ -326,6 +374,7 @@ export function Viewer({
           webRProxy.runRAsync(".shiny_tick()");
         }, 100);
 
+        appInfo.setServing(true);
         viewerFrameRef.current.src = appInfo.urlPath;
         setAppRunningState("running");
       } catch (e) {
@@ -345,6 +394,8 @@ export function Viewer({
       // Stop the periodic R Shiny housekeeping
       if (shinyIntervalRef.current) clearTimeout(shinyIntervalRef.current);
 
+      appInfo.setServing(false);
+
       await resetRAppFrame(webRProxy, appInfo.appName, viewerFrameRef.current);
       setAppRunningState("empty");
     }
@@ -354,6 +405,12 @@ export function Viewer({
       runApp,
       stopApp,
     });
+
+    return () => {
+      if (shinyIntervalRef.current) clearInterval(shinyIntervalRef.current);
+      appInfo.dispose();
+      setViewerMethods({ ready: false });
+    };
   }, [proxyHandle.shinyReady]);
 
   // Shiny for Python
@@ -396,6 +453,7 @@ export function Viewer({
           kwargs: { dev_mode: devMode },
         });
 
+        appInfo.setServing(true);
         viewerFrameRef.current.src = appInfo.urlPath;
         setAppRunningState("running");
       } catch (e) {
@@ -412,6 +470,7 @@ export function Viewer({
     async function stopApp(): Promise<void> {
       if (!viewerFrameRef.current) return;
 
+      appInfo.setServing(false);
       await resetPyAppFrame(
         pyodideproxy,
         appInfo.appName,
@@ -425,12 +484,28 @@ export function Viewer({
       runApp,
       stopApp,
     });
+
+    return () => {
+      appInfo.dispose();
+      setViewerMethods({ ready: false });
+    };
   }, [proxyHandle.shinyReady]);
 
   const engineFailed = engineStatus.stage === "failed";
 
+  // Screen readers announce a change to a live region that is already in the
+  // page, so the region always renders and its text is set after mount.
+  const [shownNotice, setShownNotice] = React.useState<string | null>(null);
+  React.useEffect(() => {
+    const timer = setTimeout(() => setShownNotice(notice), 100);
+    return () => clearTimeout(timer);
+  }, [notice]);
+
   return (
     <div className="shinylive-viewer">
+      <div className="shinylive-version-notice" role="status">
+        {shownNotice}
+      </div>
       <iframe ref={viewerFrameRef} className="app-frame" />
       {engineFailed || appRunningState === "errored" ? (
         <ViewerError

@@ -198,3 +198,23 @@ describe("resetLoadStatusStores()", () => {
     expect(after.get().stage).toBe("idle");
   });
 });
+
+describe("reset()", () => {
+  test("returns a failed store to idle and notifies", () => {
+    const store = loadStatusStore("python");
+    store.set("failed", "boom");
+    const onChange = jest.fn();
+    store.subscribe(onChange);
+    store.reset();
+    expect(store.get()).toEqual({ stage: "idle", error: null });
+    expect(onChange).toHaveBeenCalledTimes(1);
+  });
+
+  test("after reset, set() works again", () => {
+    const store = loadStatusStore("python");
+    store.set("failed", "boom");
+    store.reset();
+    store.set("engine-download");
+    expect(store.get().stage).toBe("engine-download");
+  });
+});

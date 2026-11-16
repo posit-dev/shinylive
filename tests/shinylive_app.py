@@ -11,10 +11,11 @@ from __future__ import annotations
 import json
 import re
 import sys
-from collections.abc import Callable
+from collections.abc import Callable, Mapping
 from pathlib import Path
 from typing import Any, cast
 
+import lzstring
 from playwright.sync_api import ConsoleMessage, FrameLocator, Locator, Page
 from playwright.sync_api import expect as playwright_expect
 from shiny.playwright.controller import OutputPlot as OutputPlotBase
@@ -150,6 +151,21 @@ def titles_with_intent_tests(engine: str) -> set[str]:
 # ---------------------------------------------------------------------------
 # Loading an example
 # ---------------------------------------------------------------------------
+
+_LZ = lzstring.LZString()
+
+
+def app_url_for_files(
+    engine: str, files: Mapping[str, str], view: str = "editor"
+) -> str:
+    """A site URL whose hash encodes `files`, the way the share button encodes them.
+
+    `view` is one of the site's pages: "editor", "examples" or "app". The same
+    encoding loader_apps.app_url() uses, for callers that have their own files.
+    """
+    payload = [{"name": name, "content": content} for name, content in files.items()]
+    code = _LZ.compressToEncodedURIComponent(json.dumps(payload))
+    return f"{BASE_URL}/{engine}/{view}/#code={code}"
 
 
 def open_example(page: Page, engine: str, title: str) -> Page:

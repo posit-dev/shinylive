@@ -1,7 +1,8 @@
 import React, { useEffect } from "react";
 import { ChannelType } from "webr";
-import { checkEngineAssetReachable } from "../engine-load-guard";
+import { assetExists, checkEngineAssetReachable } from "../engine-load-guard";
 import { loadStatusStore } from "../load-status";
+import { bundledShinyVersions, newestBundled } from "../shiny-version";
 import * as utils from "../utils";
 import type { WebRProxy } from "../webr-proxy";
 import { loadWebRProxy } from "../webr-proxy";
@@ -18,18 +19,31 @@ export type WebRProxyHandle =
       webRProxy: WebRProxy;
       shinyReady: boolean;
       initError: boolean;
+      // The shiny version the engine really loaded, from the installed package.
+      shinyVersion: string;
       // Run code through webR REPL. Returns a promise to the next prompt.
       runCode: (command: string) => Promise<string>;
       tabComplete: (command: string) => Promise<string[]>;
       interrupt: () => void;
     };
 
+// True when the bundle was built with one R library image per bundled shiny
+// minor (scripts/build.ts sets it from R_SHINY_IMAGE_BASE_URL). When false,
+// the bundle has only the default image and R is version-unaware.
+export const R_VERSIONS_AVAILABLE = Boolean(process.env.R_SHINY_IMAGES);
+
+export function webrImageUrl(baseUrl: string, shinyMinor: string): string {
+  return `${baseUrl}shiny-${shinyMinor}/library.data.gz`;
+}
+
 export async function initWebR({
   stdout,
   stderr,
+  shinyMinor,
 }: {
   stdout?: (msg: string) => any;
   stderr?: (msg: string) => any;
+  shinyMinor: string;
 }): Promise<WebRProxyHandle> {
   // Defaults for stdout and stderr if not provided: log to console
   if (!stdout) stdout = (x: string) => console.log("webR echo:" + x);
@@ -56,13 +70,32 @@ export async function initWebR({
   );
 
   let initError = false;
+  let shinyVersion = "";
   try {
     status.set("engine-start");
     await webRProxy.webR.objs.globalEnv.bind(".base_url", baseUrl);
+    // A bundle built with per-version images loads the image for shinyMinor
+    // when it exists, else the default one. The default image is a copy of
+    // the newest version's image, so the newest version mounts it without a
+    // probe. A bundle built without per-version images has only the default
+    // image, so it mounts that without a probe.
+    // webR's mount() reads the .js.metadata file next to the .data.gz itself.
+    const defaultImage = `${baseUrl}library.data.gz`;
+    let imageUrl = defaultImage;
+    if (
+      R_VERSIONS_AVAILABLE &&
+      shinyMinor !== newestBundled(bundledShinyVersions("r")).minor
+    ) {
+      const versioned = webrImageUrl(baseUrl, shinyMinor);
+      if (await assetExists(versioned)) imageUrl = versioned;
+    }
     await webRProxy.runRAsync(
-      `webr::mount("/shinylive/library", "${baseUrl}library.data.gz")`,
+      `webr::mount("/shinylive/library", "${imageUrl}")`,
     );
     await webRProxy.runRAsync(load_r_pre);
+    shinyVersion = await webRProxy.webR.evalRString(
+      'as.character(utils::packageVersion("shiny"))',
+    );
     status.set("ready");
   } catch (e) {
     initError = true;
@@ -88,6 +121,7 @@ export async function initWebR({
     webRProxy,
     shinyReady: false,
     initError: initError,
+    shinyVersion,
     runCode,
     tabComplete,
     interrupt,
@@ -128,6 +162,9 @@ export function useWebR({
   );
 
   useEffect(() => {
+    // A new promise means a restart: drop back to not-ready so the previous
+    // engine's handle is not used while the new one loads.
+    setwebRProxyHandle({ ready: false, shinyReady: false, initError: false });
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     (async () => {
       const webRProxyHandle = await webRProxyHandlePromise;
@@ -142,23 +179,27 @@ export function useWebR({
   return webRProxyHandle;
 }
 
-let channelListenerRegistered = false;
+// The window has one "openChannel" listener, and it answers with the proxy of
+// the engine that most recently started shiny. An engine restart replaces the
+// proxy, and the listener must not keep sending channels to the terminated one.
+let channelProxy: WebRProxy | null = null;
 function ensureOpenChannelListener(webRProxy: WebRProxy): void {
-  if (channelListenerRegistered) return;
+  const alreadyListening = channelProxy !== null;
+  channelProxy = webRProxy;
+  if (alreadyListening) return;
 
   window.addEventListener("message", async (event) => {
     const msg = event.data;
     if (msg.type === "openChannel") {
-      const appExists = await webRProxy.runRAsync(`
+      const proxy = channelProxy!;
+      const appExists = await proxy.runRAsync(`
         exists("${msg.appName}", envir = .shiny_app_registry)
       `);
       if (await appExists.toBoolean()) {
-        await webRProxy.openChannel(msg.path, msg.appName, event.ports[0]);
+        await proxy.openChannel(msg.path, msg.appName, event.ports[0]);
       }
     }
   });
-
-  channelListenerRegistered = true;
 }
 
 const load_r_pre = `

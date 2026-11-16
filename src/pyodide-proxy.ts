@@ -44,6 +44,10 @@ export interface PyodideProxy {
 
   tabComplete(code: string): Promise<string[]>;
 
+  // Stop the interpreter for good. Used by an engine restart; a new proxy is
+  // built afterwards.
+  terminate(): void;
+
   // - returnResult: Should the function return the result from the Python code?
   //     Possible values are "none", "value", "printed_value", and "to_html".
   //     - If "none" (the default), then the function will not return anything.
@@ -111,6 +115,9 @@ export interface PyodideProxy {
 
 export interface LoadPyodideConfig {
   indexURL: string;
+  // Default: `${indexURL}/pyodide-lock.json`. The per-version locks live
+  // next to it as pyodide-lock-shiny-<minor>.json.
+  lockFileURL?: string;
   fullStdLib?: boolean;
   stdin?: () => string;
   stdout?: (text: string) => void;
@@ -202,6 +209,12 @@ class NormalPyodideProxy implements PyodideProxy {
 
   proxyType(): ProxyType {
     return "normal";
+  }
+
+  terminate(): void {
+    throw new Error(
+      "Pyodide on the main thread (webworker=0) cannot be terminated; reload the page instead.",
+    );
   }
 
   tabComplete(code: string): Promise<string[]> {
@@ -398,6 +411,10 @@ class WebWorkerPyodideProxy implements PyodideProxy {
 
   proxyType(): ProxyType {
     return "webworker";
+  }
+
+  terminate(): void {
+    this.pyWorker.terminate();
   }
 
   // A wrapper for this.pyWorker.postMessage(). Unlike that function, which
