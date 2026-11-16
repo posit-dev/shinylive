@@ -752,11 +752,11 @@ def pyodide_lock_path(minor: str) -> Path:
 
 
 def update_pyodide_pyodide_lock_json():
-    stock = orig_pyodide_lock()
     locks = load_lock()
     minors = bundled_python_minors()
     newest = next(iter(minors))
     check_lock_matches_versions(locks, minors)
+    stock = orig_pyodide_lock()
 
     # A minor that left the window must not leave a lock behind, because
     # check_shiny_bundle reports it.
