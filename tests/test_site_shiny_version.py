@@ -13,6 +13,7 @@ import urllib.request
 from collections.abc import Callable
 from pathlib import Path
 
+import lzstring
 import pytest
 from playwright.sync_api import ConsoleMessage, Page, expect
 
@@ -21,9 +22,11 @@ from shinylive_app import (
     BASE_URL,
     MOD_KEY,
     app_url_for_files,
+    example_app_titles,
     is_benign_console_error,
     terminal_text,
     wait_for_app_rendered,
+    wait_until,
 )
 
 pytestmark = pytest.mark.site
@@ -197,11 +200,84 @@ def test_the_picker_switches_the_version_and_writes_the_pin(page: Page) -> None:
     assert "#code=" in page.url
 
 
-def test_the_picker_is_disabled_while_the_engine_starts(page: Page) -> None:
+def test_the_picker_is_aria_disabled_while_the_engine_starts(page: Page) -> None:
     page.goto(app_url_for_files("py", py_files(None)))
-    expect(page.locator(PICKER)).to_be_disabled()
+    picker = page.locator(PICKER)
+    # aria-disabled rather than disabled, so the select keeps keyboard focus.
+    expect(picker).to_have_attribute("aria-disabled", "true")
+    expect(picker).not_to_have_attribute("disabled", "")
     expect_running_version(page, NEWEST_PY)
-    expect(page.locator(PICKER)).to_be_enabled()
+    expect(picker).not_to_have_attribute("aria-disabled", "true")
+
+
+def expect_engine_ready_on(page: Page, exact: str) -> None:
+    """The picker shows the version the engine reports once it is ready."""
+    picker = page.locator(PICKER)
+    expect(picker).to_have_value(exact)
+    expect(picker).not_to_have_attribute("aria-disabled", "true")
+    expect(picker).to_have_value(exact)
+
+
+def hash_files(url: str) -> dict[str, str]:
+    """The files in a `#code=` URL, decoded the way runApp() decodes them."""
+    code = url.split("#code=", 1)[1]
+    payload = json.loads(lzstring.LZString().decompressFromEncodedURIComponent(code))
+    return {f["name"]: f["content"] for f in payload}
+
+
+def test_the_picker_on_the_examples_page_writes_the_pin_to_the_hash(
+    page: Page,
+) -> None:
+    # The examples page sets updateUrlHashOnRerun, so a pick rewrites #code=.
+    page.goto(f"{BASE_URL}/py/examples/")
+    wait_for_app_rendered(page)
+    expect_engine_ready_on(page, NEWEST_PY)
+
+    page.select_option(PICKER, OLDEST_PY)
+    expect_engine_ready_on(page, OLDEST_PY)
+    wait_until(page, lambda: "#code=" in page.url, "the hash never got #code=")
+    files = hash_files(page.url)
+    assert f"shiny=={OLDEST_PY}" in files.get("requirements.txt", ""), files
+
+    page.reload()
+    wait_for_app_rendered(page)
+    expect_engine_ready_on(page, OLDEST_PY)
+
+
+def test_an_unpinned_example_after_a_pick_runs_the_newest(page: Page) -> None:
+    page.goto(f"{BASE_URL}/py/examples/")
+    wait_for_app_rendered(page)
+    page.select_option(PICKER, OLDEST_PY)
+    expect_engine_ready_on(page, OLDEST_PY)
+
+    # Examples have no pin, so the next one restarts on the newest version.
+    page.on("dialog", lambda dialog: dialog.accept())
+    second = example_app_titles("py")[1]
+    page.locator(".shinylive-example-selector .example h4.title").filter(
+        has_text=second
+    ).first.click()
+    expect(
+        page.locator(".shinylive-example-selector .example.selected h4.title")
+    ).to_have_text(second)
+    expect_engine_ready_on(page, NEWEST_PY)
+    wait_for_app_rendered(page)
+
+
+@pytest.mark.allow_page_errors
+def test_a_failed_first_load_can_be_retried_from_the_picker(page: Page) -> None:
+    # The first load uses pyodide-lock.json. With it unreachable, the engine
+    # never starts and no viewer becomes ready, so the pick itself restarts.
+    page.route("**/pyodide-lock.json", lambda route: route.abort())
+    page.goto(app_url_for_files("py", py_files(None)))
+    expect(page.locator(".error-message")).to_have_text("Error loading Python!")
+    expect(page.locator(PICKER)).not_to_have_attribute("aria-disabled", "true")
+
+    page.unroute("**/pyodide-lock.json")
+    page.select_option(PICKER, OLDEST_PY)
+    # The restart clears the failure before the new engine loads.
+    expect(page.locator(".error-message")).to_have_count(0)
+    expect_running_version(page, OLDEST_PY)
+    expect_engine_ready_on(page, OLDEST_PY)
 
 
 def test_editing_the_pin_and_rerunning_restarts_the_engine(page: Page) -> None:
@@ -321,9 +397,12 @@ def test_an_unquoted_shiny_version_is_rejected(
         minor="", app=VERSION_APP_PY
     )
     page.goto(quarto_page(block, name="quarto-unquoted"))
-    page.wait_for_timeout(2000)
-    assert any("shiny-version option must be a quoted string" in e for e in errors), (
-        errors
+    wait_until(
+        page,
+        lambda: any(
+            "shiny-version option must be a quoted string" in e for e in errors
+        ),
+        f"no error about the unquoted shiny-version: {errors}",
     )
 
 
@@ -337,6 +416,11 @@ def test_two_apps_on_one_page_share_the_engine_and_show_the_notice(
     )
     second = QUARTO_BLOCK.replace("[editor, terminal, viewer]", "[viewer]").format(
         minor=oldest_minor, app=VERSION_APP_PY
+    )
+    warnings: list[str] = []
+    page.on(
+        "console",
+        lambda m: warnings.append(m.text) if m.type == "warning" else None,
     )
     url = quarto_page(first, name="quarto-two")
     page.goto(url)
@@ -359,9 +443,106 @@ def test_two_apps_on_one_page_share_the_engine_and_show_the_notice(
     frames = page.locator(APP_FRAME)
     expect(frames).to_have_count(2)
     expect(frames.nth(1).content_frame.locator("#version")).to_have_text(NEWEST_PY)
-    expect(page.locator(".shinylive-version-notice")).to_have_text(
+    # Every viewer has the notice's live region; only the second app's has text.
+    notices = page.locator(".shinylive-version-notice")
+    expect(notices).to_have_count(2)
+    expect(notices.nth(0)).to_have_text("")
+    expect(notices.nth(1)).to_have_text(
         f"This app requests shiny {oldest_minor}; this page runs {newest_minor}."
     )
+    expect(notices.nth(1)).to_have_attribute("role", "status")
+    # A viewer-only layout has no terminal, so the report goes to console.warn.
+    message = f"[shinylive] requested shiny {OLDEST_PY}, running {NEWEST_PY}"
+    wait_until(page, lambda: message in warnings, f"no {message!r} in {warnings}")
+
+
+QUARTO_PINNED_BLOCK = """#| standalone: true
+#| components: [editor, terminal, viewer]
+#| shiny-version: "{minor}"
+## file: app.py
+{app}
+## file: requirements.txt
+shiny=={exact}
+"""
+
+
+def test_a_quarto_shiny_version_beside_a_pin_notes_it_was_ignored(
+    page: Page, quarto_page: Callable[..., str]
+) -> None:
+    newest_minor = next(iter(PY_MINORS))
+    block = QUARTO_PINNED_BLOCK.format(
+        minor=newest_minor, app=VERSION_APP_PY, exact=OLDEST_PY
+    )
+    page.goto(quarto_page(block, name="quarto-pinned"))
+    expect_running_version(page, OLDEST_PY)
+    note = (
+        f'shiny-version "{newest_minor}" ignored: requirements.txt already pins shiny'
+    )
+    wait_until(
+        page, lambda: note in terminal_text(page), f"no {note!r} in the terminal"
+    )
+
+
+def replace_pin_and_rerun(page: Page, pin: str) -> None:
+    page.locator(REQUIREMENTS_TAB).click()
+    editor = page.locator(".shinylive-editor .cm-content")
+    editor.click()
+    page.keyboard.press(f"{MOD_KEY}+a")
+    page.keyboard.type(pin)
+    page.locator(RERUN_BUTTON).click()
+
+
+def test_main_thread_pyodide_reloads_onto_a_new_pin(page: Page) -> None:
+    # Pyodide on the main thread cannot be terminated. The editor page starts
+    # from #code=, so a version change writes the files there and reloads.
+    url = app_url_for_files("py", py_files(f"shiny=={NEWEST_PY}")).replace(
+        "/editor/#", "/editor/?webworker=0#"
+    )
+    page.goto(url)
+    expect_running_version(page, NEWEST_PY)
+
+    with page.expect_event("load"):
+        replace_pin_and_rerun(page, f"shiny=={OLDEST_PY}")
+    expect_running_version(page, OLDEST_PY)
+    assert "webworker=0" in page.url
+    assert f"shiny=={OLDEST_PY}" in hash_files(page.url)["requirements.txt"]
+
+
+def test_main_thread_pyodide_on_a_quarto_page_keeps_the_edit(
+    page: Page, quarto_page: Callable[..., str]
+) -> None:
+    # A Quarto page passes its files to runApp and ignores the hash, so a
+    # reload would lose the edit. The engine keeps its version and the notice
+    # says so.
+    newest_minor = next(iter(PY_MINORS))
+    oldest_minor = list(PY_MINORS)[-1]
+    url = quarto_page(
+        QUARTO_BLOCK.format(minor=newest_minor, app=VERSION_APP_PY),
+        name="quarto-main-thread",
+    )
+    page.goto(url + "?webworker=0")
+    expect_running_version(page, NEWEST_PY)
+    page.evaluate("() => { window.__notReloaded = true; }")
+    notice = page.locator(".shinylive-version-notice")
+    expect(notice).to_have_text("")
+
+    replace_pin_and_rerun(page, f"shiny=={OLDEST_PY}")
+    expect(notice).to_have_text(
+        f"This app requests shiny {oldest_minor}; this page runs {newest_minor}."
+    )
+    expect_running_version(page, NEWEST_PY)
+    assert page.evaluate("() => window.__notReloaded === true")
+    expect(page.locator(".shinylive-editor .cm-content")).to_contain_text(
+        f"shiny=={OLDEST_PY}"
+    )
+    message = f"requested shiny {OLDEST_PY}, running {NEWEST_PY}"
+    wait_until(
+        page, lambda: message in terminal_text(page), f"no {message!r} in the terminal"
+    )
+
+    # Back on the engine's version, the notice clears.
+    replace_pin_and_rerun(page, f"shiny=={NEWEST_PY}")
+    expect(notice).to_have_text("")
 
 
 R_MINORS = VERSIONS["r"]

@@ -134,3 +134,9 @@
   position: relative;
   z-index: 1;
 }
+
+/* The live region is always in the page; it takes no space while empty. */
+.shinylive-viewer .shinylive-version-notice:empty {
+  padding: 0;
+  border-bottom: none;
+}

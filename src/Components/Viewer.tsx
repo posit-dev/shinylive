@@ -493,13 +493,19 @@ export function Viewer({
 
   const engineFailed = engineStatus.stage === "failed";
 
+  // Screen readers announce a change to a live region that is already in the
+  // page, so the region always renders and its text is set after mount.
+  const [shownNotice, setShownNotice] = React.useState<string | null>(null);
+  React.useEffect(() => {
+    const timer = setTimeout(() => setShownNotice(notice), 100);
+    return () => clearTimeout(timer);
+  }, [notice]);
+
   return (
     <div className="shinylive-viewer">
-      {notice ? (
-        <div className="shinylive-version-notice" role="status">
-          {notice}
-        </div>
-      ) : null}
+      <div className="shinylive-version-notice" role="status">
+        {shownNotice}
+      </div>
       <iframe ref={viewerFrameRef} className="app-frame" />
       {engineFailed || appRunningState === "errored" ? (
         <ViewerError

@@ -20,36 +20,97 @@ export type HeaderBarCallbacks = {
 export type ShinyVersionPicker = {
   running: string;
   options: { exact: string; latest: boolean }[];
-  disabled: boolean;
+  // The engine is loading, or the picker cannot act. The select stays
+  // focusable and ignores changes.
+  busy: boolean;
   onSelect: (exact: string) => void;
 };
+
+// Keys that move the selection of a closed <select>. On Windows and Linux
+// each press fires `change` at once, so these only update a pending value.
+const NAVIGATION_KEYS = new Set([
+  "ArrowUp",
+  "ArrowDown",
+  "ArrowLeft",
+  "ArrowRight",
+  "Home",
+  "End",
+  "PageUp",
+  "PageDown",
+]);
+
+function isNavigationKey(e: React.KeyboardEvent): boolean {
+  if (NAVIGATION_KEYS.has(e.key)) return true;
+  // Typeahead: a printable character selects the next option that starts
+  // with it.
+  return (
+    e.key.length === 1 && e.key !== " " && !e.ctrlKey && !e.metaKey && !e.altKey
+  );
+}
 
 function VersionPicker({ picker }: { picker: ShinyVersionPicker }) {
   const options = picker.options.some((o) => o.exact === picker.running)
     ? picker.options
     : [{ exact: picker.running, latest: false }, ...picker.options];
+
+  // A version chosen with the keyboard, not yet committed. Enter or blur
+  // commits it; a pointer choice commits at once.
+  const [pending, setPending] = React.useState<string | null>(null);
+  React.useEffect(() => setPending(null), [picker.running, picker.busy]);
+
+  // True from a navigation keydown until the end of its task. The browser
+  // fires the `change` that the key causes in the same task, after the
+  // keydown listeners return, so a timeout of 0 clears the flag after it.
+  const navigatingRef = React.useRef(false);
+
+  const commit = (value: string | null) => {
+    setPending(null);
+    if (picker.busy || value === null || value === picker.running) return;
+    picker.onSelect(value);
+  };
+
   return (
-    <label
+    <span
       className="shiny-version-picker"
+      role="group"
       data-balloon-pos="down"
       aria-label="Pick the shiny version the app runs on"
     >
-      <span className="picker-label">Shiny</span>
-      <select
-        className="shiny-version-select"
-        aria-label="Shiny version"
-        value={picker.running}
-        disabled={picker.disabled}
-        onChange={(e) => picker.onSelect(e.target.value)}
-      >
-        {options.map((o) => (
-          <option key={o.exact} value={o.exact}>
-            {o.exact}
-            {o.latest ? " (latest)" : ""}
-          </option>
-        ))}
-      </select>
-    </label>
+      <label>
+        <span className="picker-label">Shiny</span>
+        <select
+          className="shiny-version-select"
+          aria-label="Shiny version"
+          value={pending ?? picker.running}
+          aria-disabled={picker.busy ? "true" : undefined}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              commit(pending);
+            } else if (e.key === "Escape") {
+              setPending(null);
+            } else if (isNavigationKey(e)) {
+              navigatingRef.current = true;
+              setTimeout(() => {
+                navigatingRef.current = false;
+              }, 0);
+            }
+          }}
+          onChange={(e) => {
+            if (picker.busy) return;
+            if (navigatingRef.current) setPending(e.target.value);
+            else commit(e.target.value);
+          }}
+          onBlur={() => commit(pending)}
+        >
+          {options.map((o) => (
+            <option key={o.exact} value={o.exact}>
+              {o.exact}
+              {o.latest ? " (latest)" : ""}
+            </option>
+          ))}
+        </select>
+      </label>
+    </span>
   );
 }
 

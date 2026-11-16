@@ -40,7 +40,8 @@ When a re-run or the version picker needs another shiny minor, `restartEngine` i
 the app, calls `PyodideProxy.terminate()`, resets the load-status store, clears the singleton with
 `clearEngineSingleton`, and starts a new engine for the new minor. `WebWorkerPyodideProxy.terminate`
 terminates the worker; `NormalPyodideProxy.terminate` throws, so with `?webworker=0` `App.tsx`
-writes the files to `#code=` and reloads the page instead. The full flow is in `shinyVersions.md`.
+writes the files to `#code=` and reloads the page instead, on a page that starts from that hash.
+Other pages keep the engine and show the version notice. The full flow is in `shinyVersions.md`.
 
 ## PyodideProxy: worker vs normal
 

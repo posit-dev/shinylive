@@ -26,8 +26,9 @@ quietly never run.
 - **`test_site_shiny_version.py`** pins shiny to each bundled version and checks
   the version the engine really loaded, the fallback when a per-version lock is
   missing, the warning for a pin outside the window, an export that includes one
-  version, the version picker, engine restarts on re-run, the Quarto
-  `shiny-version` option, and two apps on one page. In a build without
+  version, the version picker, engine restarts on re-run and their failures,
+  main-thread Pyodide (`?webworker=0`), the Quarto `shiny-version` option, and
+  two apps on one page. In a build without
   per-version R images, the R tests that need them skip, and one test checks that
   such a build ignores an R pin.
 

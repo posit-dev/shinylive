@@ -103,9 +103,13 @@ The source of each function lists the exact cases.
 Every run goes through `runAppWithVersion` in `App.tsx`, which resolves the current files again:
 
 - Same minor as the running engine, or more than one `App` on the page uses this engine
-  (`appInstances`): the engine is kept. If the note or `requested` changed, the report prints again.
-- Pyodide on the main thread (`?webworker=0`) cannot be terminated, so the files are written to
-  `#code=` and the page reloads.
+  (`appInstances`): the engine is kept. If the minor, the note, or `requested` changed, the report
+  prints again, and the version notice is set from this run's resolution.
+- Pyodide on the main thread (`?webworker=0`) cannot be terminated. When the page starts from the
+  files in `#code=` (`restoresFilesFromHash`: `runApp` got no `startFiles` and has
+  `allowCodeUrl`), the files are written to `#code=` and the page reloads. A page that passes its
+  files to `runApp` (Quarto, an export) would lose the edit on reload, so it keeps the engine and
+  shows the version notice instead.
 - Otherwise `restartEngine`: stop the app, `terminate()` the old proxy (the Pyodide worker, or
   `webR.close()`), `loadStatusStore(engine).reset()`, `clearEngineSingleton`, start the engine for
   the new minor, and store the new promise in React state. `usePyodide` / `useWebR` drop back to a
@@ -115,7 +119,8 @@ Every run goes through `runAppWithVersion` in `App.tsx`, which resolves the curr
 
 Runs are serialized through `restartInFlightRef`: a run or stop requested during a restart
 waits for it. A restart whose engine fails (`initError`, or a rejected promise) rejects, so later
-runs are not blocked. The Editor receives `editorViewerMethods`, and the viewer-only effect
+runs are not blocked; the Editor and the viewer-only effect log the rejection with
+`console.error`, and the Viewer shows the engine error. The Editor receives `editorViewerMethods`, and the viewer-only effect
 depends on it. Its identity changes only when the first viewer becomes ready; otherwise each
 restart would re-run the start files and restart back to their pin.
 
@@ -129,11 +134,21 @@ do not. Layout alone cannot gate it, because a Quarto block can produce `editor-
 - Options are the bundled exact versions, newest first, with the newest marked "(latest)". The
   value is the loaded version once the engine is ready, else the bundled version of the minor the
   engine is starting; a running version that is not in the list is added at the top.
-- It is disabled while the engine loads, and enabled again if the load fails, so another version
-  can be picked.
+- While the engine loads it has `aria-disabled="true"` (`busy`) and ignores changes. It is not
+  `disabled`, so keyboard focus stays on it. It is usable again once the engine is ready or the
+  load has failed.
+- A pointer choice commits at once. On Windows and Linux an arrow key on a closed select fires
+  `change` at once, so a change that follows a navigation key (arrows, Home/End, PageUp/PageDown,
+  typeahead letters) only sets a pending value, which Enter or blur commits and Escape drops.
 - Selecting a version calls `writeShinyPin` (`src/shiny-version-pin.ts`) on the editor's current
-  files, rewrites the `#code=` hash when `updateUrlHashOnRerun` is set, and sets the files; the
-  Editor then runs them through `runAppWithVersion`, which restarts the engine.
+  files and sets the files at once; the Editor then runs them through `runAppWithVersion`, which
+  restarts the engine. After that, when `updateUrlHashOnRerun` is set (the `examples/` page), it
+  rewrites the `#code=` hash, and logs a failure to do so.
+- A pick after a failed engine load sets `forceRestartRef`, so the next run restarts even on the
+  same minor. If the first load failed, no viewer has started and the Editor runs nothing, so
+  `onSelectVersion` calls `runAppWithVersion` itself.
+- The tooltip's `aria-label` is on a wrapper with `role="group"`; the select's accessible name is
+  "Shiny version".
 
 `writeShinyPin` always writes `==<exact>`. In `requirements.txt` it rewrites the first shiny line
 and keeps indentation, extras, and a trailing comment, or appends `shiny==<exact>`. In
@@ -154,7 +169,11 @@ and keeps indentation, extras, and a trailing comment, or appends `shiny==<exact
 
 The first `App` on a page to start an engine sets its version. A later `App` whose resolution
 names another minor runs on the engine's version, and its Viewer shows a notice
-(`.shinylive-version-notice`, "This app requests shiny A; this page runs B.").
+(`.shinylive-version-notice`, "This app requests shiny A; this page runs B.", or "This app has no
+shiny pin and defaults to shiny A; this page runs B." when the app has no versioned pin). Each run
+that keeps the engine sets the notice again, so an edited pin updates or clears it. The notice is a
+`role="status"` live region that every Viewer renders, empty when there is nothing to say; its text
+is set after mount so that screen readers announce it.
 
 ## R and `R_SHINY_IMAGE_BASE_URL`
 
@@ -173,7 +192,10 @@ or notice.
 - jest: `src/shiny-version.test.ts` (parsing and the shared fixture), `src/shiny-version-pin.test.ts`
   (pin writing and the Quarto option), `src/Components/HeaderBar.test.tsx` (the picker).
 - Browser: `tests/test_site_shiny_version.py` (marker `site`, so it runs in `make test-site`). It
-  covers every bundled Python version, the lock fallback, an export of a pinned app, the picker,
-  restart and retry after a failed restart, the Quarto option, and two apps on one page. The R
+  covers every bundled Python version, the lock fallback, an export of a pinned app, the picker
+  (including the `#code=` rewrite on `examples/` and a following unpinned example), restart and
+  retry after a failed restart or a failed first load, `?webworker=0` on a page that reloads and on
+  a Quarto page that keeps the engine, the Quarto option and its startup note, and two apps on one
+  page (the notice and the `console.warn` report). The R
   tests skip unless the build has per-version images, and one R test runs only when it does not.
   See `browserTests.md`.

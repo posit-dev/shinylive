@@ -263,11 +263,12 @@ export default function Editor({
 
     setFilesHaveChangedCombined(false);
 
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    // A run can reject when it restarts the engine and the new engine fails
+    // to load; the Viewer shows that error.
     (async () => {
       await viewerMethods.stopApp();
       await viewerMethods.runApp(fileContents);
-    })();
+    })().catch((e) => console.error(e));
   }, [
     viewerMethods,
     syncActiveFileState,
@@ -296,7 +297,8 @@ export default function Editor({
 
     setFilesHaveChanged(false);
 
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    // A run can reject when it restarts the engine and the new engine fails
+    // to load; the Viewer shows that error.
     (async () => {
       await viewerMethods.stopApp();
       currentFilesFromApp.map((file) => {
@@ -322,7 +324,7 @@ export default function Editor({
       // TODO: Should switch to the following, but there's some state capture
       // issue that's causing problems.
       // runAppCurrentFiles.current();
-    })();
+    })().catch((e) => console.error(e));
   }, [
     runOnLoad,
     currentFilesFromApp,
