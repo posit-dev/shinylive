@@ -241,6 +241,11 @@ describe("shinyVersionMessage()", () => {
       shinyVersionMessage({ ...resolved, requested: "1.6.3" }, "1.6.5"),
     ).toBe("requested shiny 1.6.3, running 1.6.5");
   });
+  test("nothing when the requested version equals the running one numerically", () => {
+    expect(
+      shinyVersionMessage({ ...resolved, requested: "1.6.5.0" }, "1.6.5"),
+    ).toBeNull();
+  });
   test("names the resolved version when the engine fell back to another", () => {
     expect(shinyVersionMessage(resolved, "1.8.0")).toBe(
       "requested shiny 1.6.5, running 1.8.0",

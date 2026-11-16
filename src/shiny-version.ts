@@ -290,7 +290,11 @@ export function shinyVersionMessage(
   resolved: ShinyVersionResolution,
   actual: string,
 ): string | null {
-  if (resolved.requested !== null && resolved.requested !== actual) {
+  // Numeric comparison, so a pin of 1.9.0.0 matches a running 1.9.0.
+  if (
+    resolved.requested !== null &&
+    compareVersions(resolved.requested, actual) !== 0
+  ) {
     return `requested shiny ${resolved.requested}, running ${actual}`;
   }
   if (resolved.exact !== actual) {
